@@ -9,7 +9,7 @@ export const messages = (data: messagesRequest) =>
   backendApi.post<messagesResponse>('/chat/messages', data)
 
 export const sessions = (data: sessionsRequest) =>
-  backendApi.post<sessionsResponse>('/chat/sessions', data)
+  backendApi.get<sessionsResponse>('/chat/sessions', data)
 
 // export const Stream = (onMessage: (data: string) => void) => {
 //   const ws = new WebSocket('ws://localhost:8000/chat/stream')

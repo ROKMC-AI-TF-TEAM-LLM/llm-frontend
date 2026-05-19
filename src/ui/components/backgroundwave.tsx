@@ -1,4 +1,3 @@
-// ui/components/BackgroundWave.tsx
 type WaveLayer = {
   id: string
   from: { color: string; opacity: number }

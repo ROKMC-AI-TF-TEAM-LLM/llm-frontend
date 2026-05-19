@@ -4,7 +4,7 @@ import type {
     GetHistoryRequest, GetHistoryResponse,
     DeleteHistoryResponse,
     //PatchsHistoryRequest, PatchsHistoryResponse
-    } from '../../types/chathistory'
+    } from '../../types/chatHistory'
 
 export const history = (params: HistoryRequest) =>
   backendApi.get<HistoryResponse>('/chat/history', { params })

@@ -1,4 +1,3 @@
-// pages/loginpage.tsx
 import LoginCard from '../ui/components/logincard'
 import BackgroundWave from '../ui/components/backgroundwave'
 
