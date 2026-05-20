@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod/src/index.js';
+import { signup } from '../api/services/auth';
 
 const schema = z.object({
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
@@ -28,11 +29,12 @@ const SignupPage = () => {
     mode: "onBlur"
   });
 
-  const onSubmit: SubmitHandler<FormFields> = (data) => {
+  const onSubmit: SubmitHandler<FormFields> = async(data) => {
     console.log(data);
     const {passwordCheck, ...rest} = data;
 
-    console.log(rest);
+    const response = await signup(rest);
+    console.log(response);
   };
 
   return (

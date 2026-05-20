@@ -1,34 +1,32 @@
 import axios from 'axios'
+import { LOCAL_STORAGE_KEY } from '../../constants/key'
 
 export const backendApi = axios.create({
-  baseURL: 'http://',
+  baseURL: import.meta.env.VITE_SERVER_API_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 
 export const llmApi = axios.create({
-  baseURL: 'http://',
+  baseURL: import.meta.env.VITE_LLM_API_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 })
 
-// backendApi.interceptors.request.use((config) => {
-//   const token = localStorage.getItem('accessToken')
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`
-//   }
-//   return config
-// })
+backendApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+  if (token) {
+    config.headers.Authorization = `Bearer ${JSON.parse(token)}`
+  }
+  return config
+})
 
-// backendApi.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response.status === 401) {
-//       localStorage.removeItem('accessToken')
-//     }
-//     return Promise.reject(error)
-//   }
-// )
-
+llmApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+  if (token) {
+    config.headers.Authorization = `Bearer ${JSON.parse(token)}`
+  }
+  return config
+})
