@@ -12,7 +12,7 @@
   --color-brand-light: #FF4560;
   --color-brand-soft: #FCDCE3;
   --color-brand-subtle: #FEF2F2;
-
+  
   --color-surface: #FFFFFF;
   --color-surface-subtle: #F3F2F0;
   --color-surface-border: #E8E6E3;
@@ -74,12 +74,3 @@ body {
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
-
-.login-page {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}

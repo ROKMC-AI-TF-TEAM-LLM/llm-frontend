@@ -1,86 +1,134 @@
-import { useRef, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { useChatStore } from '../../../api/store/chatStore';
 
 interface ChatInputProps {
-  placeholder?: string
-  notice?: string
-  onSend?: (message: string) => void
+  placeholder?: string;
+  notice?: string;
 }
 
 export default function ChatInput({
   placeholder = "메시지를 입력하세요...",
   notice,
-  onSend
 }: ChatInputProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [files, setFiles] = useState<File[]>([])
+  const navigate = useNavigate();
+  const location = useLocation();
+  const sendMessage = useChatStore((s) => s.sendMessage);
+  const sendImageMessage = useChatStore((s) => s.sendImageMessage);
+  const [value, setValue] = useState('');
+  const [pendingFile, setPendingFile] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPendingFile(file.name);
+    e.target.value = '';
+  };
+
+  const handleSubmit = () => {
+    if (!value.trim() && !pendingFile) return;
+    
+    if (pendingFile) {
+      sendImageMessage(pendingFile, value.trim() || undefined);
+      setPendingFile(null);
+      setValue('');
+    } else {
+      sendMessage(value.trim());
+      setValue('');
+    }
+
+    if (location.pathname === '/chat') {
+      const newSessionId = crypto.randomUUID();
+      navigate(`/chat/${newSessionId}`);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const dotIndex = pendingFile ? pendingFile.lastIndexOf('.') : -1;
+  const pendingExt = dotIndex !== -1 ? pendingFile!.slice(dotIndex + 1).toUpperCase() : null;
+  const pendingBasename = dotIndex !== -1 ? pendingFile!.slice(0, dotIndex) : pendingFile;
 
   return (
-    <div className="w-full">
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        multiple
-        onChange={(e) => {
-          if (e.target.files) {
-            setFiles(Array.from(e.target.files))
-          }
-        }}
-      />
-
-      {files.length > 0 && (
-        <div className="flex gap-2 mb-2 flex-wrap px-4">
-          {files.map((file, i) => (
-            <div key={i} className="flex items-center gap-2 bg-brand rounded-xl px-3 py-2">
-              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="bg-surface border border-surface-border rounded-2xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden">
+        {pendingFile && (
+          <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+            <div className="flex items-center gap-2 bg-brand text-white rounded-xl px-3 py-2 max-w-full">
+              <div className="bg-brand-soft rounded-lg p-1.5 shrink-0">
+                <svg
+                  className="w-4 h-4 text-brand"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 2v6h6" />
                 </svg>
               </div>
-              <div className="flex flex-col">
-                <span className="text-white text-xs font-semibold">{file.name.split('.')[0].toUpperCase()}</span>
-                <span className="text-white/70 text-xs">{file.name.split('.').pop()}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-medium truncate max-w-45">{pendingBasename}</span>
+                {pendingExt && <span className="text-xs text-white/70 uppercase tracking-wide">{pendingExt}</span>}
               </div>
               <button
-                className="text-white/70 hover:text-white ml-1"
-                onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
+                onClick={() => setPendingFile(null)}
+                className="ml-1 text-white/60 hover:text-white shrink-0"
+                aria-label="첨부 취소"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-          ))}
+          </div>
+        )}
+
+        <div className="flex items-center px-4 py-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.txt,.hwp"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            className="text-text-muted hover:text-text-secondary transition-colors shrink-0"
+            aria-label="첨부"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+          </button>
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
+            className="flex-1 mx-3 bg-transparent outline-none text-sm text-text-primary placeholder-text-muted"
+          />
+          <button
+            onClick={handleSubmit}
+            className="w-9 h-9 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
+            aria-label="전송"
+          >
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
         </div>
-      )}
-
-      <div className="flex items-center w-full bg-surface border border-surface-border rounded-full shadow-sm px-4 py-3 focus-within:border-text-muted transition-colors">
-        <button
-          className="text-text-muted hover:text-text-secondary transition-colors shrink-0"
-          aria-label="첨부"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-          </svg>
-        </button>
-        <input
-          type="text"
-          placeholder={placeholder}
-          className="flex-1 mx-3 bg-transparent outline-none text-sm text-text-primary placeholder-text-muted"
-        />
-        <button
-          onClick={() => onSend?.('메시지')}
-          className="w-9 h-9 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
-          aria-label="전송"
-        >
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-          </svg>
-        </button>
       </div>
-
       {notice && (
         <p className="text-xs text-text-muted text-center mt-3">{notice}</p>
       )}
     </div>
-  )
+  );
 }
