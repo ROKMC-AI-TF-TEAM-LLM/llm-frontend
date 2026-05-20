@@ -74,3 +74,11 @@ body {
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-subtle) 100%);
+}
