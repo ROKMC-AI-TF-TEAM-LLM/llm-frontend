@@ -7,7 +7,8 @@ import NewChatPage from './pages/newchatpage'
 import SearchPage from './pages/searchpage'
 import RAGPage from './pages/ragpage'
 import ErrorPage from './pages/errorpage';
-import SignupPage from './pages/SignupPage';
+import SigninPage from './pages/SigninPage.tsx.tsx';
+import SignupPage from './pages/SignupPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage/>,
     children: [
       { path: '/', element: <LoginPage /> },
+      { path: '/signin', element: <SigninPage /> },
       { path: '/signup', element: <SignupPage /> }
     ]
   },

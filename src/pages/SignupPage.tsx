@@ -1,54 +1,90 @@
-import { useState } from 'react';
-import useForm from '../hooks/useform';
-import { validateSignIn, type UserSignInformation } from '../utils/validate';
-import axios from 'axios';
+import { z } from 'zod';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod/src/index.js';
+
+const schema = z.object({
+  email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
+  password: z.string()
+    .min(8, { message: '비밀번호는 최소 8자 이상이어야 합니다.' })
+    .max(20, { message: '비밀번호는 최대 20자 이하여야 합니다.' }),
+  passwordCheck: z.string(),
+  name: z.string().min(1, { message: '이름을 입력해주세요.' })
+})
+.refine((data) => data.password === data.passwordCheck, {
+  message: '비밀번호가 일치하지 않습니다.',
+  path: ['passwordCheck']
+});
+
+type FormFields = z.infer<typeof schema>;
 
 const SignupPage = () => {
-  const { values, errors, touched, getInputProps } = useForm<UserSignInformation>({
-    initialValues: {
-      email: '',
-      password: ''
-    },
-    validate: validateSignIn,
+  const { 
+    register,
+    handleSubmit, 
+    formState: { errors, isSubmitting } 
+  } = useForm<FormFields>({
+    defaultValues: { name: '', email: '', password: '', passwordCheck: '' },
+    resolver: zodResolver(schema),
+    mode: "onBlur"
   });
-  const handleSubmit = () => {
-    console.log(values);
+
+  const onSubmit: SubmitHandler<FormFields> = (data) => {
+    console.log(data);
+    const {passwordCheck, ...rest} = data;
+
+    console.log(rest);
   };
-  const isdisabled = 
-    Object.values(errors || {}).some(error => error.length > 0) ||
-    Object.values(values).some(value => value === '');
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="flex flex-col gap-3">
         <input
-          {...getInputProps('email')}
-          name="email"
-          className={`border border-[accc] w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${errors?.email && touched?.email ? "border-red-500 bg-red-100" : "border-gray-300"}`}
-          type={"email"}
-          placeholder={'이메일'}
+          {...register('email')}
+          className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
+            ${errors?.email ? "border-red-500 bg-red-100" : "border-gray-300"}`}
+          type="text"
+          placeholder="이메일"
         />
-        {errors?.email && touched?.email && (
-            <div className="text-red-500 text-sm">{errors.email}</div>
-        )}
-        <input
-          {...getInputProps('password')}
-          name="password"
-          className={`border border-[accc] w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${errors?.password && touched?.password ? "border-red-500 bg-red-100" : "border-gray-300"}`}
-          type={"password"}
-          placeholder={'비밀번호'}
-            />
+        {errors?.email && <div className="text-red-500 text-sm">{errors.email.message}</div>}
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isdisabled}
-            className="bg-blue-500 cursor-pointer disabled:bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-          로그인
-      </button>
+        <input
+          {...register('password')}
+          className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
+            ${errors?.password ? "border-red-500 bg-red-100" : "border-gray-300"}`}
+          type="password"
+          placeholder="비밀번호"
+        />
+        {errors?.password && <div className="text-red-500 text-sm">{errors.password.message}</div>}
+        
+        <input
+          {...register('passwordCheck')}
+          className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
+            ${errors?.passwordCheck ? "border-red-500 bg-red-100" : "border-gray-300"}`}
+          type="password"
+          placeholder="비밀번호 확인"
+        />
+        {errors?.passwordCheck && <div className="text-red-500 text-sm">{errors.passwordCheck.message}</div>}
+        
+        <input
+          {...register('name')}
+          className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
+            ${errors?.name ? "border-red-500 bg-red-100" : "border-gray-300"}`}
+          type="text"
+          placeholder="이름"
+        />
+        {errors?.name && <div className="text-red-500 text-sm">{errors.name.message}</div>}
+
+        <button
+          type="submit"
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          className="bg-blue-500 cursor-pointer disabled:bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          회원가입
+        </button>
       </div>
     </div>
   );
 };
+
 export default SignupPage;

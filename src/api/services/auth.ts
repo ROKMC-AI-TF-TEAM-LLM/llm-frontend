@@ -4,16 +4,16 @@ import type {
     RefreshRequest, RefreshResponse,
     SignupRequest, SignupResponse,
     LoginRequest, LoginResponse
-    } from '../../types/auth'
+    } from '../../types/auth.ts'
 
 export const logout = (data: LogoutRequest) =>
-  backendApi.post<LogoutResponse>('/auth/logout', data)
+  backendApi.post<LogoutResponse>('/api/v1/auth/logout', data)
 
 export const refresh = (data: RefreshRequest) =>
-  backendApi.post<RefreshResponse>('/auth/refresh', data)
+  backendApi.post<RefreshResponse>('/api/v1/auth/refresh', data)
 
 export const signup = (data: SignupRequest) =>
-  backendApi.post<SignupResponse>('/auth/signup', data)
+  backendApi.post<SignupResponse>('/api/v1/auth/signup', data)
 
 export const login = (data: LoginRequest) =>
-  backendApi.post<LoginResponse>('/auth/login', data)
+  backendApi.post<LoginResponse>('/api/v1/auth/login', data)

@@ -1,35 +1,44 @@
 // Logout
-export interface LogoutRequest {
-
+export type LogoutRequest = {
+  refresh_token: string;
 }
 
-export interface LogoutResponse {
-
+export type LogoutResponse = {
+  code: number;
+  message: string;
 }
 
 // Refresh
-export interface RefreshRequest {
-
+export type RefreshRequest = {
+  refresh_token: string;
 }
 
-export interface RefreshResponse {
-
+export type RefreshResponse = {
+  access_token: string;
+  token_type: string;
 }
 
 // Signup
-export interface SignupRequest {
-
+export type SignupRequest = {
+  email: string;
+  password: string;
 }
 
-export interface SignupResponse {
-
+export type SignupResponse = {
+  user_id: string;
+  email: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 // Login
-export interface LoginRequest {
-
+export type LoginRequest = {
+  email: string;
+  password: string;
 }
 
-export interface LoginResponse {
-
+export type LoginResponse = {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
 }

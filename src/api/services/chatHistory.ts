@@ -7,13 +7,13 @@ import type {
     } from '../../types/chatHistory'
 
 export const history = (params: HistoryRequest) =>
-  backendApi.get<HistoryResponse>('/chat/history', { params })
+  backendApi.get<HistoryResponse>('/api/v1/chat/history', { params })
 
 export const gethistory = (sessionId: number, params: GetHistoryRequest) =>
-  backendApi.get<GetHistoryResponse>(`/chat/history/${sessionId}`, { params })
+  backendApi.get<GetHistoryResponse>(`/api/v1/chat/history/${sessionId}`, { params })
 
 export const deleteHistory = (sessionId: number) =>
-  backendApi.delete<DeleteHistoryResponse>(`/chat/history/${sessionId}`)
+  backendApi.delete<DeleteHistoryResponse>(`/api/v1/chat/history/${sessionId}`)
 
 // export const patchshistory = (sessionId: number, params: PatchsHistoryRequest) =>
-//   backendApi.patch<PatchsHistoryResponse>(`/chat/history/${sessionId}`, { params })
+//   backendApi.patch<PatchsHistoryResponse>(`/api/v1/chat/history/${sessionId}`, { params })
