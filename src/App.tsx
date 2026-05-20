@@ -6,12 +6,16 @@ import AuthLayout from './ui/layouts/AuthLayout';
 import NewChatPage from './pages/newchatpage'
 import SearchPage from './pages/searchpage'
 import RAGPage from './pages/ragpage'
+import ErrorPage from './pages/errorpage';
+import SignupPage from './pages/SignupPage';
 
 const router = createBrowserRouter([
   {
     element: <AuthLayout />,
+    errorElement: <ErrorPage/>,
     children: [
-      { path: '/', element: <LoginPage /> }
+      { path: '/', element: <LoginPage /> },
+      { path: '/signup', element: <SignupPage /> }
     ]
   },
   {

@@ -29,7 +29,7 @@ const LoginCard = () => {
 
         <button 
           className="btn-primary w-full h-[9vh] max-h-17.25 rounded-[20px]! text-[22px]!" 
-          onClick={() => navigate('/chat')}
+          onClick={() => navigate('/signup')}
         >
           시작하기
         </button>
