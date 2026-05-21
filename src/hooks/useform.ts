@@ -11,25 +11,18 @@ function useForm<T>({ initialValues, validate }: UseFormProps<T>) {
   const [errors, setErrors] = useState<Record<keyof T, string>>({} as Record<keyof T, string>);
 
   const handleChange = (name: keyof T, text: string) => {
-    setValues({
-      ...values,
-      [name]: text
-    });
+    setValues({ ...values, [name]: text });
   };
 
   const handleBlur = (name: keyof T) => {
-    setTouched({
-      ...touched,
-      [name]: true
-    });
+    setTouched({ ...touched, [name]: true });
   };
 
   const getInputProps = (name: keyof T) => {
-    const value = values[name];
+    const value = values[name] ?? '';  // undefined/null 방어
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
       handleChange(name, e.target.value);
     const onBlur = () => handleBlur(name);
-
     return { value, onChange, onBlur };
   };
 
