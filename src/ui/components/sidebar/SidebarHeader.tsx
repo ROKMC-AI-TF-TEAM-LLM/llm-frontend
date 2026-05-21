@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router";
 
 interface SidebarHeaderProps {
   isOpen: boolean;
@@ -6,7 +6,8 @@ interface SidebarHeaderProps {
 }
 
 export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
   return (
     <div
       className={`flex items-center h-16 transition-all duration-300 ${
@@ -14,10 +15,10 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
       }`}
     >
       <h1
-        className={`text-brand font-bold text-lg tracking-wide transition-opacity duration-200 cursor-pointer ${
+        onClick={() => navigate("/chat")}
+        className={`text-brand font-bold text-lg tracking-wide transition-opacity duration-200 cursor-pointer hover:opacity-70 ${
           isOpen ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
         }`}
-        onClick={() => navigate('/chat')}
       >
         ROKMCLLM
       </h1>

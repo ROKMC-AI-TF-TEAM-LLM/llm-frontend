@@ -1,20 +1,14 @@
-import type { ReactElement } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from "react-router";
 
 interface SidebarMenuProps {
   isOpen: boolean;
+  activeLabel?: string;
 }
 
-interface MenuItem {
-  label: string
-  icon: ReactElement
-  path: string
-}
-
-const menuItems: MenuItem[] = [
+const menuItems = [
   {
     label: "새 채팅",
-    path: '/chat',
+    path: "/chat",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -23,7 +17,7 @@ const menuItems: MenuItem[] = [
   },
   {
     label: "대화 검색",
-    path: '/search',
+    path: "/search",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -32,7 +26,7 @@ const menuItems: MenuItem[] = [
   },
   {
     label: "RAG 목록",
-    path: '/rag',
+    path: "/rag",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
@@ -41,27 +35,34 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
-  const navigate = useNavigate()
-  const location = useLocation()
+export default function SidebarMenu({ isOpen, activeLabel }: SidebarMenuProps) {
+  const navigate = useNavigate();
+
   return (
     <nav className="px-3 py-2 space-y-1">
-      {menuItems.map((item) => (
-        <button
-          key={item.label}
-          onClick={() => navigate(item.path)}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm ${
-            location.pathname === item.path
-              ? 'bg-brand-subtle text-brand'
-              : 'text-text-primary hover:bg-brand-subtle hover:text-brand'
-          }`}
-        >
-          <span className="shrink-0">{item.icon}</span>
-          <span className={`whitespace-nowrap transition-opacity duration-200 ${isOpen ? "opacity-100" : "opacity-0"}`}>
-            {item.label}
-          </span>
-        </button>
-      ))}
+      {menuItems.map((item) => {
+        const isActive = item.label === activeLabel;
+        return (
+          <button
+            key={item.label}
+            onClick={() => navigate(item.path)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              isActive
+                ? "bg-brand-subtle text-brand font-medium"
+                : "text-text-primary hover:bg-brand-subtle hover:text-brand"
+            }`}
+          >
+            <span className="shrink-0">{item.icon}</span>
+            <span
+              className={`whitespace-nowrap transition-opacity duration-200 ${
+                isOpen ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
     </nav>
-  )
+  );
 }

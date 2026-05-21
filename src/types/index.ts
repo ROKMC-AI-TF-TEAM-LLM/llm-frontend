@@ -39,5 +39,15 @@ export interface ImageMessage {
   caption?: string;
 }
 
+export interface User {
+  id: string
+  name: string
+}
+
+export interface ChatItem {
+  id: string
+  title: string
+}
+
 export type Message = UserMessage | AssistantMessage | ImageMessage;
 export type MessageRole = 'user' | 'assistant';
