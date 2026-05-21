@@ -1,19 +1,23 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+//import { useState } from 'react';
+//import { useEffect, useContext } from 'react';
+//import { useNavigate } from 'react-router';
 import useForm from '../hooks/useform';
+import { useAuth } from '../context/AuthContext';
 import { validateSignIn, type UserSignInformation } from '../utils/validate';
-import { login } from '../api/services/auth';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { LOCAL_STORAGE_KEY } from '../constants/key';
+// import { useLocalStorage } from '../hooks/useLocalStorage';
+// import { LOCAL_STORAGE_KEY } from '../constants/key';
+// import { AuthContext } from '../context/AuthContext';
 
 const SigninPage = () => {
-  const navigate = useNavigate();
-  const { setItem, getItem } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
-  const [serverError, setServerError] = useState<string>('');
+  const { login } = useAuth();
+  //const navigate = useNavigate();
+  //const { login } = useContext(AuthContext);
+  //const { getItem } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
+  //const [serverError, setServerError] = useState<string>('');
 
-  useEffect(() => {
-    if (getItem()) navigate('/chat');
-  }, []);
+  // useEffect(() => {
+  //   if (getItem()) navigate('/chat');
+  // }, []);
 
   const { values, errors, touched, getInputProps } = useForm<UserSignInformation>({
     initialValues: { email: '', password: '' },
@@ -21,19 +25,16 @@ const SigninPage = () => {
   });
 
   const handleSubmit = async () => {
-    setServerError('');
-    try {
-      const response = await login(values);
-      if (!response.data?.access_token) {
-        setServerError('토큰을 받아오지 못했습니다.');
-        return;
-      }
-      setItem(response.data.access_token);
-      navigate('/chat');
-    } catch (error) {
-      setServerError('이메일 또는 비밀번호가 올바르지 않습니다.');
-    }
-  };
+      await login(values);
+
+  //   setServerError('');
+  //   try {
+  //     await login(values);
+  //     //navigate('/chat');
+  //   } catch (error) {
+  //     setServerError('이메일 또는 비밀번호가 올바르지 않습니다.');
+  //   }
+ };
 
   const isdisabled =
     Object.values(errors || {}).some(error => error.length > 0) ||
@@ -59,7 +60,7 @@ const SigninPage = () => {
           type="password"
           placeholder="비밀번호"
         />
-        {serverError && <div className="text-red-500 text-sm">{serverError}</div>}
+        {/*{serverError && <div className="text-red-500 text-sm">{serverError}</div>} */}
         <button
           type="button"
           onClick={handleSubmit}

@@ -1,16 +1,18 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router-dom';
 import LoginPage from './pages/loginpage';
-import MainLayout from './ui/layouts/MainLayout';
+//import MainLayout from './ui/layouts/MainLayout';
 import ChatPage from './pages/chatpage';
 import AuthLayout from './ui/layouts/AuthLayout';
 import NewChatPage from './pages/newchatpage'
 import SearchPage from './pages/searchpage'
 import RAGPage from './pages/ragpage'
 import ErrorPage from './pages/errorpage';
-import SigninPage from './pages/SigninPage.tsx.tsx';
+import SigninPage from './pages/SigninPage.tsx';
 import SignupPage from './pages/SignupPage.tsx';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedLayout from './ui/layouts/ProtectedLayout';
 
-const router = createBrowserRouter([
+const publicRoutes:RouteObject[] = [
   {
     element: <AuthLayout />,
     errorElement: <ErrorPage/>,
@@ -20,21 +22,48 @@ const router = createBrowserRouter([
       { path: '/signup', element: <SignupPage /> }
     ]
   },
+];
+
+const protectedRoutes: RouteObject[] = [
   {
-    element: <MainLayout />,
+    element: <ProtectedLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: '/chat', element: <NewChatPage /> },
       { path: '/chat/:id', element: <ChatPage /> },
       { path: '/search', element: <SearchPage /> },
       { path: '/rag', element: <RAGPage /> },
+    ]
+  }
 ]
-  },
-]);
+
+const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
+
+// const router = createBrowserRouter([
+//   {
+//     element: <AuthLayout />,
+//     errorElement: <ErrorPage/>,
+//     children: [
+//       { path: '/', element: <LoginPage /> },
+//       { path: '/signin', element: <SigninPage /> },
+//       { path: '/signup', element: <SignupPage /> }
+//     ]
+//   },
+//   {
+//     element: <MainLayout />,
+//     children: [
+//       { path: '/chat', element: <NewChatPage /> },
+//       { path: '/chat/:id', element: <ChatPage /> },
+//       { path: '/search', element: <SearchPage /> },
+//       { path: '/rag', element: <RAGPage /> },
+// ]
+//   },
+// ]);
 
 const App = () => (
-  //<AuthProvider>
+  <AuthProvider>
     <RouterProvider router={router} />
-  //</AuthProvider>
+  </AuthProvider>
 );
 
 export default App;

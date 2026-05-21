@@ -12,7 +12,6 @@ interface ChatStore {
 
 const MOCK_REPLY = '안녕하세요! 무엇을 도와드릴까요?';
 
-// Tracks active streaming intervals per message so they can be cancelled before restarting.
 const activeIntervals = new Map<string, ReturnType<typeof setInterval>>();
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -88,7 +87,6 @@ export const useChatStore = create<ChatStore>((set) => ({
       ],
     }));
 
-    // simulate streaming character by character
     let i = 0;
     const interval = setInterval(() => {
       i++;

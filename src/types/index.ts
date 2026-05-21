@@ -12,6 +12,7 @@ export interface ChatItem {
 }
 
 export interface User {
+  id: string;
   name: string;
 }
 
@@ -37,16 +38,6 @@ export interface ImageMessage {
   type: 'image';
   filename: string;
   caption?: string;
-}
-
-export interface User {
-  id: string
-  name: string
-}
-
-export interface ChatItem {
-  id: string
-  title: string
 }
 
 export type Message = UserMessage | AssistantMessage | ImageMessage;

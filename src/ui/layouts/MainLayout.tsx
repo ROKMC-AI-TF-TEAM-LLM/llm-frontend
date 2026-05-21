@@ -11,7 +11,7 @@ const MainLayout = () => {
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
         chats={[]}
-        user={{ name: '사용자' }}
+        user={{ id: '1', name: '사용자' }}
       />
       <main className="flex-1">
         <Outlet />
