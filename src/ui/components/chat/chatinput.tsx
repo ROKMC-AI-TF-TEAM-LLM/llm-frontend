@@ -57,7 +57,7 @@ export default function ChatInput({
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="bg-surface border border-surface-border rounded-2xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden">
+      <div className="brand-light border border-surface-border rounded-4xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden">
         {pendingFile && (
           <div className="flex items-center gap-2 px-4 pt-3 pb-1">
             <div className="flex items-center gap-2 bg-brand text-white rounded-xl px-3 py-2 max-w-full">
@@ -82,7 +82,7 @@ export default function ChatInput({
                 className="ml-1 text-white/60 hover:text-white shrink-0"
                 aria-label="첨부 취소"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -90,7 +90,7 @@ export default function ChatInput({
           </div>
         )}
 
-        <div className="flex items-center px-4 py-3">
+        <div className="flex items-center px-6 py-5">
           <input
             ref={fileInputRef}
             type="file"
@@ -103,7 +103,7 @@ export default function ChatInput({
             aria-label="첨부"
             onClick={() => fileInputRef.current?.click()}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
           </button>
@@ -117,10 +117,10 @@ export default function ChatInput({
           />
           <button
             onClick={handleSubmit}
-            className="w-9 h-9 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
+            className="w-6.5 h-6.5 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
             aria-label="전송"
           >
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-5 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
             </svg>
           </button>
