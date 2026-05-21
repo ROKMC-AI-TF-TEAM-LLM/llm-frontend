@@ -31,7 +31,7 @@ export default function MessageList({ title }: MessageListProps) {
     <div className="flex flex-col h-full bg-surface">
       <ChatHeader title={title} />
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll">
         <div className="max-w-3xl mx-auto">
         {messages.map((msg: Message) => {
           if (msg.type === 'image') {

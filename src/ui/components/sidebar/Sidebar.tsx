@@ -20,7 +20,7 @@ export default function Sidebar({ isOpen, onToggle, chats, user }: SidebarProps)
     >
       <SidebarHeader isOpen={isOpen} onToggle={onToggle} />
       <SidebarMenu isOpen={isOpen} />
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto custom-scroll">
         <RecentChats isOpen={isOpen} chats={chats} />
       </div>
       <SidebarFooter isOpen={isOpen} user={user} />
