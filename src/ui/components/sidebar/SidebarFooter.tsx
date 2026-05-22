@@ -1,4 +1,6 @@
 import type { User } from "../../../types";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 interface SidebarFooterProps {
   isOpen: boolean;
@@ -6,9 +8,17 @@ interface SidebarFooterProps {
 }
 
 export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   return (
-    <div className="border-t border-surface-border px-4 py-4">
-      <button className="w-full flex items-center gap-3 hover:bg-brand-subtle rounded-lg p-1 transition-colors">
+    <div className="border-t border-surface-border px-4 py-4 flex items-center gap-2">
+      <button className="flex-1 flex items-center gap-3 hover:bg-brand-subtle rounded-lg p-1 transition-colors">
         <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -22,6 +32,16 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
           {user.name}
         </span>
       </button>
+
+      {isOpen && (
+        <button
+          onClick={handleLogout}
+          className="p-1 rounded-lg hover:bg-brand-subtle transition-colors shrink-0"
+          title="로그아웃"
+        >
+          로그아웃
+        </button>
+      )}
     </div>
   );
 }

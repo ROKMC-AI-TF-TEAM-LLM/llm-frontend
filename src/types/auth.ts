@@ -4,8 +4,13 @@ export type LogoutRequest = {
 }
 
 export type LogoutResponse = {
-  code: number;
-  message: string;
+  success: boolean;
+  status_code: number;
+  data: null;
+  error: {
+    code: string;
+    detail: string;
+  }
 }
 
 // Refresh
@@ -14,21 +19,31 @@ export type RefreshRequest = {
 }
 
 export type RefreshResponse = {
-  access_token: string;
-  token_type: string;
+  success: boolean;
+  status_code: number;
+  data: {
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+  };
+  error: {
+    code: string;
+    detail: string;
+  };
 }
 
 // Signup
 export type SignupRequest = {
+  name: string;
   email: string;
   password: string;
 }
 
 export type SignupResponse = {
-  user_id: string;
-  email: string;
-  created_at: Date;
-  updated_at: Date;
+  success: boolean;
+  status_code: number;
+  data: null;
+  error: null;
 }
 
 // Login
@@ -38,7 +53,12 @@ export type LoginRequest = {
 }
 
 export type LoginResponse = {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
+  success: boolean;
+  status_code: number;
+  data: {
+    access_token: string;
+    refresh_token: string;
+    token_type: string;
+  };
+  error: null;
 }

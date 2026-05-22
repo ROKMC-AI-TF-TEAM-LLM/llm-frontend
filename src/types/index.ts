@@ -40,5 +40,13 @@ export interface ImageMessage {
   caption?: string;
 }
 
+
+export interface RagDocument {
+  id: string
+  title: string
+  fileType: 'PDF' | 'HWP' | string
+  preview: string
+}
+
 export type Message = UserMessage | AssistantMessage | ImageMessage;
 export type MessageRole = 'user' | 'assistant';

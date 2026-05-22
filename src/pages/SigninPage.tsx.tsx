@@ -1,6 +1,6 @@
 //import { useState } from 'react';
 //import { useEffect, useContext } from 'react';
-//import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import useForm from '../hooks/useform';
 import { useAuth } from '../context/AuthContext';
 import { validateSignIn, type UserSignInformation } from '../utils/validate';
@@ -10,7 +10,7 @@ import { validateSignIn, type UserSignInformation } from '../utils/validate';
 
 const SigninPage = () => {
   const { login } = useAuth();
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
   //const { login } = useContext(AuthContext);
   //const { getItem } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
   //const [serverError, setServerError] = useState<string>('');
@@ -68,6 +68,13 @@ const SigninPage = () => {
           className="bg-blue-500 cursor-pointer disabled:bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           로그인
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/signup")}
+          className="bg-blue-500 cursor-pointer disabled:bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          회원가입
         </button>
       </div>
     </div>
