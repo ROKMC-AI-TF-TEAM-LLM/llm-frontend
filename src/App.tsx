@@ -1,7 +1,7 @@
 import { 
   createBrowserRouter, 
   RouterProvider, 
-  /*type RouteObject */}
+  /*type RouteObject}*/}
   from 'react-router-dom';
 import LoginPage from './pages/loginpage';
 
@@ -15,8 +15,8 @@ import SigninPage from './pages/SigninPage.tsx';
 import SignupPage from './pages/SignupPage.tsx';
 import { AuthProvider } from './context/AuthContext';
 //import ProtectedLayout from './ui/layouts/ProtectedLayout';
-
 import MainLayout from './ui/layouts/MainLayout';
+
 // const publicRoutes:RouteObject[] = [
 //   {
 //     element: <AuthLayout />,
