@@ -1,5 +1,6 @@
-import { useGetUsers, useApproveUser, useRejectUser } from '../hooks/useUser';
-import type { UserData } from '../types/user';
+import { useState } from 'react';
+import { useGetUsers, useApproveUser, useRejectUser, useDeleteUsers } from '../hooks/useUser';
+import type { UserData, UserStatus } from '../types/user';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '대기 중',
@@ -7,16 +8,41 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: '거절됨',
 };
 
+const TABS: { label: string; value: UserStatus | undefined }[] = [
+  { label: '전체', value: undefined },
+  { label: '대기 중', value: 'pending' },
+  { label: '승인됨', value: 'approved' },
+  { label: '거절됨', value: 'rejected' },
+];
+
 export default function AdminPage() {
-  const { data, isLoading, isError } = useGetUsers({ status: 'pending' });
+  const [activeTab, setActiveTab] = useState<UserStatus | undefined>(undefined);
+  const { data, isLoading, isError } = useGetUsers({ status: activeTab });
   const { mutate: approve, isPending: isApproving } = useApproveUser();
   const { mutate: reject, isPending: isRejecting } = useRejectUser();
+  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUsers();
 
   const users: UserData[] = data?.data?.data?.items ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">관리자 - 가입 승인</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">관리자 - 회원 관리</h1>
+
+      <div className="flex gap-2 mb-6">
+        {TABS.map((tab) => (
+          <button
+            key={String(tab.value)}
+            onClick={() => setActiveTab(tab.value)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              activeTab === tab.value
+                ? 'bg-gray-800 text-white'
+                : 'bg-white text-gray-600 border hover:bg-gray-100'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {isLoading && <p className="text-gray-500">불러오는 중...</p>}
       {isError && <p className="text-red-500">데이터를 불러오지 못했습니다.</p>}
@@ -54,19 +80,30 @@ export default function AdminPage() {
                   {new Date(user.created_at).toLocaleDateString('ko-KR')}
                 </td>
                 <td className="px-5 py-3 flex gap-2">
+                  {user.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => approve(user.user_id)}
+                        disabled={isApproving || isRejecting || isDeleting}
+                        className="px-3 py-1 rounded bg-green-500 text-white text-xs hover:bg-green-600 disabled:opacity-50"
+                      >
+                        승인
+                      </button>
+                      <button
+                        onClick={() => reject(user.user_id)}
+                        disabled={isApproving || isRejecting || isDeleting}
+                        className="px-3 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600 disabled:opacity-50"
+                      >
+                        거절
+                      </button>
+                    </>
+                  )}
                   <button
-                    onClick={() => approve(user.user_id)}
-                    disabled={isApproving || isRejecting}
-                    className="px-3 py-1 rounded bg-green-500 text-white text-xs hover:bg-green-600 disabled:opacity-50"
+                    onClick={() => deleteUser(user.user_id)}
+                    disabled={isApproving || isRejecting || isDeleting}
+                    className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50"
                   >
-                    승인
-                  </button>
-                  <button
-                    onClick={() => reject(user.user_id)}
-                    disabled={isApproving || isRejecting}
-                    className="px-3 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600 disabled:opacity-50"
-                  >
-                    거절
+                    삭제
                   </button>
                 </td>
               </tr>
