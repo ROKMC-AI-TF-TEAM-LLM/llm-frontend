@@ -1,23 +1,27 @@
 import { backendApi } from '../lib/axios'
 import type {
-    GetUsersRequest, GetUsersResponse,
-    DeleteUsersResponse,
-    PatchUsersRequest, PatchUsersResponse,
-    InquiryUsersResponse,
-    GetMeUsersResponse
+    AdminUsersRequest, AdminUsersResponse,
+    AdminUserDeleteResponse,
+    AdminUserInquiryResponse,
+    GetMeResponse,
+    AdminUserApproveResponse,
+    AdminUserRejectResponse,
     } from '../../types/user'
 
-export const getUsers = (params: GetUsersRequest) =>
-  backendApi.get<GetUsersResponse>('/api/v1/admin/users', { params })
+export const getUsers = (params: AdminUsersRequest) =>
+  backendApi.get<AdminUsersResponse>('/api/v1/admin/users', { params })
 
-export const deleteUsers = (userId: number) =>
-  backendApi.delete<DeleteUsersResponse>(`/api/v1/admin/users/${userId}`)
+export const deleteUsers = (userId: string) =>
+  backendApi.delete<AdminUserDeleteResponse>(`/api/v1/admin/users/${userId}`)
 
-export const patchUsers = (userId: number, data: PatchUsersRequest) =>
-  backendApi.patch<PatchUsersResponse>(`/api/v1/admin/users/${userId}`, data)
-
-export const InquiryUsers = (userId: number) =>
-  backendApi.get<InquiryUsersResponse>(`/api/v1/admin/users/${userId}`)
+export const InquiryUsers = (userId: string) =>
+  backendApi.get<AdminUserInquiryResponse>(`/api/v1/admin/users/${userId}`)
 
 export const getMeUsers = () =>
-  backendApi.get<GetMeUsersResponse>('/api/v1/users/me')
+  backendApi.get<GetMeResponse>('/api/v1/users/me')
+
+export const approveUser = (userId: string) =>
+  backendApi.patch<AdminUserApproveResponse>(`/api/v1/admin/users/${userId}/approve`)
+
+export const rejectUser = (userId: string) =>
+  backendApi.patch<AdminUserRejectResponse>(`/api/v1/admin/users/${userId}/reject`)

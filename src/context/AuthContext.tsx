@@ -13,12 +13,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType>({
-  accessToken: null,
-  refreshToken: null,
-  login: async () => {},
-  logout: async () => {},
-});
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const {

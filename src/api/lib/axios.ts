@@ -39,6 +39,7 @@ backendApi.interceptors.response.use(
         })
 
         localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(data.data.access_token))
+        localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(data.data.refresh_token))
 
         originalRequest.headers.Authorization = `Bearer ${data.data.access_token}`
         return backendApi(originalRequest)
@@ -46,7 +47,7 @@ backendApi.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-        window.location.href = '/login'
+        window.location.href = '/signin'
         return Promise.reject(refreshError)
       }
     }

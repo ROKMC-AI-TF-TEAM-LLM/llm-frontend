@@ -28,7 +28,6 @@ export const useChatStore = create<ChatStore>((set) => ({
           type: 'image' as const,
           filename,
           caption,
-          status: 'done' as const,
         },
       ],
     }));
@@ -75,7 +74,6 @@ export const useChatStore = create<ChatStore>((set) => ({
           role: 'user',
           type: 'text',
           content,
-          status: 'done',
         },
         {
           id: assistantId,
@@ -99,6 +97,7 @@ export const useChatStore = create<ChatStore>((set) => ({
       }));
       if (i >= MOCK_REPLY.length) {
         clearInterval(interval);
+        activeIntervals.delete(assistantId);
         set((state) => ({
           messages: state.messages.map((m) =>
             m.id === assistantId ? { ...m, status: 'done' } : m
@@ -106,5 +105,7 @@ export const useChatStore = create<ChatStore>((set) => ({
         }));
       }
     }, 40);
+
+    activeIntervals.set(assistantId, interval);
   },
 }));

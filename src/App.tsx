@@ -11,8 +11,9 @@ import NewChatPage from './pages/newchatpage'
 import SearchPage from './pages/searchpage'
 import RAGPage from './pages/ragpage'
 import ErrorPage from './pages/errorpage';
-import SigninPage from './pages/SigninPage.tsx';
-import SignupPage from './pages/SignupPage.tsx';
+import SigninPage from './pages/SigninPage';
+import SignupPage from './pages/SignupPage';
+import AdminPage from './pages/AdminPage';
 import { AuthProvider } from './context/AuthContext';
 //import ProtectedLayout from './ui/layouts/ProtectedLayout';
 import MainLayout from './ui/layouts/MainLayout';
@@ -61,7 +62,8 @@ const router = createBrowserRouter([
       { path: '/chat/:id', element: <ChatPage /> },
       { path: '/search', element: <SearchPage /> },
       { path: '/rag', element: <RAGPage /> },
-]
+      { path: '/admin', element: <AdminPage /> },
+    ]
   },
 ]);
 

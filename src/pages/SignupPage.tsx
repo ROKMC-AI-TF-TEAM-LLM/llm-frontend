@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { z } from 'zod';
 import { useForm, type SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod/src/index.js';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 import { signup } from '../api/services/auth';
 
 const schema = z.object({
@@ -19,24 +21,33 @@ const schema = z.object({
 type FormFields = z.infer<typeof schema>;
 
 const SignupPage = () => {
-  const { 
+  const navigate = useNavigate();
+  const [serverError, setServerError] = useState('');
+
+  const {
     register,
-    handleSubmit, 
-    formState: { errors, isSubmitting } 
+    handleSubmit,
+    formState: { errors, isSubmitting }
   } = useForm<FormFields>({
     defaultValues: { name: '', email: '', password: '', passwordCheck: '' },
     resolver: zodResolver(schema),
     mode: "onBlur"
   });
 
-  const onSubmit: SubmitHandler<FormFields> = async(data) => {
-    console.log(data);
-    const {passwordCheck, ...rest} = data;
+const SIGNUP_ERRORS: Record<string, string> = {
+  EMAIL_ALREADY_EXISTS: '이미 사용 중인 이메일입니다.',
+};
 
-    const response = await signup(rest);
-    console.log(response);
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    const { passwordCheck: _, ...rest } = data;
+    try {
+      await signup(rest);
+      navigate('/signin');
+    } catch (error: any) {
+      const code = error?.response?.data?.error?.code;
+      setServerError(SIGNUP_ERRORS[code] ?? '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="flex flex-col gap-3">
@@ -44,7 +55,7 @@ const SignupPage = () => {
           {...register('email')}
           className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
             ${errors?.email ? "border-red-500 bg-red-100" : "border-gray-300"}`}
-          type="text"
+          type="email"
           placeholder="이메일"
         />
         {errors?.email && <div className="text-red-500 text-sm">{errors.email.message}</div>}
@@ -75,6 +86,8 @@ const SignupPage = () => {
           placeholder="이름"
         />
         {errors?.name && <div className="text-red-500 text-sm">{errors.name.message}</div>}
+
+        {serverError && <div className="text-red-500 text-sm">{serverError}</div>}
 
         <button
           type="submit"

@@ -1,23 +1,20 @@
-//import { useState } from 'react';
-//import { useEffect, useContext } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import useForm from '../hooks/useform';
 import { useAuth } from '../context/AuthContext';
 import { validateSignIn, type UserSignInformation } from '../utils/validate';
-// import { useLocalStorage } from '../hooks/useLocalStorage';
-// import { LOCAL_STORAGE_KEY } from '../constants/key';
-// import { AuthContext } from '../context/AuthContext';
+
+const LOGIN_ERRORS: Record<string, string> = {
+  INVALID_CREDENTIALS: '이메일 또는 비밀번호가 올바르지 않습니다.',
+  APPROVAL_PENDING: '관리자 승인 대기 중인 계정입니다.',
+  APPROVAL_REJECTED: '관리자에 의해 승인이 거절된 계정입니다.',
+  USER_NOT_FOUND: '사용자를 찾을 수 없습니다.',
+};
 
 const SigninPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  //const { login } = useContext(AuthContext);
-  //const { getItem } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
-  //const [serverError, setServerError] = useState<string>('');
-
-  // useEffect(() => {
-  //   if (getItem()) navigate('/chat');
-  // }, []);
+  const [serverError, setServerError] = useState('');
 
   const { values, errors, touched, getInputProps } = useForm<UserSignInformation>({
     initialValues: { email: '', password: '' },
@@ -25,16 +22,14 @@ const SigninPage = () => {
   });
 
   const handleSubmit = async () => {
+    setServerError('');
+    try {
       await login(values);
-
-  //   setServerError('');
-  //   try {
-  //     await login(values);
-  //     //navigate('/chat');
-  //   } catch (error) {
-  //     setServerError('이메일 또는 비밀번호가 올바르지 않습니다.');
-  //   }
- };
+    } catch (error: any) {
+      const code = error?.response?.data?.error?.code;
+      setServerError(LOGIN_ERRORS[code] ?? '로그인 중 오류가 발생했습니다.');
+    }
+  };
 
   const isdisabled =
     Object.values(errors || {}).some(error => error.length > 0) ||
@@ -60,7 +55,7 @@ const SigninPage = () => {
           type="password"
           placeholder="비밀번호"
         />
-        {/*{serverError && <div className="text-red-500 text-sm">{serverError}</div>} */}
+        {serverError && <div className="text-red-500 text-sm">{serverError}</div>}
         <button
           type="button"
           onClick={handleSubmit}

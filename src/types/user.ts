@@ -1,32 +1,76 @@
-// Users
-export interface GetUsersRequest {
-
+export type UserStatus = 'pending' | 'approved' | 'rejected';
+export type UserRole = 'admin' | 'user';
+export interface UserData {
+  user_id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface GetUsersResponse {
-
+//GetMe
+export interface GetMe {
+  name: string;
+  email: string;
+}
+export interface GetMeResponse {
+  success: boolean;
+  status_code: number;
+  data: GetMe;
+  error: { 
+    code: string; 
+    detail: string; 
+  }
 }
 
-// DeleteUser
-export interface DeleteUsersResponse {
-
+//AdminUsers
+export interface AdminUsersRequest {
+  page?: number;
+  size?: number;
+  status?: UserStatus;
+}
+export interface AdminUsersResponse {
+  success: boolean;
+  status_code: number;
+  data: {
+    items: UserData[];
+    total: number;
+    page: number;
+    size: number;
+  };
+  error: null;
 }
 
-// PatchUser
-export interface PatchUsersRequest {
-
+//AdminUserApprove
+export interface AdminUserApproveResponse {
+  success: boolean;
+  status_code: number;
+  data: UserData;
+  error: { code: string; detail: string } | null;
 }
 
-export interface PatchUsersResponse {
-
+//AdminUserReject
+export interface AdminUserRejectResponse {
+  success: boolean;
+  status_code: number;
+  data: UserData;
+  error: { code: string; detail: string } | null;
 }
 
-// InquiryUsers
-export interface InquiryUsersResponse {
-
+//AdminUserDelete
+export interface AdminUserDeleteResponse {
+  success: boolean;
+  status_code: number;
+  data: null;
+  error: null;
 }
 
-// GetMeUsers
-export interface GetMeUsersResponse {
-
+//AdminUserInquiry
+export interface AdminUserInquiryResponse {
+  success: boolean;
+  status_code: number;
+  data: UserData;
+  error: { code: string; detail: string } | null;
 }

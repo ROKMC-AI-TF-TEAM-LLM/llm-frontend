@@ -1,22 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMeUsers, getUsers, deleteUsers, patchUsers, InquiryUsers } from '../api/services/user'
-import type { GetUsersRequest, PatchUsersRequest } from '../types/user'
+import { getMeUsers, getUsers, deleteUsers, InquiryUsers, approveUser, rejectUser } from '../api/services/user'
+import type { AdminUsersRequest } from '../types/user'
+import { useAuth } from '../context/AuthContext'
 
 export const useGetMe = () => {
+  const { accessToken } = useAuth()
   return useQuery({
     queryKey: ['me'],
     queryFn: () => getMeUsers(),
+    enabled: !!accessToken,
   })
 }
 
-export const useGetUsers = (params: GetUsersRequest) => {
+export const useGetUsers = (params: AdminUsersRequest) => {
   return useQuery({
     queryKey: ['users', params],
     queryFn: () => getUsers(params),
   })
 }
 
-export const useInquiryUsers = (userId: number) => {
+export const useInquiryUsers = (userId: string) => {
   return useQuery({
     queryKey: ['users', userId],
     queryFn: () => InquiryUsers(userId),
@@ -26,18 +29,27 @@ export const useInquiryUsers = (userId: number) => {
 export const useDeleteUsers = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (userId: number) => deleteUsers(userId),
+    mutationFn: (userId: string) => deleteUsers(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
     },
   })
 }
 
-export const usePatchUsers = () => {
+export const useApproveUser = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ userId, data }: { userId: number; data: PatchUsersRequest }) =>
-      patchUsers(userId, data),
+    mutationFn: (userId: string) => approveUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+    },
+  })
+}
+
+export const useRejectUser = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: string) => rejectUser(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
     },
