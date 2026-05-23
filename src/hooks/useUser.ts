@@ -16,6 +16,7 @@ export const useGetUsers = (params: AdminUsersRequest) => {
   return useQuery({
     queryKey: ['users', params],
     queryFn: () => getUsers(params),
+    retry: false,
   })
 }
 
