@@ -11,7 +11,7 @@ export const logout = (data: LogoutRequest) =>
 
 export const refresh = (data: RefreshRequest) =>
   backendApi.post<RefreshResponse>('/api/v1/auth/refresh', data)
-
+  
 export const signup = (data: SignupRequest) =>
   backendApi.post<SignupResponse>('/api/v1/auth/signup', data)
 

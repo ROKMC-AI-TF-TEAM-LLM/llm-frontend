@@ -1,18 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import SearchInput from '../ui/components/search/SearchInput'
 import SearchResults from '../ui/components/search/SearchResults'
 import type { SearchResult } from '../ui/components/search/SearchResultItem'
-
-const MOCK_RESULTS: SearchResult[] = [
-  { id: '1', title: '대화제목대화제목1231231212..', preview: '채팅검색채팅검색채팅검색 관련 기준 포함...' },
-  { id: '2', title: 'abcdefghijklmnopqrstuvwxyz', preview: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' },
-  { id: '3', title: '대화제목대화제목59068459080304569084563058343...', preview: '예시example' },
-]
+import { useSearchSessions } from '../hooks/useSession'
 
 const SearchPage = () => {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -20,25 +16,17 @@ const SearchPage = () => {
     return () => clearTimeout(timer)
   }, [query])
 
-  useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      setResults([])
-      setSelectedId(null)
-      return
-    }
-    const q = debouncedQuery.toLowerCase()
-    const filtered = MOCK_RESULTS.filter(
-      (item) =>
-        item.title.toLowerCase().includes(q) ||
-        item.preview.toLowerCase().includes(q)
-    )
-    setResults(filtered)
-    setSelectedId(filtered[0]?.id ?? null)
-  }, [debouncedQuery])
+  const { data } = useSearchSessions({ q: debouncedQuery })
+
+  const results: SearchResult[] = (data?.data?.data ?? []).map((s) => ({
+    id: s.session_id,
+    title: s.title,
+    preview: new Date(s.updated_at).toLocaleString('ko-KR'),
+  }))
 
   const handleSelect = (id: string) => {
     setSelectedId(id)
-    // TODO: navigate to chat session
+    navigate(`/chat/${id}`)
   }
 
   return (

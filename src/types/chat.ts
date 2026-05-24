@@ -1,26 +1,21 @@
-// Messages
-export interface messagesRequest {
-
+export interface MessageItem {
+  role: 'human' | 'ai';
+  content: string;
+  created_at: string;
 }
 
-export interface messagesResponse {
-
+// GetMessages
+export interface GetMessagesResponse {
+  success: boolean;
+  status_code: number;
+  data: {
+    session_id: string;
+    messages: MessageItem[];
+  };
+  error: { code: string; detail: string } | null;
 }
 
-// Sessions
-export interface sessionsRequest {
-
-}
-
-export interface sessionsResponse {
-
-}
-
-// Stream
-export interface streamRequest {
-
-}
-
-export interface streamResponse {
-
+// StreamMessage
+export interface StreamMessageRequest {
+  question: string;
 }

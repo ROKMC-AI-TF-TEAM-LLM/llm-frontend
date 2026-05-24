@@ -1,7 +1,7 @@
 import { 
   createBrowserRouter, 
   RouterProvider, 
-  /*type RouteObject}*/}
+  type RouteObject}
   from 'react-router-dom';
 import LoginPage from './pages/loginpage';
 
@@ -15,10 +15,38 @@ import SigninPage from './pages/SigninPage';
 import SignupPage from './pages/SignupPage';
 import AdminPage from './pages/AdminPage';
 import { AuthProvider } from './context/AuthContext';
-//import ProtectedLayout from './ui/layouts/ProtectedLayout';
-import MainLayout from './ui/layouts/MainLayout';
+import ProtectedLayout from './ui/layouts/ProtectedLayout';
+// import MainLayout from './ui/layouts/MainLayout';
 
-// const publicRoutes:RouteObject[] = [
+const publicRoutes:RouteObject[] = [
+  {
+    element: <AuthLayout />,
+    errorElement: <ErrorPage/>,
+    children: [
+      { path: '/', element: <LoginPage /> },
+      { path: '/signin', element: <SigninPage /> },
+      { path: '/signup', element: <SignupPage /> },
+      { path: '/admin', element: <AdminPage /> }
+    ]
+  },
+];
+
+const protectedRoutes: RouteObject[] = [
+  {
+    element: <ProtectedLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: '/chat', element: <NewChatPage /> },
+      { path: '/chat/:id', element: <ChatPage /> },
+      { path: '/search', element: <SearchPage /> },
+      { path: '/rag', element: <RAGPage /> },
+    ]
+  }
+]
+
+const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
+
+// const router = createBrowserRouter([
 //   {
 //     element: <AuthLayout />,
 //     errorElement: <ErrorPage/>,
@@ -28,44 +56,17 @@ import MainLayout from './ui/layouts/MainLayout';
 //       { path: '/signup', element: <SignupPage /> }
 //     ]
 //   },
-// ];
-
-// const protectedRoutes: RouteObject[] = [
 //   {
-//     element: <ProtectedLayout />,
-//     errorElement: <ErrorPage />,
+//     element: <MainLayout />,
 //     children: [
 //       { path: '/chat', element: <NewChatPage /> },
 //       { path: '/chat/:id', element: <ChatPage /> },
 //       { path: '/search', element: <SearchPage /> },
 //       { path: '/rag', element: <RAGPage /> },
+//       { path: '/admin', element: <AdminPage /> },
 //     ]
-//   }
-// ]
-
-// const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
-
-const router = createBrowserRouter([
-  {
-    element: <AuthLayout />,
-    errorElement: <ErrorPage/>,
-    children: [
-      { path: '/', element: <LoginPage /> },
-      { path: '/signin', element: <SigninPage /> },
-      { path: '/signup', element: <SignupPage /> }
-    ]
-  },
-  {
-    element: <MainLayout />,
-    children: [
-      { path: '/chat', element: <NewChatPage /> },
-      { path: '/chat/:id', element: <ChatPage /> },
-      { path: '/search', element: <SearchPage /> },
-      { path: '/rag', element: <RAGPage /> },
-      { path: '/admin', element: <AdminPage /> },
-    ]
-  },
-]);
+//   },
+// ]);
 
 const App = () => (
   <AuthProvider>

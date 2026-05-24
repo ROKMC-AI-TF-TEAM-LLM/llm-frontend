@@ -6,12 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { signup } from '../api/services/auth';
 
 const schema = z.object({
-  email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
+  email: z.string().email('유효한 이메일 주소를 입력해주세요.'),
   password: z.string()
-    .min(8, { message: '비밀번호는 최소 8자 이상이어야 합니다.' })
-    .max(20, { message: '비밀번호는 최대 20자 이하여야 합니다.' }),
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
+    .max(20, '비밀번호는 최대 20자 이하여야 합니다.'),
   passwordCheck: z.string(),
-  name: z.string().min(1, { message: '이름을 입력해주세요.' })
+  name: z.string().min(1, '이름을 입력해주세요.')
 })
 .refine((data) => data.password === data.passwordCheck, {
   message: '비밀번호가 일치하지 않습니다.',
@@ -50,7 +50,7 @@ const SIGNUP_ERRORS: Record<string, string> = {
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
         <input
           {...register('email')}
           className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -68,7 +68,7 @@ const SIGNUP_ERRORS: Record<string, string> = {
           placeholder="비밀번호"
         />
         {errors?.password && <div className="text-red-500 text-sm">{errors.password.message}</div>}
-        
+
         <input
           {...register('passwordCheck')}
           className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -77,7 +77,7 @@ const SIGNUP_ERRORS: Record<string, string> = {
           placeholder="비밀번호 확인"
         />
         {errors?.passwordCheck && <div className="text-red-500 text-sm">{errors.passwordCheck.message}</div>}
-        
+
         <input
           {...register('name')}
           className={`border w-75 rounded py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -87,17 +87,16 @@ const SIGNUP_ERRORS: Record<string, string> = {
         />
         {errors?.name && <div className="text-red-500 text-sm">{errors.name.message}</div>}
 
-        {serverError && <div className="text-red-500 text-sm">{serverError}</div>}
+        {serverError && <div className="text-red-500 text-sm font-medium">{serverError}</div>}
 
         <button
           type="submit"
-          onClick={handleSubmit(onSubmit)}
           disabled={isSubmitting}
           className="bg-blue-500 cursor-pointer disabled:bg-gray-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          회원가입
+          {isSubmitting ? '처리 중...' : '회원가입'}
         </button>
-      </div>
+      </form>
     </div>
   );
 };

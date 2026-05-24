@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { useChatStore } from '../../../api/store/chatStore';
+import { useCreateSession } from '../../../hooks/useSession';
 
 interface ChatInputProps {
   placeholder?: string;
@@ -15,6 +16,8 @@ export default function ChatInput({
   const location = useLocation();
   const sendMessage = useChatStore((s) => s.sendMessage);
   const sendImageMessage = useChatStore((s) => s.sendImageMessage);
+  const isStreaming = useChatStore((s) => s.isStreaming);
+  const { mutateAsync: createSession } = useCreateSession();
   const [value, setValue] = useState('');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,21 +29,27 @@ export default function ChatInput({
     e.target.value = '';
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!value.trim() && !pendingFile) return;
-    
+    if (isStreaming) return;
+    const text = value.trim();
+
     if (pendingFile) {
-      sendImageMessage(pendingFile, value.trim() || undefined);
+      sendImageMessage(pendingFile, text || undefined);
       setPendingFile(null);
       setValue('');
-    } else {
-      sendMessage(value.trim());
+    } else if (location.pathname === '/chat') {
       setValue('');
-    }
-
-    if (location.pathname === '/chat') {
-      const newSessionId = crypto.randomUUID();
-      navigate(`/chat/${newSessionId}`);
+      try {
+        const res = await createSession({ title: text });
+        const sessionId = res.data.data.session_id;
+        navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
+      } catch {
+        setValue(text);
+      }
+    } else {
+      sendMessage(text);
+      setValue('');
     }
   };
 
@@ -117,7 +126,8 @@ export default function ChatInput({
           />
           <button
             onClick={handleSubmit}
-            className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
+            disabled={isStreaming}
+            className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="전송"
           >
             <svg className="w-5 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

@@ -37,34 +37,28 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   );
 
   const login = async (signInData: LoginRequest) => {
-  const response = await loginApi(signInData);
-  if (response.data.data) {
+    const response = await loginApi(signInData);
     const { access_token, refresh_token } = response.data.data;
     setAccessTokenInStorage(access_token);
     setRefreshTokenInStorage(refresh_token);
     setAccessToken(access_token);
     setRefreshToken(refresh_token);
     window.location.href = '/chat';
-  }
-};
+  };
 
 const logout = async () => {
-  console.log('로그아웃 시작');
-  console.log('before - accessToken:', localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN));
-  console.log('before - refreshToken:', localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN));
-
   if (refreshToken) {
-    await logoutApi({ refresh_token: refreshToken });
+    try {
+      await logoutApi({ refresh_token: refreshToken });
+    } catch {
+      // 서버 로그아웃 실패해도 로컬 토큰은 제거
+    }
   }
-
   removeAccessTokenFromStorage();
   removeRefreshTokenFromStorage();
   setAccessToken(null);
   setRefreshToken(null);
-
-  console.log('로그아웃 완료');
-  console.log('after - accessToken:', localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN));
-  console.log('after - refreshToken:', localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN));
+  window.location.href = '/signin';
 };
 
 return (
