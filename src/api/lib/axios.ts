@@ -66,3 +66,35 @@ llmApi.interceptors.request.use((config) => {
   }
   return config
 })
+
+llmApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      try {
+        const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        const { data } = await backendApi.post<RefreshResponse>('/api/v1/auth/refresh', {
+          refresh_token: JSON.parse(refreshToken!)
+        })
+
+        localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(data.data.access_token))
+        localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(data.data.refresh_token))
+
+        originalRequest.headers.Authorization = `Bearer ${data.data.access_token}`
+        return llmApi(originalRequest)
+
+      } catch (refreshError) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+        localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        window.location.href = '/signin'
+        return Promise.reject(refreshError)
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)

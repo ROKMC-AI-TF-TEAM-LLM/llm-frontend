@@ -7,6 +7,7 @@ import MessageActions from './MessageActions';
 import SourceBadge from './SourceBadge';
 import ImageAttachment from './ImageAttachment';
 
+
 interface MessageListProps {
   title: string;
 }
@@ -47,7 +48,7 @@ export default function MessageList({ title }: MessageListProps) {
           if (msg.role === 'user') {
             return (
               <div key={msg.id}>
-                <MessageBubble role="user">{msg.content}</MessageBubble>
+                <MessageBubble role="user" content={msg.content} />
                 <MessageActions role="user" onCopy={() => handleCopy(msg.content)} />
               </div>
             );
@@ -56,10 +57,7 @@ export default function MessageList({ title }: MessageListProps) {
           const isStreaming = msg.status === 'streaming';
           return (
             <div key={msg.id}>
-              <MessageBubble role="assistant">
-                {msg.content}
-                {isStreaming && <StreamingCursor />}
-              </MessageBubble>
+              <MessageBubble role="assistant" content={msg.content} isStreaming={isStreaming} />
               {!isStreaming && (
                 <>
                   <MessageActions
@@ -76,11 +74,5 @@ export default function MessageList({ title }: MessageListProps) {
       </div>
     </div>
     </div>
-  );
-}
-
-function StreamingCursor() {
-  return (
-    <span className="inline-block w-0.5 h-4 ml-0.3 align-middle bg-text-secondary animate-pulse" />
   );
 }

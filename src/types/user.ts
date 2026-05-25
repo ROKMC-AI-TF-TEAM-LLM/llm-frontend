@@ -14,6 +14,7 @@ export interface UserData {
 export interface GetMe {
   name: string;
   email: string;
+  role: UserRole;
 }
 export interface GetMeResponse {
   success: boolean;
@@ -26,19 +27,21 @@ export interface GetMeResponse {
 }
 
 //AdminUsers
-export interface AdminUsersRequest {
-  page?: number;
-  size?: number;
-  status?: UserStatus;
+export interface AdminUserItem {
+  user_id: string;
+  name: string;
+  email: string;
+  created_at: string;
 }
 export interface AdminUsersResponse {
   success: boolean;
   status_code: number;
   data: {
-    items: UserData[];
-    total: number;
-    page: number;
-    size: number;
+    admins: AdminUserItem[];
+    users: {
+      pending: AdminUserItem[];
+      approved: AdminUserItem[];
+    };
   };
   error: null;
 }

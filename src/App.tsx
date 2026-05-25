@@ -16,6 +16,7 @@ import SignupPage from './pages/SignupPage';
 import AdminPage from './pages/AdminPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedLayout from './ui/layouts/ProtectedLayout';
+import AdminLayout from './ui/layouts/AdminLayout';
 // import MainLayout from './ui/layouts/MainLayout';
 
 const publicRoutes:RouteObject[] = [
@@ -26,7 +27,13 @@ const publicRoutes:RouteObject[] = [
       { path: '/', element: <LoginPage /> },
       { path: '/signin', element: <SigninPage /> },
       { path: '/signup', element: <SignupPage /> },
-      { path: '/admin', element: <AdminPage /> }
+    ]
+  },
+  {
+    element: <AdminLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { path: '/admin', element: <AdminPage /> },
     ]
   },
 ];

@@ -59,7 +59,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }));
       });
     } catch {
-      // 스트림 에러 시 done으로 처리
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, content: m.content || '응답 중 오류가 발생했습니다.' }
+            : m
+        ),
+      }));
     } finally {
       set((state) => ({
         isStreaming: false,
@@ -111,17 +117,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           ),
         }));
       });
+    } catch {
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, content: oldContent }
+            : m
+        ),
+      }));
+    } finally {
       set((state) => ({
         isStreaming: false,
         messages: state.messages.map((m) =>
           m.id === assistantId ? { ...m, status: 'done' as const } : m
-        ),
-      }));
-    } catch {
-      set((state) => ({
-        isStreaming: false,
-        messages: state.messages.map((m) =>
-          m.id === assistantId ? { ...m, content: oldContent, status: 'done' as const } : m
         ),
       }));
     }
