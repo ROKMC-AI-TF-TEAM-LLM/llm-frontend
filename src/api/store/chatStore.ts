@@ -6,21 +6,34 @@ interface ChatStore {
   sessionId: string;
   messages: Message[];
   isStreaming: boolean;
+  error: string | null;
+  clearError: () => void;
   connect: (sessionId: string) => Promise<void>;
   disconnect: () => void;
   sendMessage: (content: string) => Promise<void>;
+  retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
 }
+
+const streamRegistry = new Map<string, Message[]>();
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessionId: '',
   messages: [],
   isStreaming: false,
+  error: null,
+  clearError: () => set({ error: null }),
 
   connect: async (sessionId: string) => {
+    const streaming = streamRegistry.get(sessionId);
+    if (streaming) {
+      set({ sessionId, messages: streaming, isStreaming: true });
+      return;
+    }
     set({ sessionId, messages: [], isStreaming: false });
     const res = await getMessages(sessionId);
+    if (get().sessionId !== sessionId || get().isStreaming) return;
     const messages: Message[] = res.data.data.messages.map((m) => ({
       id: crypto.randomUUID(),
       role: m.role === 'human' ? 'user' : 'assistant',
@@ -29,6 +42,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       status: 'done' as const,
     }));
     set({ messages });
+
+    const last = messages[messages.length - 1];
+    if (last && last.role === 'user' && last.type === 'text') {
+      get().retryLastMessage();
+    }
   },
 
   disconnect: () => {
@@ -36,6 +54,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   sendMessage: async (content: string) => {
+    if (get().isStreaming) return;
     const assistantId = crypto.randomUUID();
     const { sessionId } = get();
 
@@ -47,9 +66,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' },
       ],
     }));
+    streamRegistry.set(sessionId, get().messages);
 
     try {
       await streamMessage(sessionId, { question: content }, (chunk) => {
+        if (get().sessionId !== sessionId) {
+          const reg = streamRegistry.get(sessionId);
+          if (reg) {
+            streamRegistry.set(sessionId, reg.map((m) =>
+              m.id === assistantId && m.type === 'text'
+                ? { ...m, content: m.content + chunk }
+                : m
+            ));
+          }
+          return;
+        }
         set((state) => ({
           messages: state.messages.map((m) =>
             m.id === assistantId && m.type === 'text'
@@ -57,23 +88,88 @@ export const useChatStore = create<ChatStore>((set, get) => ({
               : m
           ),
         }));
+        streamRegistry.set(sessionId, get().messages);
       });
     } catch {
-      set((state) => ({
-        messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text'
-            ? { ...m, content: m.content || '응답 중 오류가 발생했습니다.' }
-            : m
-        ),
-      }));
-    } finally {
-      set((state) => ({
-        isStreaming: false,
-        messages: state.messages.map((m) =>
-          m.id === assistantId ? { ...m, status: 'done' as const } : m
-        ),
-      }));
+      streamRegistry.delete(sessionId);
+      if (get().sessionId === sessionId) {
+        set((state) => ({
+          error: '응답 중 오류가 발생했습니다.',
+          isStreaming: false,
+          messages: state.messages.filter((m) => m.id !== assistantId),
+        }));
+      }
+      return;
     }
+
+    streamRegistry.delete(sessionId);
+    if (get().sessionId !== sessionId) return;
+    set((state) => ({
+      isStreaming: false,
+      messages: state.messages.map((m) =>
+        m.id === assistantId ? { ...m, status: 'done' as const } : m
+      ),
+    }));
+  },
+
+  retryLastMessage: async () => {
+    if (get().isStreaming) return;
+    const { messages, sessionId } = get();
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== 'user' || last.type !== 'text') return;
+
+    const assistantId = crypto.randomUUID();
+    set((state) => ({
+      isStreaming: true,
+      messages: [
+        ...state.messages,
+        { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' },
+      ],
+    }));
+    streamRegistry.set(sessionId, get().messages);
+
+    try {
+      await streamMessage(sessionId, { question: last.content }, (chunk) => {
+        if (get().sessionId !== sessionId) {
+          const reg = streamRegistry.get(sessionId);
+          if (reg) {
+            streamRegistry.set(sessionId, reg.map((m) =>
+              m.id === assistantId && m.type === 'text'
+                ? { ...m, content: m.content + chunk }
+                : m
+            ));
+          }
+          return;
+        }
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text'
+              ? { ...m, content: m.content + chunk }
+              : m
+          ),
+        }));
+        streamRegistry.set(sessionId, get().messages);
+      });
+    } catch {
+      streamRegistry.delete(sessionId);
+      if (get().sessionId === sessionId) {
+        set((state) => ({
+          error: '응답 중 오류가 발생했습니다.',
+          isStreaming: false,
+          messages: state.messages.filter((m) => m.id !== assistantId),
+        }));
+      }
+      return;
+    }
+
+    streamRegistry.delete(sessionId);
+    if (get().sessionId !== sessionId) return;
+    set((state) => ({
+      isStreaming: false,
+      messages: state.messages.map((m) =>
+        m.id === assistantId ? { ...m, status: 'done' as const } : m
+      ),
+    }));
   },
 
   sendImageMessage: (filename: string, caption?: string) => {
@@ -119,19 +215,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
     } catch {
       set((state) => ({
-        messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text'
-            ? { ...m, content: oldContent }
-            : m
-        ),
-      }));
-    } finally {
-      set((state) => ({
+        error: '응답 중 오류가 발생했습니다.',
         isStreaming: false,
         messages: state.messages.map((m) =>
-          m.id === assistantId ? { ...m, status: 'done' as const } : m
+          m.id === assistantId && m.type === 'text' ? { ...m, content: oldContent, status: 'done' as const } : m
         ),
       }));
+      return;
     }
+    set((state) => ({
+      isStreaming: false,
+      messages: state.messages.map((m) =>
+        m.id === assistantId ? { ...m, status: 'done' as const } : m
+      ),
+    }));
   },
 }));

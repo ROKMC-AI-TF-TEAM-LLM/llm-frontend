@@ -7,9 +7,8 @@ import { signup } from '../api/services/auth';
 
 const schema = z.object({
   email: z.string().email('유효한 이메일 주소를 입력해주세요.'),
-  password: z.string()
-    .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
-    .max(20, '비밀번호는 최대 20자 이하여야 합니다.'),
+  // 비밀번호 유효성 검사 추후 정의
+  password: z.string().min(1, '비밀번호를 입력해주세요.'),
   passwordCheck: z.string(),
   name: z.string().min(1, '이름을 입력해주세요.')
 })

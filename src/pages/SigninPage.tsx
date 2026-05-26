@@ -31,10 +31,19 @@ const SigninPage = () => {
     try {
       await login(values);
     } catch (error: any) {
-      console.error('[로그인 에러]', error);
-      const code = error?.response?.data?.error?.code;
-      console.log('[에러 코드]', code, '| 상태코드:', error?.response?.status);
-      setServerError(LOGIN_ERRORS[code] ?? '로그인 중 오류가 발생했습니다.');
+      if (!error?.response) {
+        setServerError('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      const code = error.response.data?.error?.code;
+      const status = error.response.status;
+      const STATUS_ERRORS: Record<number, string> = {
+        401: '이메일 또는 비밀번호가 올바르지 않습니다.',
+        403: '접근이 거부되었습니다. 관리자에게 문의하세요.',
+        404: '사용자를 찾을 수 없습니다.',
+        500: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      };
+      setServerError(LOGIN_ERRORS[code] ?? STATUS_ERRORS[status] ?? '로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }

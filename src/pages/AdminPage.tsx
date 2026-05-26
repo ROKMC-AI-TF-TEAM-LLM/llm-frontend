@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetUsers, useApproveUser, useRejectUser, useDeleteUsers } from '../hooks/useUser';
+import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved';
@@ -31,8 +31,9 @@ const TABS: { label: string; value: TabValue }[] = [
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabValue>('all');
   const { data, isLoading, isError } = useGetUsers();
+  const { data: meData } = useGetMe();
+  const myId = meData?.data?.data?.user_id;
   const { mutate: approve, isPending: isApproving } = useApproveUser();
-  const { mutate: reject, isPending: isRejecting } = useRejectUser();
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUsers();
 
   const responseData = data?.data?.data;
@@ -103,15 +104,15 @@ export default function AdminPage() {
                     <>
                       <button
                         onClick={() => approve(user.user_id)}
-                        disabled={isApproving || isRejecting || isDeleting}
+                        disabled={isApproving || isDeleting}
                         title="승인"
                         className="w-7 h-7 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
                       >
                         ✓
                       </button>
                       <button
-                        onClick={() => reject(user.user_id)}
-                        disabled={isApproving || isRejecting || isDeleting}
+                        onClick={() => deleteUser(user.user_id)}
+                        disabled={isApproving || isDeleting}
                         title="거절"
                         className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
                       >
@@ -119,11 +120,11 @@ export default function AdminPage() {
                       </button>
                     </>
                   )}
-                  {user.displayStatus !== 'admin' && (
+                  {(user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
                     <button
                       onClick={() => deleteUser(user.user_id)}
-                      disabled={isApproving || isRejecting || isDeleting}
-                      className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50"
+                      disabled={isApproving || isDeleting || user.user_id === myId}
+                      className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       삭제
                     </button>

@@ -13,10 +13,9 @@ function validateUser(values: UserSignInformation) {
     errors.email = '이메일 형식이 올바르지 않습니다.';
   }
 
+    // 비밀번호 유효성 검사 추후 정의
     if (!values.password) {
       errors.password = '비밀번호를 입력해주세요.';
-    } else if (values.password.length >= 250) {
-      errors.password = '비밀번호는 최대 250자 이하여야 합니다.';
     }
 
    return errors;

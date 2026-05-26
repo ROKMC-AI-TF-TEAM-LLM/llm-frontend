@@ -3,8 +3,6 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY } from '../constants/key';
 import { login as loginApi, logout as logoutApi } from '../api/services/auth';
 import type { LoginRequest } from '../types/auth';
-//import { useNavigate } from 'react-router';
-//import { href } from 'react-router';
 
 interface AuthContextType {
   accessToken: string | null;
@@ -50,9 +48,7 @@ const logout = async () => {
   if (refreshToken) {
     try {
       await logoutApi({ refresh_token: refreshToken });
-    } catch {
-      // 서버 로그아웃 실패해도 로컬 토큰은 제거
-    }
+    } catch {}
   }
   removeAccessTokenFromStorage();
   removeRefreshTokenFromStorage();

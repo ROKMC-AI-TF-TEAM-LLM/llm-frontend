@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from "../../../types";
 import { useDeleteSession, useUpdateSession } from '../../../hooks/useSession';
 
@@ -10,6 +10,7 @@ interface RecentChatsProps {
 
 export default function RecentChats({ isOpen, chats }: RecentChatsProps) {
   const navigate = useNavigate()
+  const { id: currentId } = useParams()
   const { mutate: deleteSession } = useDeleteSession()
   const { mutate: updateSession } = useUpdateSession()
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -32,7 +33,13 @@ export default function RecentChats({ isOpen, chats }: RecentChatsProps) {
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    deleteSession(id)
+    deleteSession(id, {
+      onSuccess: () => {
+        if (id === currentId) {
+          navigate('/chat')
+        }
+      },
+    })
   }
 
   return (
@@ -58,6 +65,7 @@ export default function RecentChats({ isOpen, chats }: RecentChatsProps) {
                 onClick={() => navigate(`/chat/${chat.id}`)}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-text-primary hover:bg-brand-subtle hover:text-brand transition-colors text-sm text-left pr-16"
               >
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${chat.id === currentId ? 'bg-brand' : 'bg-gray-300'}`} />
                 <span className="truncate">{chat.title}</span>
               </button>
             )}

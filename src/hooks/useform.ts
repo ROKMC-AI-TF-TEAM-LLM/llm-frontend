@@ -19,7 +19,7 @@ function useForm<T>({ initialValues, validate }: UseFormProps<T>) {
   };
 
   const getInputProps = (name: keyof T) => {
-    const value = values[name] ?? '';  // undefined/null 방어
+    const value = values[name] ?? '';
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
       handleChange(name, e.target.value);
     const onBlur = () => handleBlur(name);

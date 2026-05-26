@@ -33,7 +33,7 @@ const ProtectedLayout = () => {
         chats={chats}
         user={user}
       />
-      <main className="flex-1">
+      <main className="flex-1 min-w-0">
         <Outlet />
       </main>
     </div>

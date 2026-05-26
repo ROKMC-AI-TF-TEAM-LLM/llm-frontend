@@ -47,7 +47,14 @@ export const streamMessage = async (
       if (!line.startsWith('data:')) continue
       const content = line.slice(5).trim()
       if (!content || content === '[DONE]') continue
-      onChunk(content)
+      try {
+        const parsed = JSON.parse(content)
+        if (parsed.type === 'text' && parsed.content) {
+          onChunk(parsed.content)
+        }
+      } catch {
+        onChunk(content)
+      }
     }
   }
 }

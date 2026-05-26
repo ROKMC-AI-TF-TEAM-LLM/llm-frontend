@@ -12,6 +12,7 @@ export interface UserData {
 
 //GetMe
 export interface GetMe {
+  user_id: string;
   name: string;
   email: string;
   role: UserRole;

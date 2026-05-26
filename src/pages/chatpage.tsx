@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/chatinput';
+import Toast from '../ui/components/Toast';
 import { useChatStore } from '../api/store/chatStore';
+import { useGetSessions } from '../hooks/useSession';
+import type { SessionData } from '../types/session';
 
 const SESSION_ERRORS: Record<string, string> = {
   SESSION_NOT_FOUND: '존재하지 않는 세션입니다.',
@@ -15,11 +18,16 @@ export default function ChatPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sessionError, setSessionError] = useState('');
-  const title = '채팅';
+
+  const { data: sessionsData } = useGetSessions();
+  const sessions = sessionsData?.data?.data ?? [];
+  const currentSession = sessions.find((s: SessionData) => s.session_id === sessionId);
+  const title = currentSession?.title ?? '채팅';
 
   const connect = useChatStore((s) => s.connect);
-  const disconnect = useChatStore((s) => s.disconnect);
   const sendMessage = useChatStore((s) => s.sendMessage);
+  const error = useChatStore((s) => s.error);
+  const clearError = useChatStore((s) => s.clearError);
 
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
@@ -40,8 +48,6 @@ export default function ChatPage() {
           navigate('/chat', { replace: true });
         }
       });
-
-    return () => disconnect();
   }, [sessionId]);
 
   if (sessionError) {
@@ -69,6 +75,7 @@ export default function ChatPage() {
       <p className="text-xs text-center text-text-muted pb-2">
         ROKMCLLM은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
       </p>
+      {error && <Toast message={error} onClose={clearError} />}
     </div>
   );
 }
