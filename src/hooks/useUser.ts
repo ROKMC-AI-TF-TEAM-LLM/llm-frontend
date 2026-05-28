@@ -8,6 +8,7 @@ export const useGetMe = () => {
     queryKey: ['me'],
     queryFn: () => getMeUsers(),
     enabled: !!accessToken,
+    retry: false,
   })
 }
 

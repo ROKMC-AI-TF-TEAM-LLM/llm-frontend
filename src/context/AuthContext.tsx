@@ -54,7 +54,7 @@ const logout = async () => {
   removeRefreshTokenFromStorage();
   setAccessToken(null);
   setRefreshToken(null);
-  window.location.href = '/signin';
+  window.location.href = '/';
 };
 
 return (

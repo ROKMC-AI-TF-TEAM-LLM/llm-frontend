@@ -9,9 +9,8 @@ interface SidebarFooterProps {
 export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = '/signin';
+  const handleLogout = () => {
+    logout();
   };
 
   return (

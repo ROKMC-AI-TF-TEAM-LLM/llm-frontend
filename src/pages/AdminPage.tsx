@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers } from '../hooks/useUser';
+import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 
-type DisplayStatus = 'admin' | 'pending' | 'approved';
+type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type TabValue = DisplayStatus | 'all';
 
 interface DisplayUser extends AdminUserItem {
@@ -13,12 +13,14 @@ const STATUS_LABEL: Record<DisplayStatus, string> = {
   admin: '관리자',
   pending: '대기 중',
   approved: '승인됨',
+  rejected: '거절됨',
 };
 
 const STATUS_STYLE: Record<DisplayStatus, string> = {
   admin: 'bg-blue-100 text-blue-700',
   pending: 'bg-yellow-100 text-yellow-700',
   approved: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
 };
 
 const TABS: { label: string; value: TabValue }[] = [
@@ -26,14 +28,16 @@ const TABS: { label: string; value: TabValue }[] = [
   { label: '관리자', value: 'admin' },
   { label: '대기 중', value: 'pending' },
   { label: '승인됨', value: 'approved' },
+  { label: '거절됨', value: 'rejected' },
 ];
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabValue>('all');
   const { data, isLoading, isError } = useGetUsers();
   const { data: meData } = useGetMe();
-  const myId = meData?.data?.data?.user_id;
+  const myEmail = meData?.data?.data?.email;
   const { mutate: approve, isPending: isApproving } = useApproveUser();
+  const { mutate: rejectUser, isPending: isRejecting } = useRejectUser();
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUsers();
 
   const responseData = data?.data?.data;
@@ -42,7 +46,10 @@ export default function AdminPage() {
     ...(responseData?.admins ?? []).map((u) => ({ ...u, displayStatus: 'admin' as DisplayStatus })),
     ...(responseData?.users?.pending ?? []).map((u) => ({ ...u, displayStatus: 'pending' as DisplayStatus })),
     ...(responseData?.users?.approved ?? []).map((u) => ({ ...u, displayStatus: 'approved' as DisplayStatus })),
+    ...(responseData?.users?.rejected ?? []).map((u) => ({ ...u, displayStatus: 'rejected' as DisplayStatus })),
   ];
+
+  const myId = allUsers.find((u) => u.email === myEmail)?.user_id;
 
   const users = activeTab === 'all'
     ? allUsers
@@ -104,15 +111,15 @@ export default function AdminPage() {
                     <>
                       <button
                         onClick={() => approve(user.user_id)}
-                        disabled={isApproving || isDeleting}
+                        disabled={isApproving || isRejecting || isDeleting}
                         title="승인"
                         className="w-7 h-7 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
                       >
                         ✓
                       </button>
                       <button
-                        onClick={() => deleteUser(user.user_id)}
-                        disabled={isApproving || isDeleting}
+                        onClick={() => rejectUser(user.user_id)}
+                        disabled={isApproving || isRejecting || isDeleting}
                         title="거절"
                         className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
                       >
@@ -120,10 +127,19 @@ export default function AdminPage() {
                       </button>
                     </>
                   )}
+                  {user.displayStatus === 'rejected' && (
+                    <button
+                      onClick={() => deleteUser(user.user_id)}
+                      disabled={isApproving || isRejecting || isDeleting}
+                      className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      삭제
+                    </button>
+                  )}
                   {(user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
                     <button
                       onClick={() => deleteUser(user.user_id)}
-                      disabled={isApproving || isDeleting || user.user_id === myId}
+                      disabled={isApproving || isRejecting || isDeleting || user.user_id === myId}
                       className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       삭제

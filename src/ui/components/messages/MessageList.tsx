@@ -55,6 +55,7 @@ export default function MessageList({ title }: MessageListProps) {
           }
 
           const isStreaming = msg.status === 'streaming';
+          const isInterrupted = msg.status === 'interrupted';
           return (
             <div key={msg.id}>
               <MessageBubble role="assistant" content={msg.content} isStreaming={isStreaming} />
@@ -65,6 +66,21 @@ export default function MessageList({ title }: MessageListProps) {
                     onCopy={() => handleCopy(msg.content)}
                     onRegenerate={() => regenerateMessage(msg.id)}
                   />
+                  {isInterrupted && (
+                    <div className="flex items-center gap-3 ml-12 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
+                      <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="10" />
+                        <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+                      </svg>
+                      <span>응답이 중단되었습니다.</span>
+                      <button
+                        onClick={() => regenerateMessage(msg.id)}
+                        className="ml-auto px-3 py-1 rounded-lg border border-surface-border bg-surface text-sm text-text-primary hover:bg-surface-subtle transition-colors"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  )}
                   <SourceBadge sources={msg.sources} />
                 </>
               )}

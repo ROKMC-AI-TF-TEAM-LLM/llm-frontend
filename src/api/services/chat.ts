@@ -9,6 +9,7 @@ export const streamMessage = async (
   sessionId: string,
   data: StreamMessageRequest,
   onChunk: (chunk: string) => void,
+  signal?: AbortSignal,
 ) => {
   const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
   const parsedToken = token ? JSON.parse(token) : null
@@ -23,6 +24,7 @@ export const streamMessage = async (
         ...(parsedToken && { Authorization: `Bearer ${parsedToken}` }),
       },
       body: JSON.stringify(data),
+      signal,
     }
   )
 
@@ -32,6 +34,8 @@ export const streamMessage = async (
   const decoder = new TextDecoder()
 
   if (!reader) return
+
+  signal?.addEventListener('abort', () => reader.cancel(), { once: true })
 
   let buffer = ''
 
@@ -56,5 +60,9 @@ export const streamMessage = async (
         onChunk(content)
       }
     }
+  }
+
+  if (signal?.aborted) {
+    throw new DOMException('The user aborted a request.', 'AbortError')
   }
 }

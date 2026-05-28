@@ -1,13 +1,13 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { useGetMe } from '../../hooks/useUser';
+import { useGetUsers } from '../../hooks/useUser';
 
 const AdminLayout = () => {
   const { accessToken } = useAuth();
-  const { data, isLoading } = useGetMe();
+  const { isLoading, isError } = useGetUsers();
 
   if (!accessToken) {
-    return <Navigate to='/signin' replace />;
+    return <Navigate to='/' replace />;
   }
 
   if (isLoading) {
@@ -18,9 +18,7 @@ const AdminLayout = () => {
     );
   }
 
-  const role = data?.data?.data?.role;
-
-  if (role !== 'admin') {
+  if (isError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
         <span className="text-6xl">🚫</span>

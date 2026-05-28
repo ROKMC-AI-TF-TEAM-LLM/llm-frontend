@@ -36,9 +36,11 @@ backendApi.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        const rawRefreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        if (!rawRefreshToken) throw new Error('No refresh token')
+
         const { data } = await backendApi.post<RefreshResponse>('/api/v1/auth/refresh', {
-          refresh_token: JSON.parse(refreshToken!)
+          refresh_token: JSON.parse(rawRefreshToken)
         })
 
         localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(data.data.access_token))
@@ -50,7 +52,7 @@ backendApi.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-        window.location.href = '/signin'
+        window.location.href = '/'
         return Promise.reject(refreshError)
       }
     }
@@ -76,9 +78,11 @@ llmApi.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        const rawRefreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        if (!rawRefreshToken) throw new Error('No refresh token')
+
         const { data } = await backendApi.post<RefreshResponse>('/api/v1/auth/refresh', {
-          refresh_token: JSON.parse(refreshToken!)
+          refresh_token: JSON.parse(rawRefreshToken)
         })
 
         localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(data.data.access_token))
@@ -90,7 +94,7 @@ llmApi.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-        window.location.href = '/signin'
+        window.location.href = '/'
         return Promise.reject(refreshError)
       }
     }

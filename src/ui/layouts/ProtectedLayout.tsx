@@ -1,18 +1,28 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../components/sidebar/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGetMe } from "../../hooks/useUser";
 import { useGetSessions } from "../../hooks/useSession";
 
 const ProtectedLayout = () => {
-  const { accessToken } = useAuth();
+  const { accessToken, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
-  const { data: meData } = useGetMe();
+  const { data: meData, isError, isLoading } = useGetMe();
   const { data: sessionsData } = useGetSessions();
 
+  useEffect(() => {
+    if (isError) {
+      logout();
+    }
+  }, [isError]);
+
   if (!accessToken) {
-    return <Navigate to='/signin' replace />;
+    return <Navigate to='/' replace />;
+  }
+
+  if (isLoading || isError) {
+    return null;
   }
 
   const userData = meData?.data?.data;

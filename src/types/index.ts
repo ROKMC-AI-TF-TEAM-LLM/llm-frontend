@@ -29,7 +29,7 @@ export interface AssistantMessage {
   role: 'assistant';
   type: 'text';
   content: string;
-  status?: 'streaming' | 'done';
+  status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
 }
 

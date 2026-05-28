@@ -17,6 +17,7 @@ export default function ChatInput({
   const sendMessage = useChatStore((s) => s.sendMessage);
   const sendImageMessage = useChatStore((s) => s.sendImageMessage);
   const isStreaming = useChatStore((s) => s.isStreaming);
+  const abortStream = useChatStore((s) => s.abortStream);
   const { mutateAsync: createSession } = useCreateSession();
   const [value, setValue] = useState('');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
@@ -124,16 +125,28 @@ export default function ChatInput({
             placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
             className="flex-1 mx-3 bg-transparent outline-none text-sm text-text-primary placeholder-text-muted"
           />
-          <button
-            onClick={handleSubmit}
-            disabled={isStreaming}
-            className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="전송"
-          >
-            <svg className="w-5 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
-          </button>
+          {isStreaming ? (
+            <button
+              onClick={abortStream}
+              className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
+              aria-label="중단"
+            >
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={!value.trim() && !pendingFile}
+              className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="전송"
+            >
+              <svg className="w-5 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
       {notice && (

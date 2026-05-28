@@ -60,5 +60,5 @@ export type LoginResponse = {
     refresh_token: string;
     token_type: string;
   };
-  error: null;
+  error: { code: string; detail: string } | null;
 }
