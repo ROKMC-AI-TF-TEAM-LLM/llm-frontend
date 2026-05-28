@@ -6,11 +6,6 @@ const AdminLayout = () => {
   const { accessToken } = useAuth();
   const { isLoading, isError } = useGetUsers();
 
-  if (accessToken) {
-    return <Navigate to='/chat' replace />
-  }
-
-
   if (!accessToken) {
     return <Navigate to='/' replace />;
   }
