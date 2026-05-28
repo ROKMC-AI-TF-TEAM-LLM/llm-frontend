@@ -30,7 +30,7 @@ const ProtectedLayout = () => {
     ? { id: '', name: userData.name, email: userData.email }
     : { id: '', name: '사용자' };
 
-  const chats = [...(sessionsData?.data?.data ?? [])]
+  const chats = [...(sessionsData?.data?.data?.items ?? [])]
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
     .map((s) => ({ id: s.session_id, title: s.title }));
 

@@ -4,11 +4,17 @@ export interface SessionData {
   updated_at: string;
 }
 
+export interface SessionPageData {
+  items: SessionData[];
+  next_cursor: string | null;
+  has_next: boolean;
+}
+
 // GetSessions
 export interface GetSessionsResponse {
   success: boolean;
   status_code: number;
-  data: SessionData[];
+  data: SessionPageData;
   error: { code: string; detail: string } | null;
 }
 
