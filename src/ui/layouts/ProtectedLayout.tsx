@@ -30,10 +30,9 @@ const ProtectedLayout = () => {
     ? { id: '', name: userData.name, email: userData.email }
     : { id: '', name: '사용자' };
 
-  const chats = (sessionsData?.data?.data ?? []).map((s) => ({
-    id: s.session_id,
-    title: s.title,
-  }));
+  const chats = [...(sessionsData?.data?.data ?? [])]
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .map((s) => ({ id: s.session_id, title: s.title }));
 
   return (
     <div className="flex h-screen">

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Message } from '../../types';
 import { streamMessage, getMessages } from '../services/chat';
+import { queryClient } from '../queryClient';
 
 interface ChatStore {
   sessionId: string;
@@ -150,6 +151,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         m.id === assistantId ? { ...m, status: 'done' as const } : m
       ),
     }));
+    queryClient.invalidateQueries({ queryKey: ['sessions'] });
   },
 
   retryLastMessage: async () => {
@@ -226,6 +228,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         m.id === assistantId ? { ...m, status: 'done' as const } : m
       ),
     }));
+    queryClient.invalidateQueries({ queryKey: ['sessions'] });
   },
 
   sendImageMessage: (filename: string, caption?: string) => {
@@ -297,5 +300,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         m.id === assistantId ? { ...m, status: 'done' as const } : m
       ),
     }));
+    queryClient.invalidateQueries({ queryKey: ['sessions'] });
   },
 }));
