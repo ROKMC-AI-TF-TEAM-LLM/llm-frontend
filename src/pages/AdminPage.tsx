@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
+import { AdminRowSkeleton } from '../ui/components/Skeleton';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type TabValue = DisplayStatus | 'all';
@@ -75,7 +76,6 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {isLoading && <p className="text-gray-500">불러오는 중...</p>}
       {isError && <p className="text-red-500">데이터를 불러오지 못했습니다.</p>}
 
       {!isLoading && users.length === 0 && (
@@ -94,7 +94,9 @@ export default function AdminPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {isLoading
+              ? [...Array(6)].map((_, i) => <AdminRowSkeleton key={i} />)
+              : users.map((user) => (
               <tr key={user.user_id} className="border-b last:border-0 hover:bg-gray-50">
                 <td className="px-5 py-3 font-medium text-gray-800">{user.name}</td>
                 <td className="px-5 py-3 text-gray-600">{user.email}</td>

@@ -3,13 +3,14 @@ import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../components/sidebar/Sidebar";
 import { useState, useEffect } from "react";
 import { useGetMe } from "../../hooks/useUser";
-import { useGetSessions } from "../../hooks/useSession";
+import { useInfiniteSessions } from "../../hooks/useSession";
+import { SidebarSkeleton } from "../components/Skeleton";
 
 const ProtectedLayout = () => {
   const { accessToken, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
   const { data: meData, isError, isLoading } = useGetMe();
-  const { data: sessionsData } = useGetSessions();
+  const { data: sessionsInfinite, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isSessionsLoading } = useInfiniteSessions();
 
   useEffect(() => {
     if (isError) {
@@ -22,7 +23,12 @@ const ProtectedLayout = () => {
   }
 
   if (isLoading || isError) {
-    return null;
+    return (
+      <div className="flex h-screen">
+        <SidebarSkeleton />
+        <div className="flex-1 min-w-0" />
+      </div>
+    );
   }
 
   const userData = meData?.data?.data;
@@ -30,8 +36,8 @@ const ProtectedLayout = () => {
     ? { id: '', name: userData.name, email: userData.email }
     : { id: '', name: '사용자' };
 
-  const chats = [...(sessionsData?.data?.data?.items ?? [])]
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+  const chats = (sessionsInfinite?.pages ?? [])
+    .flatMap((page) => page.data.data.items)
     .map((s) => ({ id: s.session_id, title: s.title }));
 
   return (
@@ -41,6 +47,10 @@ const ProtectedLayout = () => {
         onToggle={() => setIsOpen(!isOpen)}
         chats={chats}
         user={user}
+        hasMore={!!hasNextPage}
+        onLoadMore={fetchNextPage}
+        isInitialLoading={isSessionsLoading}
+        isLoadingMore={isFetchingNextPage}
       />
       <main className="flex-1 min-w-0">
         <Outlet />

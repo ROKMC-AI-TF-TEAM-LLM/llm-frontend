@@ -1,12 +1,24 @@
 import SearchResultItem, { type SearchResult } from './SearchResultItem'
+import { SearchResultSkeleton } from '../Skeleton'
 
 interface Props {
   results: SearchResult[]
   selectedId: string | null
   onSelect: (id: string) => void
+  isLoading?: boolean
 }
 
-const SearchResults = ({ results, selectedId, onSelect }: Props) => {
+const SearchResults = ({ results, selectedId, onSelect, isLoading }: Props) => {
+  if (isLoading) {
+    return (
+      <div className="mt-10">
+        <div className="space-y-0.5">
+          {[...Array(5)].map((_, i) => <SearchResultSkeleton key={i} />)}
+        </div>
+      </div>
+    )
+  }
+
   if (!results.length) return null
 
   return (

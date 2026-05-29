@@ -6,13 +6,14 @@ import MessageBubble from './MessageBubble';
 import MessageActions from './MessageActions';
 import SourceBadge from './SourceBadge';
 import ImageAttachment from './ImageAttachment';
-
+import { MessagesSkeleton } from '../Skeleton';
 
 interface MessageListProps {
   title: string;
+  isLoading?: boolean;
 }
 
-export default function MessageList({ title }: MessageListProps) {
+export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -33,6 +34,9 @@ export default function MessageList({ title }: MessageListProps) {
       <ChatHeader title={title} />
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll">
+        {isLoading ? (
+          <MessagesSkeleton />
+        ) : (
         <div className="max-w-3xl mx-auto">
         {messages.map((msg: Message) => {
           if (msg.type === 'image') {
@@ -88,6 +92,7 @@ export default function MessageList({ title }: MessageListProps) {
           );
         })}
       </div>
+        )}
     </div>
     </div>
   );

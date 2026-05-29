@@ -30,17 +30,20 @@ export default function ChatInput({
     e.target.value = '';
   };
 
+  const isNewChat = location.pathname === '/chat';
+
   const handleSubmit = async () => {
     if (!value.trim() && !pendingFile) return;
-    if (isStreaming) return;
+    if (isStreaming && !isNewChat) return;
     const text = value.trim();
 
     if (pendingFile) {
       sendImageMessage(pendingFile, text || undefined);
       setPendingFile(null);
       setValue('');
-    } else if (location.pathname === '/chat') {
+    } else if (isNewChat) {
       setValue('');
+      if (isStreaming) abortStream();
       try {
         const res = await createSession({ title: text });
         const sessionId = res.data.data.session_id;
@@ -125,7 +128,7 @@ export default function ChatInput({
             placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
             className="flex-1 mx-3 bg-transparent outline-none text-sm text-text-primary placeholder-text-muted"
           />
-          {isStreaming ? (
+          {isStreaming && !isNewChat ? (
             <button
               onClick={abortStream}
               className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"

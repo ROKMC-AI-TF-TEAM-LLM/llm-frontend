@@ -18,9 +18,10 @@ export default function ChatPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sessionError, setSessionError] = useState('');
+  const [isConnecting, setIsConnecting] = useState(true);
 
   const { data: sessionsData } = useGetSessions();
-  const sessions = sessionsData?.data?.data ?? [];
+  const sessions: SessionData[] = sessionsData?.data?.data?.items ?? [];
   const currentSession = sessions.find((s: SessionData) => s.session_id === sessionId);
   const title = currentSession?.title ?? '채팅';
 
@@ -31,15 +32,18 @@ export default function ChatPage() {
 
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
+    setIsConnecting(true);
 
     connect(sessionId)
       .then(() => {
+        setIsConnecting(false);
         if (initialMessage) {
           navigate(location.pathname, { replace: true, state: {} });
           sendMessage(initialMessage);
         }
       })
       .catch((error) => {
+        setIsConnecting(false);
         const code = error?.response?.data?.error?.code;
         const message = SESSION_ERRORS[code];
         if (message) {
@@ -67,7 +71,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-0">
-        <MessageList title={title} />
+        <MessageList title={title} isLoading={isConnecting} />
       </div>
       <div className="w-full px-4 py-2">
         <ChatInput />
