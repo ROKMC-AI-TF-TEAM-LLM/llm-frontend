@@ -19,6 +19,9 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
 
+  // Reset scroll behavior whenever the session (title) changes
+  useEffect(() => { isFirstLoad.current = true; }, [title]);
+
   useEffect(() => {
     if (isLoading) return;
     const behavior = isFirstLoad.current ? 'instant' : 'smooth';

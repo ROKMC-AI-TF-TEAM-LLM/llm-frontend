@@ -33,9 +33,21 @@ const TABS: { label: string; value: TabValue }[] = [
   { label: '거절됨', value: 'rejected' },
 ];
 
+const ADMIN_MUTATION_ERRORS: Record<string, string> = {
+  ADMIN_REQUIRED: '관리자 권한이 필요합니다.',
+  USER_NOT_FOUND: '사용자를 찾을 수 없습니다.',
+  UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
+};
+
+const getAdminMutationError = (error: unknown): string => {
+  const code = (error as any)?.response?.data?.error?.code;
+  return ADMIN_MUTATION_ERRORS[code] ?? '처리 중 오류가 발생했습니다.';
+};
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabValue>('all');
   const [copiedKey, setCopiedKey] = useState(0);
+  const [mutationError, setMutationError] = useState('');
   const { data, isLoading, isError } = useGetUsers();
   const { data: meData } = useGetMe();
   const myEmail = meData?.data?.data?.email;
@@ -62,6 +74,9 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50 p-8">
       {copiedKey > 0 && (
         <Toast key={copiedKey} message="ID가 복사되었습니다." type="success" onClose={() => setCopiedKey(0)} />
+      )}
+      {mutationError && (
+        <Toast message={mutationError} type="error" onClose={() => setMutationError('')} />
       )}
       <h1 className="text-2xl font-bold text-gray-800 mb-4">관리자 - 회원 관리</h1>
 
@@ -127,7 +142,7 @@ export default function AdminPage() {
                   {user.displayStatus === 'pending' && (
                     <>
                       <button
-                        onClick={() => approve(user.user_id)}
+                        onClick={() => approve(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
                         disabled={isApproving || isRejecting || isDeleting}
                         title="승인"
                         className="w-7 h-7 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
@@ -135,7 +150,7 @@ export default function AdminPage() {
                         ✓
                       </button>
                       <button
-                        onClick={() => rejectUser(user.user_id)}
+                        onClick={() => rejectUser(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
                         disabled={isApproving || isRejecting || isDeleting}
                         title="거절"
                         className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
@@ -146,7 +161,7 @@ export default function AdminPage() {
                   )}
                   {user.displayStatus === 'rejected' && (
                     <button
-                      onClick={() => deleteUser(user.user_id)}
+                      onClick={() => deleteUser(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
                       disabled={isApproving || isRejecting || isDeleting}
                       className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -155,7 +170,7 @@ export default function AdminPage() {
                   )}
                   {(user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
                     <button
-                      onClick={() => deleteUser(user.user_id)}
+                      onClick={() => deleteUser(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
                       disabled={isApproving || isRejecting || isDeleting || user.user_id === myId}
                       className="px-3 py-1 rounded bg-gray-500 text-white text-xs hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

@@ -2,6 +2,12 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { MessageRole } from '../../../types';
 
+const normalizeMarkdown = (content: string): string =>
+  content
+    .replace(/(\*\*)([가-힣぀-ヿ一-鿿])/g, '$1 $2')
+    .replace(/([가-힣぀-ヿ一-鿿])(\*\*\S)/g, '$1 $2')
+    .replace(/^[•·]\s*/gm, '- ');
+
 interface MessageBubbleProps {
   role?: MessageRole;
   content: string;
@@ -50,9 +56,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
         `}
       >
         {isUser ? (
-          <>
-            {content}
-          </>
+          content
         ) : isStreaming && !content ? (
           <GeneratingIndicator />
         ) : (
@@ -64,13 +68,17 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
                 h1: ({ children }) => <h1 className="text-xl font-bold mb-2 mt-3 first:mt-0">{children}</h1>,
                 h2: ({ children }) => <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
                 h3: ({ children }) => <h3 className="text-base font-semibold mb-1 mt-2 first:mt-0">{children}</h3>,
+                h4: ({ children }) => <h4 className="text-sm font-semibold mb-1 mt-2 first:mt-0">{children}</h4>,
                 ul: ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>,
                 ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-0.5">{children}</ol>,
                 li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                pre: ({ children }) => (
+                  <div className="my-2 overflow-x-auto rounded-lg">{children}</div>
+                ),
                 code: ({ children, className }) => {
-                  const isBlock = className?.startsWith('language-');
+                  const isBlock = Boolean(className?.startsWith('language-'));
                   return isBlock ? (
-                    <code className="block bg-gray-800 text-gray-100 rounded-lg px-4 py-3 text-xs overflow-x-auto font-mono my-2 whitespace-pre">
+                    <code className="block bg-gray-800 text-gray-100 px-4 py-3 text-xs font-mono whitespace-pre">
                       {children}
                     </code>
                   ) : (
@@ -79,7 +87,6 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
                     </code>
                   );
                 },
-                pre: ({ children }) => <>{children}</>,
                 blockquote: ({ children }) => (
                   <blockquote className="border-l-4 border-gray-300 pl-3 italic text-gray-600 my-2">
                     {children}
@@ -102,10 +109,11 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
                   </a>
                 ),
                 hr: () => <hr className="my-3 border-gray-300" />,
-                strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                em: ({ children }) => <em className="italic">{children}</em>,
               }}
             >
-              {content}
+              {normalizeMarkdown(content)}
             </ReactMarkdown>
             {isStreaming && <StreamingCursor />}
           </>

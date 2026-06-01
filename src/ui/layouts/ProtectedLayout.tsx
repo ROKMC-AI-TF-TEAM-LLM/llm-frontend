@@ -16,7 +16,7 @@ const ProtectedLayout = () => {
     if (isError) {
       logout();
     }
-  }, [isError]);
+  }, [isError, logout]);
 
   if (!accessToken) {
     return <Navigate to='/' replace />;

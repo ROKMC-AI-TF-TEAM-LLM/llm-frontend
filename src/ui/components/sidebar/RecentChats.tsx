@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from "../../../types";
 import { useDeleteSession, useUpdateSession } from '../../../hooks/useSession';
 import { SessionItemSkeleton } from '../Skeleton';
+import Toast from '../Toast';
 
 interface RecentChatsProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const { mutate: updateSession } = useUpdateSession()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [sidebarError, setSidebarError] = useState('')
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -37,6 +39,8 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
 
   if (!isOpen) return null;
 
+
+
   const handleEditStart = (id: string, title: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setEditingId(id)
@@ -45,7 +49,10 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
 
   const handleEditSubmit = (id: string) => {
     if (editingTitle.trim()) {
-      updateSession({ sessionId: id, data: { title: editingTitle.trim() } })
+      updateSession(
+        { sessionId: id, data: { title: editingTitle.trim() } },
+        { onError: () => setSidebarError('제목 변경 중 오류가 발생했습니다.') },
+      )
     }
     setEditingId(null)
   }
@@ -53,14 +60,14 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     deleteSession(id, {
-      onSuccess: () => {
-        if (id === currentId) navigate('/chat')
-      },
+      onSuccess: () => { if (id === currentId) navigate('/chat') },
+      onError: () => setSidebarError('세션 삭제 중 오류가 발생했습니다.'),
     })
   }
 
   return (
     <div className="px-3 pt-4 overflow-hidden">
+      {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
       <p className="px-3 text-xs text-text-muted mb-2">최근 대화</p>
 
       {isInitialLoading ? (

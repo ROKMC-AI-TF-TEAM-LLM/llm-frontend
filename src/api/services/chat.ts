@@ -64,11 +64,12 @@ export const streamMessage = async (
       if (!content || content === '[DONE]') continue
       try {
         const parsed = JSON.parse(content)
-        if (parsed.type === 'text' && parsed.content) {
-          onChunk(parsed.content)
+        if (parsed.type === 'text' && parsed.content != null) {
+          onChunk(String(parsed.content))
         }
+        // done / sources / error types are intentionally ignored on the client side
       } catch {
-        onChunk(content)
+        // Not valid JSON — silently skip rather than passing protocol noise to the UI
       }
     }
   }

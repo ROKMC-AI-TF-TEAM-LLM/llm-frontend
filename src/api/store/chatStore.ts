@@ -32,11 +32,20 @@ const extractContent = (raw: string, _depth = 0): string => {
     if (typeof parsed.text === 'string') return extractContent(parsed.text, _depth + 1)
     return raw
   } catch {
-    // Backend concatenates raw JSON objects — scan for balanced objects and extract content
+    // Backend may concatenate raw JSON objects — scan for balanced objects and extract content.
+    // Non-JSON segments (plain text between or after objects) are kept as-is.
     const parts: string[] = []
     let i = 0
     while (i < raw.length) {
-      if (raw[i] !== '{') { i++; continue }
+      if (raw[i] !== '{') {
+        // Collect plain-text run until the next '{' or end
+        let j = i
+        while (j < raw.length && raw[j] !== '{') j++
+        const plainText = raw.slice(i, j)
+        if (plainText) parts.push(plainText)
+        i = j
+        continue
+      }
       let j = i + 1
       let braceDepth = 1
       while (j < raw.length && braceDepth > 0) {
@@ -59,9 +68,13 @@ const extractContent = (raw: string, _depth = 0): string => {
           if (typeof obj.content === 'string') parts.push(extractContent(obj.content, _depth + 1))
           else if (typeof obj.answer === 'string') parts.push(extractContent(obj.answer, _depth + 1))
           else if (typeof obj.text === 'string') parts.push(extractContent(obj.text, _depth + 1))
-        } catch {}
+          // JSON object with no recognized key → skip (don't leak raw JSON into output)
+        } catch {
+          parts.push(raw.slice(i, j))
+        }
         i = j
       } else {
+        parts.push(raw.slice(i))
         break
       }
     }
@@ -440,8 +453,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }));
     }
 
+    streamRegistry.set(sessionId, get().messages);
+
     try {
       await streamMessage(sessionId, { question: prevUserMsg.content }, (chunk) => {
+        if (get().sessionId !== sessionId) {
+          const reg = streamRegistry.get(sessionId);
+          if (reg) {
+            streamRegistry.set(sessionId, reg.map((m) =>
+              m.id === newAssistantId && m.type === 'text'
+                ? { ...m, content: m.content + chunk }
+                : m
+            ));
+          }
+          return;
+        }
         set((state) => ({
           messages: state.messages.map((m) =>
             m.id === newAssistantId && m.type === 'text'
@@ -449,23 +475,31 @@ export const useChatStore = create<ChatStore>((set, get) => ({
               : m
           ),
         }));
+        streamRegistry.set(sessionId, get().messages);
       }, controller.signal);
     } catch (e) {
+      streamRegistry.delete(sessionId);
       clearInflight(sessionId);
-      set((state) => ({
-        isStreaming: false,
-        abortController: null,
-        messages: state.messages.map((m) =>
-          m.id === newAssistantId && m.type === 'text'
-            ? { ...m, status: isAbortError(e) ? 'interrupted' as const : 'done' as const }
-            : m
-        ),
-        ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
-      }));
+      if (get().sessionId === sessionId) {
+        set((state) => ({
+          isStreaming: false,
+          abortController: null,
+          messages: isAbortError(e)
+            ? state.messages.map((m) =>
+                m.id === newAssistantId && m.type === 'text'
+                  ? { ...m, status: 'interrupted' as const }
+                  : m
+              )
+            : state.messages.filter((m) => m.id !== newAssistantId),
+          ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
+        }));
+      }
       return;
     }
 
+    streamRegistry.delete(sessionId);
     clearInflight(sessionId);
+    if (get().sessionId !== sessionId) return;
     set((state) => ({
       isStreaming: false,
       abortController: null,
@@ -479,9 +513,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   clearMessages: async () => {
     const { sessionId } = get();
     if (!sessionId || get().isStreaming) return;
-    await clearMessagesApi(sessionId);
-    clearCache(sessionId);
-    clearInflight(sessionId);
-    set({ messages: [] });
+    try {
+      await clearMessagesApi(sessionId);
+      clearCache(sessionId);
+      clearInflight(sessionId);
+      set({ messages: [] });
+    } catch {
+      set({ error: '메시지 초기화 중 오류가 발생했습니다.' });
+    }
   },
 }));

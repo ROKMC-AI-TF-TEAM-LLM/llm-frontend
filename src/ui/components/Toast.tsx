@@ -22,7 +22,9 @@ export default function Toast({ message, onClose, type = 'error' }: ToastProps) 
     };
   }, [message, onClose]);
 
-  const styles = { wrap: 'bg-red-50 border-red-200 text-red-700', btn: 'text-red-400 hover:text-red-600' };
+  const styles = type === 'success'
+    ? { wrap: 'bg-green-50 border-green-200 text-green-700', btn: 'text-green-400 hover:text-green-600' }
+    : { wrap: 'bg-red-50 border-red-200 text-red-700', btn: 'text-red-400 hover:text-red-600' };
 
   const icon = type === 'success' ? (
     <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
