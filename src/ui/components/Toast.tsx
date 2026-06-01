@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ToastProps {
   message: string;
@@ -7,9 +7,19 @@ interface ToastProps {
 }
 
 export default function Toast({ message, onClose, type = 'error' }: ToastProps) {
+  const [visible, setVisible] = useState(false);
+
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
+    // fade in
+    const show = requestAnimationFrame(() => setVisible(true));
+    // start fade out 500ms before unmount
+    const fadeOut = setTimeout(() => setVisible(false), 2500);
+    const close = setTimeout(onClose, 3000);
+    return () => {
+      cancelAnimationFrame(show);
+      clearTimeout(fadeOut);
+      clearTimeout(close);
+    };
   }, [message, onClose]);
 
   const styles = { wrap: 'bg-red-50 border-red-200 text-red-700', btn: 'text-red-400 hover:text-red-600' };
@@ -25,7 +35,7 @@ export default function Toast({ message, onClose, type = 'error' }: ToastProps) 
   );
 
   return (
-    <div className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 border px-6 py-4 rounded-xl shadow-lg text-base font-medium whitespace-nowrap ${styles.wrap}`}>
+    <div className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 border px-6 py-4 rounded-xl shadow-lg text-base font-medium whitespace-nowrap transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'} ${styles.wrap}`}>
       {icon}
       {message}
       <button onClick={onClose} className={`ml-1 ${styles.btn}`}>

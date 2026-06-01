@@ -100,6 +100,7 @@ export function AdminRowSkeleton() {
     <tr className="border-b">
       <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
       <td className="px-5 py-3"><Skeleton className="h-4 w-40" /></td>
+      <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
       <td className="px-5 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
       <td className="px-5 py-3"><Skeleton className="h-4 w-24" /></td>
       <td className="px-5 py-3"><Skeleton className="h-7 w-14 rounded" /></td>

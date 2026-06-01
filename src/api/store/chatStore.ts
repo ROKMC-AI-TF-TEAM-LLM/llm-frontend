@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Message } from '../../types';
-import { streamMessage, getMessages } from '../services/chat';
+import { streamMessage, getMessages, clearMessages as clearMessagesApi } from '../services/chat';
 import { queryClient } from '../queryClient';
 
 interface ChatStore {
@@ -17,6 +17,7 @@ interface ChatStore {
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
+  clearMessages: () => Promise<void>;
 }
 
 const isAbortError = (e: unknown) =>
@@ -95,7 +96,7 @@ const loadCache = (sessionId: string): Message[] => {
   }
 }
 
-const clearCache = (sessionId: string) => {
+export const clearCache = (sessionId: string) => {
   try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
 }
 
@@ -113,7 +114,7 @@ const INFLIGHT_KEY = 'rokm_inflight'
 export const saveInflight = (sessionId: string, question: string) =>
   localStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question }))
 
-const clearInflight = (sessionId: string) => {
+export const clearInflight = (sessionId: string) => {
   try {
     const raw = localStorage.getItem(INFLIGHT_KEY)
     if (!raw) return
@@ -155,13 +156,26 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ sessionId, messages: [], isStreaming: false });
     const res = await getMessages(sessionId);
     if (get().sessionId !== sessionId || get().isStreaming) return;
-    const messages: Message[] = res.data.data.messages.map((m) => ({
+    const rawMessages: Message[] = res.data.data.messages.map((m) => ({
       id: crypto.randomUUID(),
       role: m.role === 'human' ? 'user' : 'assistant',
       type: 'text' as const,
       content: extractContent(m.content),
       status: 'done' as const,
     }));
+
+    // Remove consecutive duplicate messages caused by retry bugs
+    const messages = rawMessages.filter((msg, i) => {
+      if (i === 0) return true;
+      const prev = rawMessages[i - 1];
+      return !(
+        msg.role === prev.role &&
+        msg.type === 'text' &&
+        prev.type === 'text' &&
+        msg.content === prev.content
+      );
+    });
+
     set({ messages });
 
     const last = messages[messages.length - 1];
@@ -460,5 +474,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ),
     }));
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
+  },
+
+  clearMessages: async () => {
+    const { sessionId } = get();
+    if (!sessionId || get().isStreaming) return;
+    await clearMessagesApi(sessionId);
+    clearCache(sessionId);
+    clearInflight(sessionId);
+    set({ messages: [] });
   },
 }));

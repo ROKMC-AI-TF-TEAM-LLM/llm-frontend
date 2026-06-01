@@ -5,6 +5,9 @@ import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat
 export const getMessages = (sessionId: string) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`)
 
+export const clearMessages = (sessionId: string) =>
+  backendApi.delete(`/api/v1/sessions/${sessionId}/messages`)
+
 export const streamMessage = async (
   sessionId: string,
   data: StreamMessageRequest,
@@ -37,11 +40,19 @@ export const streamMessage = async (
 
   signal?.addEventListener('abort', () => reader.cancel(), { once: true })
 
+  // Cancel stream if no chunk arrives within 2 minutes (hung LLM / Ollama stall)
+  const IDLE_MS = 120_000
+  let timedOut = false
+  let idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
+
   let buffer = ''
 
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
+
+    clearTimeout(idleTimer)
+    idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
 
     buffer += decoder.decode(value, { stream: true })
     const lines = buffer.split('\n')
@@ -62,7 +73,12 @@ export const streamMessage = async (
     }
   }
 
-  if (signal?.aborted) {
-    throw new DOMException('The user aborted a request.', 'AbortError')
+  clearTimeout(idleTimer)
+
+  if (timedOut || signal?.aborted) {
+    throw new DOMException(
+      timedOut ? 'Stream idle timeout.' : 'The user aborted a request.',
+      'AbortError'
+    )
   }
 }

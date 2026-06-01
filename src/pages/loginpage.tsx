@@ -81,6 +81,7 @@ const LoginPage = () => {
   const {
     register,
     handleSubmit,
+    reset: resetSignup,
     formState: { errors: signupErrors, isSubmitting },
   } = useHookForm<SignupFields>({
     defaultValues: { name: '', email: '', password: '', passwordCheck: '' },
@@ -119,7 +120,11 @@ const LoginPage = () => {
           isDisabled={isLoginDisabled}
           serverError={loginServerError}
           onSubmit={handleLogin}
-          onSignupClick={() => setMode('signup')}
+          onSignupClick={() => {
+            resetSignup()
+            setSignupServerError('')
+            setMode('signup')
+          }}
         />
       ) : (
         <SignupCard
@@ -128,7 +133,10 @@ const LoginPage = () => {
           isSubmitting={isSubmitting}
           serverError={signupServerError}
           onSubmit={handleSubmit(handleSignup)}
-          onLoginClick={() => setMode('login')}
+          onLoginClick={() => {
+            setLoginServerError('')
+            setMode('login')
+          }}
         />
       )}
     </>

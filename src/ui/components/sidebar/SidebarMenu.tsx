@@ -46,20 +46,18 @@ export default function SidebarMenu({ isOpen, activeLabel }: SidebarMenuProps) {
           <button
             key={item.label}
             onClick={() => navigate(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+            className={`w-full flex items-center py-2.5 rounded-lg text-sm transition-colors ${
+              isOpen ? "gap-3 px-3" : "justify-center px-0"
+            } ${
               isActive
                 ? "bg-brand-subtle text-brand font-medium"
                 : "text-text-primary hover:bg-brand-subtle hover:text-brand"
             }`}
           >
             <span className="shrink-0">{item.icon}</span>
-            <span
-              className={`whitespace-nowrap transition-opacity duration-200 ${
-                isOpen ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {item.label}
-            </span>
+            {isOpen && (
+              <span className="whitespace-nowrap">{item.label}</span>
+            )}
           </button>
         );
       })}

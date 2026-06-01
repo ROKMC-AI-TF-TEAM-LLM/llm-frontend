@@ -17,13 +17,17 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isFirstLoad = useRef(true);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: 'smooth',
+    if (isLoading) return;
+    const behavior = isFirstLoad.current ? 'instant' : 'smooth';
+    isFirstLoad.current = false;
+    // Wait for DOM paint so scrollHeight reflects actual rendered height
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
     });
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {});

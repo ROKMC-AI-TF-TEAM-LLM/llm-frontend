@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton } from '../ui/components/Skeleton';
+import Toast from '../ui/components/Toast';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type TabValue = DisplayStatus | 'all';
@@ -34,6 +35,7 @@ const TABS: { label: string; value: TabValue }[] = [
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabValue>('all');
+  const [copiedKey, setCopiedKey] = useState(0);
   const { data, isLoading, isError } = useGetUsers();
   const { data: meData } = useGetMe();
   const myEmail = meData?.data?.data?.email;
@@ -44,10 +46,10 @@ export default function AdminPage() {
   const responseData = data?.data?.data;
 
   const allUsers: DisplayUser[] = [
-    ...(responseData?.admins ?? []).map((u) => ({ ...u, displayStatus: 'admin' as DisplayStatus })),
     ...(responseData?.users?.pending ?? []).map((u) => ({ ...u, displayStatus: 'pending' as DisplayStatus })),
-    ...(responseData?.users?.approved ?? []).map((u) => ({ ...u, displayStatus: 'approved' as DisplayStatus })),
     ...(responseData?.users?.rejected ?? []).map((u) => ({ ...u, displayStatus: 'rejected' as DisplayStatus })),
+    ...(responseData?.admins ?? []).map((u) => ({ ...u, displayStatus: 'admin' as DisplayStatus })),
+    ...(responseData?.users?.approved ?? []).map((u) => ({ ...u, displayStatus: 'approved' as DisplayStatus })),
   ];
 
   const myId = allUsers.find((u) => u.email === myEmail)?.user_id;
@@ -58,6 +60,9 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
+      {copiedKey > 0 && (
+        <Toast key={copiedKey} message="ID가 복사되었습니다." type="success" onClose={() => setCopiedKey(0)} />
+      )}
       <h1 className="text-2xl font-bold text-gray-800 mb-4">관리자 - 회원 관리</h1>
 
       <div className="flex gap-2 mb-6">
@@ -88,6 +93,7 @@ export default function AdminPage() {
             <tr className="border-b text-left text-gray-500">
               <th className="px-5 py-3">이름</th>
               <th className="px-5 py-3">이메일</th>
+              <th className="px-5 py-3">사용자 ID</th>
               <th className="px-5 py-3">상태</th>
               <th className="px-5 py-3">가입일</th>
               <th className="px-5 py-3">처리</th>
@@ -100,6 +106,15 @@ export default function AdminPage() {
               <tr key={user.user_id} className="border-b last:border-0 hover:bg-gray-50">
                 <td className="px-5 py-3 font-medium text-gray-800">{user.name}</td>
                 <td className="px-5 py-3 text-gray-600">{user.email}</td>
+                <td className="px-5 py-3">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(user.user_id).then(() => setCopiedKey(k => k + 1))}
+                    title={user.user_id}
+                    className="font-mono text-xs text-gray-500 hover:text-gray-800 hover:bg-gray-100 px-2 py-0.5 rounded transition-colors"
+                  >
+                    {user.user_id.slice(0, 8)}…
+                  </button>
+                </td>
                 <td className="px-5 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[user.displayStatus]}`}>
                     {STATUS_LABEL[user.displayStatus]}
