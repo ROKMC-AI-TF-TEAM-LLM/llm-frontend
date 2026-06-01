@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/chatinput';
 import Toast from '../ui/components/Toast';
-import { useChatStore } from '../api/store/chatStore';
+import { useChatStore, saveInflight } from '../api/store/chatStore';
 import { useGetSessions } from '../hooks/useSession';
 import type { SessionData } from '../types/session';
 
@@ -33,6 +33,11 @@ export default function ChatPage() {
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     setIsConnecting(true);
+
+    // Save before connect so refresh during connect phase can still recover
+    if (initialMessage) {
+      saveInflight(sessionId, initialMessage);
+    }
 
     connect(sessionId)
       .then(() => {

@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
-import { useChatStore } from '../../../api/store/chatStore';
+import { useChatStore, saveInflight } from '../../../api/store/chatStore';
 import { useCreateSession } from '../../../hooks/useSession';
 
 interface ChatInputProps {
@@ -47,6 +47,7 @@ export default function ChatInput({
       try {
         const res = await createSession({ title: text });
         const sessionId = res.data.data.session_id;
+        saveInflight(sessionId, text);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
       } catch {
         setValue(text);

@@ -22,19 +22,115 @@ interface ChatStore {
 const isAbortError = (e: unknown) =>
   e instanceof DOMException && e.name === 'AbortError'
 
-const extractContent = (raw: string): string => {
+const extractContent = (raw: string, _depth = 0): string => {
+  if (_depth > 5) return raw
   try {
     const parsed = JSON.parse(raw)
-    if (typeof parsed.content === 'string') return parsed.content
-    if (typeof parsed.answer === 'string') return parsed.answer
-    if (typeof parsed.text === 'string') return parsed.text
+    if (typeof parsed.content === 'string') return extractContent(parsed.content, _depth + 1)
+    if (typeof parsed.answer === 'string') return extractContent(parsed.answer, _depth + 1)
+    if (typeof parsed.text === 'string') return extractContent(parsed.text, _depth + 1)
     return raw
   } catch {
-    return raw
+    // Backend concatenates raw JSON objects — scan for balanced objects and extract content
+    const parts: string[] = []
+    let i = 0
+    while (i < raw.length) {
+      if (raw[i] !== '{') { i++; continue }
+      let j = i + 1
+      let braceDepth = 1
+      while (j < raw.length && braceDepth > 0) {
+        if (raw[j] === '"') {
+          j++
+          while (j < raw.length && raw[j] !== '"') {
+            if (raw[j] === '\\') j++
+            j++
+          }
+        } else if (raw[j] === '{') {
+          braceDepth++
+        } else if (raw[j] === '}') {
+          braceDepth--
+        }
+        j++
+      }
+      if (braceDepth === 0) {
+        try {
+          const obj = JSON.parse(raw.slice(i, j))
+          if (typeof obj.content === 'string') parts.push(extractContent(obj.content, _depth + 1))
+          else if (typeof obj.answer === 'string') parts.push(extractContent(obj.answer, _depth + 1))
+          else if (typeof obj.text === 'string') parts.push(extractContent(obj.text, _depth + 1))
+        } catch {}
+        i = j
+      } else {
+        break
+      }
+    }
+    return parts.length > 0 ? parts.join('') : raw
   }
 }
 
 const streamRegistry = new Map<string, Message[]>();
+
+// ── sessionStorage cache ──────────────────────────────────────────────────────
+// Saves messages on every refresh so they survive if the backend hasn't persisted yet.
+const CACHE_KEY = (id: string) => `rokm_cache_${id}`
+
+const saveCache = (sessionId: string, messages: Message[]) => {
+  if (!sessionId || messages.length === 0) return
+  try {
+    // Exclude in-progress streaming messages — they're incomplete
+    const cacheable = messages.filter(
+      (m) => !(m.type === 'text' && m.role === 'assistant' && m.status === 'streaming')
+    )
+    if (cacheable.length > 0)
+      sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
+  } catch {}
+}
+
+const loadCache = (sessionId: string): Message[] => {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY(sessionId))
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+const clearCache = (sessionId: string) => {
+  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
+}
+
+// Save on page refresh/close so the cache is always up-to-date
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    const { sessionId, messages } = useChatStore.getState()
+    saveCache(sessionId, messages)
+  })
+}
+
+// ── localStorage inflight ─────────────────────────────────────────────────────
+const INFLIGHT_KEY = 'rokm_inflight'
+
+export const saveInflight = (sessionId: string, question: string) =>
+  localStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question }))
+
+const clearInflight = (sessionId: string) => {
+  try {
+    const raw = localStorage.getItem(INFLIGHT_KEY)
+    if (!raw) return
+    if (JSON.parse(raw).sessionId === sessionId) localStorage.removeItem(INFLIGHT_KEY)
+  } catch {}
+}
+
+const getInflight = (sessionId: string): string | null => {
+  try {
+    const raw = localStorage.getItem(INFLIGHT_KEY)
+    if (!raw) return null
+    const data = JSON.parse(raw)
+    return data.sessionId === sessionId ? data.question : null
+  } catch {
+    return null
+  }
+}
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessionId: '',
@@ -71,6 +167,44 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const last = messages[messages.length - 1];
     if (last && last.role === 'user' && last.type === 'text') {
       get().retryLastMessage();
+      return;
+    }
+
+    // ── sessionStorage cache recovery ─────────────────────────────────────────
+    // Always check: if cache has MORE messages than DB, the latest exchange wasn't
+    // persisted yet (refresh during or before streaming). Restore from cache.
+    const cached = loadCache(sessionId);
+    if (cached.length > messages.length) {
+      clearCache(sessionId);
+      clearInflight(sessionId);
+      set({ messages: cached });
+      const lastCached = cached[cached.length - 1];
+      if (lastCached?.role === 'user' && lastCached?.type === 'text') {
+        get().retryLastMessage();
+      }
+      return;
+    }
+
+    // ── localStorage inflight recovery ────────────────────────────────────────
+    // Fallback for when cache wasn't available (e.g., very fast refresh before saveCache ran).
+    // Compare against the LAST user message only, not entire history, to avoid false positives
+    // when the user asks the same question twice.
+    const pending = getInflight(sessionId);
+    if (pending) {
+      const lastUserMsg = [...messages].reverse()
+        .find((m) => m.role === 'user' && m.type === 'text');
+      const alreadySaved = lastUserMsg?.type === 'text' && lastUserMsg.content === pending;
+      if (!alreadySaved) {
+        set((state) => ({
+          messages: [
+            ...state.messages,
+            { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending },
+          ],
+        }));
+        get().retryLastMessage();
+      } else {
+        clearInflight(sessionId);
+      }
     }
   },
 
@@ -84,6 +218,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const assistantId = crypto.randomUUID();
     const { sessionId } = get();
 
+    saveInflight(sessionId, content);
     set((state) => ({
       isStreaming: true,
       abortController: controller,
@@ -94,6 +229,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ],
     }));
     streamRegistry.set(sessionId, get().messages);
+    saveCache(sessionId, get().messages);
 
     try {
       await streamMessage(sessionId, { question: content }, (chunk) => {
@@ -119,6 +255,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }, controller.signal);
     } catch (e) {
       streamRegistry.delete(sessionId);
+      clearInflight(sessionId);
       if (get().sessionId === sessionId) {
         if (isAbortError(e)) {
           set((state) => ({
@@ -143,6 +280,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
 
     streamRegistry.delete(sessionId);
+    clearInflight(sessionId);
     if (get().sessionId !== sessionId) return;
     set((state) => ({
       isStreaming: false,
@@ -160,6 +298,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const last = messages[messages.length - 1];
     if (!last || last.role !== 'user' || last.type !== 'text') return;
 
+    saveInflight(sessionId, last.content);
     const controller = new AbortController()
     const assistantId = crypto.randomUUID();
     set((state) => ({
@@ -171,6 +310,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ],
     }));
     streamRegistry.set(sessionId, get().messages);
+    saveCache(sessionId, get().messages);
 
     try {
       await streamMessage(sessionId, { question: last.content }, (chunk) => {
@@ -196,6 +336,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }, controller.signal);
     } catch (e) {
       streamRegistry.delete(sessionId);
+      clearInflight(sessionId);
       if (get().sessionId === sessionId) {
         if (isAbortError(e)) {
           set((state) => ({
@@ -220,6 +361,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
 
     streamRegistry.delete(sessionId);
+    clearInflight(sessionId);
     if (get().sessionId !== sessionId) return;
     set((state) => ({
       isStreaming: false,
@@ -252,40 +394,56 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       .find((m) => m.role === 'user' && m.type === 'text');
 
     if (!prevUserMsg || prevUserMsg.type !== 'text') return;
-
-    const oldMsg = messages[assistantIdx];
-    const oldContent = oldMsg.type === 'text' ? oldMsg.content : '';
+    const userIdx = messages.findIndex((m) => m.id === prevUserMsg.id);
+    const isLast = assistantIdx === messages.length - 1;
 
     const controller = new AbortController()
-    set((state) => ({
-      isStreaming: true,
-      abortController: controller,
-      messages: state.messages.map((m) =>
-        m.id === assistantId ? { ...m, content: '', status: 'streaming' as const } : m
-      ),
-    }));
+    const newAssistantId = crypto.randomUUID();
+
+    saveInflight(sessionId, prevUserMsg.content);
+
+    if (isLast) {
+      // Last pair: remove and re-add at bottom so user can see streaming
+      set((state) => ({
+        isStreaming: true,
+        abortController: controller,
+        messages: [
+          ...state.messages.slice(0, userIdx),
+          { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: prevUserMsg.content },
+          { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const },
+        ],
+      }));
+    } else {
+      // Middle message: replace in-place, preserve subsequent messages
+      set((state) => ({
+        isStreaming: true,
+        abortController: controller,
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, id: newAssistantId, content: '', status: 'streaming' as const }
+            : m
+        ),
+      }));
+    }
 
     try {
       await streamMessage(sessionId, { question: prevUserMsg.content }, (chunk) => {
         set((state) => ({
           messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
+            m.id === newAssistantId && m.type === 'text'
               ? { ...m, content: m.content + chunk }
               : m
           ),
         }));
       }, controller.signal);
     } catch (e) {
+      clearInflight(sessionId);
       set((state) => ({
         isStreaming: false,
         abortController: null,
         messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text'
-            ? {
-                ...m,
-                content: isAbortError(e) ? m.content : oldContent,
-                status: isAbortError(e) ? 'interrupted' as const : 'done' as const,
-              }
+          m.id === newAssistantId && m.type === 'text'
+            ? { ...m, status: isAbortError(e) ? 'interrupted' as const : 'done' as const }
             : m
         ),
         ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
@@ -293,11 +451,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
+    clearInflight(sessionId);
     set((state) => ({
       isStreaming: false,
       abortController: null,
       messages: state.messages.map((m) =>
-        m.id === assistantId ? { ...m, status: 'done' as const } : m
+        m.id === newAssistantId ? { ...m, status: 'done' as const } : m
       ),
     }));
     queryClient.invalidateQueries({ queryKey: ['sessions'] });

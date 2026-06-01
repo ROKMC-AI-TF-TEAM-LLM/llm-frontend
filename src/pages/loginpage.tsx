@@ -9,6 +9,7 @@ import { signup } from '../api/services/auth'
 import BackgroundWave from '../ui/components/backgroundwave'
 import LoginCard from '../ui/components/logincard'
 import SignupCard from '../ui/components/signupcard'
+import Toast from '../ui/components/Toast'
 
 const signupSchema = z.object({
   email: z.string().email('유효한 이메일 주소를 입력해주세요.'),
@@ -37,9 +38,9 @@ const SIGNUP_ERRORS: Record<string, string> = {
 
 const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [showSignupToast, setShowSignupToast] = useState(false)
   const { login } = useAuth()
 
-  // 로그인 폼 상태
   const [isLoginLoading, setIsLoginLoading] = useState(false)
   const [loginServerError, setLoginServerError] = useState('')
   const { values, errors: loginErrors, touched, getInputProps } = useForm<UserSignInformation>({
@@ -76,7 +77,6 @@ const LoginPage = () => {
     }
   }
 
-  // 회원가입 폼 상태
   const [signupServerError, setSignupServerError] = useState('')
   const {
     register,
@@ -93,6 +93,7 @@ const LoginPage = () => {
     try {
       await signup(rest)
       setMode('login')
+      setShowSignupToast(true)
     } catch (error: any) {
       const code = error?.response?.data?.error?.code
       setSignupServerError(SIGNUP_ERRORS[code] ?? '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
@@ -102,6 +103,13 @@ const LoginPage = () => {
   return (
     <>
       <BackgroundWave />
+      {showSignupToast && (
+        <Toast
+          message="회원가입 신청이 완료되었습니다."
+          type="success"
+          onClose={() => setShowSignupToast(false)}
+        />
+      )}
       {mode === 'login' ? (
         <LoginCard
           getInputProps={getInputProps}
