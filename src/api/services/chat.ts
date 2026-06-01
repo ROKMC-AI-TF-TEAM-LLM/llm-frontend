@@ -5,8 +5,6 @@ import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat
 export const getMessages = (sessionId: string) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`)
 
-export const clearMessages = (sessionId: string) =>
-  backendApi.delete(`/api/v1/sessions/${sessionId}/messages`)
 
 export const streamMessage = async (
   sessionId: string,

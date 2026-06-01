@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Message } from '../../types';
-import { streamMessage, getMessages, clearMessages as clearMessagesApi } from '../services/chat';
+import { streamMessage, getMessages } from '../services/chat';
 import { queryClient } from '../queryClient';
 
 interface ChatStore {
@@ -17,7 +17,6 @@ interface ChatStore {
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
-  clearMessages: () => Promise<void>;
 }
 
 const isAbortError = (e: unknown) =>
@@ -510,16 +509,4 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
   },
 
-  clearMessages: async () => {
-    const { sessionId } = get();
-    if (!sessionId || get().isStreaming) return;
-    try {
-      await clearMessagesApi(sessionId);
-      clearCache(sessionId);
-      clearInflight(sessionId);
-      set({ messages: [] });
-    } catch {
-      set({ error: '메시지 초기화 중 오류가 발생했습니다.' });
-    }
-  },
 }));
