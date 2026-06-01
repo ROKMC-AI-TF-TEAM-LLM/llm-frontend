@@ -4,8 +4,7 @@ import type { MessageRole } from '../../../types';
 
 const normalizeMarkdown = (content: string): string =>
   content
-    .replace(/(\*\*)([가-힣぀-ヿ一-鿿])/g, '$1 $2')
-    .replace(/([가-힣぀-ヿ一-鿿])(\*\*\S)/g, '$1 $2')
+    .replace(/(?<=\S)\*\*(?=[가-힣぀-ヿ一-鿿])/g, '** ')
     .replace(/^[•·]\s*/gm, '- ');
 
 interface MessageBubbleProps {
