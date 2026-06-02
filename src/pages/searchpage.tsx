@@ -5,6 +5,7 @@ import SearchResults from '../ui/components/search/SearchResults'
 import type { SearchResult } from '../ui/components/search/SearchResultItem'
 import { useSearchSessions, useGetSessions } from '../hooks/useSession'
 import { SearchSessionCardSkeleton } from '../ui/components/Skeleton'
+import Toast from '../ui/components/Toast'
 
 const SearchPage = () => {
   const navigate = useNavigate()
@@ -17,8 +18,8 @@ const SearchPage = () => {
     return () => clearTimeout(timer)
   }, [query])
 
-  const { data: searchData, isFetching: isSearching } = useSearchSessions({ q: debouncedQuery })
-  const { data: sessionsData, isLoading: isSessionsLoading } = useGetSessions()
+  const { data: searchData, isFetching: isSearching, isError: isSearchError } = useSearchSessions({ q: debouncedQuery })
+  const { data: sessionsData, isLoading: isSessionsLoading, isError: isSessionsError } = useGetSessions()
 
   const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map((s) => ({
     id: s.session_id,
@@ -33,11 +34,15 @@ const SearchPage = () => {
     navigate(`/chat/${id}`)
   }
 
+  const [errorDismissed, setErrorDismissed] = useState(false)
+  const showError = (isSearchError || isSessionsError) && !errorDismissed
+
   return (
     <div className="flex flex-col h-full px-6 pt-16 pb-6">
+      {showError && <Toast message="데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." onClose={() => setErrorDismissed(true)} />}
       <div className="max-w-2xl w-full mx-auto flex flex-col min-h-0 flex-1">
 
-        <h1 className="text-2xl font-medium text-text-primary text-center mb-8 shrink-0">
+        <h1 className="text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
           대화 검색
         </h1>
 

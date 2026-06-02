@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 interface SidebarMenuProps {
   isOpen: boolean;
@@ -35,19 +35,20 @@ const menuItems = [
   },
 ];
 
-export default function SidebarMenu({ isOpen, activeLabel }: SidebarMenuProps) {
+export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <nav className="px-3 py-2 space-y-1">
       {menuItems.map((item) => {
-        const isActive = item.label === activeLabel;
+        const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
         return (
           <button
             key={item.label}
             onClick={() => navigate(item.path)}
-            className={`w-full flex items-center py-2.5 rounded-lg text-sm transition-colors ${
-              isOpen ? "gap-3 px-3" : "justify-center px-0"
+            className={`w-full flex items-center py-2.5 rounded-lg text-sm transition-[padding,colors] duration-300 ${
+              isOpen ? "px-3" : "px-[18px]"
             } ${
               isActive
                 ? "bg-brand-subtle text-brand font-medium"
@@ -55,9 +56,13 @@ export default function SidebarMenu({ isOpen, activeLabel }: SidebarMenuProps) {
             }`}
           >
             <span className="shrink-0">{item.icon}</span>
-            {isOpen && (
-              <span className="whitespace-nowrap">{item.label}</span>
-            )}
+            <span
+              className={`whitespace-nowrap transition-[opacity,margin] duration-300 ${
+                isOpen ? "opacity-100 ml-3" : "opacity-0 w-0 overflow-hidden ml-0"
+              }`}
+            >
+              {item.label}
+            </span>
           </button>
         );
       })}

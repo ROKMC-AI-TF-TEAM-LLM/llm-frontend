@@ -10,7 +10,6 @@ interface LoginCardProps {
   touched: Record<keyof UserSignInformation, boolean>
   isLoading: boolean
   isDisabled: boolean
-  serverError: string
   onSubmit: () => void
   onSignupClick: () => void
 }
@@ -21,7 +20,6 @@ const LoginCard = ({
   touched,
   isLoading,
   isDisabled,
-  serverError,
   onSubmit,
   onSignupClick,
 }: LoginCardProps) => {
@@ -29,7 +27,6 @@ const LoginCard = ({
     <div className="card flex w-180 max-w-[92vw] min-h-88 overflow-hidden">
 
       <div className="flex w-1/2 flex-col items-center justify-center gap-4 border-r border-surface-border px-12 py-12">
-        {/* TODO: 로고 교체 */}
         <div className="w-16 h-16 rounded-full border-2 border-surface-border" />
         <div className="text-center leading-none">
           <p className="text-5xl font-black tracking-tight text-brand text-glow-brand">
@@ -49,7 +46,7 @@ const LoginCard = ({
           type="email"
           placeholder="이메일"
           spellCheck={false}
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.email && touched?.email ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
@@ -61,16 +58,12 @@ const LoginCard = ({
           {...getInputProps('password')}
           type="password"
           placeholder="비밀번호"
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.password && touched?.password ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
         {errors?.password && touched?.password && (
           <p className="text-xs text-brand w-full px-3">{errors.password}</p>
-        )}
-
-        {serverError && (
-          <p className="text-xs text-brand text-center w-full">{serverError}</p>
         )}
 
         <button

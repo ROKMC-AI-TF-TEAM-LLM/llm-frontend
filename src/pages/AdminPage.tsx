@@ -58,10 +58,10 @@ export default function AdminPage() {
   const responseData = data?.data?.data;
 
   const allUsers: DisplayUser[] = [
-    ...(responseData?.users?.pending ?? []).map((u) => ({ ...u, displayStatus: 'pending' as DisplayStatus })),
-    ...(responseData?.users?.rejected ?? []).map((u) => ({ ...u, displayStatus: 'rejected' as DisplayStatus })),
     ...(responseData?.admins ?? []).map((u) => ({ ...u, displayStatus: 'admin' as DisplayStatus })),
+    ...(responseData?.users?.pending ?? []).map((u) => ({ ...u, displayStatus: 'pending' as DisplayStatus })),
     ...(responseData?.users?.approved ?? []).map((u) => ({ ...u, displayStatus: 'approved' as DisplayStatus })),
+    ...(responseData?.users?.rejected ?? []).map((u) => ({ ...u, displayStatus: 'rejected' as DisplayStatus })),
   ];
 
   const myId = allUsers.find((u) => u.email === myEmail)?.user_id;
@@ -78,6 +78,7 @@ export default function AdminPage() {
       {mutationError && (
         <Toast message={mutationError} type="error" onClose={() => setMutationError('')} />
       )}
+
       <h1 className="text-2xl font-bold text-gray-800 mb-4">관리자 - 회원 관리</h1>
 
       <div className="flex gap-2 mb-6">
@@ -96,7 +97,7 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {isError && <p className="text-red-500">데이터를 불러오지 못했습니다.</p>}
+      {isError && <Toast message="데이터를 불러오지 못했습니다." onClose={() => {}} />}
 
       {!isLoading && users.length === 0 && (
         <p className="text-gray-400">해당하는 사용자가 없습니다.</p>
