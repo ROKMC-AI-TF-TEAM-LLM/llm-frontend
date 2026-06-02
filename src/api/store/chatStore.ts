@@ -263,7 +263,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           ),
         }));
         streamRegistry.set(sessionId, get().messages);
-      }, controller.signal);
+      }, controller.signal, (sources) => {
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
+          ),
+        }));
+      });
     } catch (e) {
       streamRegistry.delete(sessionId);
       clearInflight(sessionId);
@@ -344,7 +350,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           ),
         }));
         streamRegistry.set(sessionId, get().messages);
-      }, controller.signal);
+      }, controller.signal, (sources) => {
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
+          ),
+        }));
+      });
     } catch (e) {
       streamRegistry.delete(sessionId);
       clearInflight(sessionId);
@@ -458,7 +470,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           ),
         }));
         streamRegistry.set(sessionId, get().messages);
-      }, controller.signal);
+      }, controller.signal, (sources) => {
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === newAssistantId && m.type === 'text' ? { ...m, sources } : m
+          ),
+        }));
+      });
     } catch (e) {
       streamRegistry.delete(sessionId);
       clearInflight(sessionId);

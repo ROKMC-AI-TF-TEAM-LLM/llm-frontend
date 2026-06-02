@@ -1,6 +1,7 @@
 import { backendApi } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat'
+import type { Source } from '../../types'
 
 export const getMessages = (sessionId: string) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`)
@@ -11,6 +12,7 @@ export const streamMessage = async (
   data: StreamMessageRequest,
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
+  onSources?: (sources: Source[]) => void,
 ) => {
   const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
   const parsedToken = token ? JSON.parse(token) : null
@@ -63,6 +65,8 @@ export const streamMessage = async (
         const parsed = JSON.parse(content)
         if (parsed.type === 'text' && parsed.content != null) {
           onChunk(String(parsed.content))
+        } else if (parsed.type === 'sources' && Array.isArray(parsed.items)) {
+          onSources?.(parsed.items)
         }
       } catch {
       }

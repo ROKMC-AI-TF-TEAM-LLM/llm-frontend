@@ -1,8 +1,6 @@
 export interface Source {
-  id: string;
-  title: string;
-  url?: string;
-  snippet?: string;
+  name: string;
+  page?: string | null;
 }
 
 export interface ChatItem {
