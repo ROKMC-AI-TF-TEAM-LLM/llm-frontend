@@ -38,7 +38,6 @@ export const streamMessage = async (
 
   signal?.addEventListener('abort', () => reader.cancel(), { once: true })
 
-  // Cancel stream if no chunk arrives within 2 minutes (hung LLM / Ollama stall)
   const IDLE_MS = 120_000
   let timedOut = false
   let idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
@@ -65,9 +64,7 @@ export const streamMessage = async (
         if (parsed.type === 'text' && parsed.content != null) {
           onChunk(String(parsed.content))
         }
-        // done / sources / error types are intentionally ignored on the client side
       } catch {
-        // Not valid JSON — silently skip rather than passing protocol noise to the UI
       }
     }
   }

@@ -31,13 +31,10 @@ const extractContent = (raw: string, _depth = 0): string => {
     if (typeof parsed.text === 'string') return extractContent(parsed.text, _depth + 1)
     return raw
   } catch {
-    // Backend may concatenate raw JSON objects — scan for balanced objects and extract content.
-    // Non-JSON segments (plain text between or after objects) are kept as-is.
     const parts: string[] = []
     let i = 0
     while (i < raw.length) {
       if (raw[i] !== '{') {
-        // Collect plain-text run until the next '{' or end
         let j = i
         while (j < raw.length && raw[j] !== '{') j++
         const plainText = raw.slice(i, j)
@@ -67,7 +64,6 @@ const extractContent = (raw: string, _depth = 0): string => {
           if (typeof obj.content === 'string') parts.push(extractContent(obj.content, _depth + 1))
           else if (typeof obj.answer === 'string') parts.push(extractContent(obj.answer, _depth + 1))
           else if (typeof obj.text === 'string') parts.push(extractContent(obj.text, _depth + 1))
-          // JSON object with no recognized key → skip (don't leak raw JSON into output)
         } catch {
           parts.push(raw.slice(i, j))
         }
@@ -83,14 +79,11 @@ const extractContent = (raw: string, _depth = 0): string => {
 
 const streamRegistry = new Map<string, Message[]>();
 
-// ── sessionStorage cache ──────────────────────────────────────────────────────
-// Saves messages on every refresh so they survive if the backend hasn't persisted yet.
 const CACHE_KEY = (id: string) => `rokm_cache_${id}`
 
 const saveCache = (sessionId: string, messages: Message[]) => {
   if (!sessionId || messages.length === 0) return
   try {
-    // Exclude in-progress streaming messages — they're incomplete
     const cacheable = messages.filter(
       (m) => !(m.type === 'text' && m.role === 'assistant' && m.status === 'streaming')
     )
@@ -112,7 +105,6 @@ export const clearCache = (sessionId: string) => {
   try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
 }
 
-// Save on page refresh/close so the cache is always up-to-date
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     const { sessionId, messages } = useChatStore.getState()
@@ -120,7 +112,6 @@ if (typeof window !== 'undefined') {
   })
 }
 
-// ── localStorage inflight ─────────────────────────────────────────────────────
 const INFLIGHT_KEY = 'rokm_inflight'
 
 export const saveInflight = (sessionId: string, question: string) =>
@@ -177,7 +168,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       createdAt: m.created_at,
     }));
 
-    // Remove consecutive duplicate messages caused by retry bugs
     const messages = rawMessages.filter((msg, i) => {
       if (i === 0) return true;
       const prev = rawMessages[i - 1];
@@ -197,9 +187,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    // ── sessionStorage cache recovery ─────────────────────────────────────────
-    // Always check: if cache has MORE messages than DB, the latest exchange wasn't
-    // persisted yet (refresh during or before streaming). Restore from cache.
     const cached = loadCache(sessionId);
     if (cached.length > messages.length) {
       clearCache(sessionId);
@@ -212,10 +199,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    // ── localStorage inflight recovery ────────────────────────────────────────
-    // Fallback for when cache wasn't available (e.g., very fast refresh before saveCache ran).
-    // Compare against the LAST user message only, not entire history, to avoid false positives
-    // when the user asks the same question twice.
     const pending = getInflight(sessionId);
     if (pending) {
       const lastUserMsg = [...messages].reverse()
@@ -431,7 +414,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     saveInflight(sessionId, prevUserMsg.content);
 
     if (isLast) {
-      // Last pair: remove and re-add at bottom so user can see streaming
       set((state) => ({
         isStreaming: true,
         abortController: controller,
@@ -442,7 +424,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         ],
       }));
     } else {
-      // Middle message: replace in-place, preserve subsequent messages
       set((state) => ({
         isStreaming: true,
         abortController: controller,

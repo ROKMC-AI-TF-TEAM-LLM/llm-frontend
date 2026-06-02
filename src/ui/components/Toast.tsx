@@ -10,9 +10,7 @@ export default function Toast({ message, onClose, type = 'error' }: ToastProps) 
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // fade in
     const show = requestAnimationFrame(() => setVisible(true));
-    // start fade out 500ms before unmount
     const fadeOut = setTimeout(() => setVisible(false), 2500);
     const close = setTimeout(onClose, 3000);
     return () => {

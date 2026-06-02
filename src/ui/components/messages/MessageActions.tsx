@@ -15,6 +15,17 @@ function formatTime(iso?: string): string {
   return `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`;
 }
 
+function formatFullDate(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const yyyy = d.getFullYear();
+  const mo = d.getMonth() + 1;
+  const dd = d.getDate();
+  const h = d.getHours();
+  const m = d.getMinutes().toString().padStart(2, '0');
+  return `${yyyy}년 ${mo}월 ${dd}일 ${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`;
+}
+
 export default function MessageActions({ role = 'assistant', onCopy, onRegenerate, createdAt }: MessageActionsProps) {
   const isUser = role === 'user';
   const [copied, setCopied] = useState(false);
@@ -26,11 +37,17 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
   };
 
   const time = formatTime(createdAt);
+  const fullDate = formatFullDate(createdAt);
 
   return (
     <div className={`flex items-center gap-1 mt-0.5 mb-2 text-text-muted opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150 ${isUser ? 'justify-end' : 'ml-10'}`}>
       {isUser && time && (
-        <span className="text-[11px] text-text-muted mr-1">{time}</span>
+        <div className="relative group/time mr-1">
+          <span className="text-[11px] text-text-muted cursor-default">{time}</span>
+          <span className="pointer-events-none absolute -top-7 right-0 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
+            {fullDate}
+          </span>
+        </div>
       )}
 
       <div className="relative group/copy">
@@ -85,7 +102,12 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
       )}
 
       {!isUser && time && (
-        <span className="text-[11px] text-text-muted ml-1">{time}</span>
+        <div className="relative group/time ml-1">
+          <span className="text-[11px] text-text-muted cursor-default">{time}</span>
+          <span className="pointer-events-none absolute -top-7 left-0 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
+            {fullDate}
+          </span>
+        </div>
       )}
     </div>
   );
