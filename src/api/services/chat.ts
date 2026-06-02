@@ -1,4 +1,4 @@
-import { backendApi } from '../lib/axios'
+import { backendApi, refreshTokenOnce } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat'
 import type { Source } from '../../types'
@@ -14,22 +14,37 @@ export const streamMessage = async (
   signal?: AbortSignal,
   onSources?: (sources: Source[]) => void,
 ) => {
-  const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-  const parsedToken = token ? JSON.parse(token) : null
+  const makeRequest = async (token: string | null) =>
+    fetch(
+      `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(data),
+        signal,
+      }
+    )
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream',
-        ...(parsedToken && { Authorization: `Bearer ${parsedToken}` }),
-      },
-      body: JSON.stringify(data),
-      signal,
+  const rawToken = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+  let parsedToken = rawToken ? JSON.parse(rawToken) : null
+
+  let response = await makeRequest(parsedToken)
+
+  if (response.status === 401) {
+    try {
+      parsedToken = await refreshTokenOnce()
+    } catch {
+      localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+      localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+      window.location.href = '/'
+      throw new Error('HTTP 401')
     }
-  )
+    response = await makeRequest(parsedToken)
+  }
 
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
 

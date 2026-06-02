@@ -147,7 +147,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   abortStream: () => {
     get().abortController?.abort()
-    set({ abortController: null })
+    set({ abortController: null, isStreaming: false })
   },
 
   connect: async (sessionId: string) => {

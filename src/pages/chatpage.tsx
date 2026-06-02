@@ -34,7 +34,6 @@ export default function ChatPage() {
     const initialMessage = location.state?.initialMessage as string | undefined;
     setIsConnecting(true);
 
-    // Save before connect so refresh during connect phase can still recover
     if (initialMessage) {
       saveInflight(sessionId, initialMessage);
     }
@@ -57,6 +56,7 @@ export default function ChatPage() {
           navigate('/chat', { replace: true });
         }
       });
+  
   }, [sessionId]);
 
   if (sessionError) {

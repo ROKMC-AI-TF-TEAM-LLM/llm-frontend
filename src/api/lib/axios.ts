@@ -16,6 +16,33 @@ export const llmApi = axios.create({
   },
 })
 
+let pendingRefresh: Promise<string> | null = null
+
+export const refreshTokenOnce = (): Promise<string> => {
+  if (!pendingRefresh) {
+    const rawRefreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+    if (!rawRefreshToken) {
+      return Promise.reject(new Error('No refresh token'))
+    }
+    pendingRefresh = backendApi
+      .post<RefreshResponse>('/api/v1/auth/refresh', {
+        refresh_token: JSON.parse(rawRefreshToken),
+      })
+      .then(({ data }) => {
+        const { access_token, refresh_token } = data.data
+        localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(access_token))
+        localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(refresh_token))
+        return access_token
+      })
+      .finally(() => {
+        pendingRefresh = null
+      })
+  }
+  return pendingRefresh
+}
+
+const AUTH_ENDPOINTS = ['/api/v1/auth/login', '/api/v1/auth/signup', '/api/v1/auth/refresh']
+
 backendApi.interceptors.request.use((config) => {
   const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
   if (token) {
@@ -23,8 +50,6 @@ backendApi.interceptors.request.use((config) => {
   }
   return config
 })
-
-const AUTH_ENDPOINTS = ['/api/v1/auth/login', '/api/v1/auth/signup', '/api/v1/auth/refresh']
 
 backendApi.interceptors.response.use(
   (response) => response,
@@ -34,21 +59,10 @@ backendApi.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true
-
       try {
-        const rawRefreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-        if (!rawRefreshToken) throw new Error('No refresh token')
-
-        const { data } = await backendApi.post<RefreshResponse>('/api/v1/auth/refresh', {
-          refresh_token: JSON.parse(rawRefreshToken)
-        })
-
-        localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(data.data.access_token))
-        localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(data.data.refresh_token))
-
-        originalRequest.headers.Authorization = `Bearer ${data.data.access_token}`
+        const newToken = await refreshTokenOnce()
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
         return backendApi(originalRequest)
-
       } catch (refreshError) {
         localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
@@ -76,21 +90,10 @@ llmApi.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
-
       try {
-        const rawRefreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-        if (!rawRefreshToken) throw new Error('No refresh token')
-
-        const { data } = await backendApi.post<RefreshResponse>('/api/v1/auth/refresh', {
-          refresh_token: JSON.parse(rawRefreshToken)
-        })
-
-        localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(data.data.access_token))
-        localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(data.data.refresh_token))
-
-        originalRequest.headers.Authorization = `Bearer ${data.data.access_token}`
+        const newToken = await refreshTokenOnce()
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
         return llmApi(originalRequest)
-
       } catch (refreshError) {
         localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)

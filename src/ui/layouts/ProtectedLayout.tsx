@@ -9,14 +9,18 @@ import { SidebarSkeleton } from "../components/Skeleton";
 const ProtectedLayout = () => {
   const { accessToken, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
-  const { data: meData, isError, isLoading } = useGetMe();
+  const { data: meData, isError, error: meError, isLoading } = useGetMe();
   const { data: sessionsInfinite, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isSessionsLoading } = useInfiniteSessions();
 
   useEffect(() => {
     if (isError) {
-      logout();
+      const status = (meError as any)?.response?.status
+      if (status === 401) {
+        logout()
+      }
+      // 네트워크 오류 등 인증과 무관한 에러는 로그아웃 하지 않음 (TanStack Query가 자동 재시도)
     }
-  }, [isError, logout]);
+  }, [isError, meError, logout]);
 
   if (!accessToken) {
     return <Navigate to='/' replace />;
