@@ -9,6 +9,7 @@ const menuItems = [
   {
     label: "새 채팅",
     path: "/chat",
+    exact: true,
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -42,7 +43,9 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   return (
     <nav className="px-3 py-2 space-y-1">
       {menuItems.map((item) => {
-        const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+        const isActive = item.exact
+          ? location.pathname === item.path
+          : location.pathname === item.path || location.pathname.startsWith(item.path + '/');
         return (
           <button
             key={item.label}
