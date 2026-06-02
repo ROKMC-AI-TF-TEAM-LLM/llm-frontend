@@ -22,6 +22,7 @@ export default function ChatInput({
   const [value, setValue] = useState('');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,6 +33,13 @@ export default function ChatInput({
 
   const isNewChat = location.pathname === '/chat';
 
+  const resetTextarea = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.overflowY = 'hidden';
+  };
+
   const handleSubmit = async () => {
     if (!value.trim() && !pendingFile) return;
     if (isStreaming && !isNewChat) return;
@@ -41,8 +49,10 @@ export default function ChatInput({
       sendImageMessage(pendingFile, text || undefined);
       setPendingFile(null);
       setValue('');
+      resetTextarea();
     } else if (isNewChat) {
       setValue('');
+      resetTextarea();
       if (isStreaming) abortStream();
       try {
         const res = await createSession({ title: text });
@@ -54,10 +64,11 @@ export default function ChatInput({
     } else {
       sendMessage(text);
       setValue('');
+      resetTextarea();
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -70,7 +81,10 @@ export default function ChatInput({
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="brand-light border border-surface-border rounded-4xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden">
+      <div
+        className="brand-surface-subtle/60 border border-surface-border rounded-4xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden cursor-text"
+        onClick={() => textareaRef.current?.focus()}
+      >
         {pendingFile && (
           <div className="flex items-center gap-2 px-4 pt-3 pb-1">
             <div className="flex items-center gap-2 bg-brand text-white rounded-xl px-3 py-2 max-w-full">
@@ -103,7 +117,7 @@ export default function ChatInput({
           </div>
         )}
 
-        <div className="flex items-center px-6 py-5">
+        <div className="flex items-end px-6 py-5">
           <input
             ref={fileInputRef}
             type="file"
@@ -120,13 +134,21 @@ export default function ChatInput({
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
           </button>
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
+            rows={1}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+              const el = e.target;
+              setValue(el.value);
+              el.style.overflowY = 'hidden';
+              el.style.height = 'auto';
+              el.style.height = `${el.scrollHeight}px`;
+              if (el.scrollHeight > 192) el.style.overflowY = 'auto';
+            }}
             onKeyDown={handleKeyDown}
             placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
-            className="flex-1 mx-3 bg-transparent outline-none text-sm text-text-primary placeholder-text-muted"
+            className="flex-1 mx-3 bg-transparent outline-none text-sm text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal py-1"
           />
           {isStreaming && !isNewChat ? (
             <button
@@ -134,8 +156,8 @@ export default function ChatInput({
               className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover flex items-center justify-center transition-colors shrink-0 active:scale-95"
               aria-label="중단"
             >
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <rect x="4" y="4" width="16" height="16" rx="2" />
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="5" y="5" width="14" height="14" rx="2" />
               </svg>
             </button>
           ) : (

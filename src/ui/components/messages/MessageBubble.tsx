@@ -10,7 +10,7 @@ interface MessageBubbleProps {
 
 function StreamingCursor() {
   return (
-    <span className="inline-block w-0.5 h-4 ml-0.3 align-middle bg-text-secondary animate-pulse" />
+    <span className="inline-block w-[3px] h-[18px] ml-0.5 align-middle bg-text-secondary rounded-sm animate-cursor-blink" />
   );
 }
 

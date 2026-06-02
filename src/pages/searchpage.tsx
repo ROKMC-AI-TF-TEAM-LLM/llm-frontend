@@ -37,7 +37,7 @@ const SearchPage = () => {
     <div className="flex flex-col h-full px-6 pt-16 pb-6">
       <div className="max-w-2xl w-full mx-auto flex flex-col min-h-0 flex-1">
 
-        <h1 className="text-2xl font-medium text-text-primary text-center mb-8 shrink-0">
+        <h1 className="text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
           대화 검색
         </h1>
 

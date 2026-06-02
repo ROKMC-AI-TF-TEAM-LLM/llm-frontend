@@ -16,6 +16,8 @@
   --color-surface: #FFFFFF;
   --color-surface-subtle: #F3F2F0;
   --color-surface-border: #E8E6E3;
+  --color-surface-card1: #F9F8F7;
+  --color-surface-card2: #FAFAF9;
 
   --color-text-primary: #1A1917;
   --color-text-secondary: #6B6864;
@@ -69,6 +71,14 @@ body {
   text-shadow:
     0 0 10px rgba(232, 23, 74, 0.25),
     0 0 20px rgba(232, 23, 74, 0.10);
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-cursor-blink {
+  animation: cursor-blink 0.8s step-end infinite;
 }
 
 .scrollbar-hide {

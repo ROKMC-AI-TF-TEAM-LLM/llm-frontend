@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton } from '../ui/components/Skeleton';
+import Toast from '../ui/components/Toast';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type TabValue = DisplayStatus | 'all';
@@ -76,7 +77,7 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {isError && <p className="text-red-500">데이터를 불러오지 못했습니다.</p>}
+      {isError && <Toast message="데이터를 불러오지 못했습니다." onClose={() => {}} />}
 
       {!isLoading && users.length === 0 && (
         <p className="text-gray-400">해당하는 사용자가 없습니다.</p>

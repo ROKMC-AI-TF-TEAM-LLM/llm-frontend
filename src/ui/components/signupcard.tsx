@@ -12,7 +12,7 @@ interface SignupCardProps {
   register: UseFormRegister<SignupFormFields>
   errors: FieldErrors<SignupFormFields>
   isSubmitting: boolean
-  serverError: string
+  isDisabled: boolean
   onSubmit: (e?: BaseSyntheticEvent) => Promise<void>
   onLoginClick: () => void
 }
@@ -21,7 +21,7 @@ const SignupCard = ({
   register,
   errors,
   isSubmitting,
-  serverError,
+  isDisabled,
   onSubmit,
   onLoginClick,
 }: SignupCardProps) => {
@@ -43,7 +43,7 @@ const SignupCard = ({
 
       <form
         onSubmit={onSubmit}
-        className="flex flex-col items-center justify-center gap-2 px-10 py-10 w-1/2"
+        className="flex flex-col items-center justify-center gap-3 px-10 py-10 w-1/2"
       >
         <h2 className="text-lg font-bold text-text-primary mb-1">회원가입</h2>
 
@@ -51,7 +51,7 @@ const SignupCard = ({
           {...register('name')}
           type="text"
           placeholder="이름"
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.name ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
@@ -64,7 +64,7 @@ const SignupCard = ({
           type="email"
           placeholder="이메일"
           spellCheck={false}
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.email ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
@@ -76,7 +76,7 @@ const SignupCard = ({
           {...register('password')}
           type="password"
           placeholder="비밀번호"
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.password ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
@@ -88,7 +88,7 @@ const SignupCard = ({
           {...register('passwordCheck')}
           type="password"
           placeholder="비밀번호 확인"
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.passwordCheck ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
@@ -96,13 +96,9 @@ const SignupCard = ({
           <p className="text-xs text-brand w-full px-3">{errors.passwordCheck.message}</p>
         )}
 
-        {serverError && (
-          <p className="text-xs text-brand text-center w-full">{serverError}</p>
-        )}
-
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isDisabled}
           className="btn-primary w-full mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? '처리 중...' : '가입하기'}

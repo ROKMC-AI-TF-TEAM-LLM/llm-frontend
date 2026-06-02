@@ -10,7 +10,7 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
 
   return (
     <div
-      className={`flex items-center h-16 transition-all duration-300 ${
+      className={`flex items-center h-16 border-b border-surface-border transition-all duration-300 ${
         isOpen ? "justify-between px-6" : "justify-center px-0"
       }`}
     >

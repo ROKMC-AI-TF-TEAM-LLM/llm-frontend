@@ -10,7 +10,6 @@ interface LoginCardProps {
   touched: Record<keyof UserSignInformation, boolean>
   isLoading: boolean
   isDisabled: boolean
-  serverError: string
   onSubmit: () => void
   onSignupClick: () => void
 }
@@ -21,7 +20,6 @@ const LoginCard = ({
   touched,
   isLoading,
   isDisabled,
-  serverError,
   onSubmit,
   onSignupClick,
 }: LoginCardProps) => {
@@ -49,7 +47,7 @@ const LoginCard = ({
           type="email"
           placeholder="이메일"
           spellCheck={false}
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.email && touched?.email ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
@@ -61,16 +59,12 @@ const LoginCard = ({
           {...getInputProps('password')}
           type="password"
           placeholder="비밀번호"
-          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand/20 ${
+          className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
             errors?.password && touched?.password ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
         {errors?.password && touched?.password && (
           <p className="text-xs text-brand w-full px-3">{errors.password}</p>
-        )}
-
-        {serverError && (
-          <p className="text-xs text-brand text-center w-full">{serverError}</p>
         )}
 
         <button

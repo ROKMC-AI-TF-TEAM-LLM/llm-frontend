@@ -15,7 +15,7 @@ const RagSearchInput = ({
 
   return (
     <div
-      className="group flex items-center gap-3 pl-[18px] px-4 py-4 rounded-full bg-surface-subtle border border-surface-border transition-all duration-150 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand cursor-text"
+      className="group flex items-center gap-3 pl-[18px] pr-4 py-4 rounded-full bg-surface-subtle/60 border border-surface-border transition-all duration-150 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand cursor-text"
       onClick={() => inputRef.current?.focus()}
     >
       <svg
@@ -29,8 +29,7 @@ const RagSearchInput = ({
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <path d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
       <input
         ref={inputRef}

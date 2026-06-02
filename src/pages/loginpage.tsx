@@ -9,6 +9,7 @@ import { signup } from '../api/services/auth'
 import BackgroundWave from '../ui/components/backgroundwave'
 import LoginCard from '../ui/components/logincard'
 import SignupCard from '../ui/components/signupcard'
+import Toast from '../ui/components/Toast'
 
 const signupSchema = z.object({
   email: z.string().email('유효한 이메일 주소를 입력해주세요.'),
@@ -78,9 +79,11 @@ const LoginPage = () => {
 
   // 회원가입 폼 상태
   const [signupServerError, setSignupServerError] = useState('')
+  const [signupSuccess, setSignupSuccess] = useState(false)
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors: signupErrors, isSubmitting },
   } = useHookForm<SignupFields>({
     defaultValues: { name: '', email: '', password: '', passwordCheck: '' },
@@ -88,15 +91,27 @@ const LoginPage = () => {
     mode: 'onBlur',
   })
 
+  const signupValues = watch()
+  const isSignupDisabled =
+    isSubmitting ||
+    Object.values(signupValues).some((v) => v === '')
+
   const handleSignup: SubmitHandler<SignupFields> = async (data) => {
     const { passwordCheck: _, ...rest } = data
     try {
       await signup(rest)
+      setSignupSuccess(true)
       setMode('login')
     } catch (error: any) {
       const code = error?.response?.data?.error?.code
       setSignupServerError(SIGNUP_ERRORS[code] ?? '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
     }
+  }
+
+  const toastError = loginServerError || signupServerError
+  const clearToastError = () => {
+    setLoginServerError('')
+    setSignupServerError('')
   }
 
   return (
@@ -109,7 +124,6 @@ const LoginPage = () => {
           touched={touched}
           isLoading={isLoginLoading}
           isDisabled={isLoginDisabled}
-          serverError={loginServerError}
           onSubmit={handleLogin}
           onSignupClick={() => setMode('signup')}
         />
@@ -118,11 +132,13 @@ const LoginPage = () => {
           register={register}
           errors={signupErrors}
           isSubmitting={isSubmitting}
-          serverError={signupServerError}
+          isDisabled={isSignupDisabled}
           onSubmit={handleSubmit(handleSignup)}
           onLoginClick={() => setMode('login')}
         />
       )}
+      {toastError && <Toast message={toastError} onClose={clearToastError} />}
+      {signupSuccess && <Toast message="회원가입이 완료되었습니다." type="success" onClose={() => setSignupSuccess(false)} />}
     </>
   )
 }
