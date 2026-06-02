@@ -174,6 +174,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       type: 'text' as const,
       content: extractContent(m.content),
       status: 'done' as const,
+      createdAt: m.created_at,
     }));
 
     // Remove consecutive duplicate messages caused by retry bugs
@@ -245,13 +246,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const { sessionId } = get();
 
     saveInflight(sessionId, content);
+    const now = new Date().toISOString();
     set((state) => ({
       isStreaming: true,
       abortController: controller,
       messages: [
         ...state.messages,
-        { id: crypto.randomUUID(), role: 'user', type: 'text', content },
-        { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' },
+        { id: crypto.randomUUID(), role: 'user', type: 'text', content, createdAt: now },
+        { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
       ],
     }));
     streamRegistry.set(sessionId, get().messages);

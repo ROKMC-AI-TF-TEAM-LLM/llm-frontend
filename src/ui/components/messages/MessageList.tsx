@@ -32,6 +32,9 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     });
   }, [messages, isLoading]);
 
+  const lastAssistantId = [...messages].reverse()
+    .find((m) => m.role === 'assistant' && m.type === 'text' && m.status !== 'streaming')?.id;
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {});
   };
@@ -58,9 +61,9 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
           if (msg.role === 'user') {
             return (
-              <div key={msg.id}>
+              <div key={msg.id} className="group/msg">
                 <MessageBubble role="user" content={msg.content} />
-                <MessageActions role="user" onCopy={() => handleCopy(msg.content)} />
+                <MessageActions role="user" onCopy={() => handleCopy(msg.content)} createdAt={msg.createdAt} />
               </div>
             );
           }
@@ -68,14 +71,15 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
           const isStreaming = msg.status === 'streaming';
           const isInterrupted = msg.status === 'interrupted';
           return (
-            <div key={msg.id}>
+            <div key={msg.id} className="group/msg">
               <MessageBubble role="assistant" content={msg.content} isStreaming={isStreaming} />
               {!isStreaming && (
                 <>
                   <MessageActions
                     role="assistant"
                     onCopy={() => handleCopy(msg.content)}
-                    onRegenerate={() => regenerateMessage(msg.id)}
+                    onRegenerate={msg.id === lastAssistantId ? () => regenerateMessage(msg.id) : undefined}
+                    createdAt={msg.createdAt}
                   />
                   {isInterrupted && (
                     <div className="flex items-center gap-3 ml-12 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
