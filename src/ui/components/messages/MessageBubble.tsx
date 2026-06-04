@@ -4,6 +4,8 @@ import type { MessageRole } from '../../../types';
 
 const normalizeMarkdown = (content: string): string =>
   content
+    .replace(/\*\* +(?=\S)/g, '**')                      // "** 텍스트"  → "**텍스트"
+    .replace(/(?<=\S) +\*\*(?=[\s.,!?;:]|$)/gm, '**')   // "텍스트 **" → "텍스트**"
     .replace(/(?<=\S)\*\*(?=[가-힣぀-ヿ一-鿿])/g, '** ')
     .replace(/^[•·]\s*/gm, '- ');
 
@@ -48,7 +50,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
           max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed wrap-break-word
           ${isUser
             ? 'bg-brand text-white rounded-tr-sm whitespace-pre-wrap'
-            : 'bg-surface-subtle text-text-primary rounded-tl-sm'}
+            : 'bg-white text-text-primary rounded-tl-sm'}
         `}
       >
         {isUser ? (
