@@ -55,7 +55,7 @@ export const streamMessage = async (
 
   signal?.addEventListener('abort', () => reader.cancel(), { once: true })
 
-  const IDLE_MS = 120_000
+  const IDLE_MS = 1_200_000
   let timedOut = false
   let idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
 
