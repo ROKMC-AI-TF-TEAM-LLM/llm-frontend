@@ -1,4 +1,4 @@
-// 전체 API 에러 코드 목록
+// API 에러 코드 목록
 export type ApiErrorCode =
   | 'UNAUTHORIZED'
   | 'TOKEN_INVALID'

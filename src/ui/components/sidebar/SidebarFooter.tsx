@@ -61,6 +61,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
                     ? 'bg-brand-soft text-brand'
                     : 'bg-surface-border text-text-secondary',
                 ].join(' ')}>
+                  
                   {user.role === 'admin' ? '관리자' : '사용자'}
                 </span>
               </div>
@@ -94,7 +95,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         </div>
       )}
 
-      <div className={`border-t border-surface-border py-4 flex items-center transition-[padding] duration-300 ${isOpen ? "px-4" : "px-[22px]"}`}>
+      <div className={`border-t border-surface-border py-4 flex items-center gap-2 transition-[padding] duration-300 ${isOpen ? "px-4" : "px-[22px]"}`}>
         <button
           className="flex-1 flex items-center hover:bg-brand-subtle rounded-lg p-1 transition-colors"
           onClick={() => setShowModal(true)}
@@ -117,6 +118,18 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             )}
           </div>
         </button>
+
+        {isOpen && (
+          <button
+            onClick={logout}
+            className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors shrink-0 text-text-muted"
+            title="로그아웃"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        )}
       </div>
     </>
   );
