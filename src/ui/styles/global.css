@@ -81,6 +81,18 @@ body {
   animation: cursor-blink 0.8s step-end infinite;
 }
 
+@keyframes chase {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50%       { opacity: 1;    transform: scale(1);   }
+}
+.dot-chase {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #D4537E;
+  animation: chase 1.2s ease-in-out infinite;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

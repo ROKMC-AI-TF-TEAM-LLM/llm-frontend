@@ -21,11 +21,11 @@ function StreamingCursor() {
 
 function GeneratingIndicator() {
   return (
-    <div className="flex items-center gap-0.5 py-0.5">
-      {[0, 150, 300].map((delay) => (
+    <div className="flex items-center gap-[7px] py-0.5">
+      {[0, 200, 400, 600].map((delay) => (
         <span
           key={delay}
-          className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-bounce"
+          className="dot-chase"
           style={{ animationDelay: `${delay}ms` }}
         />
       ))}
