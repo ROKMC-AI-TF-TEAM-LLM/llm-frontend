@@ -8,8 +8,8 @@ import type {
     AdminUserRejectResponse,
     } from '../../types/user'
 
-export const getUsers = () =>
-  backendApi.get<AdminUsersResponse>('/api/v1/admin/users')
+export const getUsers = (page = 1, size = 10) =>
+  backendApi.get<AdminUsersResponse>('/api/v1/admin/users', { params: { page, size } })
 
 export const deleteUsers = (userId: string) =>
   backendApi.delete<AdminUserDeleteResponse>(`/api/v1/admin/users/${userId}`)

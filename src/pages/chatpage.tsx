@@ -29,6 +29,17 @@ export default function ChatPage() {
   const sendMessage = useChatStore((s) => s.sendMessage);
   const error = useChatStore((s) => s.error);
   const clearError = useChatStore((s) => s.clearError);
+  const isDeleted = useChatStore((s) => s.isDeleted);
+  const resetDeleted = useChatStore((s) => s.resetDeleted);
+
+  useEffect(() => {
+    if (isDeleted) {
+      const msg = error;
+      resetDeleted();
+      clearError();
+      navigate('/chat', { replace: true, state: { toastError: msg } });
+    }
+  }, [isDeleted]);
 
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;

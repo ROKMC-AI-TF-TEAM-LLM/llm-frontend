@@ -2,6 +2,7 @@ export interface MessageItem {
   role: 'human' | 'ai';
   content: string;
   created_at: string;
+  sources?: { name: string; page?: string | null }[];
 }
 
 // GetMessages

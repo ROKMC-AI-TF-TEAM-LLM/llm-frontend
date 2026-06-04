@@ -33,6 +33,13 @@ export interface AdminUserItem {
   created_at: string;
 }
 
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  size: number;
+  total_pages: number;
+}
+
 export interface AdminUsersResponse {
   success: boolean;
   status_code: number;
@@ -43,6 +50,7 @@ export interface AdminUsersResponse {
       approved: AdminUserItem[];
       rejected: AdminUserItem[];
     };
+    pagination: PaginationMeta;
   };
   error: null;
 }

@@ -22,7 +22,6 @@ function StreamingCursor() {
 function GeneratingIndicator() {
   return (
     <div className="flex items-center gap-2 text-text-secondary text-sm py-0.5">
-      <span>답변 생성하는 중</span>
       <span className="flex items-center gap-0.5">
         {[0, 150, 300].map((delay) => (
           <span

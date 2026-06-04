@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Message } from '../../types';
 import { streamMessage, getMessages } from '../services/chat';
+import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 
 interface ChatStore {
@@ -8,8 +9,10 @@ interface ChatStore {
   messages: Message[];
   isStreaming: boolean;
   error: string | null;
+  isDeleted: boolean;
   abortController: AbortController | null;
   clearError: () => void;
+  resetDeleted: () => void;
   abortStream: () => void;
   connect: (sessionId: string) => Promise<void>;
   disconnect: () => void;
@@ -141,9 +144,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   isStreaming: false,
   error: null,
+  isDeleted: false,
   abortController: null,
 
   clearError: () => set({ error: null }),
+  resetDeleted: () => set({ isDeleted: false }),
 
   abortStream: () => {
     get().abortController?.abort()
@@ -166,6 +171,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       content: extractContent(m.content),
       status: 'done' as const,
       createdAt: m.created_at,
+      ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
     }));
 
     const messages = rawMessages.filter((msg, i) => {
@@ -183,17 +189,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     const last = messages[messages.length - 1];
     if (last && last.role === 'user' && last.type === 'text') {
-      get().retryLastMessage();
+      if (getInflight(sessionId)) {
+        get().retryLastMessage();
+      }
       return;
     }
 
     const cached = loadCache(sessionId);
     if (cached.length > messages.length) {
       clearCache(sessionId);
-      clearInflight(sessionId);
       set({ messages: cached });
       const lastCached = cached[cached.length - 1];
-      if (lastCached?.role === 'user' && lastCached?.type === 'text') {
+      if (lastCached?.role === 'user' && lastCached?.type === 'text' && getInflight(sessionId)) {
+        clearInflight(sessionId);
         get().retryLastMessage();
       }
       return;
@@ -219,14 +227,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   disconnect: () => {
-    set({ sessionId: '', messages: [], isStreaming: false, abortController: null });
+    set({ sessionId: '', messages: [], isStreaming: false, abortController: null, isDeleted: false });
   },
 
   sendMessage: async (content: string) => {
     if (get().isStreaming) return;
     const controller = new AbortController()
     const assistantId = crypto.randomUUID();
-    const { sessionId } = get();
+    const { sessionId, messages: existingMessages } = get();
+    const isFirstMessage = existingMessages.length === 0;
 
     saveInflight(sessionId, content);
     const now = new Date().toISOString();
@@ -285,12 +294,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             ),
           }));
         } else {
-          set((state) => ({
-            error: '응답 중 오류가 발생했습니다.',
-            isStreaming: false,
-            abortController: null,
-            messages: state.messages.filter((m) => m.id !== assistantId),
-          }));
+          clearCache(sessionId);
+          if (get().sessionId === sessionId) {
+            set((state) => ({
+              error: '응답 중 오류가 발생했습니다.',
+              isStreaming: false,
+              abortController: null,
+              messages: state.messages.filter((m) => m.id !== assistantId),
+              ...(isFirstMessage ? { isDeleted: true } : {}),
+            }));
+            if (isFirstMessage) {
+              deleteSession(sessionId)
+                .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+                .catch(() => {});
+            }
+          }
         }
       }
       return;
@@ -314,6 +332,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const { messages, sessionId } = get();
     const last = messages[messages.length - 1];
     if (!last || last.role !== 'user' || last.type !== 'text') return;
+    const isFirstMessage = messages.length === 1;
 
     saveInflight(sessionId, last.content);
     const controller = new AbortController()
@@ -372,12 +391,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             ),
           }));
         } else {
-          set((state) => ({
-            error: '응답 중 오류가 발생했습니다.',
-            isStreaming: false,
-            abortController: null,
-            messages: state.messages.filter((m) => m.id !== assistantId),
-          }));
+          clearCache(sessionId);
+          if (get().sessionId === sessionId) {
+            set((state) => ({
+              error: '응답 중 오류가 발생했습니다.',
+              isStreaming: false,
+              abortController: null,
+              messages: state.messages.filter((m) => m.id !== assistantId),
+              ...(isFirstMessage ? { isDeleted: true } : {}),
+            }));
+            if (isFirstMessage) {
+              deleteSession(sessionId)
+                .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+                .catch(() => {});
+            }
+          }
         }
       }
       return;
@@ -419,6 +447,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     if (!prevUserMsg || prevUserMsg.type !== 'text') return;
     const userIdx = messages.findIndex((m) => m.id === prevUserMsg.id);
     const isLast = assistantIdx === messages.length - 1;
+    const isFirstMessage = userIdx === 0;
 
     const controller = new AbortController()
     const newAssistantId = crypto.randomUUID();
@@ -480,7 +509,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     } catch (e) {
       streamRegistry.delete(sessionId);
       clearInflight(sessionId);
+      clearCache(sessionId);
       if (get().sessionId === sessionId) {
+        const shouldDelete = !isAbortError(e) && isFirstMessage;
         set((state) => ({
           isStreaming: false,
           abortController: null,
@@ -492,7 +523,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
               )
             : state.messages.filter((m) => m.id !== newAssistantId),
           ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
+          ...(shouldDelete ? { isDeleted: true } : {}),
         }));
+        if (shouldDelete) {
+          deleteSession(sessionId)
+            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+            .catch(() => {});
+        }
       }
       return;
     }

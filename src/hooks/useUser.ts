@@ -12,10 +12,10 @@ export const useGetMe = () => {
   })
 }
 
-export const useGetUsers = () => {
+export const useGetUsers = (page = 1, size = 10) => {
   return useQuery({
-    queryKey: ['users'],
-    queryFn: () => getUsers(),
+    queryKey: ['users', page, size],
+    queryFn: () => getUsers(page, size),
     retry: false,
   })
 }
