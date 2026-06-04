@@ -31,6 +31,8 @@ export type GetMeErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID'
 export interface GetMe {
   name: string
   email: string
+  role?: UserRole
+  created_at?: string
 }
 export interface GetMeResponse {
   success: boolean

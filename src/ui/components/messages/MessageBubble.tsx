@@ -21,16 +21,22 @@ function StreamingCursor() {
 
 function GeneratingIndicator() {
   return (
-    <div className="flex items-center gap-2 text-text-secondary text-sm py-0.5">
-      <span className="flex items-center gap-0.5">
-        {[0, 150, 300].map((delay) => (
-          <span
-            key={delay}
-            className="inline-block w-1.5 h-1.5 rounded-full bg-text-secondary animate-bounce"
-            style={{ animationDelay: `${delay}ms` }}
-          />
-        ))}
-      </span>
+    <div className="py-1">
+      <svg
+        className="w-5 h-5 text-text-secondary animate-spin [animation-duration:4s]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="5" r="2" />
+        <path d="M12 7v14" />
+        <path d="M6 11h12" />
+        <path d="M12 21c-2-3-5-3-6 0" />
+        <path d="M12 21c2-3 5-3 6 0" />
+      </svg>
     </div>
   );
 }

@@ -49,7 +49,7 @@ const ProtectedLayout = () => {
 
   const userData = meData?.data?.data;
   const user = userData
-    ? { id: '', name: userData.name, email: userData.email }
+    ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
     : { id: '', name: '사용자' };
 
   const chats = (sessionsInfinite?.pages ?? [])
