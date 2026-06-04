@@ -42,7 +42,7 @@ const LoginPage = () => {
 
   const [isLoginLoading, setIsLoginLoading] = useState(false)
   const [loginServerError, setLoginServerError] = useState('')
-  const { values, errors: loginErrors, touched, getInputProps } = useForm<UserSignInformation>({
+  const { values, errors: loginErrors, touched, getInputProps, reset: resetLogin } = useForm<UserSignInformation>({
     initialValues: { email: '', password: '' },
     validate: validateSignIn,
   })
@@ -128,7 +128,7 @@ const LoginPage = () => {
           isLoading={isLoginLoading}
           isDisabled={isLoginDisabled}
           onSubmit={handleLogin}
-          onSignupClick={() => { resetSignup(); setSignupServerError(''); setMode('signup'); }}
+          onSignupClick={() => { resetLogin(); resetSignup(); setSignupServerError(''); setMode('signup'); }}
         />
       ) : (
         <SignupCard
@@ -137,7 +137,7 @@ const LoginPage = () => {
           isSubmitting={isSubmitting}
           isDisabled={isSignupDisabled}
           onSubmit={handleSubmit(handleSignup)}
-          onLoginClick={() => { setLoginServerError(''); setMode('login'); }}
+          onLoginClick={() => { resetLogin(); setLoginServerError(''); setMode('login'); }}
         />
       )}
       {toastError && <Toast key={toastSeq} message={toastError} onClose={clearToastError} />}
