@@ -89,27 +89,28 @@ export default function AdminPage() {
   const [copiedKey, setCopiedKey] = useState(0);
   const [mutationError, setMutationError] = useState('');
 
-  const { data, isLoading, isError } = useGetUsers(userPage, USER_PAGE_SIZE);
+  const { data, isLoading, isError } = useGetUsers({ size: 100 });
   const { data: meData } = useGetMe();
   const myEmail = meData?.data?.data?.email;
   const { mutate: approve, isPending: isApproving } = useApproveUser();
   const { mutate: rejectUser, isPending: isRejecting } = useRejectUser();
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUsers();
 
-  const responseData = data?.data?.data;
+  const allItems = data?.data?.data?.items ?? [];
   const isMutating = isApproving || isRejecting || isDeleting;
 
-  const allAdmins: DisplayUser[] = (responseData?.admins ?? []).map((u) => ({ ...u, displayStatus: 'admin' as DisplayStatus }));
+  const allAdmins: DisplayUser[] = allItems
+    .filter((u) => u.role === 'admin')
+    .map((u) => ({ ...u, displayStatus: 'admin' as DisplayStatus }));
   const adminTotalPages = Math.max(1, Math.ceil(allAdmins.length / ADMIN_PAGE_SIZE));
   const pagedAdmins = allAdmins.slice((adminPage - 1) * ADMIN_PAGE_SIZE, adminPage * ADMIN_PAGE_SIZE);
 
-  const allPageUsers: DisplayUser[] = [
-    ...(responseData?.users?.pending ?? []).map((u) => ({ ...u, displayStatus: 'pending' as DisplayStatus })),
-    ...(responseData?.users?.approved ?? []).map((u) => ({ ...u, displayStatus: 'approved' as DisplayStatus })),
-    ...(responseData?.users?.rejected ?? []).map((u) => ({ ...u, displayStatus: 'rejected' as DisplayStatus })),
-  ];
+  const allPageUsers: DisplayUser[] = allItems
+    .filter((u) => u.role === 'user')
+    .map((u) => ({ ...u, displayStatus: u.status as DisplayStatus }));
   const filteredUsers = userStatusTab === 'all' ? allPageUsers : allPageUsers.filter((u) => u.displayStatus === userStatusTab);
-  const userTotalPages = responseData?.pagination?.total_pages ?? 1;
+  const userTotalPages = Math.max(1, Math.ceil(filteredUsers.length / USER_PAGE_SIZE));
+  const pagedUsers = filteredUsers.slice((userPage - 1) * USER_PAGE_SIZE, userPage * USER_PAGE_SIZE);
 
   const myId = allAdmins.find((u) => u.email === myEmail)?.user_id;
 
@@ -227,7 +228,7 @@ export default function AdminPage() {
           {USER_TABS.map((tab) => (
             <button
               key={tab.value}
-              onClick={() => setUserStatusTab(tab.value)}
+              onClick={() => { setUserStatusTab(tab.value); setUserPage(1); }}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 userStatusTab === tab.value
                   ? 'bg-brand text-white'
@@ -242,14 +243,14 @@ export default function AdminPage() {
           <table className="w-full table-fixed bg-surface rounded-xl border border-surface-border shadow-sm text-sm">
             <TableHeader />
             <tbody>
-              {!isLoading && filteredUsers.length === 0 && (
+              {!isLoading && pagedUsers.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-text-muted">해당하는 사용자가 없습니다.</td>
                 </tr>
               )}
               {isLoading
                 ? [...Array(6)].map((_, i) => <AdminRowSkeleton key={i} />)
-                : filteredUsers.map((user) => <UserRow key={user.user_id} user={user} />)
+                : pagedUsers.map((user) => <UserRow key={user.user_id} user={user} />)
               }
             </tbody>
           </table>

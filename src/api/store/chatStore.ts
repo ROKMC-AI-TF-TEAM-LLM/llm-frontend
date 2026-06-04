@@ -139,149 +139,51 @@ const getInflight = (sessionId: string): string | null => {
   }
 }
 
-export const useChatStore = create<ChatStore>((set, get) => ({
-  sessionId: '',
-  messages: [],
-  isStreaming: false,
-  error: null,
-  isDeleted: false,
-  abortController: null,
-
-  clearError: () => set({ error: null }),
-  resetDeleted: () => set({ isDeleted: false }),
-
-  abortStream: () => {
-    get().abortController?.abort()
-    set({ abortController: null, isStreaming: false })
-  },
-
-  connect: async (sessionId: string) => {
-    const streaming = streamRegistry.get(sessionId);
-    if (streaming) {
-      set({ sessionId, messages: streaming, isStreaming: true });
-      return;
-    }
-    set({ sessionId, messages: [], isStreaming: false });
-    const res = await getMessages(sessionId);
-    if (get().sessionId !== sessionId || get().isStreaming) return;
-    const rawMessages: Message[] = res.data.data.messages.map((m) => ({
-      id: crypto.randomUUID(),
-      role: m.role === 'human' ? 'user' : 'assistant',
-      type: 'text' as const,
-      content: extractContent(m.content),
-      status: 'done' as const,
-      createdAt: m.created_at,
-      ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
-    }));
-
-    const messages = rawMessages.filter((msg, i) => {
-      if (i === 0) return true;
-      const prev = rawMessages[i - 1];
-      return !(
-        msg.role === prev.role &&
-        msg.type === 'text' &&
-        prev.type === 'text' &&
-        msg.content === prev.content
-      );
-    });
-
-    set({ messages });
-
-    const last = messages[messages.length - 1];
-    if (last && last.role === 'user' && last.type === 'text') {
-      if (getInflight(sessionId)) {
-        get().retryLastMessage();
-      }
-      return;
-    }
-
-    const cached = loadCache(sessionId);
-    if (cached.length > messages.length) {
-      clearCache(sessionId);
-      set({ messages: cached });
-      const lastCached = cached[cached.length - 1];
-      if (lastCached?.role === 'user' && lastCached?.type === 'text' && getInflight(sessionId)) {
-        clearInflight(sessionId);
-        get().retryLastMessage();
-      }
-      return;
-    }
-
-    const pending = getInflight(sessionId);
-    if (pending) {
-      const lastUserMsg = [...messages].reverse()
-        .find((m) => m.role === 'user' && m.type === 'text');
-      const alreadySaved = lastUserMsg?.type === 'text' && lastUserMsg.content === pending;
-      if (!alreadySaved) {
-        set((state) => ({
-          messages: [
-            ...state.messages,
-            { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending },
-          ],
-        }));
-        get().retryLastMessage();
-      } else {
-        clearInflight(sessionId);
-      }
-    }
-  },
-
-  disconnect: () => {
-    set({ sessionId: '', messages: [], isStreaming: false, abortController: null, isDeleted: false });
-  },
-
-  sendMessage: async (content: string) => {
-    if (get().isStreaming) return;
-    const controller = new AbortController()
-    const assistantId = crypto.randomUUID();
-    const { sessionId, messages: existingMessages } = get();
-    const isFirstMessage = existingMessages.length === 0;
-
-    saveInflight(sessionId, content);
-    const now = new Date().toISOString();
-    set((state) => ({
-      isStreaming: true,
-      abortController: controller,
-      messages: [
-        ...state.messages,
-        { id: crypto.randomUUID(), role: 'user', type: 'text', content, createdAt: now },
-        { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
-      ],
-    }));
-    streamRegistry.set(sessionId, get().messages);
-    saveCache(sessionId, get().messages);
-
+export const useChatStore = create<ChatStore>((set, get) => {
+  const executeStream = async (
+    sessionId: string,
+    assistantId: string,
+    question: string,
+    isFirstMessage: boolean,
+    signal: AbortSignal,
+  ): Promise<void> => {
     try {
-      await streamMessage(sessionId, { question: content }, (chunk) => {
-        if (get().sessionId !== sessionId) {
-          const reg = streamRegistry.get(sessionId);
-          if (reg) {
-            streamRegistry.set(sessionId, reg.map((m) =>
+      await streamMessage(
+        sessionId,
+        { question },
+        (chunk) => {
+          if (get().sessionId !== sessionId) {
+            const reg = streamRegistry.get(sessionId)
+            if (reg) {
+              streamRegistry.set(sessionId, reg.map((m) =>
+                m.id === assistantId && m.type === 'text'
+                  ? { ...m, content: m.content + chunk }
+                  : m
+              ))
+            }
+            return
+          }
+          set((state) => ({
+            messages: state.messages.map((m) =>
               m.id === assistantId && m.type === 'text'
                 ? { ...m, content: m.content + chunk }
                 : m
-            ));
-          }
-          return;
-        }
-        set((state) => ({
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
-              ? { ...m, content: m.content + chunk }
-              : m
-          ),
-        }));
-        streamRegistry.set(sessionId, get().messages);
-      }, controller.signal, (sources) => {
-        set((state) => ({
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
-          ),
-        }));
-      });
+            ),
+          }))
+          streamRegistry.set(sessionId, get().messages)
+        },
+        signal,
+        (sources) => {
+          set((state) => ({
+            messages: state.messages.map((m) =>
+              m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
+            ),
+          }))
+        },
+      )
     } catch (e) {
-      streamRegistry.delete(sessionId);
-      clearInflight(sessionId);
+      streamRegistry.delete(sessionId)
+      clearInflight(sessionId)
       if (get().sessionId === sessionId) {
         if (isAbortError(e)) {
           set((state) => ({
@@ -292,259 +194,301 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 ? { ...m, status: 'interrupted' as const }
                 : m
             ),
-          }));
+          }))
         } else {
-          clearCache(sessionId);
-          if (get().sessionId === sessionId) {
-            set((state) => ({
-              error: '응답 중 오류가 발생했습니다.',
-              isStreaming: false,
-              abortController: null,
-              messages: state.messages.filter((m) => m.id !== assistantId),
-              ...(isFirstMessage ? { isDeleted: true } : {}),
-            }));
-            if (isFirstMessage) {
-              deleteSession(sessionId)
-                .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-                .catch(() => {});
-            }
-          }
-        }
-      }
-      return;
-    }
-
-    streamRegistry.delete(sessionId);
-    clearInflight(sessionId);
-    if (get().sessionId !== sessionId) return;
-    set((state) => ({
-      isStreaming: false,
-      abortController: null,
-      messages: state.messages.map((m) =>
-        m.id === assistantId ? { ...m, status: 'done' as const } : m
-      ),
-    }));
-    queryClient.invalidateQueries({ queryKey: ['sessions'] });
-  },
-
-  retryLastMessage: async () => {
-    if (get().isStreaming) return;
-    const { messages, sessionId } = get();
-    const last = messages[messages.length - 1];
-    if (!last || last.role !== 'user' || last.type !== 'text') return;
-    const isFirstMessage = messages.length === 1;
-
-    saveInflight(sessionId, last.content);
-    const controller = new AbortController()
-    const assistantId = crypto.randomUUID();
-    set((state) => ({
-      isStreaming: true,
-      abortController: controller,
-      messages: [
-        ...state.messages,
-        { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' },
-      ],
-    }));
-    streamRegistry.set(sessionId, get().messages);
-    saveCache(sessionId, get().messages);
-
-    try {
-      await streamMessage(sessionId, { question: last.content }, (chunk) => {
-        if (get().sessionId !== sessionId) {
-          const reg = streamRegistry.get(sessionId);
-          if (reg) {
-            streamRegistry.set(sessionId, reg.map((m) =>
-              m.id === assistantId && m.type === 'text'
-                ? { ...m, content: m.content + chunk }
-                : m
-            ));
-          }
-          return;
-        }
-        set((state) => ({
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
-              ? { ...m, content: m.content + chunk }
-              : m
-          ),
-        }));
-        streamRegistry.set(sessionId, get().messages);
-      }, controller.signal, (sources) => {
-        set((state) => ({
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
-          ),
-        }));
-      });
-    } catch (e) {
-      streamRegistry.delete(sessionId);
-      clearInflight(sessionId);
-      if (get().sessionId === sessionId) {
-        if (isAbortError(e)) {
+          clearCache(sessionId)
           set((state) => ({
+            error: '응답 중 오류가 발생했습니다.',
             isStreaming: false,
             abortController: null,
-            messages: state.messages.map((m) =>
-              m.id === assistantId && m.type === 'text'
-                ? { ...m, status: 'interrupted' as const }
-                : m
-            ),
-          }));
-        } else {
-          clearCache(sessionId);
-          if (get().sessionId === sessionId) {
-            set((state) => ({
-              error: '응답 중 오류가 발생했습니다.',
-              isStreaming: false,
-              abortController: null,
-              messages: state.messages.filter((m) => m.id !== assistantId),
-              ...(isFirstMessage ? { isDeleted: true } : {}),
-            }));
-            if (isFirstMessage) {
-              deleteSession(sessionId)
-                .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-                .catch(() => {});
-            }
+            messages: state.messages.filter((m) => m.id !== assistantId),
+            ...(isFirstMessage ? { isDeleted: true } : {}),
+          }))
+          if (isFirstMessage) {
+            deleteSession(sessionId)
+              .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+              .catch(() => {})
           }
         }
       }
-      return;
+      return
     }
 
-    streamRegistry.delete(sessionId);
-    clearInflight(sessionId);
-    if (get().sessionId !== sessionId) return;
+    streamRegistry.delete(sessionId)
+    clearInflight(sessionId)
+    if (get().sessionId !== sessionId) return
     set((state) => ({
       isStreaming: false,
       abortController: null,
       messages: state.messages.map((m) =>
         m.id === assistantId ? { ...m, status: 'done' as const } : m
       ),
-    }));
-    queryClient.invalidateQueries({ queryKey: ['sessions'] });
-  },
+    }))
+    queryClient.invalidateQueries({ queryKey: ['sessions'] })
+  }
 
-  sendImageMessage: (filename: string, caption?: string) => {
-    set((state) => ({
-      messages: [
-        ...state.messages,
-        { id: crypto.randomUUID(), role: 'user' as const, type: 'image' as const, filename, caption },
-      ],
-    }));
-  },
+  return {
+    sessionId: '',
+    messages: [],
+    isStreaming: false,
+    error: null,
+    isDeleted: false,
+    abortController: null,
 
-  regenerateMessage: async (assistantId: string) => {
-    if (get().isStreaming) return;
-    const { messages, sessionId } = get();
-    const assistantIdx = messages.findIndex((m) => m.id === assistantId);
-    if (assistantIdx === -1) return;
+    clearError: () => set({ error: null }),
+    resetDeleted: () => set({ isDeleted: false }),
 
-    const prevUserMsg = messages
-      .slice(0, assistantIdx)
-      .reverse()
-      .find((m) => m.role === 'user' && m.type === 'text');
+    abortStream: () => {
+      get().abortController?.abort()
+      set({ abortController: null, isStreaming: false })
+    },
 
-    if (!prevUserMsg || prevUserMsg.type !== 'text') return;
-    const userIdx = messages.findIndex((m) => m.id === prevUserMsg.id);
-    const isLast = assistantIdx === messages.length - 1;
-    const isFirstMessage = userIdx === 0;
+    connect: async (sessionId: string) => {
+      const streaming = streamRegistry.get(sessionId);
+      if (streaming) {
+        set({ sessionId, messages: streaming, isStreaming: true });
+        return;
+      }
+      set({ sessionId, messages: [], isStreaming: false });
+      const res = await getMessages(sessionId);
+      if (get().sessionId !== sessionId || get().isStreaming) return;
+      const rawMessages: Message[] = res.data.data.messages.map((m) => ({
+        id: crypto.randomUUID(),
+        role: m.role === 'human' ? 'user' : 'assistant',
+        type: 'text' as const,
+        content: extractContent(m.content),
+        status: 'done' as const,
+        createdAt: m.created_at,
+        ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+      }));
 
-    const controller = new AbortController()
-    const newAssistantId = crypto.randomUUID();
+      // createdAt까지 일치하는 경우만 서버 중복으로 판단해 제거
+      const messages = rawMessages.filter((msg, i) => {
+        if (i === 0) return true;
+        const prev = rawMessages[i - 1];
+        return !(
+          msg.role === prev.role &&
+          msg.type === 'text' &&
+          prev.type === 'text' &&
+          msg.content === prev.content &&
+          msg.createdAt === prev.createdAt
+        );
+      });
 
-    saveInflight(sessionId, prevUserMsg.content);
+      set({ messages });
 
-    if (isLast) {
+      const last = messages[messages.length - 1];
+      if (last && last.role === 'user' && last.type === 'text') {
+        if (getInflight(sessionId)) {
+          get().retryLastMessage();
+        }
+        return;
+      }
+
+      const cached = loadCache(sessionId);
+      if (cached.length > messages.length) {
+        clearCache(sessionId);
+        set({ messages: cached });
+        const lastCached = cached[cached.length - 1];
+        if (lastCached?.role === 'user' && lastCached?.type === 'text' && getInflight(sessionId)) {
+          clearInflight(sessionId);
+          get().retryLastMessage();
+        }
+        return;
+      }
+
+      const pending = getInflight(sessionId);
+      if (pending) {
+        const lastUserMsg = [...messages].reverse()
+          .find((m) => m.role === 'user' && m.type === 'text');
+        const alreadySaved = lastUserMsg?.type === 'text' && lastUserMsg.content === pending;
+        if (!alreadySaved) {
+          set((state) => ({
+            messages: [
+              ...state.messages,
+              { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending },
+            ],
+          }));
+          get().retryLastMessage();
+        } else {
+          clearInflight(sessionId);
+        }
+      }
+    },
+
+    disconnect: () => {
+      set({ sessionId: '', messages: [], isStreaming: false, abortController: null, isDeleted: false });
+    },
+
+    sendMessage: async (content: string) => {
+      if (get().isStreaming) return
+      const controller = new AbortController()
+      const assistantId = crypto.randomUUID()
+      const { sessionId, messages: existingMessages } = get()
+      const isFirstMessage = existingMessages.length === 0
+
+      saveInflight(sessionId, content)
+      const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,
         abortController: controller,
         messages: [
-          ...state.messages.slice(0, userIdx),
-          { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: prevUserMsg.content },
-          { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const },
+          ...state.messages,
+          { id: crypto.randomUUID(), role: 'user', type: 'text', content, createdAt: now },
+          { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
         ],
-      }));
-    } else {
+      }))
+      streamRegistry.set(sessionId, get().messages)
+      saveCache(sessionId, get().messages)
+
+      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal)
+    },
+
+    retryLastMessage: async () => {
+      if (get().isStreaming) return
+      const { messages, sessionId } = get()
+      const last = messages[messages.length - 1]
+      if (!last || last.role !== 'user' || last.type !== 'text') return
+      const isFirstMessage = messages.length === 1
+
+      saveInflight(sessionId, last.content)
+      const controller = new AbortController()
+      const assistantId = crypto.randomUUID()
       set((state) => ({
         isStreaming: true,
         abortController: controller,
-        messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text'
-            ? { ...m, id: newAssistantId, content: '', status: 'streaming' as const }
-            : m
-        ),
+        messages: [
+          ...state.messages,
+          { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const },
+        ],
+      }))
+      streamRegistry.set(sessionId, get().messages)
+      saveCache(sessionId, get().messages)
+
+      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal)
+    },
+
+    sendImageMessage: (filename: string, caption?: string) => {
+      set((state) => ({
+        messages: [
+          ...state.messages,
+          { id: crypto.randomUUID(), role: 'user' as const, type: 'image' as const, filename, caption },
+        ],
       }));
-    }
+    },
 
-    streamRegistry.set(sessionId, get().messages);
+    regenerateMessage: async (assistantId: string) => {
+      if (get().isStreaming) return;
+      const { messages, sessionId } = get();
+      const assistantIdx = messages.findIndex((m) => m.id === assistantId);
+      if (assistantIdx === -1) return;
 
-    try {
-      await streamMessage(sessionId, { question: prevUserMsg.content }, (chunk) => {
-        if (get().sessionId !== sessionId) {
-          const reg = streamRegistry.get(sessionId);
-          if (reg) {
-            streamRegistry.set(sessionId, reg.map((m) =>
-              m.id === newAssistantId && m.type === 'text'
-                ? { ...m, content: m.content + chunk }
-                : m
-            ));
-          }
-          return;
-        }
+      const prevUserMsg = messages
+        .slice(0, assistantIdx)
+        .reverse()
+        .find((m) => m.role === 'user' && m.type === 'text');
+
+      if (!prevUserMsg || prevUserMsg.type !== 'text') return;
+      const userIdx = messages.findIndex((m) => m.id === prevUserMsg.id);
+      const isLast = assistantIdx === messages.length - 1;
+      const isFirstMessage = userIdx === 0;
+
+      const controller = new AbortController()
+      const newAssistantId = crypto.randomUUID();
+
+      saveInflight(sessionId, prevUserMsg.content);
+
+      if (isLast) {
         set((state) => ({
+          isStreaming: true,
+          abortController: controller,
+          messages: [
+            ...state.messages.slice(0, userIdx),
+            { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: prevUserMsg.content },
+            { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const },
+          ],
+        }));
+      } else {
+        set((state) => ({
+          isStreaming: true,
+          abortController: controller,
           messages: state.messages.map((m) =>
-            m.id === newAssistantId && m.type === 'text'
-              ? { ...m, content: m.content + chunk }
+            m.id === assistantId && m.type === 'text'
+              ? { ...m, id: newAssistantId, content: '', status: 'streaming' as const }
               : m
           ),
         }));
-        streamRegistry.set(sessionId, get().messages);
-      }, controller.signal, (sources) => {
-        set((state) => ({
-          messages: state.messages.map((m) =>
-            m.id === newAssistantId && m.type === 'text' ? { ...m, sources } : m
-          ),
-        }));
-      });
-    } catch (e) {
+      }
+
+      streamRegistry.set(sessionId, get().messages);
+
+      try {
+        await streamMessage(sessionId, { question: prevUserMsg.content }, (chunk) => {
+          if (get().sessionId !== sessionId) {
+            const reg = streamRegistry.get(sessionId);
+            if (reg) {
+              streamRegistry.set(sessionId, reg.map((m) =>
+                m.id === newAssistantId && m.type === 'text'
+                  ? { ...m, content: m.content + chunk }
+                  : m
+              ));
+            }
+            return;
+          }
+          set((state) => ({
+            messages: state.messages.map((m) =>
+              m.id === newAssistantId && m.type === 'text'
+                ? { ...m, content: m.content + chunk }
+                : m
+            ),
+          }));
+          streamRegistry.set(sessionId, get().messages);
+        }, controller.signal, (sources) => {
+          set((state) => ({
+            messages: state.messages.map((m) =>
+              m.id === newAssistantId && m.type === 'text' ? { ...m, sources } : m
+            ),
+          }));
+        });
+      } catch (e) {
+        streamRegistry.delete(sessionId);
+        clearInflight(sessionId);
+        clearCache(sessionId);
+        if (get().sessionId === sessionId) {
+          const shouldDelete = !isAbortError(e) && isFirstMessage;
+          set((state) => ({
+            isStreaming: false,
+            abortController: null,
+            messages: isAbortError(e)
+              ? state.messages.map((m) =>
+                  m.id === newAssistantId && m.type === 'text'
+                    ? { ...m, status: 'interrupted' as const }
+                    : m
+                )
+              : state.messages.filter((m) => m.id !== newAssistantId),
+            ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
+            ...(shouldDelete ? { isDeleted: true } : {}),
+          }));
+          if (shouldDelete) {
+            deleteSession(sessionId)
+              .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+              .catch(() => {});
+          }
+        }
+        return;
+      }
+
       streamRegistry.delete(sessionId);
       clearInflight(sessionId);
-      clearCache(sessionId);
-      if (get().sessionId === sessionId) {
-        const shouldDelete = !isAbortError(e) && isFirstMessage;
-        set((state) => ({
-          isStreaming: false,
-          abortController: null,
-          messages: isAbortError(e)
-            ? state.messages.map((m) =>
-                m.id === newAssistantId && m.type === 'text'
-                  ? { ...m, status: 'interrupted' as const }
-                  : m
-              )
-            : state.messages.filter((m) => m.id !== newAssistantId),
-          ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
-          ...(shouldDelete ? { isDeleted: true } : {}),
-        }));
-        if (shouldDelete) {
-          deleteSession(sessionId)
-            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-            .catch(() => {});
-        }
-      }
-      return;
-    }
-
-    streamRegistry.delete(sessionId);
-    clearInflight(sessionId);
-    if (get().sessionId !== sessionId) return;
-    set((state) => ({
-      isStreaming: false,
-      abortController: null,
-      messages: state.messages.map((m) =>
-        m.id === newAssistantId ? { ...m, status: 'done' as const } : m
-      ),
-    }));
-    queryClient.invalidateQueries({ queryKey: ['sessions'] });
-  },
-
-}));
+      if (get().sessionId !== sessionId) return;
+      set((state) => ({
+        isStreaming: false,
+        abortController: null,
+        messages: state.messages.map((m) =>
+          m.id === newAssistantId ? { ...m, status: 'done' as const } : m
+        ),
+      }));
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+  }
+});

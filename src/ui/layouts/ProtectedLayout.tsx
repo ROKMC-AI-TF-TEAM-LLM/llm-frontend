@@ -26,13 +26,25 @@ const ProtectedLayout = () => {
     return <Navigate to='/' replace />;
   }
 
-  if (isLoading || isError) {
+  if (isLoading) {
     return (
       <div className="flex h-screen">
         <SidebarSkeleton />
         <div className="flex-1 min-w-0" />
       </div>
     );
+  }
+
+  if (isError) {
+    const status = (meError as any)?.response?.status;
+    if (status !== 401) {
+      return (
+        <div className="flex h-screen items-center justify-center">
+          <p className="text-sm text-text-secondary">서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+        </div>
+      );
+    }
+    return null;
   }
 
   const userData = meData?.data?.data;

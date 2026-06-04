@@ -45,9 +45,11 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   };
 
 const logout = async () => {
-  if (refreshToken) {
+  const rawToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN);
+  const currentRefreshToken = rawToken ? JSON.parse(rawToken) : null;
+  if (currentRefreshToken) {
     try {
-      await logoutApi({ refresh_token: refreshToken });
+      await logoutApi({ refresh_token: currentRefreshToken });
     } catch {}
   }
   removeAccessTokenFromStorage();

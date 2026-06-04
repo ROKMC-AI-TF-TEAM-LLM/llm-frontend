@@ -26,7 +26,7 @@ const menuItems = [
     ),
   },
   {
-    label: "RAG 목록",
+    label: "문서 검색",
     path: "/rag",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
