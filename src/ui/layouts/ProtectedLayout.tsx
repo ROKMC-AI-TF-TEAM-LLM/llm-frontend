@@ -57,7 +57,7 @@ const ProtectedLayout = () => {
     .map((s) => ({ id: s.session_id, title: s.title }));
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
@@ -68,7 +68,7 @@ const ProtectedLayout = () => {
         isInitialLoading={isSessionsLoading}
         isLoadingMore={isFetchingNextPage}
       />
-      <main className="flex-1 min-w-0 overflow-y-auto">
+      <main className="flex-1 min-w-0 min-h-0 overflow-y-auto">
         <Outlet />
       </main>
     </div>

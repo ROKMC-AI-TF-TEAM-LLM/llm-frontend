@@ -19,7 +19,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: SidebarProps) {
   return (
     <aside
-      className={`flex flex-col h-screen bg-surface-card2 border-r border-surface-border transition-[width] duration-300 ease-in-out overflow-hidden ${
+      className={`flex flex-col h-full shrink-0 bg-surface-card2 border-r border-surface-border transition-[width] duration-300 ease-in-out overflow-hidden ${
         isOpen ? "w-64" : "w-20"
       }`}
     >
