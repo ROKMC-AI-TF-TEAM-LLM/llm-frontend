@@ -23,6 +23,10 @@
   --color-text-secondary: #6B6864;
   --color-text-muted: #A8A5A1;
   --color-text-hint: #E5E3E0;
+
+  --color-status-ok: #22c55e;
+  --color-status-error: #ef4444;
+  --color-status-muted: #d1d5db;
 }
 
 *, *::before, *::after {
