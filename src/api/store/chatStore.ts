@@ -92,7 +92,9 @@ const saveCache = (sessionId: string, messages: Message[]) => {
     )
     if (cacheable.length > 0)
       sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
-  } catch {}
+  } catch {
+    // sessionStorage 용량 초과 등 — 캐시 실패는 무시
+  }
 }
 
 const loadCache = (sessionId: string): Message[] => {
@@ -100,12 +102,13 @@ const loadCache = (sessionId: string): Message[] => {
     const raw = sessionStorage.getItem(CACHE_KEY(sessionId))
     return raw ? JSON.parse(raw) : []
   } catch {
+    // 파싱 실패 시 빈 배열 반환
     return []
   }
 }
 
 export const clearCache = (sessionId: string) => {
-  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
+  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch { /* 무시 */ }
 }
 
 if (typeof window !== 'undefined') {
@@ -140,6 +143,8 @@ const getInflight = (sessionId: string): string | null => {
 }
 
 export const useChatStore = create<ChatStore>((set, get) => {
+  let connectAbortController = new AbortController();
+
   const executeStream = async (
     sessionId: string,
     assistantId: string,
@@ -244,13 +249,26 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
 
     connect: async (sessionId: string) => {
+      // 이전 connect fetch가 진행 중이면 취소
+      connectAbortController.abort();
+      connectAbortController = new AbortController();
+      const { signal } = connectAbortController;
+
       const streaming = streamRegistry.get(sessionId);
       if (streaming) {
         set({ sessionId, messages: streaming, isStreaming: true });
         return;
       }
       set({ sessionId, messages: [], isStreaming: false });
-      const res = await getMessages(sessionId);
+
+      let res;
+      try {
+        res = await getMessages(sessionId, { signal });
+      } catch (e) {
+        if (isAbortError(e)) return; // 세션 전환으로 취소된 요청 — 무시
+        throw e;
+      }
+
       if (get().sessionId !== sessionId || get().isStreaming) return;
       const rawMessages: Message[] = res.data.data.messages.map((m) => ({
         id: crypto.randomUUID(),

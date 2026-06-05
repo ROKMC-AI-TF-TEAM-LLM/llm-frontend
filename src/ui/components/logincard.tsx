@@ -1,23 +1,23 @@
-import type { UserSignInformation } from '../../utils/validate'
+import type { UseFormRegister, FieldErrors } from 'react-hook-form'
+import type { BaseSyntheticEvent } from 'react'
+
+interface LoginFormFields {
+  email: string
+  password: string
+}
 
 interface LoginCardProps {
-  getInputProps: (name: keyof UserSignInformation) => {
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    onBlur: () => void
-  }
-  errors: Record<keyof UserSignInformation, string>
-  touched: Record<keyof UserSignInformation, boolean>
+  register: UseFormRegister<LoginFormFields>
+  errors: FieldErrors<LoginFormFields>
   isLoading: boolean
   isDisabled: boolean
-  onSubmit: () => void
+  onSubmit: (e?: BaseSyntheticEvent) => Promise<void>
   onSignupClick: () => void
 }
 
 const LoginCard = ({
-  getInputProps,
+  register,
   errors,
-  touched,
   isLoading,
   isDisabled,
   onSubmit,
@@ -38,37 +38,39 @@ const LoginCard = ({
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center gap-3 px-10 py-12 w-1/2">
+      <form
+        onSubmit={onSubmit}
+        className="flex flex-col items-center justify-center gap-3 px-10 py-12 w-1/2"
+      >
         <h2 className="text-lg font-bold text-text-primary mb-1">로그인</h2>
 
         <input
-          {...getInputProps('email')}
+          {...register('email')}
           type="email"
           placeholder="이메일"
           spellCheck={false}
           className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
-            errors?.email && touched?.email ? 'border-brand bg-brand-subtle' : 'border-surface-border'
+            errors?.email ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
-        {errors?.email && touched?.email && (
-          <p className="text-xs text-brand w-full px-3">{errors.email}</p>
+        {errors?.email && (
+          <p className="text-xs text-brand w-full px-3">{errors.email.message}</p>
         )}
 
         <input
-          {...getInputProps('password')}
+          {...register('password')}
           type="password"
           placeholder="비밀번호"
           className={`w-full rounded-full border px-3 py-2 text-sm outline-none transition placeholder:text-text-muted focus:ring-2 focus:ring-brand ${
-            errors?.password && touched?.password ? 'border-brand bg-brand-subtle' : 'border-surface-border'
+            errors?.password ? 'border-brand bg-brand-subtle' : 'border-surface-border'
           }`}
         />
-        {errors?.password && touched?.password && (
-          <p className="text-xs text-brand w-full px-3">{errors.password}</p>
+        {errors?.password && (
+          <p className="text-xs text-brand w-full px-3">{errors.password.message}</p>
         )}
 
         <button
-          type="button"
-          onClick={onSubmit}
+          type="submit"
           disabled={isDisabled}
           className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -82,7 +84,7 @@ const LoginCard = ({
         >
           회원가입
         </button>
-      </div>
+      </form>
     </div>
   )
 }

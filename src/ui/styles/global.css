@@ -39,6 +39,7 @@ body {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .btn-primary {
@@ -91,6 +92,12 @@ body {
   border-radius: 50%;
   background: #D4537E;
   animation: chase 1.2s ease-in-out infinite;
+}
+
+/* 모달 열렸을 때 배경 스크롤 차단 */
+body.modal-open main,
+body.modal-open {
+  overflow: hidden !important;
 }
 
 .scrollbar-hide {

@@ -20,7 +20,11 @@ const RagPage = () => {
     if (!selectedDoc) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedDoc(null) }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    document.body.classList.add('modal-open')
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.classList.remove('modal-open')
+    }
   }, [selectedDoc])
 
   return (

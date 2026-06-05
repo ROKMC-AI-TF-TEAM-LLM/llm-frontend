@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useGetMe } from "../../hooks/useUser";
 import { useInfiniteSessions } from "../../hooks/useSession";
 import { SidebarSkeleton } from "../components/Skeleton";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const ProtectedLayout = () => {
   const { accessToken, logout } = useAuth();
@@ -57,7 +58,7 @@ const ProtectedLayout = () => {
     .map((s) => ({ id: s.session_id, title: s.title }));
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <>
       <Sidebar
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
@@ -68,10 +69,12 @@ const ProtectedLayout = () => {
         isInitialLoading={isSessionsLoading}
         isLoadingMore={isFetchingNextPage}
       />
-      <main className="flex-1 min-w-0 min-h-0 overflow-y-auto">
-        <Outlet />
+      <main className={`h-screen overflow-y-auto overflow-x-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}>
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
-    </div>
+    </>
   );
 }
 

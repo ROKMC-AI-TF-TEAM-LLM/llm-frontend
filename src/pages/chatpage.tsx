@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
-import ChatInput from '../ui/components/chat/chatinput';
+import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
 import { useChatStore, saveInflight } from '../api/store/chatStore';
 import { useGetSessions } from '../hooks/useSession';

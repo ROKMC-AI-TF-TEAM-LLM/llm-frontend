@@ -3,8 +3,8 @@ import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat'
 import type { Source } from '../../types'
 
-export const getMessages = (sessionId: string) =>
-  backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`)
+export const getMessages = (sessionId: string, options?: { signal?: AbortSignal }) =>
+  backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, options)
 
 
 export const streamMessage = async (
@@ -55,7 +55,7 @@ export const streamMessage = async (
 
   signal?.addEventListener('abort', () => reader.cancel(), { once: true })
 
-  const IDLE_MS = 1_200_000
+  const IDLE_MS = Number(import.meta.env.VITE_STREAM_IDLE_MS) || 1_200_000
   let timedOut = false
   let idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
 
@@ -83,7 +83,8 @@ export const streamMessage = async (
         } else if (parsed.type === 'sources' && Array.isArray(parsed.items)) {
           onSources?.(parsed.items)
         }
-      } catch {
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('[SSE] JSON parse failed, skipping chunk:', e)
       }
     }
   }

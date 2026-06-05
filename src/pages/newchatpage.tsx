@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
-import ChatInput from "../ui/components/chat/chatinput"
+import ChatInput from "../ui/components/chat/ChatInput"
 import Toast from "../ui/components/Toast"
 import { useGetMe } from "../hooks/useUser"
 

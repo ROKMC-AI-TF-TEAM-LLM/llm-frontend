@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser } from '../hooks/useUser';
+import { useState, useEffect } from 'react';
+import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser, useInquiryUsers } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
-import { AdminRowSkeleton } from '../ui/components/Skeleton';
+import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
 import Toast from '../ui/components/Toast';
+import { getApiError } from '../utils/error';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type UserStatusTab = 'all' | 'pending' | 'approved' | 'rejected';
@@ -19,7 +20,7 @@ const STATUS_LABEL: Record<DisplayStatus, string> = {
 };
 
 const STATUS_STYLE: Record<DisplayStatus, string> = {
-  admin: 'bg-blue-100 text-blue-700',
+  admin: 'bg-brand-soft text-brand',
   pending: 'bg-yellow-100 text-yellow-700',
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-brand-subtle text-brand',
@@ -38,13 +39,86 @@ const ADMIN_MUTATION_ERRORS: Record<string, string> = {
   UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
 };
 
-const getAdminMutationError = (error: unknown): string => {
-  const code = (error as any)?.response?.data?.error?.code;
-  return ADMIN_MUTATION_ERRORS[code] ?? '처리 중 오류가 발생했습니다.';
-};
+const getAdminMutationError = (error: unknown): string =>
+  getApiError(error, ADMIN_MUTATION_ERRORS, {}, '처리 중 오류가 발생했습니다.');
 
 const ADMIN_PAGE_SIZE = 5;
 const USER_PAGE_SIZE = 5;
+
+function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const { data, isLoading } = useInquiryUsers(userId);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    document.body.classList.add('modal-open');
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.classList.remove('modal-open');
+    };
+  }, [onClose]);
+
+  const user = data?.data?.data;
+
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  const rows: { label: string; content: React.ReactNode }[] = user ? [
+    { label: '이름',      content: <span className="text-sm text-text-secondary">{user.name}</span> },
+    { label: '이메일',    content: <span className="text-sm text-text-secondary">{user.email}</span> },
+    { label: '사용자 ID', content: <span className="font-mono text-xs text-text-muted break-all text-right">{user.user_id}</span> },
+    { label: '역할',      content: (
+      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${user.role === 'admin' ? 'bg-brand-soft text-brand' : 'bg-green-100 text-green-700'}`}>
+        {user.role === 'admin' ? '관리자' : '사용자'}
+      </span>
+    )},
+    { label: '상태',      content: (
+      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${STATUS_STYLE[user.status as keyof typeof STATUS_STYLE] ?? ''}`}>
+        {STATUS_LABEL[user.status as keyof typeof STATUS_LABEL] ?? user.status}
+      </span>
+    )},
+    { label: '가입일',    content: <span className="text-sm text-text-secondary">{fmt(user.created_at)}</span> },
+    { label: '수정일',    content: <span className="text-sm text-text-secondary">{fmt(user.updated_at)}</span> },
+  ] : [];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-surface rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 py-5 border-b border-surface-border">
+          <h2 className="text-base font-semibold text-text-primary">사용자 상세 정보</h2>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors" aria-label="닫기">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="px-6 py-5 space-y-4">
+            {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-5 w-full" />)}
+          </div>
+        ) : !user ? (
+          <div className="px-6 py-8 text-center text-sm text-text-muted">정보를 불러오지 못했습니다.</div>
+        ) : (
+          <div className="px-6 py-5 space-y-4">
+            {rows.map(({ label, content }) => (
+              <div key={label} className="flex items-start justify-between gap-4">
+                <span className="text-xs font-medium text-text-muted shrink-0 mt-0.5">{label}</span>
+                {content}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) => {
   if (totalPages <= 1) return null;
@@ -88,6 +162,8 @@ export default function AdminPage() {
   const [userStatusTab, setUserStatusTab] = useState<UserStatusTab>('all');
   const [copiedKey, setCopiedKey] = useState(0);
   const [mutationError, setMutationError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useGetUsers({ size: 100 });
   const { data: meData } = useGetMe();
@@ -108,7 +184,9 @@ export default function AdminPage() {
   const allPageUsers: DisplayUser[] = allItems
     .filter((u) => u.role === 'user')
     .map((u) => ({ ...u, displayStatus: u.status as DisplayStatus }));
-  const filteredUsers = userStatusTab === 'all' ? allPageUsers : allPageUsers.filter((u) => u.displayStatus === userStatusTab);
+  const filteredUsers = allPageUsers
+    .filter((u) => userStatusTab === 'all' || u.displayStatus === userStatusTab)
+    .filter((u) => !searchQuery || u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase()));
   const userTotalPages = Math.max(1, Math.ceil(filteredUsers.length / USER_PAGE_SIZE));
   const pagedUsers = filteredUsers.slice((userPage - 1) * USER_PAGE_SIZE, userPage * USER_PAGE_SIZE);
 
@@ -128,12 +206,16 @@ export default function AdminPage() {
   );
 
   const UserRow = ({ user }: { user: DisplayUser }) => (
-    <tr key={user.user_id} className="border-b border-surface-border last:border-0 hover:bg-surface-card1">
+    <tr
+      key={user.user_id}
+      className="border-b border-surface-border last:border-0 hover:bg-surface-card1 cursor-pointer"
+      onClick={() => setSelectedUserId(user.user_id)}
+    >
       <td className="px-4 py-3 font-medium text-text-primary">{user.name}</td>
       <td className="px-4 py-3 text-text-secondary">{user.email}</td>
       <td className="px-4 py-3">
         <button
-          onClick={() => navigator.clipboard.writeText(user.user_id).then(() => setCopiedKey(k => k + 1))}
+          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(user.user_id).then(() => setCopiedKey(k => k + 1)); }}
           title="클릭하여 복사"
           className="font-mono text-xs text-text-muted hover:text-text-primary hover:bg-surface-subtle px-2 py-0.5 rounded transition-colors"
         >
@@ -148,7 +230,7 @@ export default function AdminPage() {
       <td className="px-4 py-3 text-text-muted">
         {new Date(user.created_at).toLocaleDateString('ko-KR')}
       </td>
-      <td className="px-4 py-3 flex gap-2">
+      <td className="px-4 py-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
         {user.displayStatus === 'pending' && (
           <>
             <button
@@ -200,7 +282,10 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-full bg-surface-subtle p-8">
+    <div className="min-h-full bg-white p-8">
+      {selectedUserId && (
+        <UserDetailModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
+      )}
       {copiedKey > 0 && (
         <Toast key={copiedKey} message="ID가 복사되었습니다." type="success" onClose={() => setCopiedKey(0)} />
       )}
@@ -234,20 +319,34 @@ export default function AdminPage() {
 
       <section>
         <h2 className="text-base font-semibold text-text-primary mb-3">사용자</h2>
-        <div className="flex gap-2 mb-4">
-          {USER_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => { setUserStatusTab(tab.value); setUserPage(1); }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors  ${
-                userStatusTab === tab.value
-                  ? 'bg-brand text-white'
-                  : 'bg-surface text-text-secondary border border-surface-border hover:bg-surface-subtle'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex gap-2">
+            {USER_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => { setUserStatusTab(tab.value); setUserPage(1); }}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  userStatusTab === tab.value
+                    ? 'bg-brand text-white'
+                    : 'bg-surface text-text-secondary border border-surface-border hover:bg-surface-subtle'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="relative ml-auto">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setUserPage(1); }}
+              placeholder="이름 또는 이메일 검색.."
+              className="pl-9 pr-4 py-1.5 text-sm rounded-full border border-surface-border bg-surface text-text-primary placeholder-text-muted focus:outline-none focus:border-brand transition-colors w-56 text-center"
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full table-fixed bg-surface rounded-xl border border-surface-border shadow-sm text-sm">
