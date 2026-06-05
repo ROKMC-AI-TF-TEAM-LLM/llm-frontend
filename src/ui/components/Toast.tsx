@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ToastProps {
   message: string;
@@ -19,21 +19,36 @@ const STYLES = {
   },
 };
 
+const TOTAL_MS = 5000;
+const FADE_MS = 400;
+
 export default function Toast({ message, onClose, type = 'error' }: ToastProps) {
+  const [visible, setVisible] = useState(false);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
-    const timer = setTimeout(onClose, 5000);
-    return () => clearTimeout(timer);
-  }, [message, onClose]);
+    const show = requestAnimationFrame(() => setVisible(true));
+    const fadeOut = setTimeout(() => setVisible(false), TOTAL_MS - FADE_MS);
+    const close = setTimeout(() => onCloseRef.current(), TOTAL_MS);
+    return () => {
+      cancelAnimationFrame(show);
+      clearTimeout(fadeOut);
+      clearTimeout(close);
+    };
+  }, []);
 
   const style = STYLES[type];
 
-  return ( 
-    <div className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap ${style.container}`}>
+  return (
+    <div
+      className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap transition-opacity duration-[400ms] ${visible ? 'opacity-100' : 'opacity-0'} ${style.container}`}
+    >
       <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d={style.path} />
       </svg>
       {message}
-      <button onClick={onClose} className={`ml-1 ${style.icon}`}>
+      <button onClick={() => onCloseRef.current()} className={`ml-1 ${style.icon}`}>
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>

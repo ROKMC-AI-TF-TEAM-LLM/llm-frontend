@@ -26,12 +26,18 @@ function useForm<T>({ initialValues, validate }: UseFormProps<T>) {
     return { value, onChange, onBlur };
   };
 
+  const reset = () => {
+    setValues(initialValues);
+    setTouched({} as Record<keyof T, boolean>);
+    setErrors({} as Record<keyof T, string>);
+  };
+
   useEffect(() => {
     const userErrors = validate(values);
     setErrors(userErrors);
   }, [values, validate]);
 
-  return { values, errors, touched, getInputProps };
+  return { values, errors, touched, getInputProps, reset };
 }
 
 export default useForm;

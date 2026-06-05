@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
-import { useChatStore } from '../../../api/store/chatStore';
+import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
 import { useCreateSession } from '../../../hooks/useSession';
+import Toast from '../Toast';
 
 interface ChatInputProps {
   placeholder?: string;
@@ -21,6 +22,7 @@ export default function ChatInput({
   const { mutateAsync: createSession } = useCreateSession();
   const [value, setValue] = useState('');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
+  const [inputError, setInputError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -54,12 +56,26 @@ export default function ChatInput({
       setValue('');
       resetTextarea();
       if (isStreaming) abortStream();
+      const prevSessionId = useChatStore.getState().sessionId;
+      if (prevSessionId) {
+        clearInflight(prevSessionId);
+        clearCache(prevSessionId);
+      }
       try {
         const res = await createSession({ title: text });
         const sessionId = res.data.data.session_id;
+        saveInflight(sessionId, text);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
-      } catch {
+      } catch (e: unknown) {
         setValue(text);
+        const code = (e as any)?.response?.data?.error?.code;
+        if (code === 'UNAUTHORIZED') {
+          setInputError('인증이 만료되었습니다. 다시 로그인해주세요.');
+        } else if (!((e as any)?.response)) {
+          setInputError('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+        } else {
+          setInputError('채팅 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }
       }
     } else {
       sendMessage(text);
@@ -81,6 +97,7 @@ export default function ChatInput({
 
   return (
     <div className="w-full max-w-3xl mx-auto">
+      {inputError && <Toast message={inputError} onClose={() => setInputError('')} />}
       <div
         className="brand-surface-subtle/60 border border-surface-border rounded-4xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}

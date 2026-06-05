@@ -40,10 +40,9 @@ const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const { login } = useAuth()
 
-  // 로그인 폼 상태
   const [isLoginLoading, setIsLoginLoading] = useState(false)
   const [loginServerError, setLoginServerError] = useState('')
-  const { values, errors: loginErrors, touched, getInputProps } = useForm<UserSignInformation>({
+  const { values, errors: loginErrors, touched, getInputProps, reset: resetLogin } = useForm<UserSignInformation>({
     initialValues: { email: '', password: '' },
     validate: validateSignIn,
   })
@@ -72,17 +71,20 @@ const LoginPage = () => {
         500: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
       }
       setLoginServerError(LOGIN_ERRORS[code] ?? STATUS_ERRORS[status] ?? '로그인 중 오류가 발생했습니다.')
+      bumpToast()
     } finally {
       setIsLoginLoading(false)
     }
   }
 
-  // 회원가입 폼 상태
   const [signupServerError, setSignupServerError] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
+  const [toastSeq, setToastSeq] = useState(0)
+  const bumpToast = () => setToastSeq((s) => s + 1)
   const {
     register,
     handleSubmit,
+    reset: resetSignup,
     watch,
     formState: { errors: signupErrors, isSubmitting },
   } = useHookForm<SignupFields>({
@@ -105,6 +107,7 @@ const LoginPage = () => {
     } catch (error: any) {
       const code = error?.response?.data?.error?.code
       setSignupServerError(SIGNUP_ERRORS[code] ?? '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
+      bumpToast()
     }
   }
 
@@ -125,7 +128,7 @@ const LoginPage = () => {
           isLoading={isLoginLoading}
           isDisabled={isLoginDisabled}
           onSubmit={handleLogin}
-          onSignupClick={() => setMode('signup')}
+          onSignupClick={() => { resetLogin(); resetSignup(); setSignupServerError(''); setMode('signup'); }}
         />
       ) : (
         <SignupCard
@@ -134,11 +137,11 @@ const LoginPage = () => {
           isSubmitting={isSubmitting}
           isDisabled={isSignupDisabled}
           onSubmit={handleSubmit(handleSignup)}
-          onLoginClick={() => setMode('login')}
+          onLoginClick={() => { resetLogin(); setLoginServerError(''); setMode('login'); }}
         />
       )}
-      {toastError && <Toast message={toastError} onClose={clearToastError} />}
-      {signupSuccess && <Toast message="회원가입이 완료되었습니다." type="success" onClose={() => setSignupSuccess(false)} />}
+      {toastError && <Toast key={toastSeq} message={toastError} onClose={clearToastError} />}
+      {signupSuccess && <Toast key="signup-success" message="회원가입이 완료되었습니다." type="success" onClose={() => setSignupSuccess(false)} />}
     </>
   )
 }

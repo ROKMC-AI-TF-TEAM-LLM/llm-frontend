@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/chatinput';
 import Toast from '../ui/components/Toast';
-import { useChatStore } from '../api/store/chatStore';
+import { useChatStore, saveInflight } from '../api/store/chatStore';
 import { useGetSessions } from '../hooks/useSession';
 import type { SessionData } from '../types/session';
 
@@ -29,10 +29,25 @@ export default function ChatPage() {
   const sendMessage = useChatStore((s) => s.sendMessage);
   const error = useChatStore((s) => s.error);
   const clearError = useChatStore((s) => s.clearError);
+  const isDeleted = useChatStore((s) => s.isDeleted);
+  const resetDeleted = useChatStore((s) => s.resetDeleted);
+
+  useEffect(() => {
+    if (isDeleted) {
+      const msg = error;
+      resetDeleted();
+      clearError();
+      navigate('/chat', { replace: true, state: { toastError: msg } });
+    }
+  }, [isDeleted]);
 
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     setIsConnecting(true);
+
+    if (initialMessage) {
+      saveInflight(sessionId, initialMessage);
+    }
 
     connect(sessionId)
       .then(() => {
@@ -52,6 +67,7 @@ export default function ChatPage() {
           navigate('/chat', { replace: true });
         }
       });
+  
   }, [sessionId]);
 
   if (sessionError) {

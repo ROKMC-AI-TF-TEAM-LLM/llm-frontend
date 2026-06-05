@@ -2,6 +2,13 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { MessageRole } from '../../../types';
 
+const normalizeMarkdown = (content: string): string =>
+  content
+    .replace(/\*\* +(?=\S)/g, '**')                      // "** 텍스트"  → "**텍스트"
+    .replace(/(?<=\S) +\*\*(?=[\s.,!?;:]|$)/gm, '**')   // "텍스트 **" → "텍스트**"
+    .replace(/(?<=\S)\*\*(?=[가-힣぀-ヿ一-鿿])/g, '** ')
+    .replace(/^[•·]\s*/gm, '- ');
+
 interface MessageBubbleProps {
   role?: MessageRole;
   content: string;
@@ -11,6 +18,20 @@ interface MessageBubbleProps {
 function StreamingCursor() {
   return (
     <span className="inline-block w-[3px] h-[18px] ml-0.5 align-middle bg-text-secondary rounded-sm animate-cursor-blink" />
+  );
+}
+
+function GeneratingIndicator() {
+  return (
+    <div className="flex items-center gap-[7px] py-0.5">
+      {[0, 200, 400, 600].map((delay) => (
+        <span
+          key={delay}
+          className="dot-chase"
+          style={{ animationDelay: `${delay}ms` }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -29,13 +50,13 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
           max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed wrap-break-word
           ${isUser
             ? 'bg-brand text-white rounded-tr-sm whitespace-pre-wrap'
-            : 'bg-surface-subtle text-text-primary rounded-tl-sm'}
+            : 'bg-white text-text-primary rounded-tl-sm'}
         `}
       >
         {isUser ? (
-          <>
-            {content}
-          </>
+          content
+        ) : isStreaming && !content ? (
+          <GeneratingIndicator />
         ) : (
           <>
             <ReactMarkdown
@@ -86,7 +107,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
               }}
             >
-              {content}
+              {normalizeMarkdown(content)}
             </ReactMarkdown>
             {isStreaming && <StreamingCursor />}
           </>

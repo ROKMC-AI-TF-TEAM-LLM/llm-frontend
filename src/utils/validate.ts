@@ -9,7 +9,9 @@ function validateUser(values: UserSignInformation) {
     password: ''
   };
 
-  if (values.email && !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i.test(values.email)) {
+  if (!values.email) {
+    errors.email = '이메일을 입력해주세요.';
+  } else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i.test(values.email)) {
     errors.email = '이메일 형식이 올바르지 않습니다.';
   }
 

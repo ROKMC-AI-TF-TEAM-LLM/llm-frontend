@@ -1,15 +1,16 @@
 import { backendApi } from '../lib/axios'
 import type {
-    AdminUsersResponse,
-    AdminUserDeleteResponse,
-    AdminUserInquiryResponse,
-    GetMeResponse,
-    AdminUserApproveResponse,
-    AdminUserRejectResponse,
-    } from '../../types/user'
+  AdminUsersResponse,
+  AdminUserDeleteResponse,
+  AdminUserInquiryResponse,
+  AdminUserApproveResponse,
+  AdminUserRejectResponse,
+  GetMeResponse,
+  GetAdminUsersParams,
+} from '../../types/user'
 
-export const getUsers = () =>
-  backendApi.get<AdminUsersResponse>('/api/v1/admin/users')
+export const getUsers = (params?: GetAdminUsersParams) =>
+  backendApi.get<AdminUsersResponse>('/api/v1/admin/users', { params })
 
 export const deleteUsers = (userId: string) =>
   backendApi.delete<AdminUserDeleteResponse>(`/api/v1/admin/users/${userId}`)

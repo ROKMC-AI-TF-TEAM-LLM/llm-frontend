@@ -1,71 +1,130 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagCard from '../ui/components/rag/RagCard'
-import type { RagDocument } from '../types'
-
-const mockDocuments: RagDocument[] = [
-  {
-    id: '1',
-    title: '대한민국헌법',
-    fileType: 'PDF',
-    preview:
-      '유구한 역사와 전통에 빛나는 우리 대한국민은 3ㆍ1운동으로 건립된 대한민국임시정부의 법통과 불의에 항거한 4ㆍ19민주이념을 계승하고, 조국의 민주개혁과 평화적 통일의 사명에 입각하여 정의ㆍ인도와 동포애로써 민족의 단결을 공고히 하고, 모든 사회적 폐습과 불의를 타파하며...',
-  },
-  {
-    id: '2',
-    title: '형법',
-    fileType: 'HWP',
-    preview:
-      '형법(刑法, criminal law)이란 범죄와 형벌에 관한 법률 체계로서, 구성요건 충족성, 책임능력, 위법성에 대한 규정과 그에 입각하여 각 죄목의 정의와 처벌의 수위 및 방법론을 다루는 법을 말한다...',
-  },
-  {
-    id: '3',
-    title: '민법',
-    fileType: 'HWP',
-    preview:
-      '대한민국의 민법. 즉, 대등한 사인 상호간의 법률관계(재산관계와 가족관계)를 규율하는 법률이다. 현행 대한민국 민법은 총 5개편 1118조로 구성되어 있다...',
-  },
-  {
-    id: '4',
-    title: '상법',
-    fileType: 'PDF',
-    preview:
-      '그 연원은 중세시대의 길드 소속 상인들간에 사용된 법률이다. 당시의 상법은 일종의 신분법으로, 상인은 길드에 가입한 소수 인원만을 의미했다. 상인들에게만 적용되는 신분법이었던 상법은 독자적인 재판권을 가지기도 했다. 즉, 상인이 아닌 일반인은 Civil Law 에 의해 일반 민사 법원의 재판을 받지만, 상인 신분을 가진 자들은 중재원이라는 독자적인 재판 기관을 통해 분쟁을 해결했다. 이러한 제도는 현재도 중재라는 시스템으로 잔존하고 있다...',
-  },
-  {
-    id: '5',
-    title: '공군법령',
-    fileType: 'HWP',
-    preview:
-      '복무규정에대한내용복무규정에대한내용복무규정에대한내용복무규정에대한내용복무규정에대한내용복무규정에대한내용복무규정에대한내용복무규정에대한',
-  },
-]
+import { useInfiniteDocuments } from '../hooks/useDocument'
+import type { DocumentItem } from '../types/document'
 
 const RagPage = () => {
   const [query, setQuery] = useState('')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null)
 
-  const filtered = mockDocuments.filter((doc) =>
-    doc.title.includes(query) || doc.preview.includes(query)
+  const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteDocuments()
+
+  const allDocuments = data?.pages.flatMap((p) => p.data.data.documents) ?? []
+
+  const filtered = allDocuments.filter((doc) =>
+    doc.name.toLowerCase().includes(query.toLowerCase())
   )
 
+  useEffect(() => {
+    if (!selectedDoc) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedDoc(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedDoc])
+
   return (
-    <div className="min-h-full w-full" onClick={() => setSelectedId(null)}>
-      <div className="max-w-2xl mx-auto px-8 py-12">
-        <h1 className="text-2xl font-semibold text-text-primary mb-5">RAG 목록</h1>
-        <RagSearchInput value={query} onChange={setQuery} />
-        <div className="grid grid-cols-2 gap-5 mt-7">
-          {filtered.map((doc) => (
-            <RagCard
-              key={doc.id}
-              title={doc.title}
-              fileType={doc.fileType}
-              preview={doc.preview}
-              selected={selectedId === doc.id}
-              onClick={() => setSelectedId(doc.id)}
-            />
-          ))}
+    <div className="min-h-full w-full" onClick={() => setSelectedDoc(null)}>
+
+      {selectedDoc && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setSelectedDoc(null)}
+        >
+          <div
+            className="bg-surface rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-surface-border">
+              <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-surface-border text-text-secondary">
+                {selectedDoc.type ?? '-'}
+              </span>
+              <button
+                onClick={() => setSelectedDoc(null)}
+                className="text-text-muted hover:text-text-primary transition-colors"
+                aria-label="닫기"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-5">
+              <div>
+                <p className="text-xs font-medium text-text-muted mb-1.5">문서 이름</p>
+                <p className="text-sm font-semibold text-text-primary break-all leading-relaxed">
+                  {selectedDoc.name}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-text-muted mb-1.5">문서 요약</p>
+                <p className="text-sm text-text-secondary leading-relaxed">요약 정보가 없습니다.</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-text-muted mb-1.5">등록일</p>
+                <p className="text-sm text-text-secondary">
+                  {selectedDoc.applied_at
+                    ? new Date(selectedDoc.applied_at).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : '-'}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+      )}
+
+      <div className="max-w-2xl mx-auto px-8 py-12">
+        <h1 className="text-2xl font-semibold text-text-primary mb-5">문서</h1>
+        <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." />
+
+        {isError && (
+          <p className="mt-6 text-sm text-center text-text-muted">문서를 불러오지 못했습니다.</p>
+        )}
+
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-5 mt-7">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="card h-36 bg-surface-subtle animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {filtered.length === 0 && !isError && (
+              <p className="mt-6 text-sm text-center text-text-muted">
+                {query ? '검색 결과가 없습니다.' : '등록된 문서가 없습니다.'}
+              </p>
+            )}
+            <div className="grid grid-cols-2 gap-5 mt-7">
+              {filtered.map((doc) => (
+                <RagCard
+                  key={doc.name}
+                  title={doc.name}
+                  fileType={doc.type ?? ''}
+                  preview={doc.applied_at ? new Date(doc.applied_at).toLocaleDateString('ko-KR') : ''}
+                  selected={selectedDoc?.name === doc.name}
+                  onClick={() => setSelectedDoc(doc)}
+                />
+              ))}
+            </div>
+
+            {hasNextPage && !query && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={(e) => { e.stopPropagation(); fetchNextPage() }}
+                  disabled={isFetchingNextPage}
+                  className="px-6 py-2 rounded-full text-sm font-medium bg-surface border border-surface-border text-text-secondary hover:bg-surface-subtle disabled:opacity-50 transition-colors"
+                >
+                  {isFetchingNextPage ? '불러오는 중...' : '더 보기'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

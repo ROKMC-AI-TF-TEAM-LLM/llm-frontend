@@ -14,7 +14,7 @@ const MainLayout = () => {
     ? { id: '', name: userData.name, email: userData.email }
     : { id: '', name: '사용자' }
 
-  const chats = (sessionsData?.data?.data ?? []).map((s) => ({
+  const chats = (sessionsData?.data?.data?.items ?? []).map((s) => ({
     id: s.session_id,
     title: s.title,
   }))

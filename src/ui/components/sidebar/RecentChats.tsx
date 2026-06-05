@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from "../../../types";
 import { useDeleteSession, useUpdateSession } from '../../../hooks/useSession';
 import { SessionItemSkeleton } from '../Skeleton';
+import Toast from '../Toast';
 
 interface RecentChatsProps {
   isOpen: boolean;
@@ -13,6 +14,17 @@ interface RecentChatsProps {
   isInitialLoading?: boolean;
 }
 
+const SESSION_ERRORS: Record<string, string> = {
+  SESSION_NOT_FOUND: '세션을 찾을 수 없습니다.',
+  SESSION_ACCESS_DENIED: '접근 권한이 없습니다.',
+  UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
+};
+
+const getSessionError = (error: unknown): string => {
+  const code = (error as any)?.response?.data?.error?.code;
+  return SESSION_ERRORS[code] ?? '오류가 발생했습니다.';
+};
+
 export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: RecentChatsProps) {
   const navigate = useNavigate()
   const { id: currentId } = useParams()
@@ -20,6 +32,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const { mutate: updateSession } = useUpdateSession()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [sidebarError, setSidebarError] = useState('')
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -35,15 +48,12 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
     return () => observer.disconnect()
   }, [hasMore, isLoadingMore, onLoadMore])
 
-  const handleEditStart = (id: string, title: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setEditingId(id)
-    setEditingTitle(title)
-  }
-
   const handleEditSubmit = (id: string) => {
     if (editingTitle.trim()) {
-      updateSession({ sessionId: id, data: { title: editingTitle.trim() } })
+      updateSession(
+        { sessionId: id, data: { title: editingTitle.trim() } },
+        { onError: (e) => setSidebarError(getSessionError(e)) },
+      )
     }
     setEditingId(null)
   }
@@ -51,14 +61,14 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     deleteSession(id, {
-      onSuccess: () => {
-        if (id === currentId) navigate('/chat')
-      },
+      onSuccess: () => { if (id === currentId) navigate('/chat') },
+      onError: (e) => setSidebarError(getSessionError(e)),
     })
   }
 
   return (
     <div className={`px-3 pt-4 overflow-hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
       <p className="px-3 text-xs text-text-muted mb-2 whitespace-nowrap">최근 대화</p>
 
       {isInitialLoading ? (
@@ -94,7 +104,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
               {editingId !== chat.id && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1">
                   <button
-                    onClick={(e) => handleEditStart(chat.id, chat.title, e)}
+                    onClick={(e) => { e.stopPropagation(); setEditingId(chat.id); setEditingTitle(chat.title); }}
                     className="p-1 rounded text-text-muted hover:text-brand transition-colors"
                     aria-label="제목 수정"
                   >

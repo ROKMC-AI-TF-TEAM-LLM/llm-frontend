@@ -1,8 +1,6 @@
 export interface Source {
-  id: string;
-  title: string;
-  url?: string;
-  snippet?: string;
+  name: string;
+  page?: string | null;
 }
 
 export interface ChatItem {
@@ -15,6 +13,8 @@ export interface User {
   id: string;
   name: string;
   email?: string;
+  role?: 'admin' | 'user';
+  createdAt?: string;
 }
 
 export interface UserMessage {
@@ -22,6 +22,7 @@ export interface UserMessage {
   role: 'user';
   type: 'text';
   content: string;
+  createdAt?: string;
 }
 
 export interface AssistantMessage {
@@ -31,6 +32,7 @@ export interface AssistantMessage {
   content: string;
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
+  createdAt?: string;
 }
 
 export interface ImageMessage {
@@ -39,6 +41,7 @@ export interface ImageMessage {
   type: 'image';
   filename: string;
   caption?: string;
+  createdAt?: string;
 }
 
 

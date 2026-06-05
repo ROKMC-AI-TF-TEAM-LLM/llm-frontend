@@ -73,10 +73,10 @@ export function MessagesSkeleton() {
 
 export function SearchSessionCardSkeleton() {
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-2xl border border-surface-border">
+    <div className="flex flex-col gap-1.5 p-4 rounded-2xl border border-surface-border">
       <div className="flex items-center gap-2">
         <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
-        <Skeleton className="h-4 flex-1" />
+        <Skeleton className="h-4 w-3/4" />
       </div>
       <Skeleton className="h-3 w-2/5 ml-10" />
     </div>
@@ -85,11 +85,11 @@ export function SearchSessionCardSkeleton() {
 
 export function SearchResultSkeleton() {
   return (
-    <div className="flex items-start gap-3 pl-4.5 pr-3 py-3 rounded-2xl">
+    <div className="w-full flex items-start gap-3 pl-4.5 pr-3 py-3 rounded-2xl">
       <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
-      <div className="flex-1 space-y-1.5">
+      <div className="flex-1 min-w-0 space-y-1.5 pt-0.5">
         <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-3 w-2/5" />
       </div>
     </div>
   );
@@ -100,6 +100,7 @@ export function AdminRowSkeleton() {
     <tr className="border-b">
       <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
       <td className="px-5 py-3"><Skeleton className="h-4 w-40" /></td>
+      <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
       <td className="px-5 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
       <td className="px-5 py-3"><Skeleton className="h-4 w-24" /></td>
       <td className="px-5 py-3"><Skeleton className="h-7 w-14 rounded" /></td>
