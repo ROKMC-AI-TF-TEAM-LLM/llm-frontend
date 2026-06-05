@@ -1,16 +1,18 @@
-export const useLocalStorage = (key: string) => {
-  const setItem = (value: unknown) => {
+export const useLocalStorage = <T = unknown>(key: string, storageType: 'local' | 'session' = 'local') => {
+  const store = storageType === 'session' ? window.sessionStorage : window.localStorage;
+
+  const setItem = (value: T) => {
     try {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      store.setItem(key, JSON.stringify(value));
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getItem = (): unknown => {
+  const getItem = (): T | null => {
     try {
-      const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : null;
+      const item = store.getItem(key);
+      return item ? (JSON.parse(item) as T) : null;
     } catch (error) {
       console.error(error);
       return null;
@@ -19,7 +21,7 @@ export const useLocalStorage = (key: string) => {
 
   const removeItem = () => {
     try {
-      window.localStorage.removeItem(key);
+      store.removeItem(key);
     } catch (error) {
       console.error(error);
     }

@@ -106,7 +106,7 @@ const RagPage = () => {
             <div className="grid grid-cols-2 gap-5 mt-7">
               {filtered.map((doc) => (
                 <RagCard
-                  key={doc.name}
+                  key={`${doc.name}|${doc.type ?? ''}|${doc.applied_at ?? ''}`}
                   title={doc.name}
                   fileType={doc.type ?? ''}
                   preview={doc.applied_at ? new Date(doc.applied_at).toLocaleDateString('ko-KR') : ''}

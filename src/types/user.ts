@@ -26,7 +26,6 @@ export interface AdminUserPageData {
   has_next: boolean
 }
 
-// GetMe
 export type GetMeErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID'
 export interface GetMe {
   name: string
@@ -41,7 +40,6 @@ export interface GetMeResponse {
   error: { code: GetMeErrorCode; detail: string } | null
 }
 
-// GetAdminUsers
 export interface GetAdminUsersParams {
   role?: UserRole
   status?: UserStatus
@@ -57,7 +55,6 @@ export interface AdminUsersResponse {
   error: { code: AdminUsersErrorCode; detail: string } | null
 }
 
-// GetAdminUser
 export type AdminUserInquiryErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserInquiryResponse {
   success: boolean
@@ -66,7 +63,6 @@ export interface AdminUserInquiryResponse {
   error: { code: AdminUserInquiryErrorCode; detail: string } | null
 }
 
-// DeleteAdminUser
 export type AdminUserDeleteErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserDeleteResponse {
   success: boolean
@@ -75,7 +71,6 @@ export interface AdminUserDeleteResponse {
   error: { code: AdminUserDeleteErrorCode; detail: string } | null
 }
 
-// ApproveUser
 export type AdminUserApproveErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserApproveResponse {
   success: boolean
@@ -84,7 +79,6 @@ export interface AdminUserApproveResponse {
   error: { code: AdminUserApproveErrorCode; detail: string } | null
 }
 
-// RejectUser
 export type AdminUserRejectErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserRejectResponse {
   success: boolean

@@ -12,7 +12,6 @@ export interface MessageListData {
   messages: MessageItem[]
 }
 
-// GetMessages
 export type GetMessagesErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED'
 export interface GetMessagesResponse {
   success: boolean
@@ -21,7 +20,6 @@ export interface GetMessagesResponse {
   error: { code: GetMessagesErrorCode; detail: string } | null
 }
 
-// StreamMessage
 export interface StreamMessageRequest {
   question: string
 }

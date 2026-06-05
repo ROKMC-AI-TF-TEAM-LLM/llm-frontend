@@ -69,7 +69,7 @@ const protectedRoutes: RouteObject[] = [
   }
 ];
 
-const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
+const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path: '*', element: <ErrorPage /> }]);
 
 const App = () => (
   <AuthProvider>

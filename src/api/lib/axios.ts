@@ -11,19 +11,22 @@ export const backendApi = axios.create({
 
 let pendingRefresh: Promise<string> | null = null
 
+const parseStorageItem = (raw: string | null): string | null => {
+  if (!raw) return null
+  try { return JSON.parse(raw) } catch { return null }
+}
+
 export const refreshTokenOnce = (): Promise<string> => {
   if (!pendingRefresh) {
-    const rawRefreshToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-    if (!rawRefreshToken) {
+    const refreshToken = parseStorageItem(localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN))
+    if (!refreshToken) {
       return Promise.reject(new Error('No refresh token'))
     }
     pendingRefresh = backendApi
-      .post<RefreshResponse>('/api/v1/auth/refresh', {
-        refresh_token: JSON.parse(rawRefreshToken),
-      })
+      .post<RefreshResponse>('/api/v1/auth/refresh', { refresh_token: refreshToken })
       .then(({ data }) => {
         const { access_token, refresh_token } = data.data
-        localStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(access_token))
+        sessionStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(access_token))
         localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(refresh_token))
         return access_token
       })
@@ -37,9 +40,9 @@ export const refreshTokenOnce = (): Promise<string> => {
 const AUTH_ENDPOINTS = ['/api/v1/auth/login', '/api/v1/auth/signup', '/api/v1/auth/refresh']
 
 backendApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+  const token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
   if (token) {
-    config.headers.Authorization = `Bearer ${JSON.parse(token)}`
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
@@ -57,7 +60,7 @@ backendApi.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return backendApi(originalRequest)
       } catch (refreshError) {
-        localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+        sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
         window.location.href = '/'
         return Promise.reject(refreshError)

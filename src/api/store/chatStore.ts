@@ -186,6 +186,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     } catch (e) {
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
+      if (!isAbortError(e)) clearCache(sessionId)
       if (get().sessionId === sessionId) {
         if (isAbortError(e)) {
           set((state) => ({
@@ -198,7 +199,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
             ),
           }))
         } else {
-          clearCache(sessionId)
           set((state) => ({
             error: '응답 중 오류가 발생했습니다.',
             isStreaming: false,
@@ -434,74 +434,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       streamRegistry.set(sessionId, get().messages);
-
-      try {
-        await streamMessage(sessionId, { question: prevUserMsg.content }, (chunk) => {
-          if (get().sessionId !== sessionId) {
-            const reg = streamRegistry.get(sessionId);
-            if (reg) {
-              streamRegistry.set(sessionId, reg.map((m) =>
-                m.id === newAssistantId && m.type === 'text'
-                  ? { ...m, content: m.content + chunk }
-                  : m
-              ));
-            }
-            return;
-          }
-          set((state) => ({
-            messages: state.messages.map((m) =>
-              m.id === newAssistantId && m.type === 'text'
-                ? { ...m, content: m.content + chunk }
-                : m
-            ),
-          }));
-          streamRegistry.set(sessionId, get().messages);
-        }, controller.signal, (sources) => {
-          set((state) => ({
-            messages: state.messages.map((m) =>
-              m.id === newAssistantId && m.type === 'text' ? { ...m, sources } : m
-            ),
-          }));
-        });
-      } catch (e) {
-        streamRegistry.delete(sessionId);
-        clearInflight(sessionId);
-        clearCache(sessionId);
-        if (get().sessionId === sessionId) {
-          const shouldDelete = !isAbortError(e) && isFirstMessage;
-          set((state) => ({
-            isStreaming: false,
-            abortController: null,
-            messages: isAbortError(e)
-              ? state.messages.map((m) =>
-                  m.id === newAssistantId && m.type === 'text'
-                    ? { ...m, status: 'interrupted' as const }
-                    : m
-                )
-              : state.messages.filter((m) => m.id !== newAssistantId),
-            ...(isAbortError(e) ? {} : { error: '응답 중 오류가 발생했습니다.' }),
-            ...(shouldDelete ? { isDeleted: true } : {}),
-          }));
-          if (shouldDelete) {
-            deleteSession(sessionId)
-              .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-              .catch(() => {});
-          }
-        }
-        return;
-      }
-
-      streamRegistry.delete(sessionId);
-      clearInflight(sessionId);
-      if (get().sessionId !== sessionId) return;
-      set((state) => ({
-        isStreaming: false,
-        abortController: null,
-        messages: state.messages.map((m) =>
-          m.id === newAssistantId ? { ...m, status: 'done' as const } : m
-        ),
-      }));
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      await executeStream(sessionId, newAssistantId, prevUserMsg.content, isFirstMessage, controller.signal);
     },
   }
 });

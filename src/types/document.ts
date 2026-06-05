@@ -12,7 +12,6 @@ export interface DocumentListData {
   has_more: boolean
 }
 
-// GetDocuments
 export interface GetDocumentsParams {
   offset?: number
   limit?: number

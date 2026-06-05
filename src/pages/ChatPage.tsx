@@ -4,7 +4,8 @@ import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
 import { useChatStore, saveInflight } from '../api/store/chatStore';
-import { useGetSessions } from '../hooks/useSession';
+import { useInfiniteSessions } from '../hooks/useSession';
+import { isNetworkError } from '../utils/error';
 import type { SessionData } from '../types/session';
 
 const SESSION_ERRORS: Record<string, string> = {
@@ -20,13 +21,12 @@ export default function ChatPage() {
   const [sessionError, setSessionError] = useState('');
   const [isConnecting, setIsConnecting] = useState(true);
 
-  const { data: sessionsData } = useGetSessions();
-  const sessions: SessionData[] = sessionsData?.data?.data?.items ?? [];
-  const currentSession = sessions.find((s: SessionData) => s.session_id === sessionId);
+  const { data: infiniteData } = useInfiniteSessions();
+  const allSessions = (infiniteData?.pages ?? []).flatMap((p) => p.data.data.items);
+  const currentSession = allSessions.find((s: SessionData) => s.session_id === sessionId);
   const title = currentSession?.title ?? '채팅';
 
   const connect = useChatStore((s) => s.connect);
-  const sendMessage = useChatStore((s) => s.sendMessage);
   const error = useChatStore((s) => s.error);
   const clearError = useChatStore((s) => s.clearError);
   const isDeleted = useChatStore((s) => s.isDeleted);
@@ -39,7 +39,7 @@ export default function ChatPage() {
       clearError();
       navigate('/chat', { replace: true, state: { toastError: msg } });
     }
-  }, [isDeleted]);
+  }, [isDeleted, error, resetDeleted, clearError, navigate]);
 
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
@@ -54,20 +54,23 @@ export default function ChatPage() {
         setIsConnecting(false);
         if (initialMessage) {
           navigate(location.pathname, { replace: true, state: {} });
-          sendMessage(initialMessage);
         }
       })
       .catch((error) => {
         setIsConnecting(false);
         const code = error?.response?.data?.error?.code;
-        const message = SESSION_ERRORS[code];
-        if (message) {
-          setSessionError(message);
+        const knownMessage = SESSION_ERRORS[code];
+        if (knownMessage) {
+          setSessionError(knownMessage);
         } else {
-          navigate('/chat', { replace: true });
+          const toastError = isNetworkError(error)
+            ? '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'
+            : '채팅을 불러오는 중 오류가 발생했습니다.';
+          navigate('/chat', { replace: true, state: { toastError } });
         }
       });
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   if (sessionError) {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import SearchInput from '../ui/components/search/SearchInput'
 import SearchResults from '../ui/components/search/SearchResults'
 import type { SearchResult } from '../ui/components/search/SearchResultItem'
-import { useSearchSessions, useGetSessions } from '../hooks/useSession'
+import { useSearchSessions, useInfiniteSessions } from '../hooks/useSession'
 import { SearchSessionCardSkeleton } from '../ui/components/Skeleton'
 import Toast from '../ui/components/Toast'
 
@@ -19,7 +19,7 @@ const SearchPage = () => {
   }, [query])
 
   const { data: searchData, isFetching: isSearching, isError: isSearchError } = useSearchSessions({ q: debouncedQuery })
-  const { data: sessionsData, isLoading: isSessionsLoading, isError: isSessionsError } = useGetSessions()
+  const { data: sessionsData, isLoading: isSessionsLoading, isError: isSessionsError } = useInfiniteSessions()
 
   const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map((s) => ({
     id: s.session_id,
@@ -27,7 +27,7 @@ const SearchPage = () => {
     preview: new Date(s.updated_at).toLocaleString('ko-KR'),
   }))
 
-  const recentSessions = sessionsData?.data?.data?.items ?? []
+  const recentSessions = (sessionsData?.pages ?? []).flatMap((p) => p.data.data.items)
 
   const handleSelect = (id: string) => {
     setSelectedId(id)

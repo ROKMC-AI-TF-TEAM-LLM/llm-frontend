@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
+import type { ApiError } from '../../../utils/error';
 import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
 import { useCreateSession } from '../../../hooks/useSession';
 import Toast from '../Toast';
@@ -68,10 +69,11 @@ export default function ChatInput({
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
       } catch (e: unknown) {
         setValue(text);
-        const code = (e as any)?.response?.data?.error?.code;
+        const apiErr = e as ApiError;
+        const code = apiErr?.response?.data?.error?.code;
         if (code === 'UNAUTHORIZED') {
           setInputError('인증이 만료되었습니다. 다시 로그인해주세요.');
-        } else if (!((e as any)?.response)) {
+        } else if (!apiErr?.response) {
           setInputError('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
         } else {
           setInputError('채팅 생성 중 오류가 발생했습니다. 다시 시도해주세요.');

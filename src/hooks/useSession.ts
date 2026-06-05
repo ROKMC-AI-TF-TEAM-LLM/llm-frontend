@@ -3,15 +3,6 @@ import { getSessions, createSession, searchSessions, updateSession, deleteSessio
 import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest } from '../types/session'
 import { useAuth } from '../context/AuthContext'
 
-export const useGetSessions = () => {
-  const { accessToken } = useAuth()
-  return useQuery({
-    queryKey: ['sessions'],
-    queryFn: () => getSessions(),
-    enabled: !!accessToken,
-  })
-}
-
 export const useInfiniteSessions = () => {
   const { accessToken } = useAuth()
   return useInfiniteQuery({

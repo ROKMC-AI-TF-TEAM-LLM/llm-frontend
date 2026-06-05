@@ -18,13 +18,13 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     getItem: getAccessTokenFromStorage,
     setItem: setAccessTokenInStorage,
     removeItem: removeAccessTokenFromStorage,
-  } = useLocalStorage(LOCAL_STORAGE_KEY.ACCESS_TOKEN);
+  } = useLocalStorage<string>(LOCAL_STORAGE_KEY.ACCESS_TOKEN, 'session');
 
   const {
     getItem: getRefreshTokenFromStorage,
     setItem: setRefreshTokenInStorage,
     removeItem: removeRefreshTokenFromStorage,
-  } = useLocalStorage(LOCAL_STORAGE_KEY.REFRESH_TOKEN);
+  } = useLocalStorage<string>(LOCAL_STORAGE_KEY.REFRESH_TOKEN);
 
   const [accessToken, setAccessToken] = useState<string | null>(
     getAccessTokenFromStorage(),
@@ -41,35 +41,33 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setRefreshTokenInStorage(refresh_token);
     setAccessToken(access_token);
     setRefreshToken(refresh_token);
-    window.location.href = '/chat';
   };
 
-const logout = async () => {
-  const rawToken = localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN);
-  const currentRefreshToken = rawToken ? JSON.parse(rawToken) : null;
-  if (currentRefreshToken) {
-    try {
-      await logoutApi({ refresh_token: currentRefreshToken });
-    } catch {}
-  }
-  removeAccessTokenFromStorage();
-  removeRefreshTokenFromStorage();
-  setAccessToken(null);
-  setRefreshToken(null);
-  window.location.href = '/';
+  const logout = async () => {
+    const currentRefreshToken = getRefreshTokenFromStorage();
+    if (currentRefreshToken) {
+      try {
+        await logoutApi({ refresh_token: currentRefreshToken });
+      } catch {}
+    }
+    removeAccessTokenFromStorage();
+    removeRefreshTokenFromStorage();
+    setAccessToken(null);
+    setRefreshToken(null);
+    window.location.href = '/';
+  };
+
+  return (
+    <AuthContext.Provider value={{ accessToken, refreshToken, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-return (
-  <AuthContext.Provider value={{ accessToken, refreshToken, login, logout }}>
-    {children}
-  </AuthContext.Provider>
-);
-}
-
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("authcontext를 찾을 수 없습니다.");
-    }
-    return context;
-}
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('authcontext를 찾을 수 없습니다.');
+  }
+  return context;
+};

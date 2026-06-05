@@ -10,7 +10,6 @@ export interface SessionPageData {
   has_next: boolean
 }
 
-// GetSessions
 export interface GetSessionsParams {
   cursor?: string | null
   size?: number
@@ -23,7 +22,6 @@ export interface GetSessionsResponse {
   error: { code: GetSessionsErrorCode; detail: string } | null
 }
 
-// CreateSession
 export interface CreateSessionRequest {
   title?: string
 }
@@ -35,7 +33,6 @@ export interface CreateSessionResponse {
   error: { code: CreateSessionErrorCode; detail: string } | null
 }
 
-// UpdateSession
 export interface UpdateSessionRequest {
   title: string
 }
@@ -47,7 +44,6 @@ export interface UpdateSessionResponse {
   error: { code: UpdateSessionErrorCode; detail: string } | null
 }
 
-// DeleteSession
 export type DeleteSessionErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED'
 export interface DeleteSessionResponse {
   success: boolean
@@ -56,7 +52,6 @@ export interface DeleteSessionResponse {
   error: { code: DeleteSessionErrorCode; detail: string } | null
 }
 
-// SearchSessions
 export interface SearchSessionsRequest {
   q: string
 }

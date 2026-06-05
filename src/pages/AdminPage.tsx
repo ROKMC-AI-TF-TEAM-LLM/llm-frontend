@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser, useInquiryUsers } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
@@ -46,17 +46,19 @@ const ADMIN_PAGE_SIZE = 5;
 const USER_PAGE_SIZE = 5;
 
 function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
-  const { data, isLoading } = useInquiryUsers(userId);
+  const { data, isLoading, isError } = useInquiryUsers(userId);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current(); };
     window.addEventListener('keydown', onKey);
     document.body.classList.add('modal-open');
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.classList.remove('modal-open');
     };
-  }, [onClose]);
+  }, []);
 
   const user = data?.data?.data;
 
@@ -103,8 +105,10 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
           <div className="px-6 py-5 space-y-4">
             {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-5 w-full" />)}
           </div>
-        ) : !user ? (
+        ) : isError ? (
           <div className="px-6 py-8 text-center text-sm text-text-muted">정보를 불러오지 못했습니다.</div>
+        ) : !user ? (
+          <div className="px-6 py-8 text-center text-sm text-text-muted">사용자 정보가 없습니다.</div>
         ) : (
           <div className="px-6 py-5 space-y-4">
             {rows.map(({ label, content }) => (
@@ -119,6 +123,105 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
     </div>
   );
 }
+
+const TableHeader = () => (
+  <thead>
+    <tr className="border-b border-surface-border text-left text-text-muted text-xs">
+      <th className="px-4 py-3 w-[13%] whitespace-nowrap">이름</th>
+      <th className="px-4 py-3 w-[22%] whitespace-nowrap">이메일</th>
+      <th className="px-4 py-3 w-[28%] whitespace-nowrap">사용자 ID</th>
+      <th className="px-4 py-3 w-[12%] whitespace-nowrap">상태</th>
+      <th className="px-4 py-3 w-[13%] whitespace-nowrap">가입일</th>
+      <th className="px-4 py-3 w-[12%] whitespace-nowrap">처리</th>
+    </tr>
+  </thead>
+);
+
+interface UserRowProps {
+  user: DisplayUser;
+  isMutating: boolean;
+  myId: string | undefined;
+  onApprove: (userId: string) => void;
+  onReject: (userId: string) => void;
+  onDelete: (userId: string) => void;
+  onSelect: (userId: string) => void;
+  onCopyId: (userId: string) => void;
+}
+
+const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSelect, onCopyId }: UserRowProps) => (
+  <tr
+    className="border-b border-surface-border last:border-0 hover:bg-surface-card1 cursor-pointer"
+    onClick={() => onSelect(user.user_id)}
+  >
+    <td className="px-4 py-3 font-medium text-text-primary whitespace-nowrap">{user.name}</td>
+    <td className="px-4 py-3 text-text-secondary text-sm">{user.email}</td>
+    <td className="px-4 py-3">
+      <button
+        onClick={(e) => { e.stopPropagation(); onCopyId(user.user_id); }}
+        title="클릭하여 복사"
+        className="font-mono text-xs text-text-muted hover:text-text-primary hover:bg-surface-subtle px-2 py-0.5 rounded transition-colors"
+      >
+        {user.user_id}
+      </button>
+    </td>
+    <td className="px-4 py-3">
+      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[user.displayStatus]}`}>
+        {STATUS_LABEL[user.displayStatus]}
+      </span>
+    </td>
+    <td className="px-4 py-3 text-text-muted">
+      {new Date(user.created_at).toLocaleDateString('ko-KR')}
+    </td>
+    <td className="px-4 py-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
+      {user.displayStatus === 'pending' && (
+        <>
+          <button
+            onClick={() => onApprove(user.user_id)}
+            disabled={isMutating}
+            title="승인"
+            className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </button>
+          <button
+            onClick={() => onReject(user.user_id)}
+            disabled={isMutating}
+            title="거절"
+            className="w-6 h-6 flex items-center justify-center rounded bg-brand text-white hover:bg-brand-hover disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </>
+      )}
+      {user.displayStatus === 'rejected' && (
+        <button
+          onClick={() => onApprove(user.user_id)}
+          disabled={isMutating}
+          title="승인"
+          className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+      )}
+      {(user.displayStatus === 'rejected' || user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
+        <button
+          onClick={() => onDelete(user.user_id)}
+          disabled={isMutating || user.user_id === myId}
+          className="px-4 py-1 rounded bg-text-secondary text-surface text-xs hover:bg-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          삭제
+        </button>
+      )}
+    </td>
+  </tr>
+);
 
 const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) => {
   if (totalPages <= 1) return null;
@@ -164,8 +267,10 @@ export default function AdminPage() {
   const [mutationError, setMutationError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [errorDismissed, setErrorDismissed] = useState(false);
 
   const { data, isLoading, isError } = useGetUsers({ size: 100 });
+  useEffect(() => { if (!isError) setErrorDismissed(false); }, [isError]);
   const { data: meData } = useGetMe();
   const myEmail = meData?.data?.data?.email;
   const { mutate: approve, isPending: isApproving } = useApproveUser();
@@ -192,94 +297,19 @@ export default function AdminPage() {
 
   const myId = allAdmins.find((u) => u.email === myEmail)?.user_id;
 
-  const TableHeader = () => (
-    <thead>
-      <tr className="border-b border-surface-border text-left text-text-muted text-xs">
-        <th className="px-4 py-3 w-[13%] whitespace-nowrap">이름</th>
-        <th className="px-4 py-3 w-[22%] whitespace-nowrap">이메일</th>
-        <th className="px-4 py-3 w-[28%] whitespace-nowrap">사용자 ID</th>
-        <th className="px-4 py-3 w-[12%] whitespace-nowrap">상태</th>
-        <th className="px-4 py-3 w-[13%] whitespace-nowrap">가입일</th>
-        <th className="px-4 py-3 w-[12%] whitespace-nowrap">처리</th>
-      </tr>
-    </thead>
-  );
+  const handleApprove = (userId: string) =>
+    approve(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
 
-  const UserRow = ({ user }: { user: DisplayUser }) => (
-    <tr
-      key={user.user_id}
-      className="border-b border-surface-border last:border-0 hover:bg-surface-card1 cursor-pointer"
-      onClick={() => setSelectedUserId(user.user_id)}
-    >
-      <td className="px-4 py-3 font-medium text-text-primary whitespace-nowrap">{user.name}</td>
-      <td className="px-4 py-3 text-text-secondary text-sm">{user.email}</td>
-      <td className="px-4 py-3">
-        <button
-          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(user.user_id).then(() => setCopiedKey(k => k + 1)); }}
-          title="클릭하여 복사"
-          className="font-mono text-xs text-text-muted hover:text-text-primary hover:bg-surface-subtle px-2 py-0.5 rounded transition-colors"
-        >
-          {user.user_id}
-        </button>
-      </td>
-      <td className="px-4 py-3">
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[user.displayStatus]}`}>
-          {STATUS_LABEL[user.displayStatus]}
-        </span>
-      </td>
-      <td className="px-4 py-3 text-text-muted">
-        {new Date(user.created_at).toLocaleDateString('ko-KR')}
-      </td>
-      <td className="px-4 py-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
-        {user.displayStatus === 'pending' && (
-          <>
-            <button
-              onClick={() => approve(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
-              disabled={isMutating}
-              title="승인"
-              className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
-            <button
-              onClick={() => rejectUser(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
-              disabled={isMutating}
-              title="거절"
-              className="w-6 h-6 flex items-center justify-center rounded bg-brand text-white hover:bg-brand-hover disabled:opacity-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </>
-        )}
-        {user.displayStatus === 'rejected' && (
-          <button
-            onClick={() => approve(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
-            disabled={isMutating}
-            title="승인"
-            className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </button>
-        )}
-        {(user.displayStatus === 'rejected' || user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
-          <button
-            onClick={() => deleteUser(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
-            disabled={isMutating || user.user_id === myId}
-            className="px-4 py-1 rounded bg-text-secondary text-surface text-xs hover:bg-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            삭제
-          </button>
-        )}
-      </td>
-    </tr>
-  );
+  const handleReject = (userId: string) =>
+    rejectUser(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
+
+  const handleDelete = (userId: string) =>
+    deleteUser(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
+
+  const handleCopyId = (userId: string) =>
+    navigator.clipboard.writeText(userId)
+      .then(() => setCopiedKey((k) => k + 1))
+      .catch(() => setMutationError('복사에 실패했습니다.'));
 
   return (
     <div className="min-h-full bg-white p-8">
@@ -292,7 +322,9 @@ export default function AdminPage() {
       {mutationError && (
         <Toast message={mutationError} type="error" onClose={() => setMutationError('')} />
       )}
-      {isError && <Toast message="데이터를 불러오지 못했습니다." onClose={() => {}} />}
+      {isError && !errorDismissed && (
+        <Toast message="데이터를 불러오지 못했습니다." onClose={() => setErrorDismissed(true)} />
+      )}
 
       <h1 className="text-2xl font-bold text-text-primary mb-8">관리자 - 회원 관리</h1>
 
@@ -309,7 +341,19 @@ export default function AdminPage() {
               )}
               {isLoading
                 ? [...Array(3)].map((_, i) => <AdminRowSkeleton key={i} />)
-                : pagedAdmins.map((user) => <UserRow key={user.user_id} user={user} />)
+                : pagedAdmins.map((user) => (
+                    <UserRow
+                      key={user.user_id}
+                      user={user}
+                      isMutating={isMutating}
+                      myId={myId}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onDelete={handleDelete}
+                      onSelect={setSelectedUserId}
+                      onCopyId={handleCopyId}
+                    />
+                  ))
               }
             </tbody>
           </table>
@@ -359,7 +403,19 @@ export default function AdminPage() {
               )}
               {isLoading
                 ? [...Array(6)].map((_, i) => <AdminRowSkeleton key={i} />)
-                : pagedUsers.map((user) => <UserRow key={user.user_id} user={user} />)
+                : pagedUsers.map((user) => (
+                    <UserRow
+                      key={user.user_id}
+                      user={user}
+                      isMutating={isMutating}
+                      myId={myId}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onDelete={handleDelete}
+                      onSelect={setSelectedUserId}
+                      onCopyId={handleCopyId}
+                    />
+                  ))
               }
             </tbody>
           </table>

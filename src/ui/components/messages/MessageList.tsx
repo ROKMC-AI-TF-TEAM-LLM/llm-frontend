@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useChatStore } from '../../../api/store/chatStore';
+import Toast from '../Toast';
 import type { Message } from '../../../types';
 import ChatHeader from './ChatHeader';
 import MessageBubble from './MessageBubble';
@@ -18,6 +19,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   useEffect(() => { isFirstLoad.current = true; }, [title]);
 
@@ -34,14 +36,15 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     .find((m) => m.role === 'assistant' && m.type === 'text' && m.status !== 'streaming')?.id;
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => {});
+    navigator.clipboard.writeText(text).catch(() => setCopyFailed(true));
   };
 
   return (
     <div className="flex flex-col h-full bg-surface">
       <ChatHeader title={title} />
+      {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll" aria-live="polite" aria-atomic="false">
         {isLoading ? (
           <MessagesSkeleton />
         ) : (

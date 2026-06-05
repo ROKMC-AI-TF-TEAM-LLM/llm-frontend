@@ -110,6 +110,10 @@ const LoginPage = () => {
       setSignupSuccess(true)
       setMode('login')
     } catch (error) {
+      if (isNetworkError(error)) {
+        bumpToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+        return
+      }
       bumpToast(getApiError(error, SIGNUP_ERRORS, {}, '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.'))
     }
   }

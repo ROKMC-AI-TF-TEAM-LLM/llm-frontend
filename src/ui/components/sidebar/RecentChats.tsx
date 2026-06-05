@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from "../../../types";
+import type { ApiError } from '../../../utils/error';
 import { useDeleteSession, useUpdateSession } from '../../../hooks/useSession';
 import { SessionItemSkeleton } from '../Skeleton';
 import Toast from '../Toast';
@@ -21,7 +22,7 @@ const SESSION_ERRORS: Record<string, string> = {
 };
 
 const getSessionError = (error: unknown): string => {
-  const code = (error as any)?.response?.data?.error?.code;
+  const code = (error as ApiError)?.response?.data?.error?.code;
   return SESSION_ERRORS[code] ?? '오류가 발생했습니다.';
 };
 
@@ -52,7 +53,10 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
     if (editingTitle.trim()) {
       updateSession(
         { sessionId: id, data: { title: editingTitle.trim() } },
-        { onError: (e) => setSidebarError(getSessionError(e)) },
+        {
+          onSuccess: () => setSidebarError(''),
+          onError: (e) => setSidebarError(getSessionError(e)),
+        },
       )
     }
     setEditingId(null)
@@ -61,7 +65,10 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     deleteSession(id, {
-      onSuccess: () => { if (id === currentId) navigate('/chat') },
+      onSuccess: () => {
+        setSidebarError('');
+        if (id === currentId) navigate('/chat')
+      },
       onError: (e) => setSidebarError(getSessionError(e)),
     })
   }

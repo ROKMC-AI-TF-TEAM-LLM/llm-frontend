@@ -15,7 +15,7 @@ export const useGetMe = () => {
 
 export const useInfiniteUsers = (params?: { role?: UserRole; status?: UserStatus; search?: string; size?: number }) => {
   return useInfiniteQuery({
-    queryKey: ['users', params],
+    queryKey: ['users', 'infinite', params],
     queryFn: ({ pageParam }) =>
       getUsers({ ...params, cursor: pageParam as string | undefined }),
     getNextPageParam: (lastPage) => {
@@ -29,7 +29,7 @@ export const useInfiniteUsers = (params?: { role?: UserRole; status?: UserStatus
 
 export const useGetUsers = (params?: GetAdminUsersParams) => {
   return useQuery({
-    queryKey: ['users', params],
+    queryKey: ['users', 'list', params],
     queryFn: () => getUsers(params),
     retry: false,
   })

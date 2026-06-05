@@ -38,14 +38,19 @@ const ProtectedLayout = () => {
 
   if (isError) {
     const status = (meError as ApiError)?.response?.status;
-    if (status !== 401) {
+    if (status === 401) {
       return (
-        <div className="flex h-screen items-center justify-center">
-          <p className="text-sm text-text-secondary">서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+        <div className="flex h-screen">
+          <SidebarSkeleton />
+          <div className="flex-1 min-w-0" />
         </div>
       );
     }
-    return null;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-sm text-text-secondary">서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+      </div>
+    );
   }
 
   const userData = meData?.data?.data;
