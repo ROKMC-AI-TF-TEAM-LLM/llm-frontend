@@ -211,7 +211,6 @@ export default function AdminPage() {
 
       <h1 className="text-2xl font-bold text-text-primary mb-8">관리자 - 회원 관리</h1>
 
-      {/* 관리자 섹션 */}
       <section className="mb-10">
         <h2 className="text-base font-semibold text-text-primary mb-3">관리자</h2>
         <div className="overflow-x-auto">
@@ -234,7 +233,7 @@ export default function AdminPage() {
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-text-primary mb-3">유저</h2>
+        <h2 className="text-base font-semibold text-text-primary mb-3">사용자</h2>
         <div className="flex gap-2 mb-4">
           {USER_TABS.map((tab) => (
             <button
@@ -268,7 +267,6 @@ export default function AdminPage() {
         </div>
         <Pagination page={userPage} totalPages={userTotalPages} onChange={setUserPage} />
       </section>
-      </div>
     </div>
   );
 }
