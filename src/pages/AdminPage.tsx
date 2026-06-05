@@ -44,7 +44,7 @@ const getAdminMutationError = (error: unknown): string => {
 };
 
 const ADMIN_PAGE_SIZE = 5;
-const USER_PAGE_SIZE = 10;
+const USER_PAGE_SIZE = 5;
 
 const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) => {
   if (totalPages <= 1) return null;
@@ -60,7 +60,7 @@ const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: 
   };
 
   return (
-    <div className="flex items-center gap-1 mt-4">
+    <div className="flex items-center justify-center gap-1 mt-4">
       {getPages().map((p, i) =>
         p === '...' ? (
           <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-text-muted text-sm">…</span>
@@ -174,6 +174,18 @@ export default function AdminPage() {
             </button>
           </>
         )}
+        {user.displayStatus === 'rejected' && (
+          <button
+            onClick={() => approve(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
+            disabled={isMutating}
+            title="승인"
+            className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </button>
+        )}
         {(user.displayStatus === 'rejected' || user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
           <button
             onClick={() => deleteUser(user.user_id, { onError: (e) => setMutationError(getAdminMutationError(e)) })}
@@ -188,7 +200,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-surface-subtle p-8">
+    <div className="min-h-full bg-surface-subtle p-8">
       {copiedKey > 0 && (
         <Toast key={copiedKey} message="ID가 복사되었습니다." type="success" onClose={() => setCopiedKey(0)} />
       )}
@@ -221,7 +233,6 @@ export default function AdminPage() {
         <Pagination page={adminPage} totalPages={adminTotalPages} onChange={setAdminPage} />
       </section>
 
-      {/* 유저 섹션 */}
       <section>
         <h2 className="text-base font-semibold text-text-primary mb-3">유저</h2>
         <div className="flex gap-2 mb-4">
@@ -229,7 +240,7 @@ export default function AdminPage() {
             <button
               key={tab.value}
               onClick={() => { setUserStatusTab(tab.value); setUserPage(1); }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors  ${
                 userStatusTab === tab.value
                   ? 'bg-brand text-white'
                   : 'bg-surface text-text-secondary border border-surface-border hover:bg-surface-subtle'
@@ -257,6 +268,7 @@ export default function AdminPage() {
         </div>
         <Pagination page={userPage} totalPages={userTotalPages} onChange={setUserPage} />
       </section>
+      </div>
     </div>
   );
 }

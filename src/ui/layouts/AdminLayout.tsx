@@ -13,7 +13,7 @@ const AdminLayout = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="p-8">
         <Skeleton className="h-8 w-48 mb-6" />
         <div className="flex gap-2 mb-6">
           {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-16 rounded-full" />)}
@@ -34,7 +34,7 @@ const AdminLayout = () => {
     const status = (error as any)?.response?.status;
     if (status === 401 || status === 403) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
+        <div className="flex flex-col items-center justify-center h-full gap-3 py-20">
           <span className="text-6xl">🚫</span>
           <h1 className="text-2xl font-bold text-gray-800">접근 권한이 없습니다</h1>
           <p className="text-gray-500">관리자 계정으로 로그인해주세요.</p>
@@ -42,7 +42,7 @@ const AdminLayout = () => {
       );
     }
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-3">
+      <div className="flex flex-col items-center justify-center h-full gap-3 py-20">
         <h1 className="text-2xl font-bold text-gray-800">연결 오류</h1>
         <p className="text-gray-500">서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>
       </div>

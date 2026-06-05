@@ -23,13 +23,6 @@ const publicRoutes: RouteObject[] = [
       { path: '/', element: <LoginPage /> },
     ]
   },
-  {
-    element: <AdminLayout />,
-    errorElement: <ErrorPage />,
-    children: [
-      { path: '/admin', element: <AdminPage /> },
-    ]
-  },
 ];
 
 const protectedRoutes: RouteObject[] = [
@@ -41,6 +34,13 @@ const protectedRoutes: RouteObject[] = [
       { path: '/chat/:id', element: <ChatPage /> },
       { path: '/search', element: <SearchPage /> },
       { path: '/rag', element: <RAGPage /> },
+      {
+        element: <AdminLayout />,
+        errorElement: <ErrorPage />,
+        children: [
+          { path: '/admin', element: <AdminPage /> },
+        ]
+      },
     ]
   }
 ];
