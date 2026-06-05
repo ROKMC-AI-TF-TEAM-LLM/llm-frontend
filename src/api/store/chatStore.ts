@@ -92,9 +92,7 @@ const saveCache = (sessionId: string, messages: Message[]) => {
     )
     if (cacheable.length > 0)
       sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
-  } catch {
-    // sessionStorage 용량 초과 등 — 캐시 실패는 무시
-  }
+  } catch {}
 }
 
 const loadCache = (sessionId: string): Message[] => {
@@ -102,13 +100,12 @@ const loadCache = (sessionId: string): Message[] => {
     const raw = sessionStorage.getItem(CACHE_KEY(sessionId))
     return raw ? JSON.parse(raw) : []
   } catch {
-    // 파싱 실패 시 빈 배열 반환
     return []
   }
 }
 
 export const clearCache = (sessionId: string) => {
-  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch { /* 무시 */ }
+  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
 }
 
 if (typeof window !== 'undefined') {
@@ -249,7 +246,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
 
     connect: async (sessionId: string) => {
-      // 이전 connect fetch가 진행 중이면 취소
       connectAbortController.abort();
       connectAbortController = new AbortController();
       const { signal } = connectAbortController;
@@ -265,7 +261,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       try {
         res = await getMessages(sessionId, { signal });
       } catch (e) {
-        if (isAbortError(e)) return; // 세션 전환으로 취소된 요청 — 무시
+        if (isAbortError(e)) return;
         throw e;
       }
 
@@ -280,7 +276,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
       }));
 
-      // createdAt까지 일치하는 경우만 서버 중복으로 판단해 제거
       const messages = rawMessages.filter((msg, i) => {
         if (i === 0) return true;
         const prev = rawMessages[i - 1];

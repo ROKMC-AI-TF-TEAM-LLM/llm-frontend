@@ -1,4 +1,4 @@
-type ApiError = {
+export type ApiError = {
   response?: {
     status?: number
     data?: {

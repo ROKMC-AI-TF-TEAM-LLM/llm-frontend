@@ -6,6 +6,7 @@ import { useGetMe } from "../../hooks/useUser";
 import { useInfiniteSessions } from "../../hooks/useSession";
 import { SidebarSkeleton } from "../components/Skeleton";
 import ErrorBoundary from "../components/ErrorBoundary";
+import type { ApiError } from "../../utils/error";
 
 const ProtectedLayout = () => {
   const { accessToken, logout } = useAuth();
@@ -15,11 +16,10 @@ const ProtectedLayout = () => {
 
   useEffect(() => {
     if (isError) {
-      const status = (meError as any)?.response?.status
+      const status = (meError as ApiError)?.response?.status
       if (status === 401) {
         logout()
       }
-      // 네트워크 오류 등 인증과 무관한 에러는 로그아웃 하지 않음 (TanStack Query가 자동 재시도)
     }
   }, [isError, meError, logout]);
 
@@ -37,7 +37,7 @@ const ProtectedLayout = () => {
   }
 
   if (isError) {
-    const status = (meError as any)?.response?.status;
+    const status = (meError as ApiError)?.response?.status;
     if (status !== 401) {
       return (
         <div className="flex h-screen items-center justify-center">

@@ -98,12 +98,82 @@ export function SearchResultSkeleton() {
 export function AdminRowSkeleton() {
   return (
     <tr className="border-b">
-      <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
-      <td className="px-5 py-3"><Skeleton className="h-4 w-40" /></td>
-      <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
-      <td className="px-5 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
-      <td className="px-5 py-3"><Skeleton className="h-4 w-24" /></td>
-      <td className="px-5 py-3"><Skeleton className="h-7 w-14 rounded" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-14" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-36" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-48" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-6 w-12 rounded" /></td>
     </tr>
+  );
+}
+
+export function SearchPageSkeleton() {
+  return (
+    <div className="flex flex-col h-full px-6 pt-16 pb-6">
+      <div className="max-w-2xl w-full mx-auto flex flex-col flex-1">
+        <Skeleton className="h-8 w-32 mx-auto mb-8" />
+        <Skeleton className="h-11 w-full rounded-full mb-8" />
+        <Skeleton className="h-4 w-16 mb-4" />
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex flex-col gap-2 p-4 rounded-2xl border border-surface-border">
+              <div className="flex items-center gap-2">
+                <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+              <Skeleton className="h-3 w-2/5 ml-10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function RagPageSkeleton() {
+  return (
+    <div className="max-w-2xl mx-auto px-8 py-12">
+      <Skeleton className="h-8 w-16 mb-5" />
+      <Skeleton className="h-10 w-full rounded-xl mb-7" />
+      <div className="grid grid-cols-2 gap-5">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-36 rounded-[20px]" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function AdminPageSkeleton() {
+  return (
+    <div className="min-h-full bg-white p-8">
+      <Skeleton className="h-8 w-48 mb-8" />
+
+      <div className="mb-10">
+        <Skeleton className="h-5 w-16 mb-3" />
+        <div className="rounded-xl border border-surface-border overflow-hidden">
+          <table className="w-full table-fixed text-sm">
+            <tbody>
+              {[...Array(2)].map((_, i) => <AdminRowSkeleton key={i} />)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <Skeleton className="h-5 w-16 mb-3" />
+        <div className="flex gap-2 mb-4">
+          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-8 w-16 rounded-full" />)}
+        </div>
+        <div className="rounded-xl border border-surface-border overflow-hidden">
+          <table className="w-full table-fixed text-sm">
+            <tbody>
+              {[...Array(5)].map((_, i) => <AdminRowSkeleton key={i} />)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

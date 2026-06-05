@@ -15,7 +15,7 @@ export const getUsers = (params?: GetAdminUsersParams) =>
 export const deleteUsers = (userId: string) =>
   backendApi.delete<AdminUserDeleteResponse>(`/api/v1/admin/users/${userId}`)
 
-export const InquiryUsers = (userId: string) =>
+export const inquiryUsers = (userId: string) =>
   backendApi.get<AdminUserInquiryResponse>(`/api/v1/admin/users/${userId}`)
 
 export const getMeUsers = () =>

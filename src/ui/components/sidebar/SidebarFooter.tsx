@@ -35,7 +35,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             className="bg-surface rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* 헤더: 아바타 + 이름 + 이메일 */}
             <div className="relative px-6 pt-6 pb-5 flex flex-col items-center text-center border-b border-surface-border">
               <button
                 onClick={() => setShowModal(false)}
@@ -57,14 +56,13 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               )}
             </div>
 
-            {/* 상세 정보 */}
             <div className="px-6 py-5 space-y-4 border-b border-surface-border">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-text-muted">역할</span>
                 <span className={[
                   'text-[11px] font-medium px-2.5 py-0.5 rounded-full',
                   user.role === 'admin'
-                    ? 'bg-brand-soft text-brand'
+                    ? 'bg-blue-100 text-blue-700'
                     : 'bg-surface-border text-text-secondary',
                 ].join(' ')}>
                   
@@ -85,7 +83,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               </div>
             </div>
 
-            {/* 관리자 페이지 (관리자만 표시) */}
             {user.role === 'admin' && (
               <div className="px-6 pt-4 pb-0">
                 <button
@@ -101,7 +98,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               </div>
             )}
 
-            {/* 로그아웃 */}
             <div className="px-6 py-4">
               <button
                 onClick={logout}

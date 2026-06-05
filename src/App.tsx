@@ -12,16 +12,11 @@ import ErrorPage from './pages/ErrorPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedLayout from './ui/layouts/ProtectedLayout';
 import AdminLayout from './ui/layouts/AdminLayout';
+import { SearchPageSkeleton, RagPageSkeleton, AdminPageSkeleton } from './ui/components/Skeleton';
 
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const RAGPage = lazy(() => import('./pages/RagPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
-
-const PageLoader = () => (
-  <div className="flex h-full items-center justify-center">
-    <div className="w-6 h-6 rounded-full border-2 border-brand border-t-transparent animate-spin" />
-  </div>
-);
 
 const publicRoutes: RouteObject[] = [
   {
@@ -43,7 +38,7 @@ const protectedRoutes: RouteObject[] = [
       {
         path: '/search',
         element: (
-          <Suspense fallback={<PageLoader />}>
+          <Suspense fallback={<SearchPageSkeleton />}>
             <SearchPage />
           </Suspense>
         )
@@ -51,7 +46,7 @@ const protectedRoutes: RouteObject[] = [
       {
         path: '/rag',
         element: (
-          <Suspense fallback={<PageLoader />}>
+          <Suspense fallback={<RagPageSkeleton />}>
             <RAGPage />
           </Suspense>
         )
@@ -63,7 +58,7 @@ const protectedRoutes: RouteObject[] = [
           {
             path: '/admin',
             element: (
-              <Suspense fallback={<PageLoader />}>
+              <Suspense fallback={<AdminPageSkeleton />}>
                 <AdminPage />
               </Suspense>
             )

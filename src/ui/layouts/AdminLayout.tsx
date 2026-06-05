@@ -2,6 +2,7 @@ import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useGetUsers } from '../../hooks/useUser';
 import { Skeleton, AdminRowSkeleton } from '../components/Skeleton';
+import type { ApiError } from '../../utils/error';
 
 const AdminLayout = () => {
   const { accessToken } = useAuth();
@@ -31,7 +32,7 @@ const AdminLayout = () => {
   }
 
   if (isError) {
-    const status = (error as any)?.response?.status;
+    const status = (error as ApiError)?.response?.status;
     if (status === 401 || status === 403) {
       return (
         <div className="flex flex-col items-center justify-center h-full gap-3 py-20">

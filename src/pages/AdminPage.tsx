@@ -20,7 +20,7 @@ const STATUS_LABEL: Record<DisplayStatus, string> = {
 };
 
 const STATUS_STYLE: Record<DisplayStatus, string> = {
-  admin: 'bg-brand-soft text-brand',
+  admin: 'bg-blue-100 text-blue-700',
   pending: 'bg-yellow-100 text-yellow-700',
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-brand-subtle text-brand',
@@ -68,7 +68,7 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
     { label: '이메일',    content: <span className="text-sm text-text-secondary">{user.email}</span> },
     { label: '사용자 ID', content: <span className="font-mono text-xs text-text-muted break-all text-right">{user.user_id}</span> },
     { label: '역할',      content: (
-      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${user.role === 'admin' ? 'bg-brand-soft text-brand' : 'bg-green-100 text-green-700'}`}>
+      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${user.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
         {user.role === 'admin' ? '관리자' : '사용자'}
       </span>
     )},
@@ -194,13 +194,13 @@ export default function AdminPage() {
 
   const TableHeader = () => (
     <thead>
-      <tr className="border-b border-surface-border text-left text-text-muted">
-        <th className="px-4 py-3 w-[10%]">이름</th>
-        <th className="px-4 py-3 w-[22%]">이메일</th>
-        <th className="px-4 py-3 w-[30%]">사용자 ID</th>
-        <th className="px-4 py-3 w-[11%]">상태</th>
-        <th className="px-4 py-3 w-[14%]">가입일</th>
-        <th className="px-4 py-3 w-[13%]">처리</th>
+      <tr className="border-b border-surface-border text-left text-text-muted text-xs">
+        <th className="px-4 py-3 w-[13%] whitespace-nowrap">이름</th>
+        <th className="px-4 py-3 w-[22%] whitespace-nowrap">이메일</th>
+        <th className="px-4 py-3 w-[28%] whitespace-nowrap">사용자 ID</th>
+        <th className="px-4 py-3 w-[12%] whitespace-nowrap">상태</th>
+        <th className="px-4 py-3 w-[13%] whitespace-nowrap">가입일</th>
+        <th className="px-4 py-3 w-[12%] whitespace-nowrap">처리</th>
       </tr>
     </thead>
   );
@@ -211,8 +211,8 @@ export default function AdminPage() {
       className="border-b border-surface-border last:border-0 hover:bg-surface-card1 cursor-pointer"
       onClick={() => setSelectedUserId(user.user_id)}
     >
-      <td className="px-4 py-3 font-medium text-text-primary">{user.name}</td>
-      <td className="px-4 py-3 text-text-secondary">{user.email}</td>
+      <td className="px-4 py-3 font-medium text-text-primary whitespace-nowrap">{user.name}</td>
+      <td className="px-4 py-3 text-text-secondary text-sm">{user.email}</td>
       <td className="px-4 py-3">
         <button
           onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(user.user_id).then(() => setCopiedKey(k => k + 1)); }}
@@ -298,8 +298,8 @@ export default function AdminPage() {
 
       <section className="mb-10">
         <h2 className="text-base font-semibold text-text-primary mb-3">관리자</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full table-fixed bg-surface rounded-xl border border-surface-border shadow-sm text-sm">
+        <div className="overflow-x-auto rounded-xl border border-surface-border shadow-sm overflow-hidden">
+          <table className="w-full table-fixed bg-surface text-sm">
             <TableHeader />
             <tbody>
               {!isLoading && pagedAdmins.length === 0 && (
@@ -348,8 +348,8 @@ export default function AdminPage() {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full table-fixed bg-surface rounded-xl border border-surface-border shadow-sm text-sm">
+        <div className="overflow-x-auto rounded-xl border border-surface-border shadow-sm overflow-hidden">
+          <table className="w-full table-fixed bg-surface text-sm">
             <TableHeader />
             <tbody>
               {!isLoading && pagedUsers.length === 0 && (

@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMeUsers, getUsers, deleteUsers, InquiryUsers, approveUser, rejectUser } from '../api/services/user'
+import { getMeUsers, getUsers, deleteUsers, inquiryUsers, approveUser, rejectUser } from '../api/services/user'
 import type { UserRole, UserStatus, GetAdminUsersParams } from '../types/user'
 import { useAuth } from '../context/AuthContext'
 
@@ -38,7 +38,7 @@ export const useGetUsers = (params?: GetAdminUsersParams) => {
 export const useInquiryUsers = (userId: string) => {
   return useQuery({
     queryKey: ['users', userId],
-    queryFn: () => InquiryUsers(userId),
+    queryFn: () => inquiryUsers(userId),
   })
 }
 

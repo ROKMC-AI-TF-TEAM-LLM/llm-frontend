@@ -94,7 +94,6 @@ body {
   animation: chase 1.2s ease-in-out infinite;
 }
 
-/* 모달 열렸을 때 배경 스크롤 차단 */
 body.modal-open main,
 body.modal-open {
   overflow: hidden !important;

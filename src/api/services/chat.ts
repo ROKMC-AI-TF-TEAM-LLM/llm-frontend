@@ -53,7 +53,10 @@ export const streamMessage = async (
 
   if (!reader) return
 
-  signal?.addEventListener('abort', () => reader.cancel(), { once: true })
+  signal?.addEventListener('abort', () => {
+    clearTimeout(idleTimer)
+    reader.cancel()
+  }, { once: true })
 
   const IDLE_MS = Number(import.meta.env.VITE_STREAM_IDLE_MS) || 1_200_000
   let timedOut = false
@@ -83,9 +86,7 @@ export const streamMessage = async (
         } else if (parsed.type === 'sources' && Array.isArray(parsed.items)) {
           onSources?.(parsed.items)
         }
-      } catch (e) {
-        if (import.meta.env.DEV) console.warn('[SSE] JSON parse failed, skipping chunk:', e)
-      }
+      } catch {}
     }
   }
 
