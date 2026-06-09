@@ -45,7 +45,8 @@ export default function Toast({ message, onClose, type = 'error' }: ToastProps) 
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
-      className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap transition-opacity duration-[400ms] ${visible ? 'opacity-100' : 'opacity-0'} ${style.container}`}
+      style={{ left: 'calc(var(--sidebar-width, 0px) + (100vw - var(--sidebar-width, 0px)) / 2)' }}
+      className={`fixed bottom-28 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap transition-opacity duration-[400ms] ${visible ? 'opacity-100' : 'opacity-0'} ${style.container}`}
     >
       <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d={style.path} />

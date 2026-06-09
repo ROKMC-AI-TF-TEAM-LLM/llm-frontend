@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../components/sidebar/Sidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { useGetMe } from "../../hooks/useUser";
 import { useInfiniteSessions } from "../../hooks/useSession";
 import { SidebarSkeleton } from "../components/Skeleton";
@@ -74,7 +74,10 @@ const ProtectedLayout = () => {
         isInitialLoading={isSessionsLoading}
         isLoadingMore={isFetchingNextPage}
       />
-      <main className={`h-screen overflow-y-auto overflow-x-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}>
+      <main
+        style={{ '--sidebar-width': isOpen ? '16rem' : '5rem' } as CSSProperties}
+        className={`h-screen overflow-y-auto overflow-x-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}
+      >
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
