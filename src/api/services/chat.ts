@@ -29,7 +29,7 @@ export const streamMessage = async (
       }
     )
 
-  const rawToken = localStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+  const rawToken = sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
   let parsedToken = rawToken ? JSON.parse(rawToken) : null
 
   let response = await makeRequest(parsedToken)
@@ -38,7 +38,7 @@ export const streamMessage = async (
     try {
       parsedToken = await refreshTokenOnce()
     } catch {
-      localStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+      sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
       localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
       window.location.href = '/'
       throw new Error('HTTP 401')
