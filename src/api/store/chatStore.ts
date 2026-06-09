@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import axios from 'axios';
 import type { Message } from '../../types';
 import { streamMessage, getMessages } from '../services/chat';
 import { deleteSession } from '../services/session';
@@ -23,7 +24,7 @@ interface ChatStore {
 }
 
 const isAbortError = (e: unknown) =>
-  e instanceof DOMException && e.name === 'AbortError'
+  (e instanceof DOMException && e.name === 'AbortError') || axios.isCancel(e)
 
 const extractContent = (raw: string, _depth = 0): string => {
   if (_depth > 5) return raw
