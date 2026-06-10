@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from "../../../types";
 import type { ApiError } from '../../../utils/error';
 import { useDeleteSession, useUpdateSession } from '../../../hooks/useSession';
+import { clearCache } from '../../../api/store/chatStore';
 import { SessionItemSkeleton } from '../Skeleton';
 import Toast from '../Toast';
 
@@ -67,6 +68,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
     deleteSession(id, {
       onSuccess: () => {
         setSidebarError('');
+        clearCache(id);
         if (id === currentId) navigate('/chat')
       },
       onError: (e) => setSidebarError(getSessionError(e)),

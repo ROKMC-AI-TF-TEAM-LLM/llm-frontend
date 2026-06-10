@@ -33,7 +33,6 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     });
   }, [messages, isLoading]);
 
-  // 스트리밍 중에는 재생성 버튼을 숨김 (이전 메시지에 잘못 뜨는 것 방지)
   const lastAssistantId = isStreaming
     ? undefined
     : [...messages].reverse()

@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
-import { useChatStore, saveInflight } from '../api/store/chatStore';
+import { useChatStore, saveInflight, peekSessionMessages } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';
 import { isNetworkError } from '../utils/error';
 import type { SessionData } from '../types/session';
@@ -45,9 +45,7 @@ export default function ChatPage() {
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     let cancelled = false;
-    // 스토어에 이미 이 세션 메시지가 있으면 로딩 스켈레톤 생략(재진입 시 깜빡임/빈 화면 방지)
-    const store = useChatStore.getState();
-    const hasCached = store.sessionId === sessionId && store.messages.length > 0;
+    const hasCached = peekSessionMessages(sessionId).length > 0;
     setIsConnecting(!hasCached);
 
     if (initialMessage) {
@@ -71,7 +69,6 @@ export default function ChatPage() {
         if (knownMessage) {
           setSessionError(knownMessage);
         } else if (status >= 500 || isNetworkError(error)) {
-          // 서버 오류(5xx) 또는 네트워크 오류 → 페이지 내에서 재시도 유도 (navigate 하지 않음)
           setSessionError('서버에 일시적인 오류가 발생했습니다.');
         } else {
           navigate('/chat', { replace: true, state: { toastError: '채팅을 불러오는 중 오류가 발생했습니다.' } });

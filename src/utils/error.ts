@@ -9,13 +9,6 @@ export type ApiError = {
   }
 }
 
-/**
- * API 에러 객체에서 에러 메시지를 추출합니다.
- * @param error - catch 블록의 unknown 에러
- * @param codeMap - 에러 코드 → 메시지 매핑 (우선 적용)
- * @param statusMap - HTTP 상태 코드 → 메시지 매핑 (코드 매핑 실패 시 적용)
- * @param fallback - 매핑 실패 시 기본 메시지
- */
 export const getApiError = (
   error: unknown,
   codeMap: Record<string, string> = {},

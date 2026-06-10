@@ -4,7 +4,6 @@ import type { MessageRole } from '../../../types';
 
 const normalizeMarkdown = (content: string): string =>
   content
-    // LLM이 별표 안쪽에 공백을 넣는 경우(**특정 조항 **, ** 최신 **) → **특정 조항**, **최신** 으로 정리해 굵게 인식되게 함
     .replace(/\*\*[ \t]*(\S(?:[^*\n]*?\S)?)[ \t]*\*\*/g, '**$1**')
     .replace(/([^\n])\n(#{1,6} )/g, '$1\n\n$2')
     .replace(/^[•·–—]\s*/gm, '- ')

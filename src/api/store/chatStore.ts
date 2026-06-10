@@ -83,6 +83,16 @@ const extractContent = (raw: string, _depth = 0): string => {
 
 const streamRegistry = new Map<string, Message[]>();
 
+// 세션별 메시지 메모리 캐시 — 다른 세션을 갔다 와도 즉시 표시(빈 화면 방지)되도록 보관
+const messageCache = new Map<string, Message[]>();
+
+// 해당 세션의 캐시된(또는 현재 표시중인) 메시지를 동기적으로 조회
+export const peekSessionMessages = (sessionId: string): Message[] => {
+  const s = useChatStore.getState();
+  if (s.sessionId === sessionId && s.messages.length > 0) return s.messages;
+  return messageCache.get(sessionId) ?? [];
+};
+
 const CACHE_KEY = (id: string) => `rokm_cache_${id}`
 
 const saveCache = (sessionId: string, messages: Message[]) => {
@@ -106,6 +116,7 @@ const loadCache = (sessionId: string): Message[] => {
 }
 
 export const clearCache = (sessionId: string) => {
+  messageCache.delete(sessionId)
   try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
 }
 
@@ -199,18 +210,27 @@ export const useChatStore = create<ChatStore>((set, get) => {
                 : m
             ),
           }))
+          messageCache.set(sessionId, get().messages)
         } else {
+          // 실패한 질문+응답을 한 쌍으로 함께 제거 (에러난 메시지가 화면에 남지 않도록)
+          const msgs = get().messages
+          const aIdx = msgs.findIndex((m) => m.id === assistantId)
+          const removeIds = new Set<string>([assistantId])
+          if (aIdx > 0 && msgs[aIdx - 1].role === 'user') removeIds.add(msgs[aIdx - 1].id)
           set((state) => ({
             error: '응답 중 오류가 발생했습니다.',
             isStreaming: false,
             abortController: null,
-            messages: state.messages.filter((m) => m.id !== assistantId),
+            messages: state.messages.filter((m) => !removeIds.has(m.id)),
             ...(isFirstMessage ? { isDeleted: true } : {}),
           }))
           if (isFirstMessage) {
+            messageCache.delete(sessionId)
             deleteSession(sessionId)
               .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
               .catch(() => {})
+          } else {
+            messageCache.set(sessionId, get().messages)
           }
         }
       }
@@ -239,9 +259,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ...(isFirstMessage ? { isDeleted: true } : {}),
         }))
         if (isFirstMessage) {
+          messageCache.delete(sessionId)
           deleteSession(sessionId)
             .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
             .catch(() => {})
+        } else {
+          messageCache.set(sessionId, get().messages)
         }
       }
       return
@@ -256,6 +279,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         m.id === assistantId ? { ...m, status: 'done' as const } : m
       ),
     }))
+    messageCache.set(sessionId, get().messages)
     queryClient.invalidateQueries({ queryKey: ['sessions'] })
   }
 
@@ -285,12 +309,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
         set({ sessionId, messages: streaming, isStreaming: true });
         return;
       }
-      // 같은 세션 재진입이면 기존 메시지를 유지(빈 화면 방지), 다른 세션이면 초기화
+      // 빈 화면 방지: 같은 세션은 기존 메시지 유지, 다른 세션은 캐시가 있으면 즉시 표시 후 백그라운드 갱신
       const prev = get();
       if (prev.sessionId === sessionId && prev.messages.length > 0) {
         set({ sessionId, isStreaming: false });
       } else {
-        set({ sessionId, messages: [], isStreaming: false });
+        const cachedMessages = messageCache.get(sessionId);
+        set({ sessionId, messages: cachedMessages ?? [], isStreaming: false });
       }
 
       let res;
@@ -365,9 +390,25 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const pending = getInflight(sessionId);
       const last = messages[messages.length - 1];
 
-      // (1) 마지막이 답변 없는 user 메시지 = 미완료 질문. inflight(진행중 표시)가 있을 때만 재전송 (오래된 세션 자동 재전송 방지).
+      // (1) 마지막이 답변 없는 user 메시지 = 미완료 질문.
       if (last && last.role === 'user' && last.type === 'text') {
-        if (pending) get().retryLastMessage();
+        if (pending) {
+          // 진행중이던 질문 → 그대로 두고 재전송
+          messageCache.set(sessionId, get().messages);
+          get().retryLastMessage();
+        } else {
+          // 답변도 없고 재전송할 것도 없는 버려진 실패 질문 → 화면에서 제거
+          set((state) => ({ messages: state.messages.slice(0, -1) }));
+          if (get().messages.length === 0) {
+            messageCache.delete(sessionId);
+            set({ isDeleted: true, error: '대화 내용이 없어 세션을 정리했습니다.' });
+            deleteSession(sessionId)
+              .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+              .catch(() => {});
+          } else {
+            messageCache.set(sessionId, get().messages);
+          }
+        }
         return;
       }
 
@@ -385,6 +426,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       // (3) 대화 내용이 전혀 없고 보낼 질문도 없는 빈 세션 = 정리(삭제).
       if (messages.length === 0) {
+        messageCache.delete(sessionId);
         set({ isDeleted: true, error: '대화 내용이 없어 세션을 정리했습니다.' });
         deleteSession(sessionId)
           .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
@@ -393,6 +435,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       // (4) 마지막이 assistant = 이미 답변 완료. 남은 inflight는 무의미하므로 정리.
+      messageCache.set(sessionId, messages);
       if (pending) clearInflight(sessionId);
     },
 

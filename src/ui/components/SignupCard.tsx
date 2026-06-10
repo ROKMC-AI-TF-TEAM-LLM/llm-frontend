@@ -29,7 +29,6 @@ const SignupCard = ({
     <div className="card flex w-180 max-w-[92vw] overflow-hidden">
 
       <div className="flex w-1/2 flex-col items-center justify-center gap-4 border-r border-surface-border px-12 py-12">
-        {/* TODO: 로고 교체 */}
         <div className="w-16 h-16 rounded-full border-2 border-surface-border" />
         <div className="text-center leading-none">
           <p className="text-5xl font-black tracking-tight text-brand text-glow-brand">
