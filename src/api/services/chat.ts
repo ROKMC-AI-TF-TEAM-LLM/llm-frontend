@@ -64,13 +64,6 @@ export const streamMessage = async (
 
   let buffer = ''
 
-  // ===== [임시 디버그] 백엔드가 실제로 보내는 raw SSE 확인용 =====
-  let __rawAll = ''
-  let __dataLineCount = 0
-  let __textChunkCount = 0
-  console.log('%c[STREAM] 시작', 'color:#888')
-  // ============================================================
-
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
@@ -78,9 +71,7 @@ export const streamMessage = async (
     clearTimeout(idleTimer)
     idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
 
-    const decoded = decoder.decode(value, { stream: true })
-    __rawAll += decoded // [임시 디버그]
-    buffer += decoded
+    buffer += decoder.decode(value, { stream: true })
     const lines = buffer.split('\n')
     buffer = lines.pop() ?? ''
 
@@ -88,10 +79,8 @@ export const streamMessage = async (
       if (!line.startsWith('data:')) continue
       const content = line.slice(5).trim()
       if (!content || content === '[DONE]') continue
-      __dataLineCount++ // [임시 디버그]
       try {
         const parsed = JSON.parse(content)
-        console.log('[STREAM] data:', parsed) // [임시 디버그]
         if (parsed.type === 'sources' && Array.isArray(parsed.items)) {
           onSources?.(parsed.items)
         } else if (
@@ -101,27 +90,14 @@ export const streamMessage = async (
           parsed.type === 'answer'
         ) {
           const chunk = parsed.content ?? parsed.answer ?? parsed.text ?? parsed.token
-          if (chunk != null) { onChunk(String(chunk)); __textChunkCount++ } // [임시 디버그]
+          if (chunk != null) onChunk(String(chunk))
         } else if (parsed.type == null) {
           const chunk = parsed.content ?? parsed.answer ?? parsed.text
-          if (chunk != null) { onChunk(String(chunk)); __textChunkCount++ } // [임시 디버그]
+          if (chunk != null) onChunk(String(chunk))
         }
-      } catch {
-        console.log('[STREAM] JSON 파싱 실패한 라인:', content) // [임시 디버그]
-      }
+      } catch {}
     }
   }
-
-  // ===== [임시 디버그] 요약 =====
-  console.log(
-    `%c[STREAM] 종료 — data 라인 ${__dataLineCount}개, 텍스트 청크 ${__textChunkCount}개`,
-    'color:#0a0;font-weight:bold'
-  )
-  console.log('[STREAM] 전체 raw 응답:\n', __rawAll)
-  if (__textChunkCount === 0) {
-    console.warn('[STREAM] ⚠️ 텍스트 청크가 0개입니다. 위 raw 응답에 텍스트가 있으면 프론트 파서 문제, 없으면 백엔드(LLM) 문제입니다.')
-  }
-  // ==============================
 
   clearTimeout(idleTimer)
 

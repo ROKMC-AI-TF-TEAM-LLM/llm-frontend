@@ -226,11 +226,16 @@ export const useChatStore = create<ChatStore>((set, get) => {
       clearInflight(sessionId)
       clearCache(sessionId)
       if (get().sessionId === sessionId) {
+        // 실패한 질문+빈응답 쌍을 함께 제거 (화면에 남지 않도록)
+        const msgs = get().messages
+        const aIdx = msgs.findIndex((m) => m.id === assistantId)
+        const removeIds = new Set<string>([assistantId])
+        if (aIdx > 0 && msgs[aIdx - 1].role === 'user') removeIds.add(msgs[aIdx - 1].id)
         set((state) => ({
           error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
           isStreaming: false,
           abortController: null,
-          messages: state.messages.filter((m) => m.id !== assistantId),
+          messages: state.messages.filter((m) => !removeIds.has(m.id)),
           ...(isFirstMessage ? { isDeleted: true } : {}),
         }))
         if (isFirstMessage) {
@@ -280,7 +285,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
         set({ sessionId, messages: streaming, isStreaming: true });
         return;
       }
-      set({ sessionId, messages: [], isStreaming: false });
+      // 같은 세션 재진입이면 기존 메시지를 유지(빈 화면 방지), 다른 세션이면 초기화
+      const prev = get();
+      if (prev.sessionId === sessionId && prev.messages.length > 0) {
+        set({ sessionId, isStreaming: false });
+      } else {
+        set({ sessionId, messages: [], isStreaming: false });
+      }
 
       let res;
       try {
@@ -323,7 +334,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
       }));
 
-      const messages = rawMessages.filter((msg, i) => {
+      const deduped = rawMessages.filter((msg, i) => {
         if (i === 0) return true;
         const prev = rawMessages[i - 1];
         return !(
@@ -335,14 +346,28 @@ export const useChatStore = create<ChatStore>((set, get) => {
         );
       });
 
+      // 백엔드가 저장한 실패 응답(텍스트 없는 assistant)은 직전 질문과 한 쌍으로 묶어 화면에서 숨김
+      const removeIdx = new Set<number>();
+      deduped.forEach((msg, i) => {
+        if (msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '') {
+          removeIdx.add(i);
+          for (let j = i - 1; j >= 0; j--) {
+            if (removeIdx.has(j)) continue;
+            if (deduped[j].role === 'user') removeIdx.add(j);
+            break;
+          }
+        }
+      });
+      const messages = deduped.filter((_, i) => !removeIdx.has(i));
+
       set({ messages });
 
       const pending = getInflight(sessionId);
       const last = messages[messages.length - 1];
 
-      // (1) 마지막이 답변 없는 user 메시지 = 미완료 질문. 메시지는 이미 있으니 그대로 재전송 (중복 추가 금지).
+      // (1) 마지막이 답변 없는 user 메시지 = 미완료 질문. inflight(진행중 표시)가 있을 때만 재전송 (오래된 세션 자동 재전송 방지).
       if (last && last.role === 'user' && last.type === 'text') {
-        get().retryLastMessage();
+        if (pending) get().retryLastMessage();
         return;
       }
 

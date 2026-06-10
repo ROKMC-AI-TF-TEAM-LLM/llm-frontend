@@ -45,7 +45,10 @@ export default function ChatPage() {
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     let cancelled = false;
-    setIsConnecting(true);
+    // 스토어에 이미 이 세션 메시지가 있으면 로딩 스켈레톤 생략(재진입 시 깜빡임/빈 화면 방지)
+    const store = useChatStore.getState();
+    const hasCached = store.sessionId === sessionId && store.messages.length > 0;
+    setIsConnecting(!hasCached);
 
     if (initialMessage) {
       saveInflight(sessionId, initialMessage);
