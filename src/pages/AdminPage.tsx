@@ -42,8 +42,8 @@ const ADMIN_MUTATION_ERRORS: Record<string, string> = {
 const getAdminMutationError = (error: unknown): string =>
   getApiError(error, ADMIN_MUTATION_ERRORS, {}, '처리 중 오류가 발생했습니다.');
 
-const ADMIN_PAGE_SIZE = 5;
-const USER_PAGE_SIZE = 5;
+const ADMIN_PAGE_SIZE = 10;
+const USER_PAGE_SIZE = 10;
 
 function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
   const { data, isLoading, isError } = useInquiryUsers(userId);
