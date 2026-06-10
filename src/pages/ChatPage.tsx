@@ -20,6 +20,7 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const [sessionError, setSessionError] = useState('');
   const [isConnecting, setIsConnecting] = useState(true);
+  const [retryKey, setRetryKey] = useState(0);
 
   const { data: infiniteData } = useInfiniteSessions();
   const allSessions = (infiniteData?.pages ?? []).flatMap((p) => p.data.data.items);
@@ -43,6 +44,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
+    let cancelled = false;
     setIsConnecting(true);
 
     if (initialMessage) {
@@ -51,38 +53,53 @@ export default function ChatPage() {
 
     connect(sessionId)
       .then(() => {
+        if (cancelled) return;
         setIsConnecting(false);
         if (initialMessage) {
           navigate(location.pathname, { replace: true, state: {} });
         }
       })
       .catch((error) => {
+        if (cancelled) return;
         setIsConnecting(false);
         const code = error?.response?.data?.error?.code;
+        const status = (error?.response?.status ?? 0) as number;
         const knownMessage = SESSION_ERRORS[code];
         if (knownMessage) {
           setSessionError(knownMessage);
+        } else if (status >= 500 || isNetworkError(error)) {
+          // 서버 오류(5xx) 또는 네트워크 오류 → 페이지 내에서 재시도 유도 (navigate 하지 않음)
+          setSessionError('서버에 일시적인 오류가 발생했습니다.');
         } else {
-          const toastError = isNetworkError(error)
-            ? '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'
-            : '채팅을 불러오는 중 오류가 발생했습니다.';
-          navigate('/chat', { replace: true, state: { toastError } });
+          navigate('/chat', { replace: true, state: { toastError: '채팅을 불러오는 중 오류가 발생했습니다.' } });
         }
       });
-  
+
+    return () => { cancelled = true; };
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, retryKey]);
 
   if (sessionError) {
+    const isServerError = sessionError === '서버에 일시적인 오류가 발생했습니다.';
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <p className="text-text-secondary">{sessionError}</p>
-        <button
-          onClick={() => navigate('/chat', { replace: true })}
-          className="text-sm text-brand hover:underline"
-        >
-          새 채팅으로 이동
-        </button>
+        {isServerError ? (
+          <button
+            onClick={() => { setSessionError(''); setRetryKey((k) => k + 1); }}
+            className="text-sm text-brand hover:underline"
+          >
+            다시 시도
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/chat', { replace: true })}
+            className="text-sm text-brand hover:underline"
+          >
+            새 채팅으로 이동
+          </button>
+        )}
       </div>
     );
   }
@@ -93,7 +110,7 @@ export default function ChatPage() {
         <MessageList title={title} isLoading={isConnecting} />
       </div>
       <div className="w-full px-4 py-2">
-        <ChatInput />
+        <ChatInput isConnecting={isConnecting} />
       </div>
       <p className="text-xs text-center text-text-muted pb-2">
         ROKMCLLM은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.

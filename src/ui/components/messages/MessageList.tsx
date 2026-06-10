@@ -16,6 +16,7 @@ interface MessageListProps {
 
 export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
+  const isStreaming = useChatStore((s) => s.isStreaming);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
@@ -32,8 +33,11 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     });
   }, [messages, isLoading]);
 
-  const lastAssistantId = [...messages].reverse()
-    .find((m) => m.role === 'assistant' && m.type === 'text' && m.status !== 'streaming')?.id;
+  // 스트리밍 중에는 재생성 버튼을 숨김 (이전 메시지에 잘못 뜨는 것 방지)
+  const lastAssistantId = isStreaming
+    ? undefined
+    : [...messages].reverse()
+        .find((m) => m.role === 'assistant' && m.type === 'text' && m.status !== 'streaming')?.id;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => setCopyFailed(true));

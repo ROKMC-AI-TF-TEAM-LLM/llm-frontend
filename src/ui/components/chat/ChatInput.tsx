@@ -8,11 +8,13 @@ import Toast from '../Toast';
 interface ChatInputProps {
   placeholder?: string;
   notice?: string;
+  isConnecting?: boolean;
 }
 
 export default function ChatInput({
   placeholder = "메시지를 입력하세요...",
   notice,
+  isConnecting = false,
 }: ChatInputProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,6 +48,7 @@ export default function ChatInput({
   const handleSubmit = async () => {
     if (!value.trim() && !pendingFile) return;
     if (isStreaming && !isNewChat) return;
+    if (isConnecting && !isNewChat) return;
     const text = value.trim();
 
     if (pendingFile) {

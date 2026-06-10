@@ -218,6 +218,30 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     streamRegistry.delete(sessionId)
+
+    // 스트림이 에러 없이 끝났지만 텍스트를 한 글자도 못 받은 경우 = 실패로 간주
+    const finalMsg = get().messages.find((m) => m.id === assistantId)
+    const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
+    if (!hasContent) {
+      clearInflight(sessionId)
+      clearCache(sessionId)
+      if (get().sessionId === sessionId) {
+        set((state) => ({
+          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
+          isStreaming: false,
+          abortController: null,
+          messages: state.messages.filter((m) => m.id !== assistantId),
+          ...(isFirstMessage ? { isDeleted: true } : {}),
+        }))
+        if (isFirstMessage) {
+          deleteSession(sessionId)
+            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+            .catch(() => {})
+        }
+      }
+      return
+    }
+
     clearInflight(sessionId)
     if (get().sessionId !== sessionId) return
     set((state) => ({
@@ -263,6 +287,28 @@ export const useChatStore = create<ChatStore>((set, get) => {
         res = await getMessages(sessionId, { signal });
       } catch (e) {
         if (isAbortError(e)) return;
+        // API 실패 시 캐시/인플라이트로 복구 시도
+        const cached = loadCache(sessionId);
+        const pending = getInflight(sessionId);
+        if (cached.length > 0) {
+          set({ messages: cached });
+          const lastCached = cached[cached.length - 1];
+          if (lastCached?.role === 'user' && lastCached?.type === 'text' && pending) {
+            clearInflight(sessionId);
+            get().retryLastMessage();
+          }
+          return;
+        }
+        if (pending) {
+          set((state) => ({
+            messages: [
+              ...state.messages,
+              { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+            ],
+          }));
+          get().retryLastMessage();
+          return;
+        }
         throw e;
       }
 
@@ -291,43 +337,38 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       set({ messages });
 
-      const last = messages[messages.length - 1];
-      if (last && last.role === 'user' && last.type === 'text') {
-        if (getInflight(sessionId)) {
-          get().retryLastMessage();
-        }
-        return;
-      }
-
-      const cached = loadCache(sessionId);
-      if (cached.length > messages.length) {
-        clearCache(sessionId);
-        set({ messages: cached });
-        const lastCached = cached[cached.length - 1];
-        if (lastCached?.role === 'user' && lastCached?.type === 'text' && getInflight(sessionId)) {
-          clearInflight(sessionId);
-          get().retryLastMessage();
-        }
-        return;
-      }
-
       const pending = getInflight(sessionId);
-      if (pending) {
-        const lastUserMsg = [...messages].reverse()
-          .find((m) => m.role === 'user' && m.type === 'text');
-        const alreadySaved = lastUserMsg?.type === 'text' && lastUserMsg.content === pending;
-        if (!alreadySaved) {
-          set((state) => ({
-            messages: [
-              ...state.messages,
-              { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending },
-            ],
-          }));
-          get().retryLastMessage();
-        } else {
-          clearInflight(sessionId);
-        }
+      const last = messages[messages.length - 1];
+
+      // (1) 마지막이 답변 없는 user 메시지 = 미완료 질문. 메시지는 이미 있으니 그대로 재전송 (중복 추가 금지).
+      if (last && last.role === 'user' && last.type === 'text') {
+        get().retryLastMessage();
+        return;
       }
+
+      // (2) 비어있는 새 세션인데 보낼 질문이 남아있음 = 첫 질문 전송 (새로고침 시 재전송).
+      if (messages.length === 0 && pending) {
+        set((state) => ({
+          messages: [
+            ...state.messages,
+            { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+          ],
+        }));
+        get().retryLastMessage();
+        return;
+      }
+
+      // (3) 대화 내용이 전혀 없고 보낼 질문도 없는 빈 세션 = 정리(삭제).
+      if (messages.length === 0) {
+        set({ isDeleted: true, error: '대화 내용이 없어 세션을 정리했습니다.' });
+        deleteSession(sessionId)
+          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .catch(() => {});
+        return;
+      }
+
+      // (4) 마지막이 assistant = 이미 답변 완료. 남은 inflight는 무의미하므로 정리.
+      if (pending) clearInflight(sessionId);
     },
 
     disconnect: () => {
@@ -363,17 +404,19 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const { messages, sessionId } = get()
       const last = messages[messages.length - 1]
       if (!last || last.role !== 'user' || last.type !== 'text') return
+      // 메시지가 user 1개뿐이면 새 세션의 첫 질문 → 실패 시 빈 세션 정리 필요
       const isFirstMessage = messages.length === 1
 
       saveInflight(sessionId, last.content)
       const controller = new AbortController()
       const assistantId = crypto.randomUUID()
+      const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,
         abortController: controller,
         messages: [
           ...state.messages,
-          { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const },
+          { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
         ],
       }))
       streamRegistry.set(sessionId, get().messages)
@@ -403,36 +446,25 @@ export const useChatStore = create<ChatStore>((set, get) => {
         .find((m) => m.role === 'user' && m.type === 'text');
 
       if (!prevUserMsg || prevUserMsg.type !== 'text') return;
-      const userIdx = messages.findIndex((m) => m.id === prevUserMsg.id);
-      const isLast = assistantIdx === messages.length - 1;
-      const isFirstMessage = userIdx === 0;
+      // 재생성은 항상 기존 세션 대상 → 실패해도 세션 삭제 금지
+      const isFirstMessage = false;
 
       const controller = new AbortController()
       const newAssistantId = crypto.randomUUID();
 
       saveInflight(sessionId, prevUserMsg.content);
 
-      if (isLast) {
-        set((state) => ({
-          isStreaming: true,
-          abortController: controller,
-          messages: [
-            ...state.messages.slice(0, userIdx),
-            { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: prevUserMsg.content },
-            { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const },
-          ],
-        }));
-      } else {
-        set((state) => ({
-          isStreaming: true,
-          abortController: controller,
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
-              ? { ...m, id: newAssistantId, content: '', status: 'streaming' as const }
-              : m
-          ),
-        }));
-      }
+      const now = new Date().toISOString()
+      // user 메시지는 그대로 두고 해당 어시스턴트 메시지만 제자리에서 교체 (복제 방지)
+      set((state) => ({
+        isStreaming: true,
+        abortController: controller,
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, id: newAssistantId, content: '', status: 'streaming' as const, sources: undefined, createdAt: now }
+            : m
+        ),
+      }));
 
       streamRegistry.set(sessionId, get().messages);
       await executeStream(sessionId, newAssistantId, prevUserMsg.content, isFirstMessage, controller.signal);

@@ -42,7 +42,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
   return (
     <div className={`flex items-center gap-1 mt-0.5 mb-2 ${isUser ? 'justify-end' : 'ml-10'}`}>
       {isUser && time && (
-        <div className="relative group/time mr-1">
+        <div className="relative group/time mr-1 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150">
           <span className="text-[11px] text-text-muted cursor-default">{time}</span>
           <span className="pointer-events-none absolute -top-7 right-0 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
             {fullDate}
@@ -104,7 +104,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
       </div>
 
       {!isUser && time && (
-        <div className="relative group/time ml-1">
+        <div className="relative group/time ml-1 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150">
           <span className="text-[11px] text-text-muted cursor-default">{time}</span>
           <span className="pointer-events-none absolute -top-7 left-0 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
             {fullDate}

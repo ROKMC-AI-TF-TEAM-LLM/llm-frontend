@@ -8,7 +8,7 @@ const RagPage = () => {
   const [query, setQuery] = useState('')
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null)
 
-  const { data, isLoading, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteDocuments()
+  const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage, refetch, isRefetching } = useInfiniteDocuments()
 
   const allDocuments = data?.pages.flatMap((p) => p.data.data.documents) ?? []
 
@@ -86,9 +86,26 @@ const RagPage = () => {
         <h1 className="text-2xl font-semibold text-text-primary mb-5">문서</h1>
         <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." />
 
-        {isError && (
-          <p className="mt-6 text-sm text-center text-text-muted">문서를 불러오지 못했습니다.</p>
-        )}
+        {isError && (() => {
+          const code = (error as { response?: { data?: { error?: { code?: string } } } })?.response?.data?.error?.code
+          const msg = code === 'LLM_SERVER_ERROR'
+            ? 'LLM 서버에 연결할 수 없습니다. 백엔드 서버 상태를 확인해주세요.'
+            : code === 'UNAUTHORIZED' || code === 'TOKEN_INVALID'
+            ? '인증이 만료되었습니다. 다시 로그인해주세요.'
+            : '문서를 불러오지 못했습니다.'
+          return (
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <p className="text-sm text-center text-text-muted">{msg}</p>
+              <button
+                onClick={() => refetch()}
+                disabled={isRefetching}
+                className="px-4 py-1.5 rounded-full text-xs font-medium bg-surface border border-surface-border text-text-secondary hover:bg-surface-subtle disabled:opacity-50 transition-colors"
+              >
+                {isRefetching ? '재시도 중...' : '다시 시도'}
+              </button>
+            </div>
+          )
+        })()}
 
         {isLoading ? (
           <div className="grid grid-cols-2 gap-5 mt-7">
