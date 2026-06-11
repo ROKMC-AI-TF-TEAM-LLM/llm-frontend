@@ -50,7 +50,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-1`}>
       {!isUser && (
-        <div className="shrink-0 mr-3 mt-1">
+        <div className="shrink-0 mr-3 mt-2">
           <div className="w-7 h-7 rounded-full border-2 border-surface-border bg-surface" />
         </div>
       )}

@@ -33,11 +33,6 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     });
   }, [messages, isLoading]);
 
-  const lastAssistantId = isStreaming
-    ? undefined
-    : [...messages].reverse()
-        .find((m) => m.role === 'assistant' && m.type === 'text' && m.status !== 'streaming')?.id;
-
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => setCopyFailed(true));
   };
@@ -72,17 +67,18 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
             );
           }
 
-          const isStreaming = msg.status === 'streaming';
+          const msgStreaming = msg.status === 'streaming';
           const isInterrupted = msg.status === 'interrupted';
           return (
             <div key={msg.id} className="group/msg">
-              <MessageBubble role="assistant" content={msg.content} isStreaming={isStreaming} />
-              {!isStreaming && (
+              <MessageBubble role="assistant" content={msg.content} isStreaming={msgStreaming} />
+              {!msgStreaming && (
                 <>
                   <MessageActions
                     role="assistant"
                     onCopy={() => handleCopy(msg.content)}
-                    onRegenerate={msg.id === lastAssistantId ? () => regenerateMessage(msg.id) : undefined}
+                    onRegenerate={() => regenerateMessage(msg.id)}
+                    regenerateDisabled={isStreaming}
                     createdAt={msg.createdAt}
                   />
                   {isInterrupted && (
@@ -94,7 +90,8 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
                       <span>응답이 중단되었습니다.</span>
                       <button
                         onClick={() => regenerateMessage(msg.id)}
-                        className="ml-auto px-3 py-1 rounded-lg border border-surface-border bg-surface text-sm text-text-primary hover:bg-surface-subtle transition-colors"
+                        disabled={isStreaming}
+                        className="ml-auto px-3 py-1 rounded-lg border border-surface-border bg-surface text-sm text-text-primary hover:bg-surface-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface"
                       >
                         다시 시도
                       </button>

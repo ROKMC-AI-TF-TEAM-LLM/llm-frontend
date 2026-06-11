@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../components/sidebar/Sidebar";
 import { useState, useEffect, type CSSProperties } from "react";
@@ -10,6 +10,7 @@ import type { ApiError } from "../../utils/error";
 
 const ProtectedLayout = () => {
   const { accessToken, logout } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
   const { data: meData, isError, error: meError, isLoading } = useGetMe();
   const { data: sessionsInfinite, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isSessionsLoading } = useInfiniteSessions();
@@ -79,7 +80,9 @@ const ProtectedLayout = () => {
         className={`h-screen overflow-y-auto overflow-x-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}
       >
         <ErrorBoundary>
-          <Outlet />
+          <div key={location.pathname} className="h-full animate-fade-in">
+            <Outlet />
+          </div>
         </ErrorBoundary>
       </main>
     </>

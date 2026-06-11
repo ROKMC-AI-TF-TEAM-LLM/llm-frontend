@@ -1,9 +1,12 @@
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import type { ApiError } from '../../../utils/error';
 import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
 import { useCreateSession } from '../../../hooks/useSession';
 import Toast from '../Toast';
+
+const inputDrafts = new Map<string, string>();
+const NEW_CHAT_KEY = '__new__';
 
 interface ChatInputProps {
   placeholder?: string;
@@ -18,16 +21,45 @@ export default function ChatInput({
 }: ChatInputProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams();
+  const draftKey = id ?? NEW_CHAT_KEY;
   const sendMessage = useChatStore((s) => s.sendMessage);
   const sendImageMessage = useChatStore((s) => s.sendImageMessage);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const abortStream = useChatStore((s) => s.abortStream);
   const { mutateAsync: createSession } = useCreateSession();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(() => inputDrafts.get(draftKey) ?? '');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
   const [inputError, setInputError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeTextarea = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.overflowY = 'hidden';
+    el.style.height = 'auto';
+    if (el.value) {
+      el.style.height = `${el.scrollHeight}px`;
+      if (el.scrollHeight > 192) el.style.overflowY = 'auto';
+    }
+  };
+
+  useEffect(() => {
+    setValue(inputDrafts.get(draftKey) ?? '');
+    requestAnimationFrame(resizeTextarea);
+  }, [draftKey]);
+
+  const updateValue = (v: string) => {
+    setValue(v);
+    if (v) inputDrafts.set(draftKey, v);
+    else inputDrafts.delete(draftKey);
+  };
+
+  const clearDraft = () => {
+    setValue('');
+    inputDrafts.delete(draftKey);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,10 +86,10 @@ export default function ChatInput({
     if (pendingFile) {
       sendImageMessage(pendingFile, text || undefined);
       setPendingFile(null);
-      setValue('');
+      clearDraft();
       resetTextarea();
     } else if (isNewChat) {
-      setValue('');
+      clearDraft();
       resetTextarea();
       if (isStreaming) abortStream();
       const prevSessionId = useChatStore.getState().sessionId;
@@ -71,7 +103,7 @@ export default function ChatInput({
         saveInflight(sessionId, text);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
       } catch (e: unknown) {
-        setValue(text);
+        updateValue(text);
         const apiErr = e as ApiError;
         const code = apiErr?.response?.data?.error?.code;
         if (code === 'UNAUTHORIZED') {
@@ -84,7 +116,7 @@ export default function ChatInput({
       }
     } else {
       sendMessage(text);
-      setValue('');
+      clearDraft();
       resetTextarea();
     }
   };
@@ -162,7 +194,7 @@ export default function ChatInput({
             value={value}
             onChange={(e) => {
               const el = e.target;
-              setValue(el.value);
+              updateValue(el.value);
               el.style.overflowY = 'hidden';
               el.style.height = 'auto';
               el.style.height = `${el.scrollHeight}px`;

@@ -383,32 +383,32 @@ export const useChatStore = create<ChatStore>((set, get) => {
           }
         }
       });
-      const messages = deduped.filter((_, i) => !removeIdx.has(i));
+      const dbMessages = deduped.filter((_, i) => !removeIdx.has(i));
 
-      set({ messages });
+      // 세션 전환 시 현재 탭 캐시(중단 등 로컬 상태 포함)가 DB보다 풍부하면 캐시를 유지
+      const cached = messageCache.get(sessionId) ?? [];
+      const base = cached.length > dbMessages.length ? cached : dbMessages;
 
       const pending = getInflight(sessionId);
+
+      // 답변(assistant)이 뒤따르지 않는 user 질문 = 답변 못 받은 오류 메시지 → 제거.
+      // 중단한 메시지는 interrupted assistant가 뒤따르므로 유지됨. 마지막 질문이 진행중(inflight)이면 유지하고 재전송.
+      const messages = base.filter((msg, i) => {
+        if (msg.role !== 'user' || msg.type !== 'text') return true;
+        const next = base[i + 1];
+        if (next && next.role === 'assistant') return true;
+        if (i === base.length - 1 && pending) return true;
+        return false;
+      });
+
+      set({ messages });
+      messageCache.set(sessionId, messages);
+
       const last = messages[messages.length - 1];
 
-      // (1) 마지막이 답변 없는 user 메시지 = 미완료 질문.
+      // (1) 마지막이 user 메시지 = 진행중 질문이므로 재전송.
       if (last && last.role === 'user' && last.type === 'text') {
-        if (pending) {
-          // 진행중이던 질문 → 그대로 두고 재전송
-          messageCache.set(sessionId, get().messages);
-          get().retryLastMessage();
-        } else {
-          // 답변도 없고 재전송할 것도 없는 버려진 실패 질문 → 화면에서 제거
-          set((state) => ({ messages: state.messages.slice(0, -1) }));
-          if (get().messages.length === 0) {
-            messageCache.delete(sessionId);
-            set({ isDeleted: true, error: '대화 내용이 없어 세션을 정리했습니다.' });
-            deleteSession(sessionId)
-              .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-              .catch(() => {});
-          } else {
-            messageCache.set(sessionId, get().messages);
-          }
-        }
+        if (pending) get().retryLastMessage();
         return;
       }
 
@@ -434,8 +434,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      // (4) 마지막이 assistant = 이미 답변 완료. 남은 inflight는 무의미하므로 정리.
-      messageCache.set(sessionId, messages);
+      // (4) 남은 inflight 정리.
       if (pending) clearInflight(sessionId);
     },
 
@@ -514,28 +513,27 @@ export const useChatStore = create<ChatStore>((set, get) => {
         .find((m) => m.role === 'user' && m.type === 'text');
 
       if (!prevUserMsg || prevUserMsg.type !== 'text') return;
-      // 재생성은 항상 기존 세션 대상 → 실패해도 세션 삭제 금지
-      const isFirstMessage = false;
+      const question = prevUserMsg.content;
+      const userId = prevUserMsg.id;
 
-      const controller = new AbortController()
+      const controller = new AbortController();
       const newAssistantId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      saveInflight(sessionId, question);
 
-      saveInflight(sessionId, prevUserMsg.content);
-
-      const now = new Date().toISOString()
-      // user 메시지는 그대로 두고 해당 어시스턴트 메시지만 제자리에서 교체 (복제 방지)
+      // 재생성 = 원래 질문+답변을 제거하고 맨 아래로 이동시켜 새로 생성 (질문 복제 방지)
       set((state) => ({
         isStreaming: true,
         abortController: controller,
-        messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text'
-            ? { ...m, id: newAssistantId, content: '', status: 'streaming' as const, sources: undefined, createdAt: now }
-            : m
-        ),
+        messages: [
+          ...state.messages.filter((m) => m.id !== assistantId && m.id !== userId),
+          { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: question, createdAt: now },
+          { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const, createdAt: now },
+        ],
       }));
-
       streamRegistry.set(sessionId, get().messages);
-      await executeStream(sessionId, newAssistantId, prevUserMsg.content, isFirstMessage, controller.signal);
+      saveCache(sessionId, get().messages);
+      await executeStream(sessionId, newAssistantId, question, false, controller.signal);
     },
   }
 });
