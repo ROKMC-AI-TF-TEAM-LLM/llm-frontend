@@ -5,6 +5,15 @@ import type { MessageRole } from '../../../types';
 const normalizeMarkdown = (content: string): string =>
   content
     .replace(/\*\*[ \t]*(\S(?:[^*\n]*?\S)?)[ \t]*\*\*/g, '**$1**')
+    .replace(/\*\*([^*\n]+?)\*\*/g, (match: string, inner: string, offset: number, full: string) => {
+      const prev = full[offset - 1];
+      const next = full[offset + match.length];
+      const isWord = (c: string | undefined) => !!c && /[가-힣A-Za-z0-9]/.test(c);
+      const isPunct = (c: string | undefined) => !!c && /[^\s\w가-힣]/.test(c);
+      const lead = isWord(prev) && isPunct(inner[0]) ? ' ' : '';
+      const trail = isWord(next) && isPunct(inner[inner.length - 1]) ? ' ' : '';
+      return `${lead}**${inner}**${trail}`;
+    })
     .replace(/([^\n])\n(#{1,6} )/g, '$1\n\n$2')
     .replace(/^[•·–—]\s*/gm, '- ')
     .replace(/([가-힣]) +(을|를|에|에서|은|는|이|가|으로|로|와|과)(?=[\s,.?!]|$)/gm, '$1$2');
