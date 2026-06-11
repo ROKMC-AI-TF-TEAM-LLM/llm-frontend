@@ -1,7 +1,8 @@
-import { createContext, useState, useContext, type PropsWithChildren } from 'react';
+import { createContext, useState, useContext, useEffect, type PropsWithChildren } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY } from '../constants/key';
 import { login as loginApi, logout as logoutApi } from '../api/services/auth';
+import { scheduleTokenRefresh } from '../api/lib/axios';
 import type { LoginRequest } from '../types/auth';
 
 interface AuthContextType {
@@ -34,6 +35,11 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     getRefreshTokenFromStorage(),
   );
 
+  // 기존 토큰이 있으면 만료 전 선제 갱신을 예약 (앱 시작 시)
+  useEffect(() => {
+    if (accessToken) scheduleTokenRefresh();
+  }, [accessToken]);
+
   const login = async (signInData: LoginRequest) => {
     const response = await loginApi(signInData);
     const { access_token, refresh_token } = response.data.data;
@@ -41,6 +47,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setRefreshTokenInStorage(refresh_token);
     setAccessToken(access_token);
     setRefreshToken(refresh_token);
+    scheduleTokenRefresh();
   };
 
   const logout = async () => {

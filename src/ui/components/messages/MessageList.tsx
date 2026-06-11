@@ -18,9 +18,20 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
+  const editAndResendMessage = useChatStore((s) => s.editAndResendMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
   const [copyFailed, setCopyFailed] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+
+  const startEdit = (id: string, text: string) => { setEditingId(id); setEditText(text); };
+  const saveEdit = (id: string) => {
+    const text = editText.trim();
+    if (!text) return;
+    setEditingId(null);
+    editAndResendMessage(id, text);
+  };
 
   useEffect(() => { isFirstLoad.current = true; }, [title]);
 
@@ -59,10 +70,47 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
           }
 
           if (msg.role === 'user') {
+            if (editingId === msg.id) {
+              return (
+                <div key={msg.id} className="flex flex-col items-end gap-2 mb-4">
+                  <textarea
+                    autoFocus
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(msg.id); }
+                      if (e.key === 'Escape') setEditingId(null);
+                    }}
+                    rows={Math.min(8, editText.split('\n').length + 1)}
+                    className="w-full max-w-[75%] min-w-[260px] rounded-2xl border border-surface-border bg-surface px-4 py-3 text-sm text-text-primary outline-none focus:border-brand resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="px-3.5 py-1.5 rounded-full text-xs font-medium border border-surface-border text-text-secondary hover:bg-surface-subtle transition-colors"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={() => saveEdit(msg.id)}
+                      disabled={!editText.trim()}
+                      className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-brand text-white hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      보내기
+                    </button>
+                  </div>
+                </div>
+              );
+            }
             return (
               <div key={msg.id} className="group/msg">
                 <MessageBubble role="user" content={msg.content} />
-                <MessageActions role="user" onCopy={() => handleCopy(msg.content)} createdAt={msg.createdAt} />
+                <MessageActions
+                  role="user"
+                  onCopy={() => handleCopy(msg.content)}
+                  onEdit={isStreaming ? undefined : () => startEdit(msg.id, msg.content)}
+                  createdAt={msg.createdAt}
+                />
               </div>
             );
           }

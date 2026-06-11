@@ -16,6 +16,30 @@ const parseStorageItem = (raw: string | null): string | null => {
   try { return JSON.parse(raw) } catch { return null }
 }
 
+const decodeTokenExp = (token: string): number | null => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return typeof payload.exp === 'number' ? payload.exp : null
+  } catch {
+    return null
+  }
+}
+
+let proactiveTimer: ReturnType<typeof setTimeout> | null = null
+
+// 액세스 토큰 만료 60초 전에 미리 갱신을 예약 (요청이 401 나기 전에 토큰을 새로 받아 F5 불필요)
+export const scheduleTokenRefresh = (): void => {
+  if (proactiveTimer) { clearTimeout(proactiveTimer); proactiveTimer = null }
+  const token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
+  if (!token) return
+  const exp = decodeTokenExp(token)
+  if (!exp) return
+  const delay = Math.max(exp * 1000 - Date.now() - 60_000, 3_000)
+  proactiveTimer = setTimeout(() => {
+    refreshTokenOnce().catch(() => {})
+  }, delay)
+}
+
 export const refreshTokenOnce = (): Promise<string> => {
   if (!pendingRefresh) {
     const refreshToken = parseStorageItem(localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN))
@@ -28,6 +52,7 @@ export const refreshTokenOnce = (): Promise<string> => {
         const { access_token, refresh_token } = data.data
         sessionStorage.setItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN, JSON.stringify(access_token))
         localStorage.setItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN, JSON.stringify(refresh_token))
+        scheduleTokenRefresh()
         return access_token
       })
       .finally(() => {

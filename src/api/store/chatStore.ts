@@ -21,6 +21,7 @@ interface ChatStore {
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
+  editAndResendMessage: (userId: string, newText: string) => Promise<void>;
 }
 
 const isAbortError = (e: unknown) =>
@@ -534,6 +535,38 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages);
       saveCache(sessionId, get().messages);
       await executeStream(sessionId, newAssistantId, question, false, controller.signal);
+    },
+
+    editAndResendMessage: async (userId: string, newText: string) => {
+      if (get().isStreaming) return;
+      const text = newText.trim();
+      if (!text) return;
+      const { messages, sessionId } = get();
+      const userIdx = messages.findIndex((m) => m.id === userId);
+      if (userIdx === -1) return;
+
+      // 이 질문에 대한 답변(다음 assistant)도 함께 제거하고, 수정한 질문을 맨 아래로 재전송
+      const removeIds = new Set<string>([userId]);
+      const next = messages[userIdx + 1];
+      if (next && next.role === 'assistant') removeIds.add(next.id);
+
+      const controller = new AbortController();
+      const newAssistantId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      saveInflight(sessionId, text);
+
+      set((state) => ({
+        isStreaming: true,
+        abortController: controller,
+        messages: [
+          ...state.messages.filter((m) => !removeIds.has(m.id)),
+          { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: text, createdAt: now },
+          { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const, createdAt: now },
+        ],
+      }));
+      streamRegistry.set(sessionId, get().messages);
+      saveCache(sessionId, get().messages);
+      await executeStream(sessionId, newAssistantId, text, false, controller.signal);
     },
   }
 });
