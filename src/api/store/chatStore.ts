@@ -21,6 +21,7 @@ interface ChatStore {
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
+  regenerateFromUser: (userId: string) => Promise<void>;
   editAndResendMessage: (userId: string, newText: string) => Promise<void>;
 }
 
@@ -117,42 +118,6 @@ const loadCache = (sessionId: string): Message[] => {
 export const clearCache = (sessionId: string) => {
   messageCache.delete(sessionId)
   try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
-  try { localStorage.removeItem(HIDDEN_KEY(sessionId)) } catch {}
-}
-
-const HIDDEN_KEY = (id: string) => `rokm_hidden_${id}`
-
-const msgSignature = (m: Message): string | null =>
-  m.type === 'text' ? `${m.role}|${m.content}` : null
-
-const getHidden = (sessionId: string): Set<string> => {
-  try {
-    const raw = localStorage.getItem(HIDDEN_KEY(sessionId))
-    return new Set<string>(raw ? JSON.parse(raw) : [])
-  } catch {
-    return new Set<string>()
-  }
-}
-
-const addHidden = (sessionId: string, msgs: Message[]) => {
-  if (!sessionId) return
-  const set = getHidden(sessionId)
-  msgs.forEach((m) => {
-    const sig = msgSignature(m)
-    if (sig) set.add(sig)
-  })
-  try {
-    localStorage.setItem(HIDDEN_KEY(sessionId), JSON.stringify([...set]))
-  } catch {}
-}
-
-const filterHidden = (sessionId: string, msgs: Message[]): Message[] => {
-  const hidden = getHidden(sessionId)
-  if (hidden.size === 0) return msgs
-  return msgs.filter((m) => {
-    const sig = msgSignature(m)
-    return !sig || !hidden.has(sig)
-  })
 }
 
 const sortByTime = (msgs: Message[]): Message[] => {
@@ -207,6 +172,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     question: string,
     isFirstMessage: boolean,
     signal: AbortSignal,
+    removePairOnFail = true,
   ): Promise<void> => {
     try {
       await streamMessage(
@@ -258,6 +224,18 @@ export const useChatStore = create<ChatStore>((set, get) => {
             ),
           }))
           messageCache.set(sessionId, get().messages)
+        } else if (!removePairOnFail) {
+          set((state) => ({
+            error: '응답 중 오류가 발생했습니다.',
+            isStreaming: false,
+            abortController: null,
+            messages: state.messages.map((m) =>
+              m.id === assistantId && m.type === 'text'
+                ? { ...m, status: 'interrupted' as const }
+                : m
+            ),
+          }))
+          messageCache.set(sessionId, get().messages)
         } else {
           const msgs = get().messages
           const aIdx = msgs.findIndex((m) => m.id === assistantId)
@@ -290,7 +268,19 @@ export const useChatStore = create<ChatStore>((set, get) => {
     if (!hasContent) {
       clearInflight(sessionId)
       clearCache(sessionId)
-      if (get().sessionId === sessionId) {
+      if (get().sessionId === sessionId && !removePairOnFail) {
+        set((state) => ({
+          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
+          isStreaming: false,
+          abortController: null,
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text'
+              ? { ...m, status: 'interrupted' as const }
+              : m
+          ),
+        }))
+        messageCache.set(sessionId, get().messages)
+      } else if (get().sessionId === sessionId) {
         const msgs = get().messages
         const aIdx = msgs.findIndex((m) => m.id === assistantId)
         const removeIds = new Set<string>([assistantId])
@@ -425,7 +415,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           }
         }
       });
-      const dbMessages = filterHidden(sessionId, deduped.filter((_, i) => !removeIdx.has(i)));
+      const dbMessages = deduped.filter((_, i) => !removeIdx.has(i));
 
       const cached = messageCache.get(sessionId) ?? [];
       const base = sortByTime(cached.length > dbMessages.length ? cached : dbMessages);
@@ -545,9 +535,27 @@ export const useChatStore = create<ChatStore>((set, get) => {
         .slice(0, assistantIdx)
         .reverse()
         .find((m) => m.role === 'user' && m.type === 'text');
-
       if (!prevUserMsg || prevUserMsg.type !== 'text') return;
+
+      // 클로드 방식: 기존 Q&A를 제거하고 같은 질문을 맨 아래에서 다시 작성(스트리밍).
+      const removeIds = new Set<string>([prevUserMsg.id, assistantId]);
+      set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
       await get().sendMessage(prevUserMsg.content);
+    },
+
+    regenerateFromUser: async (userId: string) => {
+      if (get().isStreaming) return;
+      const { messages } = get();
+      const userIdx = messages.findIndex((m) => m.id === userId);
+      if (userIdx === -1) return;
+      const userMsg = messages[userIdx];
+      if (userMsg.type !== 'text') return;
+
+      const removeIds = new Set<string>([userId]);
+      const next = messages[userIdx + 1];
+      if (next && next.role === 'assistant') removeIds.add(next.id);
+      set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
+      await get().sendMessage(userMsg.content);
     },
 
     editAndResendMessage: async (userId: string, newText: string) => {
@@ -555,25 +563,18 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const text = newText.trim();
       if (!text) return;
 
-      const { messages, sessionId } = get();
+      const { messages } = get();
       const userIdx = messages.findIndex((m) => m.id === userId);
       if (userIdx === -1) {
         await get().sendMessage(text);
         return;
       }
 
+      // 클로드 방식: 기존 Q&A를 제거하고 수정한 질문을 맨 아래에서 다시 작성(스트리밍).
       const removeIds = new Set<string>([userId]);
-      const toHide: Message[] = [messages[userIdx]];
       const next = messages[userIdx + 1];
-      if (next && next.role === 'assistant') {
-        removeIds.add(next.id);
-        toHide.push(next);
-      }
-      addHidden(sessionId, toHide);
+      if (next && next.role === 'assistant') removeIds.add(next.id);
       set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-      messageCache.set(sessionId, get().messages);
-      saveCache(sessionId, get().messages);
-
       await get().sendMessage(text);
     },
   }

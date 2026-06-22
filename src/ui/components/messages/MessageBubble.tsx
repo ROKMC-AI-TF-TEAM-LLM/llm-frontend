@@ -116,7 +116,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
               }}
             >
-              {normalizeMarkdown(content)}
+              {isStreaming ? content : normalizeMarkdown(content)}
             </ReactMarkdown>
             {isStreaming && <StreamingCursor />}
           </>

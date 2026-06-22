@@ -18,31 +18,57 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
+  const regenerateFromUser = useChatStore((s) => s.regenerateFromUser);
   const editAndResendMessage = useChatStore((s) => s.editAndResendMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
+  const stickToBottom = useRef(true);
+  const forceSmoothUntil = useRef(0);
   const [copyFailed, setCopyFailed] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+
+  // 재생성/편집 시 새 응답이 맨 아래에서 스트리밍되므로 강제로 최하단까지 따라가되,
+  // 직후 잠깐(700ms)은 부드럽게(smooth) 스크롤해 화면이 뚝 끊기지 않게 한다.
+  const forceScrollBottom = () => {
+    stickToBottom.current = true;
+    forceSmoothUntil.current = Date.now() + 700;
+  };
 
   const startEdit = (id: string, text: string) => { setEditingId(id); setEditText(text); };
   const saveEdit = (id: string) => {
     const text = editText.trim();
     if (!text) return;
     setEditingId(null);
+    forceScrollBottom();
     editAndResendMessage(id, text);
   };
 
-  useEffect(() => { isFirstLoad.current = true; }, [title]);
+  useEffect(() => { isFirstLoad.current = true; stickToBottom.current = true; }, [title]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  };
 
   useEffect(() => {
     if (isLoading) return;
-    const behavior = isFirstLoad.current ? 'instant' : 'smooth';
+    const el = scrollRef.current;
+    if (!el) return;
+    if (!isFirstLoad.current && !stickToBottom.current) return;
+    const behavior = isFirstLoad.current
+      ? 'instant'
+      : Date.now() < forceSmoothUntil.current
+        ? 'smooth'
+        : isStreaming
+          ? 'auto'
+          : 'smooth';
     isFirstLoad.current = false;
     requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
+      el.scrollTo({ top: el.scrollHeight, behavior });
     });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isStreaming]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => setCopyFailed(true));
@@ -53,7 +79,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
       <ChatHeader title={title} />
       {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll" aria-live="polite" aria-atomic="false">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll" aria-live="polite" aria-atomic="false">
         {isLoading ? (
           <MessagesSkeleton />
         ) : (
@@ -109,6 +135,8 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
                   role="user"
                   onCopy={() => handleCopy(msg.content)}
                   onEdit={isStreaming ? undefined : () => startEdit(msg.id, msg.content)}
+                  onRegenerate={() => { forceScrollBottom(); regenerateFromUser(msg.id); }}
+                  regenerateDisabled={isStreaming}
                   createdAt={msg.createdAt}
                 />
               </div>
@@ -125,7 +153,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
                   <MessageActions
                     role="assistant"
                     onCopy={() => handleCopy(msg.content)}
-                    onRegenerate={() => regenerateMessage(msg.id)}
+                    onRegenerate={() => { forceScrollBottom(); regenerateMessage(msg.id); }}
                     regenerateDisabled={isStreaming}
                     createdAt={msg.createdAt}
                   />
@@ -137,7 +165,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
                       </svg>
                       <span>응답이 중단되었습니다.</span>
                       <button
-                        onClick={() => regenerateMessage(msg.id)}
+                        onClick={() => { forceScrollBottom(); regenerateMessage(msg.id); }}
                         disabled={isStreaming}
                         className="ml-auto px-3 py-1 rounded-lg border border-surface-border bg-surface text-sm text-text-primary hover:bg-surface-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface"
                       >

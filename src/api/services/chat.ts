@@ -78,23 +78,42 @@ export const streamMessage = async (
       if (!line.startsWith('data:')) continue
       const content = line.slice(5).trim()
       if (!content || content === '[DONE]') continue
+
+      let parsed: unknown
+      let isObject = false
       try {
-        const parsed = JSON.parse(content)
-        if (parsed.type === 'sources' && Array.isArray(parsed.items)) {
-          onSources?.(parsed.items)
-        } else if (
-          parsed.type === 'text' ||
-          parsed.type === 'token' ||
-          parsed.type === 'chunk' ||
-          parsed.type === 'answer'
-        ) {
-          const chunk = parsed.content ?? parsed.answer ?? parsed.text ?? parsed.token
-          if (chunk != null) onChunk(String(chunk))
-        } else if (parsed.type == null) {
-          const chunk = parsed.content ?? parsed.answer ?? parsed.text
-          if (chunk != null) onChunk(String(chunk))
-        }
-      } catch {}
+        parsed = JSON.parse(content)
+        isObject = typeof parsed === 'object' && parsed !== null
+      } catch {
+        parsed = undefined
+      }
+
+      // 구조화 이벤트가 아니면 일반 문자열 토큰으로 취급 (Swagger: 텍스트 토큰 = 일반 문자열)
+      if (!isObject) {
+        const text = typeof parsed === 'string' ? parsed : content
+        if (text) onChunk(text)
+        continue
+      }
+
+      const evt = parsed as { type?: string; items?: Source[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string }
+      if (evt.type === 'sources' && Array.isArray(evt.items)) {
+        onSources?.(evt.items)
+      } else if (evt.type === 'error') {
+        throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
+      } else if (evt.type === 'done') {
+        // 완료 신호 — reader 종료로 마무리됨
+      } else if (
+        evt.type === 'text' ||
+        evt.type === 'token' ||
+        evt.type === 'chunk' ||
+        evt.type === 'answer'
+      ) {
+        const chunk = evt.content ?? evt.answer ?? evt.text ?? evt.token
+        if (chunk != null) onChunk(String(chunk))
+      } else if (evt.type == null) {
+        const chunk = evt.content ?? evt.answer ?? evt.text
+        if (chunk != null) onChunk(String(chunk))
+      }
     }
   }
 
