@@ -25,9 +25,23 @@ const decodeTokenExp = (token: string): number | null => {
   }
 }
 
+const isTokenExpired = (token: string): boolean => {
+  const exp = decodeTokenExp(token)
+  if (!exp) return false
+  return Date.now() >= exp * 1000 - 5_000
+}
+
+export const getValidAccessToken = async (): Promise<string | null> => {
+  const token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
+  if (!token) return null
+  if (isTokenExpired(token)) {
+    try { return await refreshTokenOnce() } catch { return null }
+  }
+  return token
+}
+
 let proactiveTimer: ReturnType<typeof setTimeout> | null = null
 
-// 액세스 토큰 만료 60초 전에 미리 갱신을 예약 (요청이 401 나기 전에 토큰을 새로 받아 F5 불필요)
 export const scheduleTokenRefresh = (): void => {
   if (proactiveTimer) { clearTimeout(proactiveTimer); proactiveTimer = null }
   const token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
@@ -64,8 +78,12 @@ export const refreshTokenOnce = (): Promise<string> => {
 
 const AUTH_ENDPOINTS = ['/api/v1/auth/login', '/api/v1/auth/signup', '/api/v1/auth/refresh']
 
-backendApi.interceptors.request.use((config) => {
-  const token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
+backendApi.interceptors.request.use(async (config) => {
+  const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => config.url?.includes(path))
+  let token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
+  if (token && !isAuthEndpoint && isTokenExpired(token)) {
+    try { token = await refreshTokenOnce() } catch {}
+  }
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

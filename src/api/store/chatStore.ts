@@ -84,10 +84,8 @@ const extractContent = (raw: string, _depth = 0): string => {
 
 const streamRegistry = new Map<string, Message[]>();
 
-// 세션별 메시지 메모리 캐시 — 다른 세션을 갔다 와도 즉시 표시(빈 화면 방지)되도록 보관
 const messageCache = new Map<string, Message[]>();
 
-// 해당 세션의 캐시된(또는 현재 표시중인) 메시지를 동기적으로 조회
 export const peekSessionMessages = (sessionId: string): Message[] => {
   const s = useChatStore.getState();
   if (s.sessionId === sessionId && s.messages.length > 0) return s.messages;
@@ -119,6 +117,54 @@ const loadCache = (sessionId: string): Message[] => {
 export const clearCache = (sessionId: string) => {
   messageCache.delete(sessionId)
   try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
+  try { localStorage.removeItem(HIDDEN_KEY(sessionId)) } catch {}
+}
+
+const HIDDEN_KEY = (id: string) => `rokm_hidden_${id}`
+
+const msgSignature = (m: Message): string | null =>
+  m.type === 'text' ? `${m.role}|${m.content}` : null
+
+const getHidden = (sessionId: string): Set<string> => {
+  try {
+    const raw = localStorage.getItem(HIDDEN_KEY(sessionId))
+    return new Set<string>(raw ? JSON.parse(raw) : [])
+  } catch {
+    return new Set<string>()
+  }
+}
+
+const addHidden = (sessionId: string, msgs: Message[]) => {
+  if (!sessionId) return
+  const set = getHidden(sessionId)
+  msgs.forEach((m) => {
+    const sig = msgSignature(m)
+    if (sig) set.add(sig)
+  })
+  try {
+    localStorage.setItem(HIDDEN_KEY(sessionId), JSON.stringify([...set]))
+  } catch {}
+}
+
+const filterHidden = (sessionId: string, msgs: Message[]): Message[] => {
+  const hidden = getHidden(sessionId)
+  if (hidden.size === 0) return msgs
+  return msgs.filter((m) => {
+    const sig = msgSignature(m)
+    return !sig || !hidden.has(sig)
+  })
+}
+
+const sortByTime = (msgs: Message[]): Message[] => {
+  let lastTime = 0
+  const keyed = msgs.map((m, i) => {
+    const parsed = m.createdAt ? Date.parse(m.createdAt) : NaN
+    const t = Number.isNaN(parsed) ? lastTime : parsed
+    lastTime = t
+    return { m, t, i }
+  })
+  keyed.sort((a, b) => a.t - b.t || a.i - b.i)
+  return keyed.map((k) => k.m)
 }
 
 if (typeof window !== 'undefined') {
@@ -213,7 +259,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
           }))
           messageCache.set(sessionId, get().messages)
         } else {
-          // 실패한 질문+응답을 한 쌍으로 함께 제거 (에러난 메시지가 화면에 남지 않도록)
           const msgs = get().messages
           const aIdx = msgs.findIndex((m) => m.id === assistantId)
           const removeIds = new Set<string>([assistantId])
@@ -240,14 +285,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
     streamRegistry.delete(sessionId)
 
-    // 스트림이 에러 없이 끝났지만 텍스트를 한 글자도 못 받은 경우 = 실패로 간주
     const finalMsg = get().messages.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
       clearInflight(sessionId)
       clearCache(sessionId)
       if (get().sessionId === sessionId) {
-        // 실패한 질문+빈응답 쌍을 함께 제거 (화면에 남지 않도록)
         const msgs = get().messages
         const aIdx = msgs.findIndex((m) => m.id === assistantId)
         const removeIds = new Set<string>([assistantId])
@@ -310,7 +353,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         set({ sessionId, messages: streaming, isStreaming: true });
         return;
       }
-      // 빈 화면 방지: 같은 세션은 기존 메시지 유지, 다른 세션은 캐시가 있으면 즉시 표시 후 백그라운드 갱신
       const prev = get();
       if (prev.sessionId === sessionId && prev.messages.length > 0) {
         set({ sessionId, isStreaming: false });
@@ -324,7 +366,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         res = await getMessages(sessionId, { signal });
       } catch (e) {
         if (isAbortError(e)) return;
-        // API 실패 시 캐시/인플라이트로 복구 시도
         const cached = loadCache(sessionId);
         const pending = getInflight(sessionId);
         if (cached.length > 0) {
@@ -360,9 +401,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
       }));
 
-      const deduped = rawMessages.filter((msg, i) => {
+      const chrono = sortByTime(rawMessages);
+      const deduped = chrono.filter((msg, i) => {
         if (i === 0) return true;
-        const prev = rawMessages[i - 1];
+        const prev = chrono[i - 1];
         return !(
           msg.role === prev.role &&
           msg.type === 'text' &&
@@ -372,7 +414,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         );
       });
 
-      // 백엔드가 저장한 실패 응답(텍스트 없는 assistant)은 직전 질문과 한 쌍으로 묶어 화면에서 숨김
       const removeIdx = new Set<number>();
       deduped.forEach((msg, i) => {
         if (msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '') {
@@ -384,16 +425,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
           }
         }
       });
-      const dbMessages = deduped.filter((_, i) => !removeIdx.has(i));
+      const dbMessages = filterHidden(sessionId, deduped.filter((_, i) => !removeIdx.has(i)));
 
-      // 세션 전환 시 현재 탭 캐시(중단 등 로컬 상태 포함)가 DB보다 풍부하면 캐시를 유지
       const cached = messageCache.get(sessionId) ?? [];
-      const base = cached.length > dbMessages.length ? cached : dbMessages;
+      const base = sortByTime(cached.length > dbMessages.length ? cached : dbMessages);
 
       const pending = getInflight(sessionId);
 
-      // 답변(assistant)이 뒤따르지 않는 user 질문 = 답변 못 받은 오류 메시지 → 제거.
-      // 중단한 메시지는 interrupted assistant가 뒤따르므로 유지됨. 마지막 질문이 진행중(inflight)이면 유지하고 재전송.
       const messages = base.filter((msg, i) => {
         if (msg.role !== 'user' || msg.type !== 'text') return true;
         const next = base[i + 1];
@@ -407,13 +445,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       const last = messages[messages.length - 1];
 
-      // (1) 마지막이 user 메시지 = 진행중 질문이므로 재전송.
       if (last && last.role === 'user' && last.type === 'text') {
         if (pending) get().retryLastMessage();
         return;
       }
 
-      // (2) 비어있는 새 세션인데 보낼 질문이 남아있음 = 첫 질문 전송 (새로고침 시 재전송).
       if (messages.length === 0 && pending) {
         set((state) => ({
           messages: [
@@ -425,7 +461,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      // (3) 대화 내용이 전혀 없고 보낼 질문도 없는 빈 세션 = 정리(삭제).
       if (messages.length === 0) {
         messageCache.delete(sessionId);
         set({ isDeleted: true, error: '대화 내용이 없어 세션을 정리했습니다.' });
@@ -435,7 +470,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      // (4) 남은 inflight 정리.
       if (pending) clearInflight(sessionId);
     },
 
@@ -472,7 +506,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const { messages, sessionId } = get()
       const last = messages[messages.length - 1]
       if (!last || last.role !== 'user' || last.type !== 'text') return
-      // 메시지가 user 1개뿐이면 새 세션의 첫 질문 → 실패 시 빈 세션 정리 필요
       const isFirstMessage = messages.length === 1
 
       saveInflight(sessionId, last.content)
@@ -504,7 +537,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
     regenerateMessage: async (assistantId: string) => {
       if (get().isStreaming) return;
-      const { messages, sessionId } = get();
+      const { messages } = get();
       const assistantIdx = messages.findIndex((m) => m.id === assistantId);
       if (assistantIdx === -1) return;
 
@@ -514,59 +547,34 @@ export const useChatStore = create<ChatStore>((set, get) => {
         .find((m) => m.role === 'user' && m.type === 'text');
 
       if (!prevUserMsg || prevUserMsg.type !== 'text') return;
-      const question = prevUserMsg.content;
-      const userId = prevUserMsg.id;
-
-      const controller = new AbortController();
-      const newAssistantId = crypto.randomUUID();
-      const now = new Date().toISOString();
-      saveInflight(sessionId, question);
-
-      // 재생성 = 원래 질문+답변을 제거하고 맨 아래로 이동시켜 새로 생성 (질문 복제 방지)
-      set((state) => ({
-        isStreaming: true,
-        abortController: controller,
-        messages: [
-          ...state.messages.filter((m) => m.id !== assistantId && m.id !== userId),
-          { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: question, createdAt: now },
-          { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const, createdAt: now },
-        ],
-      }));
-      streamRegistry.set(sessionId, get().messages);
-      saveCache(sessionId, get().messages);
-      await executeStream(sessionId, newAssistantId, question, false, controller.signal);
+      await get().sendMessage(prevUserMsg.content);
     },
 
     editAndResendMessage: async (userId: string, newText: string) => {
       if (get().isStreaming) return;
       const text = newText.trim();
       if (!text) return;
+
       const { messages, sessionId } = get();
       const userIdx = messages.findIndex((m) => m.id === userId);
-      if (userIdx === -1) return;
+      if (userIdx === -1) {
+        await get().sendMessage(text);
+        return;
+      }
 
-      // 이 질문에 대한 답변(다음 assistant)도 함께 제거하고, 수정한 질문을 맨 아래로 재전송
       const removeIds = new Set<string>([userId]);
+      const toHide: Message[] = [messages[userIdx]];
       const next = messages[userIdx + 1];
-      if (next && next.role === 'assistant') removeIds.add(next.id);
-
-      const controller = new AbortController();
-      const newAssistantId = crypto.randomUUID();
-      const now = new Date().toISOString();
-      saveInflight(sessionId, text);
-
-      set((state) => ({
-        isStreaming: true,
-        abortController: controller,
-        messages: [
-          ...state.messages.filter((m) => !removeIds.has(m.id)),
-          { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: text, createdAt: now },
-          { id: newAssistantId, role: 'assistant' as const, type: 'text' as const, content: '', status: 'streaming' as const, createdAt: now },
-        ],
-      }));
-      streamRegistry.set(sessionId, get().messages);
+      if (next && next.role === 'assistant') {
+        removeIds.add(next.id);
+        toHide.push(next);
+      }
+      addHidden(sessionId, toHide);
+      set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
+      messageCache.set(sessionId, get().messages);
       saveCache(sessionId, get().messages);
-      await executeStream(sessionId, newAssistantId, text, false, controller.signal);
+
+      await get().sendMessage(text);
     },
   }
 });

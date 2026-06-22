@@ -1,11 +1,9 @@
-// TokenData
 export interface TokenData {
   access_token: string
   refresh_token: string
   token_type: string
 }
 
-// Signup
 export interface SignupRequest {
   name: string
   email: string
@@ -19,7 +17,6 @@ export interface SignupResponse {
   error: { code: SignupErrorCode; detail: string } | null
 }
 
-// Login
 export interface LoginRequest {
   email: string
   password: string
@@ -32,7 +29,6 @@ export interface LoginResponse {
   error: { code: LoginErrorCode; detail: string } | null
 }
 
-// Refresh
 export interface RefreshRequest {
   refresh_token: string
 }
@@ -44,7 +40,6 @@ export interface RefreshResponse {
   error: { code: RefreshErrorCode; detail: string } | null
 }
 
-// Logout
 export interface LogoutRequest {
   refresh_token: string
 }

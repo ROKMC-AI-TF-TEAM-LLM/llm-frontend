@@ -35,7 +35,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     getRefreshTokenFromStorage(),
   );
 
-  // 기존 토큰이 있으면 만료 전 선제 갱신을 예약 (앱 시작 시)
   useEffect(() => {
     if (accessToken) scheduleTokenRefresh();
   }, [accessToken]);

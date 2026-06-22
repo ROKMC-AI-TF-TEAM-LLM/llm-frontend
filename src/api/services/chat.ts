@@ -1,4 +1,4 @@
-import { backendApi, refreshTokenOnce } from '../lib/axios'
+import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat'
 import type { Source } from '../../types'
@@ -29,8 +29,7 @@ export const streamMessage = async (
       }
     )
 
-  const rawToken = sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-  let parsedToken = rawToken ? JSON.parse(rawToken) : null
+  let parsedToken = await getValidAccessToken()
 
   let response = await makeRequest(parsedToken)
 
