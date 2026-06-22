@@ -24,6 +24,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const isFirstLoad = useRef(true);
   const stickToBottom = useRef(true);
   const forceSmoothUntil = useRef(0);
+  const prevLen = useRef(0);
   const [copyFailed, setCopyFailed] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -44,7 +45,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     editAndResendMessage(id, text);
   };
 
-  useEffect(() => { isFirstLoad.current = true; stickToBottom.current = true; }, [title]);
+  useEffect(() => { isFirstLoad.current = true; stickToBottom.current = true; prevLen.current = 0; }, [title]);
 
   // ── 커스텀 오버레이 스크롤바 (네이티브는 숨기고 직접 그린 thumb) ──
   // 네이티브 ::-webkit-scrollbar는 transition이 안 먹어 페이드가 불가능하므로 실제 div로 대체.
@@ -117,6 +118,10 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (isLoading) return;
     const el = scrollRef.current;
     if (!el) return;
+    // 새 메시지가 추가되면(길이 증가) 위로 올려본 상태여도 무조건 하단으로 내려간다.
+    const grew = messages.length > prevLen.current;
+    prevLen.current = messages.length;
+    if (grew) { stickToBottom.current = true; forceSmoothUntil.current = Date.now() + 700; }
     if (!isFirstLoad.current && !stickToBottom.current) { positionThumb(); return; }
     const behavior = isFirstLoad.current
       ? 'instant'
