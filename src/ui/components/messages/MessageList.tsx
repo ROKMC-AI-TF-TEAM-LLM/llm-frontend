@@ -46,17 +46,78 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
   useEffect(() => { isFirstLoad.current = true; stickToBottom.current = true; }, [title]);
 
+  // ── 커스텀 오버레이 스크롤바 (네이티브는 숨기고 직접 그린 thumb) ──
+  // 네이티브 ::-webkit-scrollbar는 transition이 안 먹어 페이드가 불가능하므로 실제 div로 대체.
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const scrollHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dragging = useRef(false);
+
+  const positionThumb = () => {
+    const el = scrollRef.current;
+    const thumb = thumbRef.current;
+    if (!el || !thumb) return;
+    const { scrollHeight, clientHeight, scrollTop } = el;
+    if (scrollHeight <= clientHeight + 1) {
+      thumb.style.height = '0px';
+      thumb.style.opacity = '0';
+      return;
+    }
+    const thumbH = Math.max((clientHeight / scrollHeight) * clientHeight, 32);
+    const maxTop = clientHeight - thumbH;
+    const top = (scrollTop / (scrollHeight - clientHeight)) * maxTop;
+    thumb.style.height = `${thumbH}px`;
+    thumb.style.transform = `translateY(${top}px)`;
+  };
+
+  const showThumb = () => {
+    const thumb = thumbRef.current;
+    if (!thumb) return;
+    positionThumb();
+    if (thumb.style.height !== '0px') thumb.style.opacity = '1';
+    if (scrollHideTimer.current) clearTimeout(scrollHideTimer.current);
+    scrollHideTimer.current = setTimeout(() => {
+      if (!dragging.current && thumbRef.current) thumbRef.current.style.opacity = '0';
+    }, 900);
+  };
+
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
     stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    showThumb();
+  };
+
+  const onThumbMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = scrollRef.current;
+    const thumb = thumbRef.current;
+    if (!el || !thumb) return;
+    dragging.current = true;
+    const startY = e.clientY;
+    const startScroll = el.scrollTop;
+    const thumbH = thumb.offsetHeight;
+    const maxTop = el.clientHeight - thumbH;
+    const scrollPerPx = maxTop > 0 ? (el.scrollHeight - el.clientHeight) / maxTop : 0;
+    document.body.style.userSelect = 'none';
+    const onMove = (ev: MouseEvent) => {
+      el.scrollTop = startScroll + (ev.clientY - startY) * scrollPerPx;
+    };
+    const onUp = () => {
+      dragging.current = false;
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      showThumb();
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
   };
 
   useEffect(() => {
     if (isLoading) return;
     const el = scrollRef.current;
     if (!el) return;
-    if (!isFirstLoad.current && !stickToBottom.current) return;
+    if (!isFirstLoad.current && !stickToBottom.current) { positionThumb(); return; }
     const behavior = isFirstLoad.current
       ? 'instant'
       : Date.now() < forceSmoothUntil.current
@@ -67,6 +128,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     isFirstLoad.current = false;
     requestAnimationFrame(() => {
       el.scrollTo({ top: el.scrollHeight, behavior });
+      positionThumb();
     });
   }, [messages, isLoading, isStreaming]);
 
@@ -79,7 +141,8 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
       <ChatHeader title={title} />
       {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-6 custom-scroll" aria-live="polite" aria-atomic="false">
+      <div className="relative flex-1 min-h-0">
+      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 py-6 scrollbar-hide" aria-live="polite" aria-atomic="false">
         {isLoading ? (
           <MessagesSkeleton />
         ) : (
@@ -182,6 +245,13 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
       </div>
         )}
     </div>
+      <div
+        ref={thumbRef}
+        onMouseDown={onThumbMouseDown}
+        style={{ height: 0 }}
+        className="absolute top-0 right-1 w-1.5 rounded-full bg-brand/80 opacity-0 transition-opacity duration-500 cursor-pointer hover:bg-brand"
+      />
+      </div>
     </div>
   );
 }

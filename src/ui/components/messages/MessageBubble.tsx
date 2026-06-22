@@ -24,11 +24,6 @@ interface MessageBubbleProps {
   isStreaming?: boolean;
 }
 
-function StreamingCursor() {
-  return (
-    <span className="inline-block w-[3px] h-[18px] ml-0.5 align-middle bg-text-secondary rounded-sm animate-cursor-blink" />
-  );
-}
 
 function GeneratingIndicator() {
   return (
@@ -118,7 +113,6 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
             >
               {isStreaming ? content : normalizeMarkdown(content)}
             </ReactMarkdown>
-            {isStreaming && <StreamingCursor />}
           </>
         )}
       </div>

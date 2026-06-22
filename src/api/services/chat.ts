@@ -76,21 +76,26 @@ export const streamMessage = async (
 
     for (const line of lines) {
       if (!line.startsWith('data:')) continue
-      const content = line.slice(5).trim()
-      if (!content || content === '[DONE]') continue
+      // SSE 규칙: 'data:' 뒤 맨 앞 공백 1개만 제거. 토큰 내부/끝 공백은 보존한다.
+      const raw = line.slice(5).startsWith(' ') ? line.slice(6) : line.slice(5)
+      if (raw === '') continue
+      const trimmed = raw.trim()
+      if (trimmed === '[DONE]') continue
 
       let parsed: unknown
       let isObject = false
-      try {
-        parsed = JSON.parse(content)
-        isObject = typeof parsed === 'object' && parsed !== null
-      } catch {
-        parsed = undefined
+      if (trimmed) {
+        try {
+          parsed = JSON.parse(trimmed)
+          isObject = typeof parsed === 'object' && parsed !== null
+        } catch {
+          parsed = undefined
+        }
       }
 
-      // 구조화 이벤트가 아니면 일반 문자열 토큰으로 취급 (Swagger: 텍스트 토큰 = 일반 문자열)
+      // 구조화 이벤트(JSON 객체)가 아니면 일반 문자열 토큰 — 공백 보존(trim 금지)
       if (!isObject) {
-        const text = typeof parsed === 'string' ? parsed : content
+        const text = typeof parsed === 'string' ? parsed : raw
         if (text) onChunk(text)
         continue
       }

@@ -7,9 +7,10 @@ export function useServerStatus(): ServerStatus {
   const { data, isError, isPending } = useQuery({
     queryKey: ['server-health'],
     queryFn: getHealth,
-    refetchInterval: 30_000,
     retry: false,
-    staleTime: 25_000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: 'always',
+    staleTime: 0,
   })
 
   if (isPending) return 'checking'
