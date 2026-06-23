@@ -24,7 +24,7 @@ const SESSION_ERRORS: Record<string, string> = {
 
 const getSessionError = (error: unknown): string => {
   const code = (error as ApiError)?.response?.data?.error?.code;
-  return SESSION_ERRORS[code] ?? '오류가 발생했습니다.';
+  return (code ? SESSION_ERRORS[code] : undefined) ?? '오류가 발생했습니다.';
 };
 
 export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: RecentChatsProps) {

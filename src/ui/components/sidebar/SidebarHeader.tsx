@@ -20,7 +20,7 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
           isOpen ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
         }`}
       >
-        ROKMCLLM
+        MARS
       </h1>
       <button
         onClick={onToggle}

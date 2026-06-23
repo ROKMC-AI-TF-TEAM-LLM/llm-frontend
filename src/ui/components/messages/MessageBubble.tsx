@@ -18,6 +18,18 @@ const normalizeMarkdown = (content: string): string =>
     .replace(/^[•·–—]\s*/gm, '- ')
     .replace(/([가-힣]) +(을|를|에|에서|은|는|이|가|으로|로|와|과)(?=[\s,.?!]|$)/gm, '$1$2');
 
+const closeStreamingMarkdown = (raw: string): string => {
+  let text = raw;
+  
+  if ((text.match(/```/g) || []).length % 2 === 1) return text + '\n```';
+  
+  const inline = (text.replace(/```[\s\S]*?```/g, '').match(/`/g) || []).length;
+  if (inline % 2 === 1) text += '`';
+
+  if ((text.match(/\*\*/g) || []).length % 2 === 1) text += '**';
+  return text;
+};
+
 interface MessageBubbleProps {
   role?: MessageRole;
   content: string;
@@ -111,7 +123,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
               }}
             >
-              {isStreaming ? content : normalizeMarkdown(content)}
+              {isStreaming ? closeStreamingMarkdown(content) : normalizeMarkdown(content)}
             </ReactMarkdown>
           </>
         )}

@@ -4,11 +4,13 @@ import SearchInput from '../ui/components/search/SearchInput'
 import SearchResults from '../ui/components/search/SearchResults'
 import type { SearchResult } from '../ui/components/search/SearchResultItem'
 import { useSearchSessions, useInfiniteSessions } from '../hooks/useSession'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { SearchSessionCardSkeleton } from '../ui/components/Skeleton'
 import Toast from '../ui/components/Toast'
 
 const SearchPage = () => {
   const navigate = useNavigate()
+  useDocumentTitle('Search')
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)

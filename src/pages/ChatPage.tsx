@@ -5,6 +5,7 @@ import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
 import { useChatStore, saveInflight, peekSessionMessages } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { isNetworkError } from '../utils/error';
 import type { SessionData } from '../types/session';
 
@@ -26,6 +27,7 @@ export default function ChatPage() {
   const allSessions = (infiniteData?.pages ?? []).flatMap((p) => p.data.data.items);
   const currentSession = allSessions.find((s: SessionData) => s.session_id === sessionId);
   const title = currentSession?.title ?? '채팅';
+  useDocumentTitle(title);
 
   const connect = useChatStore((s) => s.connect);
   const error = useChatStore((s) => s.error);

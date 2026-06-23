@@ -8,6 +8,17 @@ import Toast from '../Toast';
 const inputDrafts = new Map<string, string>();
 const NEW_CHAT_KEY = '__new__';
 
+const toSessionTitle = (text: string): string => {
+  const firstLine =
+    text.split('\n').map((l) => l.trim()).find((l) => l.length > 0) ?? text.trim();
+  const cleaned = firstLine
+    .replace(/[#*`>_~]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const MAX = 30;
+  return cleaned.length > MAX ? cleaned.slice(0, MAX).trim() + '…' : cleaned || '새 대화';
+};
+
 interface ChatInputProps {
   placeholder?: string;
   notice?: string;
@@ -98,7 +109,7 @@ export default function ChatInput({
         clearCache(prevSessionId);
       }
       try {
-        const res = await createSession({ title: text });
+        const res = await createSession({ title: toSessionTitle(text) });
         const sessionId = res.data.data.session_id;
         saveInflight(sessionId, text);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });

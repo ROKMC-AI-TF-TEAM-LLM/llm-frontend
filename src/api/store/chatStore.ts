@@ -404,43 +404,26 @@ export const useChatStore = create<ChatStore>((set, get) => {
         );
       });
 
-      const removeIdx = new Set<number>();
-      deduped.forEach((msg, i) => {
-        if (msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '') {
-          removeIdx.add(i);
-          for (let j = i - 1; j >= 0; j--) {
-            if (removeIdx.has(j)) continue;
-            if (deduped[j].role === 'user') removeIdx.add(j);
-            break;
-          }
-        }
-      });
-      const dbMessages = deduped.filter((_, i) => !removeIdx.has(i));
+      const dbMessages = deduped.filter(
+        (msg) => !(msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '')
+      );
 
       const cached = messageCache.get(sessionId) ?? [];
       const base = sortByTime(cached.length > dbMessages.length ? cached : dbMessages);
 
       const pending = getInflight(sessionId);
 
-      const messages = base.filter((msg, i) => {
-        if (msg.role !== 'user' || msg.type !== 'text') return true;
-        const next = base[i + 1];
-        if (next && next.role === 'assistant') return true;
-        if (i === base.length - 1 && pending) return true;
-        return false;
-      });
+      set({ messages: base });
+      messageCache.set(sessionId, base);
 
-      set({ messages });
-      messageCache.set(sessionId, messages);
-
-      const last = messages[messages.length - 1];
+      const last = base[base.length - 1];
 
       if (last && last.role === 'user' && last.type === 'text') {
         if (pending) get().retryLastMessage();
         return;
       }
 
-      if (messages.length === 0 && pending) {
+      if (base.length === 0 && pending) {
         set((state) => ({
           messages: [
             ...state.messages,
@@ -448,15 +431,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ],
         }));
         get().retryLastMessage();
-        return;
-      }
-
-      if (messages.length === 0) {
-        messageCache.delete(sessionId);
-        set({ isDeleted: true, error: '대화 내용이 없어 세션을 정리했습니다.' });
-        deleteSession(sessionId)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-          .catch(() => {});
         return;
       }
 
@@ -537,7 +511,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         .find((m) => m.role === 'user' && m.type === 'text');
       if (!prevUserMsg || prevUserMsg.type !== 'text') return;
 
-      // 클로드 방식: 기존 Q&A를 제거하고 같은 질문을 맨 아래에서 다시 작성(스트리밍).
       const removeIds = new Set<string>([prevUserMsg.id, assistantId]);
       set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
       await get().sendMessage(prevUserMsg.content);
@@ -570,7 +543,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      // 클로드 방식: 기존 Q&A를 제거하고 수정한 질문을 맨 아래에서 다시 작성(스트리밍).
       const removeIds = new Set<string>([userId]);
       const next = messages[userIdx + 1];
       if (next && next.role === 'assistant') removeIds.add(next.id);

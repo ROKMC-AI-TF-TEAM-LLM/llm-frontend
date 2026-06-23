@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagCard from '../ui/components/rag/RagCard'
 import { useInfiniteDocuments } from '../hooks/useDocument'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import type { DocumentItem } from '../types/document'
 
 const RagPage = () => {
+  useDocumentTitle('Documents')
   const [query, setQuery] = useState('')
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null)
 

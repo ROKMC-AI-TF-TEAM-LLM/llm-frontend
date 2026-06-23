@@ -4,6 +4,7 @@ import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
 import Toast from '../ui/components/Toast';
 import { getApiError } from '../utils/error';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type UserStatusTab = 'all' | 'pending' | 'approved' | 'rejected';
@@ -260,6 +261,7 @@ const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: 
 };
 
 export default function AdminPage() {
+  useDocumentTitle('Admin');
   const [adminPage, setAdminPage] = useState(1);
   const [userPage, setUserPage] = useState(1);
   const [userStatusTab, setUserStatusTab] = useState<UserStatusTab>('all');

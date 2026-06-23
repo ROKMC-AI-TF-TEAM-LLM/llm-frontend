@@ -11,6 +11,11 @@ export function useServerStatus(): ServerStatus {
     refetchOnWindowFocus: false,
     refetchOnMount: 'always',
     staleTime: 0,
+    refetchInterval: (query) => {
+      const h = query.state.data?.data?.data
+      const ok = query.state.status !== 'error' && !!h?.db && !!h?.llm_server
+      return ok ? false : 20_000
+    },
   })
 
   if (isPending) return 'checking'
