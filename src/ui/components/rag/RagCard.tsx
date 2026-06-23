@@ -20,10 +20,10 @@ const RagCard = ({
         e.stopPropagation()
         onClick?.()
       }}
-      className={`card flex flex-col w-full p-5 text-left transition-all duration-150 cursor-pointer active:scale-[0.98] ${
+      className={`card flex flex-col w-full p-5 text-left transition-colors duration-150 cursor-pointer active:scale-[0.98] ${
         selected
           ? 'border-[1.5px] border-brand bg-brand-subtle'
-          : 'bg-surface-subtle'
+          : 'bg-surface-subtle hover:bg-surface-border/40'
       }`}
     >
       <div className="flex items-start min-w-0 justify-between mb-3">
@@ -34,9 +34,7 @@ const RagCard = ({
         <span
           className={[
             'shrink-0 text-[11px] font-medium px-2.5 py-0.5 rounded-full',
-            selected
-              ? 'bg-brand-soft text-brand'
-              : 'bg-surface-border text-text-secondary',
+            selected ? 'bg-brand-soft text-brand' : 'bg-surface-border text-text-secondary',
           ].join(' ')}
         >
           {fileType}

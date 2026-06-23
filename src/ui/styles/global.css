@@ -34,6 +34,7 @@
 }
 
 html {
+  font-size: 90%;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -120,15 +121,25 @@ body.modal-open {
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-.custom-scroll::-webkit-scrollbar {
-  width: 10px;
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b8b4af transparent;
 }
-.custom-scroll::-webkit-scrollbar-track {
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
   background: transparent;
 }
-.custom-scroll::-webkit-scrollbar-thumb {
-  background-color: var(--color-brand);
+*::-webkit-scrollbar-thumb {
+  background-color: #b8b4af;
   border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #9c9893;
 }
 
 .login-page {

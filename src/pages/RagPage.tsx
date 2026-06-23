@@ -34,7 +34,7 @@ const RagPage = () => {
 
       {selectedDoc && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm [transform:translateZ(0)] [will-change:transform]"
           onClick={() => setSelectedDoc(null)}
         >
           <div

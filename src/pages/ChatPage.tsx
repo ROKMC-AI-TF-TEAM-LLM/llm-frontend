@@ -105,16 +105,15 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0">
-        <MessageList title={title} isLoading={isConnecting} />
-      </div>
-      <div className="w-full px-4 py-2">
+    <div className="relative h-full">
+      <MessageList title={title} isLoading={isConnecting} />
+      {/* 입력창은 스크롤 영역 위에 띄우고, 오른쪽 스크롤바 컬럼(10px)은 비워 바닥까지 보이게 한다 */}
+      <div className="absolute bottom-0 left-0 right-2.5 bg-surface px-4 pt-3 pb-2 before:content-[''] before:absolute before:bottom-full before:left-0 before:right-0 before:h-6 before:bg-gradient-to-t before:from-surface before:to-transparent before:pointer-events-none">
         <ChatInput isConnecting={isConnecting} />
+        <p className="text-xs text-center text-text-muted pt-2">
+          ROKMCLLM은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
+        </p>
       </div>
-      <p className="text-xs text-center text-text-muted pb-2">
-        ROKMCLLM은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
-      </p>
       {error && <Toast message={error} onClose={clearError} />}
     </div>
   );

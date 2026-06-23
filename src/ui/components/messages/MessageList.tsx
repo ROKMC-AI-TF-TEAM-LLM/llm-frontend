@@ -29,8 +29,6 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
 
-  // 재생성/편집 시 새 응답이 맨 아래에서 스트리밍되므로 강제로 최하단까지 따라가되,
-  // 직후 잠깐(700ms)은 부드럽게(smooth) 스크롤해 화면이 뚝 끊기지 않게 한다.
   const forceScrollBottom = () => {
     stickToBottom.current = true;
     forceSmoothUntil.current = Date.now() + 700;
@@ -47,8 +45,6 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
   useEffect(() => { isFirstLoad.current = true; stickToBottom.current = true; prevLen.current = 0; }, [title]);
 
-  // ── 커스텀 오버레이 스크롤바 (네이티브는 숨기고 직접 그린 thumb) ──
-  // 네이티브 ::-webkit-scrollbar는 transition이 안 먹어 페이드가 불가능하므로 실제 div로 대체.
   const thumbRef = useRef<HTMLDivElement>(null);
   const scrollHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragging = useRef(false);
@@ -118,7 +114,6 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (isLoading) return;
     const el = scrollRef.current;
     if (!el) return;
-    // 새 메시지가 추가되면(길이 증가) 위로 올려본 상태여도 무조건 하단으로 내려간다.
     const grew = messages.length > prevLen.current;
     prevLen.current = messages.length;
     if (grew) { stickToBottom.current = true; forceSmoothUntil.current = Date.now() + 700; }
@@ -147,7 +142,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
       {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
       <div className="relative flex-1 min-h-0">
-      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 py-6 scrollbar-hide" aria-live="polite" aria-atomic="false">
+      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 pt-6 pb-40 scrollbar-hide" aria-live="polite" aria-atomic="false">
         {isLoading ? (
           <MessagesSkeleton />
         ) : (
@@ -254,7 +249,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
         ref={thumbRef}
         onMouseDown={onThumbMouseDown}
         style={{ height: 0 }}
-        className="absolute top-0 right-1 w-1.5 rounded-full bg-brand/80 opacity-0 transition-opacity duration-500 cursor-pointer hover:bg-brand"
+        className="absolute top-0 right-1 w-1.5 rounded-full bg-text-muted/50 opacity-0 transition-opacity duration-500 cursor-pointer hover:bg-text-muted"
       />
       </div>
     </div>
