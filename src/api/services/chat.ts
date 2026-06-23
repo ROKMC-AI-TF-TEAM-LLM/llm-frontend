@@ -76,7 +76,6 @@ export const streamMessage = async (
 
     for (const line of lines) {
       if (!line.startsWith('data:')) continue
-      // SSE 규칙: 'data:' 뒤 맨 앞 공백 1개만 제거. 토큰 내부/끝 공백은 보존한다.
       const raw = line.slice(5).startsWith(' ') ? line.slice(6) : line.slice(5)
       if (raw === '') continue
       const trimmed = raw.trim()
@@ -93,7 +92,6 @@ export const streamMessage = async (
         }
       }
 
-      // 구조화 이벤트(JSON 객체)가 아니면 일반 문자열 토큰 — 공백 보존(trim 금지)
       if (!isObject) {
         const text = typeof parsed === 'string' ? parsed : raw
         if (text) onChunk(text)
@@ -106,7 +104,6 @@ export const streamMessage = async (
       } else if (evt.type === 'error') {
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
-        // 완료 신호 — reader 종료로 마무리됨
       } else if (
         evt.type === 'text' ||
         evt.type === 'token' ||

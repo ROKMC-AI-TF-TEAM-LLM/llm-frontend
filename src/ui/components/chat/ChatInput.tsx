@@ -147,7 +147,7 @@ export default function ChatInput({
     <div className="w-full max-w-3xl mx-auto">
       {inputError && <Toast message={inputError} onClose={() => setInputError('')} />}
       <div
-        className="brand-surface-subtle/60 border border-surface-border rounded-4xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden cursor-text"
+        className="bg-surface border border-surface-border rounded-4xl shadow-sm focus-within:border-text-muted transition-colors overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}
       >
         {pendingFile && (
