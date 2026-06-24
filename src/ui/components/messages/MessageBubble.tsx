@@ -121,7 +121,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
           <Streamdown
             mode={isStreaming ? 'streaming' : 'static'}
             parseIncompleteMarkdown={isStreaming}
-            animated={{ animation: 'fadeIn', sep: 'word', duration: 250 }}
+            animated={{ animation: 'fadeIn', sep: 'word', duration: 220, stagger: 25 }}
             isAnimating={isStreaming}
             controls={false}
             className="space-y-0"
