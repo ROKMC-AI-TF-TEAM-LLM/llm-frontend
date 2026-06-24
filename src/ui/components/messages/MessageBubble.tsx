@@ -27,11 +27,22 @@ const normalizeMarkdown = (content: string): string =>
 // (streamdown의 parseIncompleteMarkdown이 못 잡는 한글 flanking·단일 * 케이스 보완)
 const closeStreamingMarkdown = (raw: string): string => {
   let text = raw;
+  // 코드펜스: 안 닫혔으면 닫음
   if ((text.match(/```/g) || []).length % 2 === 1) return text + '\n```';
-  if ((text.replace(/```[\s\S]*?```/g, '').match(/`/g) || []).length % 2 === 1) text += '`';
+  // 인라인 코드: 끝에 ` 만 달랑 있으면 숨김, 내용이 있으면 닫음
+  if ((text.replace(/```[\s\S]*?```/g, '').match(/`/g) || []).length % 2 === 1) {
+    text = /`$/.test(text) ? text.replace(/`+$/, '') : text + '`';
+  }
+  // 미완성 링크 [텍스트](url → )
   if (/\]\([^)\s]*$/.test(text)) text += ')';
-  if ((text.match(/\*\*/g) || []).length % 2 === 1) text += '**';
-  if ((text.replace(/\*\*/g, '').match(/\*/g) || []).length % 2 === 1) text += '*';
+  // 볼드 **: 끝이 여는 ** 뿐이면 숨김(제거), 내용이 있으면 닫음
+  if ((text.match(/\*\*/g) || []).length % 2 === 1) {
+    text = /\*\*\s*$/.test(text) ? text.replace(/\s*\*\*\s*$/, '') : text + '**';
+  }
+  // 이탤릭 *: 끝이 여는 * 뿐이면 숨김, 내용이 있으면 닫음
+  if ((text.replace(/\*\*/g, '').match(/\*/g) || []).length % 2 === 1) {
+    text = /\*\s*$/.test(text) ? text.replace(/\s*\*\s*$/, '') : text + '*';
+  }
   return text;
 };
 
@@ -130,7 +141,10 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
           <GeneratingIndicator />
         ) : (
           <Streamdown
+            mode={isStreaming ? 'streaming' : 'static'}
             parseIncompleteMarkdown={isStreaming}
+            animated={{ animation: 'blurIn', sep: 'word', duration: 350 }}
+            isAnimating={isStreaming}
             controls={false}
             className="space-y-0"
             components={mdComponents}

@@ -120,18 +120,6 @@ export const clearCache = (sessionId: string) => {
   try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
 }
 
-const sortByTime = (msgs: Message[]): Message[] => {
-  let lastTime = 0
-  const keyed = msgs.map((m, i) => {
-    const parsed = m.createdAt ? Date.parse(m.createdAt) : NaN
-    const t = Number.isNaN(parsed) ? lastTime : parsed
-    lastTime = t
-    return { m, t, i }
-  })
-  keyed.sort((a, b) => a.t - b.t || a.i - b.i)
-  return keyed.map((k) => k.m)
-}
-
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     const { sessionId, messages } = useChatStore.getState()
@@ -415,10 +403,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
       }));
 
-      const chrono = sortByTime(rawMessages);
-      const deduped = chrono.filter((msg, i) => {
+      // 백엔드가 이미 시간순으로 주므로 재정렬하지 않는다(재정렬 시 Q/A가 뒤바뀔 수 있음).
+      const deduped = rawMessages.filter((msg, i) => {
         if (i === 0) return true;
-        const prev = chrono[i - 1];
+        const prev = rawMessages[i - 1];
         return !(
           msg.role === prev.role &&
           msg.type === 'text' &&
@@ -433,7 +421,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       );
 
       const cached = messageCache.get(sessionId) ?? [];
-      const base = sortByTime(cached.length > dbMessages.length ? cached : dbMessages);
+      const base = cached.length > dbMessages.length ? cached : dbMessages;
 
       const pending = getInflight(sessionId);
 
