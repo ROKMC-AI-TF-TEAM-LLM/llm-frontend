@@ -23,31 +23,9 @@ const normalizeMarkdown = (content: string): string =>
     .replace(/^[•·–—]\s*/gm, '- ')
     .replace(/([가-힣]) +(을|를|에|에서|은|는|이|가|으로|로|와|과)(?=[\s,.?!]|$)/gm, '$1$2');
 
-// 스트리밍 중 아직 안 닫힌 마크다운 토큰을 임시로 닫아 화면에 *, ** 가 그대로 보이지 않게 한다.
-// (streamdown의 parseIncompleteMarkdown이 못 잡는 한글 flanking·단일 * 케이스 보완)
-const closeStreamingMarkdown = (raw: string): string => {
-  let text = raw;
-  // 코드펜스: 안 닫혔으면 닫음
-  if ((text.match(/```/g) || []).length % 2 === 1) return text + '\n```';
-  // 인라인 코드: 끝에 ` 만 달랑 있으면 숨김, 내용이 있으면 닫음
-  if ((text.replace(/```[\s\S]*?```/g, '').match(/`/g) || []).length % 2 === 1) {
-    text = /`$/.test(text) ? text.replace(/`+$/, '') : text + '`';
-  }
-  // 미완성 링크 [텍스트](url → )
-  if (/\]\([^)\s]*$/.test(text)) text += ')';
-  // 볼드 **: 끝이 여는 ** 뿐이면 숨김(제거), 내용이 있으면 닫음
-  if ((text.match(/\*\*/g) || []).length % 2 === 1) {
-    text = /\*\*\s*$/.test(text) ? text.replace(/\s*\*\*\s*$/, '') : text + '**';
-  }
-  // 이탤릭 *: 끝이 여는 * 뿐이면 숨김, 내용이 있으면 닫음
-  if ((text.replace(/\*\*/g, '').match(/\*/g) || []).length % 2 === 1) {
-    text = /\*\s*$/.test(text) ? text.replace(/\s*\*\s*$/, '') : text + '*';
-  }
-  return text;
-};
-
-// 스트리밍 표시용: 미완성 토큰 닫기 + 한글 볼드 flanking 보정
-const streamMarkdown = (content: string): string => fixBold(closeStreamingMarkdown(content));
+// 스트리밍 표시용: 미완성 토큰 처리는 streamdown(mode="streaming", parseIncompleteMarkdown)에 맡기고,
+// 한글에 붙은 볼드(`...)**에`)만 보정한다. (불릿 `*`까지 건드리던 수동 보정은 제거)
+const streamMarkdown = (content: string): string => fixBold(content);
 
 // 마크다운 렌더 커스텀 스타일(스트리밍/완료 공통)
 const mdComponents: Components = {
@@ -143,7 +121,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
           <Streamdown
             mode={isStreaming ? 'streaming' : 'static'}
             parseIncompleteMarkdown={isStreaming}
-            animated={{ animation: 'blurIn', sep: 'word', duration: 350 }}
+            animated={{ animation: 'fadeIn', sep: 'word', duration: 250 }}
             isAnimating={isStreaming}
             controls={false}
             className="space-y-0"
