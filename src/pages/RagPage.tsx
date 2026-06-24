@@ -30,7 +30,7 @@ const RagPage = () => {
   }, [selectedDoc])
 
   return (
-    <div className="min-h-full w-full" onClick={() => setSelectedDoc(null)}>
+    <div className="h-full w-full overflow-y-auto custom-scroll" onClick={() => setSelectedDoc(null)}>
 
       {selectedDoc && (
         <div

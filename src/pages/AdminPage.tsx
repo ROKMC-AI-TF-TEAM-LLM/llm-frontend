@@ -314,7 +314,7 @@ export default function AdminPage() {
       .catch(() => setMutationError('복사에 실패했습니다.'));
 
   return (
-    <div className="min-h-full bg-white p-8">
+    <div className="h-full overflow-y-auto custom-scroll bg-white p-8">
       {selectedUserId && (
         <UserDetailModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
       )}

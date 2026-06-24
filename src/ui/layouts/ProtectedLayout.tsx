@@ -77,7 +77,7 @@ const ProtectedLayout = () => {
       />
       <main
         style={{ '--sidebar-width': isOpen ? '16rem' : '5rem' } as CSSProperties}
-        className={`h-screen overflow-y-auto overflow-x-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}
+        className={`h-screen overflow-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}
       >
         <ErrorBoundary>
           <div key={location.pathname} className="h-full animate-fade-in">

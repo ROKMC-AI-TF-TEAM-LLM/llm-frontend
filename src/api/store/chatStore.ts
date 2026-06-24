@@ -174,30 +174,52 @@ export const useChatStore = create<ChatStore>((set, get) => {
     signal: AbortSignal,
     removePairOnFail = true,
   ): Promise<void> => {
+    // 스트리밍 토큰을 모아서(throttle ~60ms) 재렌더 횟수를 줄이고,
+    // 사용자가 텍스트를 선택(드래그)하는 동안엔 업데이트를 잠시 멈춰 복사가 가능하게 한다.
+    let buffer = ''
+    let flushTimer: ReturnType<typeof setTimeout> | null = null
+    const applyChunk = (chunk: string) => {
+      if (get().sessionId !== sessionId) {
+        const reg = streamRegistry.get(sessionId)
+        if (reg) {
+          streamRegistry.set(sessionId, reg.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, content: m.content + chunk } : m
+          ))
+        }
+        return
+      }
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text' ? { ...m, content: m.content + chunk } : m
+        ),
+      }))
+      streamRegistry.set(sessionId, get().messages)
+    }
+    const flush = () => {
+      flushTimer = null
+      if (!buffer) return
+      const sel = typeof window !== 'undefined' ? window.getSelection() : null
+      if (sel && !sel.isCollapsed && sel.toString().length > 0) {
+        // 선택 중 → 업데이트 보류 후 재시도
+        flushTimer = setTimeout(flush, 250)
+        return
+      }
+      const chunk = buffer
+      buffer = ''
+      applyChunk(chunk)
+    }
+    const flushNow = () => {
+      if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+      if (buffer) { const c = buffer; buffer = ''; applyChunk(c) }
+    }
+
     try {
       await streamMessage(
         sessionId,
         { question },
         (chunk) => {
-          if (get().sessionId !== sessionId) {
-            const reg = streamRegistry.get(sessionId)
-            if (reg) {
-              streamRegistry.set(sessionId, reg.map((m) =>
-                m.id === assistantId && m.type === 'text'
-                  ? { ...m, content: m.content + chunk }
-                  : m
-              ))
-            }
-            return
-          }
-          set((state) => ({
-            messages: state.messages.map((m) =>
-              m.id === assistantId && m.type === 'text'
-                ? { ...m, content: m.content + chunk }
-                : m
-            ),
-          }))
-          streamRegistry.set(sessionId, get().messages)
+          buffer += chunk
+          if (!flushTimer) flushTimer = setTimeout(flush, 60)
         },
         signal,
         (sources) => {
@@ -208,7 +230,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
           }))
         },
       )
+      flushNow()
     } catch (e) {
+      flushNow()
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
       if (!isAbortError(e)) clearCache(sessionId)
