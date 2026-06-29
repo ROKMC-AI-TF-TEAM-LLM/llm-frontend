@@ -23,6 +23,8 @@ export interface UserMessage {
   type: 'text';
   content: string;
   createdAt?: string;
+  // 백엔드 message_id(UUID). 서버에서 로드/동기화된 메시지에만 존재(삭제 API 등에 사용).
+  serverId?: string;
 }
 
 export interface AssistantMessage {
@@ -33,6 +35,8 @@ export interface AssistantMessage {
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
   createdAt?: string;
+  // 백엔드 message_id(UUID). 서버에서 로드/동기화된 메시지에만 존재(삭제/재생성 API에 사용).
+  serverId?: string;
 }
 
 export interface ImageMessage {

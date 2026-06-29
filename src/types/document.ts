@@ -5,7 +5,7 @@ export interface DocumentItem {
 }
 
 export interface DocumentListData {
-  documents: DocumentItem[]
+  items: DocumentItem[]
   total: number
   offset: number
   limit: number

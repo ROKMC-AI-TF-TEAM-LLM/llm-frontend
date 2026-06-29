@@ -11,7 +11,7 @@ export const useInfiniteDocuments = () => {
     queryFn: ({ pageParam }) => getDocuments({ offset: pageParam as number, limit: LIMIT }),
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce((acc, p) => acc + p.data.data.documents.length, 0)
+      return allPages.reduce((acc, p) => acc + p.data.data.items.length, 0)
     },
     initialPageParam: 0,
     enabled: !!accessToken,

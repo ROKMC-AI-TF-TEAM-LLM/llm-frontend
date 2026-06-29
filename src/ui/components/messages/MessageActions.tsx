@@ -5,7 +5,6 @@ interface MessageActionsProps {
   onCopy?: () => void;
   onRegenerate?: () => void;
   regenerateDisabled?: boolean;
-  onEdit?: () => void;
   createdAt?: string;
 }
 
@@ -28,7 +27,7 @@ function formatFullDate(iso?: string): string {
   return `${yyyy}년 ${mo}월 ${dd}일 ${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`;
 }
 
-export default function MessageActions({ role = 'assistant', onCopy, onRegenerate, regenerateDisabled = false, onEdit, createdAt }: MessageActionsProps) {
+export default function MessageActions({ role = 'assistant', onCopy, onRegenerate, regenerateDisabled = false, createdAt }: MessageActionsProps) {
   const isUser = role === 'user';
   const [copied, setCopied] = useState(false);
 
@@ -57,43 +56,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
         </div>
       )}
 
-      {isUser && onEdit && (
-        <div className="relative group/edit">
-          <button type="button" onClick={onEdit} className={iconBtn} aria-label="수정">
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-            </svg>
-          </button>
-          <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/edit:opacity-100 transition-opacity">
-            수정
-          </span>
-        </div>
-      )}
-
-      {isUser && onRegenerate && (
-        <div className="relative group/regen">
-          <button
-            type="button"
-            onClick={onRegenerate}
-            disabled={regenerateDisabled}
-            className={`${iconBtn} disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-muted`}
-            aria-label="다시 생성"
-          >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
-          </button>
-          {!regenerateDisabled && (
-            <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/regen:opacity-100 transition-opacity">
-              재생성
-            </span>
-          )}
-        </div>
-      )}
-
-      {!isUser && onRegenerate && (
+      {onRegenerate && (
         <div className="relative group/regen">
           <button
             type="button"

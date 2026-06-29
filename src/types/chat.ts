@@ -1,6 +1,7 @@
 import type { Source } from './index'
 
 export interface MessageItem {
+  message_id: string
   role: 'human' | 'ai'
   content: string
   created_at: string
@@ -24,3 +25,15 @@ export interface StreamMessageRequest {
   question: string
 }
 export type StreamMessageErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED' | 'VALIDATION_ERROR'
+
+export type DeleteMessageErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'MESSAGE_NOT_FOUND' | 'SESSION_ACCESS_DENIED'
+export interface DeleteMessageResponse {
+  success: boolean
+  status_code: number
+  data: null
+  error: { code: DeleteMessageErrorCode; detail: string } | null
+}
+
+// 재생성은 SSE(text/event-stream)로 응답하므로 일반 JSON 응답 타입은 없다.
+// SSE error 이벤트로 반환되는 코드: MESSAGE_NOT_FOUND / INVALID_MESSAGE_ROLE / SESSION_ACCESS_DENIED
+export type RegenerateMessageErrorCode = 'MESSAGE_NOT_FOUND' | 'INVALID_MESSAGE_ROLE' | 'SESSION_ACCESS_DENIED' | 'UNAUTHORIZED'

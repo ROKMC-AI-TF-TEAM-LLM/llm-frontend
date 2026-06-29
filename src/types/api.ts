@@ -11,3 +11,5 @@ export type ApiErrorCode =
   | 'USER_NOT_FOUND'
   | 'ADMIN_REQUIRED'
   | 'LLM_SERVER_ERROR'
+  | 'MESSAGE_NOT_FOUND'
+  | 'INVALID_MESSAGE_ROLE'

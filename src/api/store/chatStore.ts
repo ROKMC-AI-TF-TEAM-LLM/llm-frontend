@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message } from '../../types';
-import { streamMessage, getMessages } from '../services/chat';
+import type { Message, Source } from '../../types';
+import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 
@@ -21,8 +21,6 @@ interface ChatStore {
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
-  regenerateFromUser: (userId: string) => Promise<void>;
-  editAndResendMessage: (userId: string, newText: string) => Promise<void>;
 }
 
 const isAbortError = (e: unknown) =>
@@ -103,7 +101,7 @@ const saveCache = (sessionId: string, messages: Message[]) => {
     )
     if (cacheable.length > 0)
       sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
-  } catch {}
+  } catch { /* 저장 실패 무시(용량 초과 등) */ }
 }
 
 const loadCache = (sessionId: string): Message[] => {
@@ -117,7 +115,7 @@ const loadCache = (sessionId: string): Message[] => {
 
 export const clearCache = (sessionId: string) => {
   messageCache.delete(sessionId)
-  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch {}
+  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch { /* 무시 */ }
 }
 
 if (typeof window !== 'undefined') {
@@ -137,7 +135,7 @@ export const clearInflight = (sessionId: string) => {
     const raw = localStorage.getItem(INFLIGHT_KEY)
     if (!raw) return
     if (JSON.parse(raw).sessionId === sessionId) localStorage.removeItem(INFLIGHT_KEY)
-  } catch {}
+  } catch { /* 무시 */ }
 }
 
 const getInflight = (sessionId: string): string | null => {
@@ -154,16 +152,10 @@ const getInflight = (sessionId: string): string | null => {
 export const useChatStore = create<ChatStore>((set, get) => {
   let connectAbortController = new AbortController();
 
-  const executeStream = async (
-    sessionId: string,
-    assistantId: string,
-    question: string,
-    isFirstMessage: boolean,
-    signal: AbortSignal,
-    removePairOnFail = true,
-  ): Promise<void> => {
-    // 스트리밍 토큰을 모아서(throttle ~60ms) 재렌더 횟수를 줄이고,
-    // 사용자가 텍스트를 선택(드래그)하는 동안엔 업데이트를 잠시 멈춰 복사가 가능하게 한다.
+  // 스트리밍 토큰을 모아서(throttle ~60ms) 재렌더 횟수를 줄이고,
+  // 사용자가 텍스트를 선택(드래그)하는 동안엔 업데이트를 잠시 멈춰 복사가 가능하게 한다.
+  // 일반 전송/재생성 스트리밍이 동일한 in-place 갱신 로직을 쓰므로 공유한다.
+  const createWriter = (sessionId: string, assistantId: string) => {
     let buffer = ''
     let flushTimer: ReturnType<typeof setTimeout> | null = null
     const applyChunk = (chunk: string) => {
@@ -196,36 +188,107 @@ export const useChatStore = create<ChatStore>((set, get) => {
       buffer = ''
       applyChunk(chunk)
     }
-    const flushNow = () => {
-      if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-      if (buffer) { const c = buffer; buffer = ''; applyChunk(c) }
+    return {
+      push: (chunk: string) => {
+        buffer += chunk
+        if (!flushTimer) flushTimer = setTimeout(flush, 60)
+      },
+      flushNow: () => {
+        if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
+        if (buffer) { const c = buffer; buffer = ''; applyChunk(c) }
+      },
+      setSources: (sources: Source[]) => {
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
+          ),
+        }))
+      },
     }
+  }
+
+  // 스트리밍/재생성 완료 후 백엔드 message_id를 로컬 메시지의 serverId로 동기화한다.
+  // (방금 생성된 메시지는 로컬 UUID만 가지므로, 삭제/재생성 API 호출에 필요한 실제 id를 채워준다)
+  // 최신 메시지가 꼬리에 모이므로 뒤에서부터 같은 role끼리 짝지어 채운다.
+  const syncServerIds = async (sessionId: string) => {
+    try {
+      const res = await getMessages(sessionId)
+      const server = res.data.data.messages
+      set((state) => {
+        if (state.sessionId !== sessionId) return {}
+        const textIdxs: number[] = []
+        state.messages.forEach((m, i) => { if (m.type === 'text') textIdxs.push(i) })
+        const messages = state.messages.slice()
+        const pairs = Math.min(textIdxs.length, server.length)
+        for (let k = 1; k <= pairs; k++) {
+          const mi = textIdxs[textIdxs.length - k]
+          const s = server[server.length - k]
+          const m = messages[mi]
+          const sRole = s.role === 'human' ? 'user' : 'assistant'
+          if (m.type === 'text' && s.message_id && sRole === m.role) {
+            messages[mi] = { ...m, serverId: s.message_id }
+          }
+        }
+        return { messages }
+      })
+    } catch { /* 동기화 실패는 무시(다음 전송/재생성 때 다시 시도) */ }
+  }
+
+  // 빈 응답을 받았을 때 백엔드에 남은 잔여물(이번 교환에서 새로 생긴 질문 + 빈 AI 답변)을 정리한다.
+  // 안전장치: '로컬에 이미 알고 있던(serverId 보유) 메시지'는 절대 건드리지 않고,
+  // 이번에 새로 생긴 것 중에서도 (질문과 동일한 human) 또는 (내용이 빈 ai)만 삭제한다.
+  const cleanupEmptyExchange = async (sessionId: string, question: string) => {
+    try {
+      const knownIds = new Set<string>()
+      get().messages.forEach((m) => { if (m.type === 'text' && m.serverId) knownIds.add(m.serverId) })
+
+      const res = await getMessages(sessionId)
+      const server = res.data.data.messages
+      const toDelete = server
+        .filter((s) => s.message_id && !knownIds.has(s.message_id))
+        .filter((s) =>
+          (s.role === 'human' && s.content === question) ||
+          (s.role === 'ai' && (s.content ?? '').trim() === '')
+        )
+        .map((s) => s.message_id)
+
+      if (toDelete.length === 0) return
+      await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)))
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    } catch { /* 정리 실패는 무시 */ }
+  }
+
+  const executeStream = async (
+    sessionId: string,
+    assistantId: string,
+    question: string,
+    isFirstMessage: boolean,
+    signal: AbortSignal,
+    removePairOnFail = true,
+  ): Promise<void> => {
+    const writer = createWriter(sessionId, assistantId)
 
     try {
       await streamMessage(
         sessionId,
         { question },
-        (chunk) => {
-          buffer += chunk
-          if (!flushTimer) flushTimer = setTimeout(flush, 60)
-        },
+        writer.push,
         signal,
-        (sources) => {
-          set((state) => ({
-            messages: state.messages.map((m) =>
-              m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
-            ),
-          }))
-        },
+        writer.setSources,
       )
-      flushNow()
+      writer.flushNow()
     } catch (e) {
-      flushNow()
+      writer.flushNow()
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
-      if (!isAbortError(e)) clearCache(sessionId)
+      // 사용자가 직접 정지(signal.aborted)한 경우만 '중단'으로 보존한다.
+      // idle 타임아웃 등은 진짜 오류로 취급(첫 대화면 세션 삭제). 단 첫 대화가 아니면
+      // 타임아웃도 기존처럼 '중단'으로 남겨 '다시 시도'가 가능하게 둔다.
+      const userAborted = signal.aborted
+      const keepInterrupted = isAbortError(e) && (userAborted || !isFirstMessage)
+      if (!keepInterrupted) clearCache(sessionId)
       if (get().sessionId === sessionId) {
-        if (isAbortError(e)) {
+        if (keepInterrupted) {
           set((state) => ({
             isStreaming: false,
             abortController: null,
@@ -311,6 +374,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
             .catch(() => {})
         } else {
           messageCache.set(sessionId, get().messages)
+          // 빈 응답: 백엔드에 남은 질문 + 빈 답변 쌍을 정리(새로고침 시 되살아나지 않도록).
+          cleanupEmptyExchange(sessionId, question)
         }
       }
       return
@@ -327,6 +392,78 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }))
     messageCache.set(sessionId, get().messages)
     queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    // 방금 생성된 메시지에 백엔드 message_id를 채워 삭제/재생성이 동작하도록 한다.
+    syncServerIds(sessionId)
+  }
+
+  // 재생성: 기존 AI 메시지(assistantId)에 새 응답을 in-place로 스트리밍한다.
+  // 실패/중단 시 이전 내용(prevContent/prevSources)을 복원한다.
+  const executeRegenerate = async (
+    sessionId: string,
+    assistantId: string,
+    serverId: string,
+    signal: AbortSignal,
+    prevContent: string,
+    prevSources?: Source[],
+  ): Promise<void> => {
+    const writer = createWriter(sessionId, assistantId)
+
+    try {
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources)
+      writer.flushNow()
+    } catch (e) {
+      writer.flushNow()
+      streamRegistry.delete(sessionId)
+      if (get().sessionId === sessionId) {
+        // 중단/오류 모두 이전 응답으로 복원(빈 말풍선 방지)
+        set((state) => ({
+          ...(isAbortError(e) ? {} : { error: (e as Error)?.message || '재생성 중 오류가 발생했습니다.' }),
+          isStreaming: false,
+          abortController: null,
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text'
+              ? { ...m, content: prevContent, sources: prevSources, status: 'done' as const }
+              : m
+          ),
+        }))
+        messageCache.set(sessionId, get().messages)
+      }
+      return
+    }
+
+    streamRegistry.delete(sessionId)
+
+    const finalMsg = get().messages.find((m) => m.id === assistantId)
+    const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
+    if (!hasContent) {
+      if (get().sessionId === sessionId) {
+        set((state) => ({
+          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
+          isStreaming: false,
+          abortController: null,
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text'
+              ? { ...m, content: prevContent, sources: prevSources, status: 'done' as const }
+              : m
+          ),
+        }))
+        messageCache.set(sessionId, get().messages)
+      }
+      return
+    }
+
+    if (get().sessionId !== sessionId) return
+    set((state) => ({
+      isStreaming: false,
+      abortController: null,
+      messages: state.messages.map((m) =>
+        m.id === assistantId ? { ...m, status: 'done' as const } : m
+      ),
+    }))
+    messageCache.set(sessionId, get().messages)
+    queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    // 재생성으로 새 AI 메시지가 저장되었으므로 message_id를 다시 동기화한다.
+    syncServerIds(sessionId)
   }
 
   return {
@@ -394,7 +531,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
       const rawMessages: Message[] = res.data.data.messages.map((m) => ({
-        id: crypto.randomUUID(),
+        id: m.message_id || crypto.randomUUID(),
+        serverId: m.message_id,
         role: m.role === 'human' ? 'user' : 'assistant',
         type: 'text' as const,
         content: extractContent(m.content),
@@ -511,55 +649,56 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }));
     },
 
+    // AI 응답 재생성: 백엔드 재생성 SSE 엔드포인트로 in-place 스트리밍한다.
+    // (재생성 버튼은 맨 아래 어시스턴트 메시지에만 노출됨)
     regenerateMessage: async (assistantId: string) => {
       if (get().isStreaming) return;
-      const { messages } = get();
-      const assistantIdx = messages.findIndex((m) => m.id === assistantId);
-      if (assistantIdx === -1) return;
+      const { messages, sessionId } = get();
+      const target = messages.find((m) => m.id === assistantId);
+      if (!target || target.role !== 'assistant' || target.type !== 'text') return;
 
-      const prevUserMsg = messages
-        .slice(0, assistantIdx)
-        .reverse()
-        .find((m) => m.role === 'user' && m.type === 'text');
-      if (!prevUserMsg || prevUserMsg.type !== 'text') return;
-
-      const removeIds = new Set<string>([prevUserMsg.id, assistantId]);
-      set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-      await get().sendMessage(prevUserMsg.content);
-    },
-
-    regenerateFromUser: async (userId: string) => {
-      if (get().isStreaming) return;
-      const { messages } = get();
-      const userIdx = messages.findIndex((m) => m.id === userId);
-      if (userIdx === -1) return;
-      const userMsg = messages[userIdx];
-      if (userMsg.type !== 'text') return;
-
-      const removeIds = new Set<string>([userId]);
-      const next = messages[userIdx + 1];
-      if (next && next.role === 'assistant') removeIds.add(next.id);
-      set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-      await get().sendMessage(userMsg.content);
-    },
-
-    editAndResendMessage: async (userId: string, newText: string) => {
-      if (get().isStreaming) return;
-      const text = newText.trim();
-      if (!text) return;
-
-      const { messages } = get();
-      const userIdx = messages.findIndex((m) => m.id === userId);
-      if (userIdx === -1) {
-        await get().sendMessage(text);
+      // 백엔드 message_id 확보(없으면 1회 조회해 마지막 AI 메시지 id를 사용)
+      let serverId = target.serverId;
+      if (!serverId) {
+        try {
+          const res = await getMessages(sessionId);
+          const aiList = res.data.data.messages.filter((m) => m.role === 'ai');
+          serverId = aiList[aiList.length - 1]?.message_id;
+        } catch { /* 조회 실패 시 아래 재전송 폴백으로 진행 */ }
+      }
+      // serverId를 못 구하면(중단된 임시 메시지 등) 직전 질문으로 재전송한다.
+      // (원본 Q&A 제거 후 맨 아래에서 새로 생성 — 어차피 마지막 메시지이므로 위치 동일)
+      if (!serverId) {
+        const idx = messages.findIndex((m) => m.id === assistantId);
+        const prevUser = messages.slice(0, idx).reverse().find((m) => m.role === 'user' && m.type === 'text');
+        if (prevUser && prevUser.type === 'text') {
+          const q = prevUser.content;
+          const removeIds = new Set<string>([prevUser.id, assistantId]);
+          set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
+          await get().sendMessage(q);
+        } else {
+          set({ error: '재생성할 수 없습니다. 잠시 후 다시 시도해주세요.' });
+        }
         return;
       }
 
-      const removeIds = new Set<string>([userId]);
-      const next = messages[userIdx + 1];
-      if (next && next.role === 'assistant') removeIds.add(next.id);
-      set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-      await get().sendMessage(text);
+      const prevContent = target.content;
+      const prevSources = target.sources;
+
+      const controller = new AbortController();
+      set((state) => ({
+        isStreaming: true,
+        abortController: controller,
+        error: null,
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, content: '', sources: undefined, status: 'streaming' as const }
+            : m
+        ),
+      }));
+      streamRegistry.set(sessionId, get().messages);
+
+      await executeRegenerate(sessionId, assistantId, serverId, controller.signal, prevContent, prevSources);
     },
   }
 });

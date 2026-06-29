@@ -12,7 +12,7 @@ const RagPage = () => {
 
   const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage, refetch, isRefetching } = useInfiniteDocuments()
 
-  const allDocuments = data?.pages.flatMap((p) => p.data.data.documents) ?? []
+  const allDocuments = data?.pages.flatMap((p) => p.data.data.items) ?? []
 
   const filtered = allDocuments.filter((doc) =>
     doc.name.toLowerCase().includes(query.toLowerCase())

@@ -1,36 +1,35 @@
 import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
-import type { GetMessagesResponse, StreamMessageRequest } from '../../types/chat'
+import type { GetMessagesResponse, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source } from '../../types'
 
 export const getMessages = (sessionId: string, options?: { signal?: AbortSignal }) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, options)
 
+export const deleteMessage = (sessionId: string, messageId: string) =>
+  backendApi.delete<DeleteMessageResponse>(`/api/v1/sessions/${sessionId}/messages/${messageId}`)
 
-export const streamMessage = async (
-  sessionId: string,
-  data: StreamMessageRequest,
-  onChunk: (chunk: string) => void,
-  signal?: AbortSignal,
-  onSources?: (sources: Source[]) => void,
-) => {
-  const makeRequest = async (token: string | null) =>
-    fetch(
-      `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream',
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify(data),
-        signal,
-      }
-    )
+interface SseHandlers {
+  onChunk: (chunk: string) => void
+  onSources?: (sources: Source[]) => void
+  signal?: AbortSignal
+}
+
+// access token을 붙여 SSE(POST)를 요청하고, 401이면 1회 refresh 후 재시도한다.
+const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promise<Response> => {
+  const makeRequest = (token: string | null) =>
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      ...(body != null ? { body: JSON.stringify(body) } : {}),
+      signal,
+    })
 
   let parsedToken = await getValidAccessToken()
-
   let response = await makeRequest(parsedToken)
 
   if (response.status === 401) {
@@ -46,7 +45,12 @@ export const streamMessage = async (
   }
 
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  return response
+}
 
+// SSE(text/event-stream) 본문을 읽어 텍스트 토큰/sources/done/error 이벤트를 처리한다.
+// 일반 채팅 스트리밍과 재생성 스트리밍이 동일한 이벤트 형식을 쓰므로 공유한다.
+const readSse = async (response: Response, { onChunk, onSources, signal }: SseHandlers) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
 
@@ -104,6 +108,7 @@ export const streamMessage = async (
       } else if (evt.type === 'error') {
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
+        /* 완료 신호 — 별도 처리 없음(루프 종료는 reader done으로 처리) */
       } else if (
         evt.type === 'text' ||
         evt.type === 'token' ||
@@ -127,4 +132,36 @@ export const streamMessage = async (
       'AbortError'
     )
   }
+}
+
+export const streamMessage = async (
+  sessionId: string,
+  data: StreamMessageRequest,
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal,
+  onSources?: (sources: Source[]) => void,
+) => {
+  const response = await postSse(
+    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
+    data,
+    signal,
+  )
+  await readSse(response, { onChunk, onSources, signal })
+}
+
+// AI 메시지 재생성: 기존 AI 응답(messageId)을 서버에서 삭제하고 동일 질문으로 재스트리밍한다.
+// body 없음. messageId는 반드시 role: 'ai' 메시지의 ID여야 한다.
+export const regenerateMessageStream = async (
+  sessionId: string,
+  messageId: string,
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal,
+  onSources?: (sources: Source[]) => void,
+) => {
+  const response = await postSse(
+    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
+    undefined,
+    signal,
+  )
+  await readSse(response, { onChunk, onSources, signal })
 }
