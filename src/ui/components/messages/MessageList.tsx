@@ -163,9 +163,17 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     navigator.clipboard.writeText(text).catch(() => setCopyFailed(true));
   };
 
+  // 스크롤 앵커: 스트리밍 중인(전송/재생성 공통) 메시지의 '바로 앞 user 질문'을 위로 올린다.
+  // 스트리밍이 없으면(로드 시) 가장 마지막 user 질문을 기준으로 한다.
   let lastUserId: string | null = null;
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === 'user' && messages[i].type === 'text') { lastUserId = messages[i].id; break; }
+  {
+    const streamingIdx = messages.findIndex(
+      (m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming'
+    );
+    const from = streamingIdx === -1 ? messages.length - 1 : streamingIdx - 1;
+    for (let i = from; i >= 0; i--) {
+      if (messages[i].role === 'user' && messages[i].type === 'text') { lastUserId = messages[i].id; break; }
+    }
   }
 
   // 재생성 버튼은 '맨 아래' 어시스턴트 메시지에만 노출한다.

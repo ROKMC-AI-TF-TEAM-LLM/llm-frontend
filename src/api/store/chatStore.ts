@@ -245,28 +245,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
     } catch { /* 정리 실패는 무시 */ }
   }
 
-  // 백엔드의 현재 메시지로 로컬 상태를 다시 맞춘다(재생성 중단/오류 후 로컬-서버 불일치 방지).
-  const reloadFromServer = async (sessionId: string) => {
-    try {
-      const res = await getMessages(sessionId)
-      if (get().sessionId !== sessionId) return
-      const mapped: Message[] = res.data.data.messages
-        .map((m) => ({
-          id: m.message_id || crypto.randomUUID(),
-          role: (m.role === 'human' ? 'user' : 'assistant') as 'user' | 'assistant',
-          type: 'text' as const,
-          content: extractContent(m.content),
-          status: 'done' as const,
-          createdAt: m.created_at,
-          ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
-        }))
-        .filter((msg) => !(msg.role === 'assistant' && msg.content.trim() === ''))
-      set({ messages: mapped, isStreaming: false, abortController: null })
-      if (mapped.length > 0) messageCache.set(sessionId, mapped)
-      else clearCache(sessionId)
-    } catch { /* 로드 실패 무시 */ }
-  }
-
   const executeStream = async (
     sessionId: string,
     assistantId: string,
@@ -410,8 +388,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
   }
 
   // 재생성: 기존 AI 메시지(assistantId)에 새 응답을 in-place로 스트리밍한다.
-  // 백엔드는 재생성 시 기존 답변을 먼저 삭제하므로, 중단/오류/빈응답 시엔 이전 내용을 복원하지 않고
-  // 서버 상태로 다시 맞춘다(로컬-서버 불일치 및 stale id 방지).
+  // 중단/오류/빈응답 시엔 일반 생성처럼 '중단됨'으로 표시해 '다시 시도'를 노출한다.
   const executeRegenerate = async (
     sessionId: string,
     assistantId: string,
@@ -420,32 +397,41 @@ export const useChatStore = create<ChatStore>((set, get) => {
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
+    // 실패/중단 시: 일반 생성처럼 해당 메시지를 '중단됨'으로 남겨 '다시 시도'를 노출한다.
+    // (백엔드는 재생성 시 기존 답변을 먼저 지우므로 복원하지 않음. '다시 시도'는 재조회/재전송으로 복구)
+    const markInterrupted = (errorMsg?: string) => {
+      streamRegistry.delete(sessionId)
+      if (get().sessionId !== sessionId) return
+      set((state) => ({
+        ...(errorMsg ? { error: errorMsg } : {}),
+        isStreaming: false,
+        abortController: null,
+        messages: state.messages.map((m) =>
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, status: 'interrupted' as const }
+            : m
+        ),
+      }))
+      messageCache.set(sessionId, get().messages)
+    }
+
     try {
       await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources)
       writer.flushNow()
     } catch (e) {
       writer.flushNow()
-      streamRegistry.delete(sessionId)
-      if (get().sessionId === sessionId) {
-        set({
-          isStreaming: false,
-          abortController: null,
-          ...(isAbortError(e) ? {} : { error: (e as Error)?.message || '재생성 중 오류가 발생했습니다.' }),
-        })
-      }
-      await reloadFromServer(sessionId)
+      markInterrupted(isAbortError(e) ? undefined : ((e as Error)?.message || '재생성 중 오류가 발생했습니다.'))
       return
     }
-
-    streamRegistry.delete(sessionId)
 
     const finalMsg = get().messages.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
-      if (get().sessionId === sessionId) set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.' })
-      await reloadFromServer(sessionId)
+      markInterrupted('응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.')
       return
     }
+
+    streamRegistry.delete(sessionId)
 
     if (get().sessionId !== sessionId) return
     set((state) => ({
