@@ -207,55 +207,64 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
   }
 
-  // 스트리밍/재생성 완료 후 백엔드 message_id를 로컬 메시지의 serverId로 동기화한다.
-  // (방금 생성된 메시지는 로컬 UUID만 가지므로, 삭제/재생성 API 호출에 필요한 실제 id를 채워준다)
-  // 최신 메시지가 꼬리에 모이므로 뒤에서부터 같은 role끼리 짝지어 채운다.
-  const syncServerIds = async (sessionId: string) => {
-    try {
-      const res = await getMessages(sessionId)
-      const server = res.data.data.messages
-      set((state) => {
-        if (state.sessionId !== sessionId) return {}
-        const textIdxs: number[] = []
-        state.messages.forEach((m, i) => { if (m.type === 'text') textIdxs.push(i) })
-        const messages = state.messages.slice()
-        const pairs = Math.min(textIdxs.length, server.length)
-        for (let k = 1; k <= pairs; k++) {
-          const mi = textIdxs[textIdxs.length - k]
-          const s = server[server.length - k]
-          const m = messages[mi]
-          const sRole = s.role === 'human' ? 'user' : 'assistant'
-          if (m.type === 'text' && s.message_id && sRole === m.role) {
-            messages[mi] = { ...m, serverId: s.message_id }
-          }
-        }
-        return { messages }
-      })
-    } catch { /* 동기화 실패는 무시(다음 전송/재생성 때 다시 시도) */ }
-  }
-
-  // 빈 응답을 받았을 때 백엔드에 남은 잔여물(이번 교환에서 새로 생긴 질문 + 빈 AI 답변)을 정리한다.
-  // 안전장치: '로컬에 이미 알고 있던(serverId 보유) 메시지'는 절대 건드리지 않고,
-  // 이번에 새로 생긴 것 중에서도 (질문과 동일한 human) 또는 (내용이 빈 ai)만 삭제한다.
+  // 빈/실패 응답 후 백엔드에 남은 잔여물(방금 보낸 질문 + 빈 AI 답변)을 정리한다.
+  // 꼬리(가장 최근)만 본다: 마지막이 빈 ai면 삭제, 질문과 같은 '마지막' human을 삭제.
+  // (이전에 보낸 동일 내용 질문은 건드리지 않음 — 오삭제 방지)
+  // 정리 후 세션에 메시지가 하나도 안 남으면 세션 자체도 삭제한다(빈 세션 제거).
   const cleanupEmptyExchange = async (sessionId: string, question: string) => {
     try {
-      const knownIds = new Set<string>()
-      get().messages.forEach((m) => { if (m.type === 'text' && m.serverId) knownIds.add(m.serverId) })
-
       const res = await getMessages(sessionId)
       const server = res.data.data.messages
-      const toDelete = server
-        .filter((s) => s.message_id && !knownIds.has(s.message_id))
-        .filter((s) =>
-          (s.role === 'human' && s.content === question) ||
-          (s.role === 'ai' && (s.content ?? '').trim() === '')
-        )
-        .map((s) => s.message_id)
-
-      if (toDelete.length === 0) return
-      await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)))
+      const q = question.trim()
+      const toDelete: string[] = []
+      if (server.length > 0) {
+        const last = server[server.length - 1]
+        if (last.role === 'ai' && (last.content ?? '').trim() === '' && last.message_id) {
+          toDelete.push(last.message_id)
+        }
+        for (let i = server.length - 1; i >= 0; i--) {
+          const s = server[i]
+          if (s.role === 'human' && (s.content ?? '').trim() === q && s.message_id) {
+            toDelete.push(s.message_id)
+            break
+          }
+        }
+      }
+      if (toDelete.length > 0) {
+        await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)))
+      }
+      // 정리 후 세션이 비었으면(재확인 후) 세션 자체 삭제
+      if (server.length - toDelete.length <= 0) {
+        const after = await getMessages(sessionId)
+        if (after.data.data.messages.length === 0) {
+          await deleteSession(sessionId).catch(() => {})
+          if (get().sessionId === sessionId) set({ isDeleted: true })
+        }
+      }
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
     } catch { /* 정리 실패는 무시 */ }
+  }
+
+  // 백엔드의 현재 메시지로 로컬 상태를 다시 맞춘다(재생성 중단/오류 후 로컬-서버 불일치 방지).
+  const reloadFromServer = async (sessionId: string) => {
+    try {
+      const res = await getMessages(sessionId)
+      if (get().sessionId !== sessionId) return
+      const mapped: Message[] = res.data.data.messages
+        .map((m) => ({
+          id: m.message_id || crypto.randomUUID(),
+          role: (m.role === 'human' ? 'user' : 'assistant') as 'user' | 'assistant',
+          type: 'text' as const,
+          content: extractContent(m.content),
+          status: 'done' as const,
+          createdAt: m.created_at,
+          ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+        }))
+        .filter((msg) => !(msg.role === 'assistant' && msg.content.trim() === ''))
+      set({ messages: mapped, isStreaming: false, abortController: null })
+      if (mapped.length > 0) messageCache.set(sessionId, mapped)
+      else clearCache(sessionId)
+    } catch { /* 로드 실패 무시 */ }
   }
 
   const executeStream = async (
@@ -287,6 +296,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const userAborted = signal.aborted
       const keepInterrupted = isAbortError(e) && (userAborted || !isFirstMessage)
       if (!keepInterrupted) clearCache(sessionId)
+      // 첫 메시지가 진짜 실패(사용자 중단 아님)면, 현재 보고 있는 세션과 무관하게 빈 세션을 삭제한다.
+      if (isFirstMessage && !keepInterrupted) {
+        messageCache.delete(sessionId)
+        deleteSession(sessionId)
+          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .catch(() => {})
+      }
       if (get().sessionId === sessionId) {
         if (keepInterrupted) {
           set((state) => ({
@@ -323,13 +339,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
             messages: state.messages.filter((m) => !removeIds.has(m.id)),
             ...(isFirstMessage ? { isDeleted: true } : {}),
           }))
-          if (isFirstMessage) {
-            messageCache.delete(sessionId)
-            deleteSession(sessionId)
-              .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-              .catch(() => {})
-          } else {
+          if (!isFirstMessage) {
             messageCache.set(sessionId, get().messages)
+            // 에러로 빈 답이 된 질문도 백엔드에서 정리(빈 세션이면 세션까지 삭제).
+            cleanupEmptyExchange(sessionId, question)
           }
         }
       }
@@ -343,6 +356,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
     if (!hasContent) {
       clearInflight(sessionId)
       clearCache(sessionId)
+      // 첫 메시지가 빈 응답이면, 현재 보고 있는 세션과 무관하게 빈 세션을 삭제한다.
+      if (isFirstMessage) {
+        messageCache.delete(sessionId)
+        deleteSession(sessionId)
+          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .catch(() => {})
+      }
       if (get().sessionId === sessionId && !removePairOnFail) {
         set((state) => ({
           error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
@@ -367,12 +387,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           messages: state.messages.filter((m) => !removeIds.has(m.id)),
           ...(isFirstMessage ? { isDeleted: true } : {}),
         }))
-        if (isFirstMessage) {
-          messageCache.delete(sessionId)
-          deleteSession(sessionId)
-            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-            .catch(() => {})
-        } else {
+        if (!isFirstMessage) {
           messageCache.set(sessionId, get().messages)
           // 빈 응답: 백엔드에 남은 질문 + 빈 답변 쌍을 정리(새로고침 시 되살아나지 않도록).
           cleanupEmptyExchange(sessionId, question)
@@ -392,19 +407,16 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }))
     messageCache.set(sessionId, get().messages)
     queryClient.invalidateQueries({ queryKey: ['sessions'] })
-    // 방금 생성된 메시지에 백엔드 message_id를 채워 삭제/재생성이 동작하도록 한다.
-    syncServerIds(sessionId)
   }
 
   // 재생성: 기존 AI 메시지(assistantId)에 새 응답을 in-place로 스트리밍한다.
-  // 실패/중단 시 이전 내용(prevContent/prevSources)을 복원한다.
+  // 백엔드는 재생성 시 기존 답변을 먼저 삭제하므로, 중단/오류/빈응답 시엔 이전 내용을 복원하지 않고
+  // 서버 상태로 다시 맞춘다(로컬-서버 불일치 및 stale id 방지).
   const executeRegenerate = async (
     sessionId: string,
     assistantId: string,
     serverId: string,
     signal: AbortSignal,
-    prevContent: string,
-    prevSources?: Source[],
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
@@ -415,19 +427,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
       writer.flushNow()
       streamRegistry.delete(sessionId)
       if (get().sessionId === sessionId) {
-        // 중단/오류 모두 이전 응답으로 복원(빈 말풍선 방지)
-        set((state) => ({
-          ...(isAbortError(e) ? {} : { error: (e as Error)?.message || '재생성 중 오류가 발생했습니다.' }),
+        set({
           isStreaming: false,
           abortController: null,
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
-              ? { ...m, content: prevContent, sources: prevSources, status: 'done' as const }
-              : m
-          ),
-        }))
-        messageCache.set(sessionId, get().messages)
+          ...(isAbortError(e) ? {} : { error: (e as Error)?.message || '재생성 중 오류가 발생했습니다.' }),
+        })
       }
+      await reloadFromServer(sessionId)
       return
     }
 
@@ -436,19 +442,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
     const finalMsg = get().messages.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
-      if (get().sessionId === sessionId) {
-        set((state) => ({
-          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
-          isStreaming: false,
-          abortController: null,
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
-              ? { ...m, content: prevContent, sources: prevSources, status: 'done' as const }
-              : m
-          ),
-        }))
-        messageCache.set(sessionId, get().messages)
-      }
+      if (get().sessionId === sessionId) set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.' })
+      await reloadFromServer(sessionId)
       return
     }
 
@@ -462,8 +457,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }))
     messageCache.set(sessionId, get().messages)
     queryClient.invalidateQueries({ queryKey: ['sessions'] })
-    // 재생성으로 새 AI 메시지가 저장되었으므로 message_id를 다시 동기화한다.
-    syncServerIds(sessionId)
   }
 
   return {
@@ -532,7 +525,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (get().sessionId !== sessionId || get().isStreaming) return;
       const rawMessages: Message[] = res.data.data.messages.map((m) => ({
         id: m.message_id || crypto.randomUUID(),
-        serverId: m.message_id,
         role: m.role === 'human' ? 'user' : 'assistant',
         type: 'text' as const,
         content: extractContent(m.content),
@@ -581,6 +573,25 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ],
         }));
         get().retryLastMessage();
+        return;
+      }
+
+      // 대화가 전혀 없는 빈 세션은 열었을 때 정리한다(보낼 메시지·로컬 캐시 모두 없을 때).
+      // 일시적 빈 응답으로 '실제 세션'을 지우지 않도록 삭제 직전 한 번 더 확인한다.
+      if (base.length === 0 && !pending && loadCache(sessionId).length === 0) {
+        let stillEmpty: boolean;
+        try {
+          const confirm = await getMessages(sessionId, { signal });
+          stillEmpty = confirm.data.data.messages.length === 0;
+        } catch { stillEmpty = false; }
+        if (get().sessionId !== sessionId) return;
+        if (stillEmpty) {
+          clearCache(sessionId);
+          deleteSession(sessionId)
+            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+            .catch(() => {});
+          set({ isDeleted: true });
+        }
         return;
       }
 
@@ -657,17 +668,18 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const target = messages.find((m) => m.id === assistantId);
       if (!target || target.role !== 'assistant' || target.type !== 'text') return;
 
-      // 백엔드 message_id 확보(없으면 1회 조회해 마지막 AI 메시지 id를 사용)
-      let serverId = target.serverId;
-      if (!serverId) {
-        try {
-          const res = await getMessages(sessionId);
-          const aiList = res.data.data.messages.filter((m) => m.role === 'ai');
-          serverId = aiList[aiList.length - 1]?.message_id;
-        } catch { /* 조회 실패 시 아래 재전송 폴백으로 진행 */ }
-      }
-      // serverId를 못 구하면(중단된 임시 메시지 등) 직전 질문으로 재전송한다.
-      // (원본 Q&A 제거 후 맨 아래에서 새로 생성 — 어차피 마지막 메시지이므로 위치 동일)
+      // 저장된 serverId는 이전 재생성/중단으로 stale이거나 잘못 매핑됐을 수 있으므로,
+      // 항상 백엔드의 '현재 마지막 AI 메시지' id를 새로 조회해서 사용한다. (MESSAGE_NOT_FOUND 방지)
+      let serverId: string | undefined;
+      try {
+        const res = await getMessages(sessionId);
+        const aiList = res.data.data.messages.filter((m) => m.role === 'ai');
+        serverId = aiList[aiList.length - 1]?.message_id;
+      } catch { /* 조회 실패 시 아래 재전송 폴백으로 진행 */ }
+
+      if (get().sessionId !== sessionId || get().isStreaming) return;
+
+      // 백엔드에 AI 메시지가 없으면(모두 삭제됨 등) 직전 질문으로 재전송(MOVE)한다.
       if (!serverId) {
         const idx = messages.findIndex((m) => m.id === assistantId);
         const prevUser = messages.slice(0, idx).reverse().find((m) => m.role === 'user' && m.type === 'text');
@@ -682,9 +694,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      const prevContent = target.content;
-      const prevSources = target.sources;
-
       const controller = new AbortController();
       set((state) => ({
         isStreaming: true,
@@ -698,7 +707,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }));
       streamRegistry.set(sessionId, get().messages);
 
-      await executeRegenerate(sessionId, assistantId, serverId, controller.signal, prevContent, prevSources);
+      await executeRegenerate(sessionId, assistantId, serverId, controller.signal);
     },
   }
 });

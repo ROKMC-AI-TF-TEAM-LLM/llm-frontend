@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagCard from '../ui/components/rag/RagCard'
 import { useInfiniteDocuments } from '../hooks/useDocument'
+import { pickDocuments } from '../api/services/document'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import type { DocumentItem } from '../types/document'
 
@@ -12,7 +13,7 @@ const RagPage = () => {
 
   const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage, refetch, isRefetching } = useInfiniteDocuments()
 
-  const allDocuments = data?.pages.flatMap((p) => p.data.data.items) ?? []
+  const allDocuments = data?.pages.flatMap((p) => pickDocuments(p.data.data)) ?? []
 
   const filtered = allDocuments.filter((doc) =>
     doc.name.toLowerCase().includes(query.toLowerCase())

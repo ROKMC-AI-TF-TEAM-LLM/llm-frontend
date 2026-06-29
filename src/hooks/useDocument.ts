@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { getDocuments } from '../api/services/document'
+import { getDocuments, pickDocuments } from '../api/services/document'
 import { useAuth } from '../context/AuthContext'
 
 const LIMIT = 20
@@ -11,9 +11,10 @@ export const useInfiniteDocuments = () => {
     queryFn: ({ pageParam }) => getDocuments({ offset: pageParam as number, limit: LIMIT }),
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce((acc, p) => acc + p.data.data.items.length, 0)
+      return allPages.reduce((acc, p) => acc + pickDocuments(p.data.data).length, 0)
     },
     initialPageParam: 0,
     enabled: !!accessToken,
+    retry: 1,
   })
 }

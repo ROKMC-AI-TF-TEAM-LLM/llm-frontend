@@ -4,12 +4,14 @@ export interface DocumentItem {
   applied_at?: string | null
 }
 
+// 백엔드 응답 키가 환경에 따라 items / documents 로 다를 수 있어 둘 다 옵셔널로 둔다.
 export interface DocumentListData {
-  items: DocumentItem[]
-  total: number
-  offset: number
-  limit: number
-  has_more: boolean
+  items?: DocumentItem[]
+  documents?: DocumentItem[]
+  total?: number
+  offset?: number
+  limit?: number
+  has_more?: boolean
 }
 
 export interface GetDocumentsParams {
