@@ -336,6 +336,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     const finalMsg = get().messages.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
+      logError('executeStream.emptyResponse', 'AI 응답에 내용이 없음(빈 응답 — 백엔드 LLM 생성 실패/스킵)', { sessionId, isFirstMessage })
       clearInflight(sessionId)
       clearCache(sessionId)
       // 첫 메시지가 빈 응답이면, 현재 보고 있는 세션과 무관하게 빈 세션을 삭제한다.
@@ -432,6 +433,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     const finalMsg = get().messages.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
+      logError('executeRegenerate.emptyResponse', 'AI 재생성 응답에 내용이 없음(빈 응답)', { sessionId })
       markInterrupted('응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.')
       return
     }
@@ -679,6 +681,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         if (m.role === 'user' && m.type === 'text') { prevUserId = m.id; question = m.content; break; }
       }
       if (question == null || prevUserId == null) {
+        logError('regenerateMessage.noQuestion', '클릭한 답변 위에서 사용자 질문을 못 찾음(대화 구조 이상)', { assistantId, idx });
         set({ error: '재생성할 원본 질문을 찾을 수 없습니다.' });
         return;
       }

@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { isChunkLoadError, tryReloadOnce } from '../../utils/chunkReload'
+import { logError } from '../../utils/logError'
 
 interface Props {
   children: ReactNode
@@ -26,9 +27,7 @@ class ErrorBoundary extends Component<Props, State> {
       tryReloadOnce()
       return
     }
-    if (import.meta.env.DEV) {
-      console.error('[ErrorBoundary]', error, info.componentStack)
-    }
+    logError('ErrorBoundary', error, info.componentStack)
   }
 
   render() {
