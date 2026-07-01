@@ -2,6 +2,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import type { ApiError } from '../../../utils/error';
 import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
+import { logError } from '../../../utils/logError';
 import { useCreateSession } from '../../../hooks/useSession';
 import Toast from '../Toast';
 
@@ -114,6 +115,7 @@ export default function ChatInput({
         saveInflight(sessionId, text);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
       } catch (e: unknown) {
+        logError('ChatInput.createSession', e);
         updateValue(text);
         const apiErr = e as ApiError;
         const code = apiErr?.response?.data?.error?.code;

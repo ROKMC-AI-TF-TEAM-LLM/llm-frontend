@@ -1,9 +1,11 @@
 import { useServerStatus } from '../../../hooks/useServerStatus'
+import { logError } from '../../../utils/logError'
 
 const SERVER_HOST = (() => {
   try {
     return new URL(import.meta.env.VITE_SERVER_API_URL).host
-  } catch {
+  } catch (e) {
+    logError('ChatHeader.parseServerHost', e)
     return import.meta.env.VITE_SERVER_API_URL ?? '서버'
   }
 })()

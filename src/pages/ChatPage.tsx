@@ -7,6 +7,7 @@ import { useChatStore, saveInflight, peekSessionMessages } from '../api/store/ch
 import { useInfiniteSessions } from '../hooks/useSession';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { isNetworkError } from '../utils/error';
+import { logError } from '../utils/logError';
 import type { SessionData } from '../types/session';
 
 const SESSION_ERRORS: Record<string, string> = {
@@ -64,6 +65,7 @@ export default function ChatPage() {
       })
       .catch((error) => {
         if (cancelled) return;
+        logError('ChatPage.connect', error);
         setIsConnecting(false);
         const code = error?.response?.data?.error?.code;
         const status = (error?.response?.status ?? 0) as number;

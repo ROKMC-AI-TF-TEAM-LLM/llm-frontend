@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import type { RefreshResponse } from '../../types/auth'
+import { logError } from '../../utils/logError'
 
 export const backendApi = axios.create({
   baseURL: import.meta.env.VITE_SERVER_API_URL,
@@ -35,7 +36,7 @@ export const getValidAccessToken = async (): Promise<string | null> => {
   const token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
   if (!token) return null
   if (isTokenExpired(token)) {
-    try { return await refreshTokenOnce() } catch { return null }
+    try { return await refreshTokenOnce() } catch (e) { logError('getValidAccessToken.refresh', e); return null }
   }
   return token
 }
@@ -82,7 +83,7 @@ backendApi.interceptors.request.use(async (config) => {
   const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => config.url?.includes(path))
   let token = parseStorageItem(sessionStorage.getItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN))
   if (token && !isAuthEndpoint && isTokenExpired(token)) {
-    try { token = await refreshTokenOnce() } catch {}
+    try { token = await refreshTokenOnce() } catch (e) { logError('axios.request.refresh', e) }
   }
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -103,6 +104,7 @@ backendApi.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return backendApi(originalRequest)
       } catch (refreshError) {
+        logError('axios.response.refresh', refreshError)
         sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
         window.location.href = '/'
@@ -110,6 +112,7 @@ backendApi.interceptors.response.use(
       }
     }
 
+    logError(`axios.response:${originalRequest?.url ?? '?'}`, error)
     return Promise.reject(error)
   }
 )

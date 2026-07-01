@@ -1,5 +1,6 @@
 import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
+import { logError } from '../../utils/logError'
 import type { GetMessagesResponse, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source } from '../../types'
 
@@ -35,11 +36,12 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
   if (response.status === 401) {
     try {
       parsedToken = await refreshTokenOnce()
-    } catch {
+    } catch (e) {
+      logError('postSse.refresh', e)
       sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
       localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
       window.location.href = '/'
-      throw new Error('HTTP 401')
+      throw new Error('HTTP 401', { cause: e })
     }
     response = await makeRequest(parsedToken)
   }
@@ -106,6 +108,7 @@ const readSse = async (response: Response, { onChunk, onSources, signal }: SseHa
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
         onSources?.(evt.items)
       } else if (evt.type === 'error') {
+        logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
         /* 완료 신호 — 별도 처리 없음(루프 종료는 reader done으로 처리) */

@@ -27,7 +27,7 @@ const LoginCard = ({
     <div className="card flex w-180 max-w-[92vw] min-h-88 overflow-hidden">
 
       <div className="flex w-1/2 flex-col items-center justify-center gap-4 border-r border-surface-border px-12 py-12">
-        <div className="w-16 h-16 rounded-full border-2 border-surface-border" />
+        <img src="/mars.png" alt="MARS" className="w-16 h-16 rounded-full object-cover" />
         <div className="text-center leading-none">
           <p className="text-5xl font-black tracking-tight text-brand text-glow-brand">
             ROKMC <br /> LLM

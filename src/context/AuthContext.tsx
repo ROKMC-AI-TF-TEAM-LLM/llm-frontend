@@ -2,6 +2,7 @@ import { createContext, useState, useContext, useEffect, type PropsWithChildren 
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY } from '../constants/key';
 import { login as loginApi, logout as logoutApi } from '../api/services/auth';
+import { logError } from '../utils/logError';
 import { scheduleTokenRefresh } from '../api/lib/axios';
 import type { LoginRequest } from '../types/auth';
 
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     if (currentRefreshToken) {
       try {
         await logoutApi({ refresh_token: currentRefreshToken });
-      } catch {}
+      } catch (e) { logError('logout', e); }
     }
     removeAccessTokenFromStorage();
     removeRefreshTokenFromStorage();

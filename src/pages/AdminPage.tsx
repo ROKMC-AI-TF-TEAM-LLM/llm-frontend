@@ -4,6 +4,7 @@ import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
 import Toast from '../ui/components/Toast';
 import { getApiError } from '../utils/error';
+import { logError } from '../utils/logError';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
@@ -311,7 +312,7 @@ export default function AdminPage() {
   const handleCopyId = (userId: string) =>
     navigator.clipboard.writeText(userId)
       .then(() => setCopiedKey((k) => k + 1))
-      .catch(() => setMutationError('복사에 실패했습니다.'));
+      .catch((e) => { logError('AdminPage.copy', e); setMutationError('복사에 실패했습니다.'); });
 
   return (
     <div className="h-full overflow-y-auto custom-scroll bg-white p-8">

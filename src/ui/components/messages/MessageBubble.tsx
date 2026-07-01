@@ -102,7 +102,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-1`}>
       {!isUser && (
         <div className="shrink-0 mr-3 mt-2">
-          <div className="w-7 h-7 rounded-full border-2 border-surface-border bg-surface" />
+          <img src="/mars.png" alt="" className="w-7 h-7 rounded-full object-cover" />
         </div>
       )}
       <div

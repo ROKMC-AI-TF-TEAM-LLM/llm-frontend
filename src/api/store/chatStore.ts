@@ -4,6 +4,7 @@ import type { Message, Source } from '../../types';
 import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
+import { logError } from '../../utils/logError';
 
 interface ChatStore {
   sessionId: string;
@@ -101,21 +102,22 @@ const saveCache = (sessionId: string, messages: Message[]) => {
     )
     if (cacheable.length > 0)
       sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
-  } catch { /* 저장 실패 무시(용량 초과 등) */ }
+  } catch (e) { logError('saveCache', e) }
 }
 
 const loadCache = (sessionId: string): Message[] => {
   try {
     const raw = sessionStorage.getItem(CACHE_KEY(sessionId))
     return raw ? JSON.parse(raw) : []
-  } catch {
+  } catch (e) {
+    logError('loadCache', e)
     return []
   }
 }
 
 export const clearCache = (sessionId: string) => {
   messageCache.delete(sessionId)
-  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch { /* 무시 */ }
+  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch (e) { logError('clearCache', e) }
 }
 
 if (typeof window !== 'undefined') {
@@ -135,7 +137,7 @@ export const clearInflight = (sessionId: string) => {
     const raw = localStorage.getItem(INFLIGHT_KEY)
     if (!raw) return
     if (JSON.parse(raw).sessionId === sessionId) localStorage.removeItem(INFLIGHT_KEY)
-  } catch { /* 무시 */ }
+  } catch (e) { logError('clearInflight', e) }
 }
 
 const getInflight = (sessionId: string): string | null => {
@@ -144,7 +146,8 @@ const getInflight = (sessionId: string): string | null => {
     if (!raw) return null
     const data = JSON.parse(raw)
     return data.sessionId === sessionId ? data.question : null
-  } catch {
+  } catch (e) {
+    logError('getInflight', e)
     return null
   }
 }
@@ -237,12 +240,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (server.length - toDelete.length <= 0) {
         const after = await getMessages(sessionId)
         if (after.data.data.messages.length === 0) {
-          await deleteSession(sessionId).catch(() => {})
+          await deleteSession(sessionId).catch((e) => logError('deleteSession', e))
           if (get().sessionId === sessionId) set({ isDeleted: true })
         }
       }
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
-    } catch { /* 정리 실패는 무시 */ }
+    } catch (e) { logError('cleanupEmptyExchange', e) }
   }
 
   const executeStream = async (
@@ -265,6 +268,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       )
       writer.flushNow()
     } catch (e) {
+      logError('executeStream', e)
       writer.flushNow()
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
@@ -279,7 +283,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         messageCache.delete(sessionId)
         deleteSession(sessionId)
           .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-          .catch(() => {})
+          .catch((e) => logError('deleteSession', e))
       }
       if (get().sessionId === sessionId) {
         if (keepInterrupted) {
@@ -339,7 +343,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         messageCache.delete(sessionId)
         deleteSession(sessionId)
           .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-          .catch(() => {})
+          .catch((e) => logError('deleteSession', e))
       }
       if (get().sessionId === sessionId && !removePairOnFail) {
         set((state) => ({
@@ -419,6 +423,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources)
       writer.flushNow()
     } catch (e) {
+      logError('executeRegenerate', e)
       writer.flushNow()
       markInterrupted(isAbortError(e) ? undefined : ((e as Error)?.message || '재생성 중 오류가 발생했습니다.'))
       return
@@ -484,6 +489,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         res = await getMessages(sessionId, { signal });
       } catch (e) {
         if (isAbortError(e)) return;
+        logError('connect.getMessages', e);
         const cached = loadCache(sessionId);
         const pending = getInflight(sessionId);
         if (cached.length > 0) {
@@ -519,10 +525,19 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
       }));
 
-      // 백엔드가 이미 시간순으로 주므로 재정렬하지 않는다(재정렬 시 Q/A가 뒤바뀔 수 있음).
-      const deduped = rawMessages.filter((msg, i) => {
+      // 질문/답변이 같은 시각(createdAt)이면 백엔드가 순서를 뒤집어 줄 수 있어([답변, 질문]),
+      // createdAt 오름차순 + 같은 시각이면 질문(user)을 먼저 오도록 안정 정렬한다(V8 sort는 stable).
+      const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
+      const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
+      const ordered = [...rawMessages].sort((a, b) => {
+        const ta = timeOf(a.createdAt), tb = timeOf(b.createdAt);
+        if (ta !== tb) return ta - tb;
+        return roleRank(a.role) - roleRank(b.role);
+      });
+
+      const deduped = ordered.filter((msg, i) => {
         if (i === 0) return true;
-        const prev = rawMessages[i - 1];
+        const prev = ordered[i - 1];
         return !(
           msg.role === prev.role &&
           msg.type === 'text' &&
@@ -569,13 +584,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
         try {
           const confirm = await getMessages(sessionId, { signal });
           stillEmpty = confirm.data.data.messages.length === 0;
-        } catch { stillEmpty = false; }
+        } catch (e) { logError('connect.confirmEmpty', e); stillEmpty = false; }
         if (get().sessionId !== sessionId) return;
         if (stillEmpty) {
           clearCache(sessionId);
           deleteSession(sessionId)
             .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
-            .catch(() => {});
+            .catch((e) => logError('deleteSession', e));
           set({ isDeleted: true });
         }
         return;
@@ -651,32 +666,45 @@ export const useChatStore = create<ChatStore>((set, get) => {
     regenerateMessage: async (assistantId: string) => {
       if (get().isStreaming) return;
       const { messages, sessionId } = get();
-      const target = messages.find((m) => m.id === assistantId);
-      if (!target || target.role !== 'assistant' || target.type !== 'text') return;
+      const idx = messages.findIndex((m) => m.id === assistantId);
+      if (idx === -1) return;
+      const target = messages[idx];
+      if (target.role !== 'assistant' || target.type !== 'text') return;
 
-      // 저장된 serverId는 이전 재생성/중단으로 stale이거나 잘못 매핑됐을 수 있으므로,
-      // 항상 백엔드의 '현재 마지막 AI 메시지' id를 새로 조회해서 사용한다. (MESSAGE_NOT_FOUND 방지)
+      // 클릭한 답변 '바로 위'의 질문(화면에 보이는 구조 기준). 이 질문의 답변을 재생성한다.
+      let prevUserId: string | null = null;
+      let question: string | null = null;
+      for (let i = idx - 1; i >= 0; i--) {
+        const m = messages[i];
+        if (m.role === 'user' && m.type === 'text') { prevUserId = m.id; question = m.content; break; }
+      }
+      if (question == null || prevUserId == null) {
+        set({ error: '재생성할 원본 질문을 찾을 수 없습니다.' });
+        return;
+      }
+
+      // 무조건 '마지막 AI'를 쓰지 않고, 그 질문(question)에 대한 답변 AI의 id를 찾는다(오매핑 방지).
+      const qNorm = question.trim();
       let serverId: string | undefined;
       try {
         const res = await getMessages(sessionId);
-        const aiList = res.data.data.messages.filter((m) => m.role === 'ai');
-        serverId = aiList[aiList.length - 1]?.message_id;
-      } catch { /* 조회 실패 시 아래 재전송 폴백으로 진행 */ }
+        const server = res.data.data.messages;
+        for (let i = server.length - 1; i >= 0; i--) {
+          if (server[i].role === 'human' && (server[i].content ?? '').trim() === qNorm) {
+            const next = server[i + 1];
+            if (next && next.role !== 'human' && next.message_id) serverId = next.message_id;
+            break;
+          }
+        }
+      } catch (e) { logError('regenerate.getMessages', e) }
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
 
-      // 백엔드에 AI 메시지가 없으면(모두 삭제됨 등) 직전 질문으로 재전송(MOVE)한다.
+      // 백엔드에서 그 질문의 답변을 못 찾으면 같은 질문으로 재전송한다(재전송 폴백).
       if (!serverId) {
-        const idx = messages.findIndex((m) => m.id === assistantId);
-        const prevUser = messages.slice(0, idx).reverse().find((m) => m.role === 'user' && m.type === 'text');
-        if (prevUser && prevUser.type === 'text') {
-          const q = prevUser.content;
-          const removeIds = new Set<string>([prevUser.id, assistantId]);
-          set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-          await get().sendMessage(q);
-        } else {
-          set({ error: '재생성할 수 없습니다. 잠시 후 다시 시도해주세요.' });
-        }
+        const removeIds = new Set<string>([prevUserId, assistantId]);
+        set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
+        await get().sendMessage(question);
         return;
       }
 

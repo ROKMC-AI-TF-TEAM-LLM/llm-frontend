@@ -9,6 +9,7 @@ import LoginCard from '../ui/components/LoginCard'
 import SignupCard from '../ui/components/SignupCard'
 import Toast from '../ui/components/Toast'
 import { getApiError, isNetworkError, DEFAULT_STATUS_ERRORS } from '../utils/error'
+import { logError } from '../utils/logError'
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i
 
@@ -79,6 +80,7 @@ const LoginPage = () => {
     try {
       await login(data)
     } catch (error) {
+      logError('login', error)
       if (isNetworkError(error)) {
         bumpToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
         return
@@ -110,6 +112,7 @@ const LoginPage = () => {
       setSignupSuccess(true)
       setMode('login')
     } catch (error) {
+      logError('signup', error)
       if (isNetworkError(error)) {
         bumpToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
         return

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useChatStore } from '../../../api/store/chatStore';
+import { logError } from '../../../utils/logError';
 import Toast from '../Toast';
 import type { Message } from '../../../types';
 import ChatHeader from './ChatHeader';
@@ -160,7 +161,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   }, [messages, isStreaming]);
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => setCopyFailed(true));
+    navigator.clipboard.writeText(text).catch((e) => { logError('MessageList.copy', e); setCopyFailed(true); });
   };
 
   // 스크롤 앵커: 스트리밍 중인(전송/재생성 공통) 메시지의 '바로 앞 user 질문'을 위로 올린다.
