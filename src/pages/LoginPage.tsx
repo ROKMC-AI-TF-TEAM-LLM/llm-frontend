@@ -95,7 +95,7 @@ const LoginPage = () => {
     }
   }
 
-  const openAuth = () => setView('auth')
+  const openAuth = () => { introRef.current?.scrollTo({ top: 0 }); setView('auth') }
   const closeAuth = () => { setView('intro'); requestAnimationFrame(() => introRef.current?.scrollTo({ top: 0, behavior: 'smooth' })) }
   const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
 
@@ -115,41 +115,58 @@ const LoginPage = () => {
       {/* ===== 인트로 (스크롤) ===== */}
       <div ref={introRef} className="mars-intro">
         {/* Hero */}
-        <section className="relative min-h-screen flex items-center px-[6vw]">
-          <div className="max-w-[600px]">
+        <section className="mars-hero relative flex items-center min-h-screen px-[6vw]">
+          <div className="max-w-[600px] relative z-[1]">
             <div className="mars-reveal flex items-center gap-3 mb-6">
               <span className="w-8 h-0.5 bg-brand" />
               <span className="text-[13px] font-bold tracking-[0.22em] text-brand-hover">대한민국 해병대 · ROKMC LLM</span>
             </div>
-            <h1 className="mars-reveal m-0 font-black leading-[0.9] tracking-tight text-brand text-glow-brand" style={{ fontSize: 'clamp(72px,12vw,150px)' }}>MARS</h1>
-            <p className="mars-reveal mt-5 font-extrabold leading-snug text-text-primary" style={{ fontSize: 'clamp(22px,2.8vw,32px)' }}>
+            <h1 className="mars-reveal mars-wordmark m-0 font-black text-brand text-glow-brand">MARS</h1>
+            <p className="mars-reveal mt-5 font-extrabold leading-snug text-text-primary text-[27px]">
               해병대를 위한 인공지능 챗봇,<br />이제 <span className="text-brand">MARS</span>와 함께.
             </p>
-            <p className="mars-reveal mt-4 text-[17px] leading-relaxed text-text-secondary max-w-[440px]">
+            <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px]">
               Marine Artificial Intelligence Retrieval System. 법령·규정·규칙을 학습한 우리 군 자체 LLM이 장병의 질문에 근거와 함께 답합니다.
             </p>
-            <div className="mars-reveal mt-10">
-              <button onClick={openAuth} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[17px] font-extrabold shadow-[0_16px_36px_rgba(220,20,60,0.36)] hover:brightness-105 active:scale-[0.98] transition">
-                MARS 시작하기 <span>→</span>
-              </button>
+            <div className="mars-reveal mt-10 min-h-[56px]">
+              {view === 'intro' ? (
+                <button onClick={openAuth} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[17px] font-extrabold shadow-[0_16px_36px_rgba(220,20,60,0.36)] hover:brightness-105 active:scale-[0.98] transition">
+                  MARS 시작하기 <span>→</span>
+                </button>
+              ) : (
+                <div className="flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    팀 소개
+                  </button>
+                  <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></svg>
+                    서비스 이용법
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 히어로 행성 : 텍스트와 같은 섹션 안 → 함께 스크롤·이동 */}
+          {/* 히어로 행성 : 히어로 안 → 스크롤과 함께 이동. 로그인 시 왼쪽으로 이동 */}
           <div className="mars-hero-planet">
-            <div className="mars-planet-float">
-              <div className="mars-planet-body">
-                <div className="mars-orbit" />
-                <MarsPlanet glow className="w-full h-full" />
+            <div className="mars-hero-planet-inner">
+              <div className="mars-planet-float">
+                <div className="mars-planet-body">
+                  <div className="mars-orbit o1" />
+                  <MarsPlanet glow className="w-full h-full" />
+                </div>
               </div>
             </div>
           </div>
 
           {/* 더 알아보기 (중앙 하단) */}
+          {view === 'intro' && (
           <button onClick={scrollToFeatures} className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col items-center gap-1.5 text-text-muted hover:text-brand transition-colors">
             <span className="text-[13px] font-semibold tracking-wide">더 알아보기</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'marsBob 1.7s ease-in-out infinite' }}><path d="M6 9l6 6 6-6" /></svg>
           </button>
+          )}
         </section>
 
         <div className="mars-below">
@@ -221,7 +238,7 @@ const LoginPage = () => {
         </section>
 
         {/* CTA */}
-        <section className="px-[6vw] pt-24 pb-32 text-center">
+        <section className="px-[6vw] pt-48 pb-32 text-center">
           <h2 className="mars-reveal m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
           <p className="mars-reveal mx-auto mb-9 max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
           <button onClick={openAuth} className="mars-reveal inline-flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[18px] font-extrabold shadow-[0_20px_44px_rgba(220,20,60,0.38)] hover:brightness-105 active:scale-[0.98] transition">
@@ -232,24 +249,14 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* ===== 로그인 카드 (중앙, 페이드+스케일 등장) ===== */}
-      <div className="mars-auth-overlay">
-        <div className="mars-card">
-          <button onClick={closeAuth} aria-label="소개로 돌아가기" className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-          </button>
-
-          {/* 왼쪽 : 모핑된 행성이 내려앉는 자리 + 브랜딩 */}
-          <div className="mars-card-left">
-            <div className="mars-card-planet"><MarsPlanet glow className="w-full h-full" /></div>
-            <div className="font-black leading-none tracking-tight text-brand" style={{ fontSize: 'clamp(30px,4vw,40px)' }}>MARS</div>
-            <div className="mt-2 text-[12px] font-bold tracking-[0.22em] text-brand-hover">ROKMC LLM</div>
-            <div className="mt-4 text-[13px] font-semibold leading-relaxed text-text-secondary">대한민국 해병대<br />AI 개인비서 플랫폼</div>
-          </div>
-
-          {/* 오른쪽 : 로그인 폼 */}
-          <div className="mars-card-right">
-            <div className="text-[24px] font-extrabold text-text-primary">{mode === 'login' ? '로그인' : '회원가입'}</div>
+      {/* ===== 오른쪽 40% 로그인 패널 (옆에서 슬라이드 인) ===== */}
+      <div className="mars-auth-panel">
+        <button onClick={closeAuth} aria-label="소개로 돌아가기" className="absolute top-6 right-7 w-11 h-11 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+        <div className="mars-panel-inner">
+          <div className="text-[28px] font-extrabold text-text-primary leading-tight">{mode === 'login' ? '로그인' : '회원가입'}</div>
+          <p className="mt-2 text-[14px] text-text-secondary">{mode === 'login' ? '계정으로 로그인하고 MARS를 시작하세요.' : '몇 가지 정보만 입력하면 바로 시작할 수 있어요.'}</p>
 
           {mode === 'login' ? (
             <form onSubmit={handleLoginSubmit(handleLogin)} className="mt-7 flex flex-col gap-3">
@@ -261,7 +268,7 @@ const LoginPage = () => {
                 {isLoginSubmitting ? '로그인 중...' : '시작하기'}
               </button>
               <div className="flex justify-end mt-1">
-                <button type="button" onClick={() => { resetLogin(); resetSignup(); setToastError(''); setMode('signup') }} className="text-[13px] font-bold text-brand-hover">회원가입</button>
+                <button type="button" onClick={() => { resetLogin(); resetSignup(); setToastError(''); setMode('signup') }} className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors">회원가입</button>
               </div>
             </form>
           ) : (
@@ -278,10 +285,12 @@ const LoginPage = () => {
                 {isSignupSubmitting ? '가입 중...' : '회원가입'}
               </button>
               <div className="flex justify-end mt-1">
-                <button type="button" onClick={() => { resetSignup(); setToastError(''); setMode('login') }} className="text-[13px] font-bold text-brand-hover">로그인</button>
+                <button type="button" onClick={() => { resetSignup(); setToastError(''); setMode('login') }} className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors">로그인</button>
               </div>
             </form>
           )}
+          <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center text-[12px] text-text-muted leading-relaxed">
+            대한민국 해병대 · MARS<br />본 서비스는 참고용이며 공식 규정을 우선합니다.
           </div>
         </div>
       </div>
