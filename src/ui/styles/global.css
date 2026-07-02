@@ -152,3 +152,85 @@ body.modal-open {
   justify-content: center;
   background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-subtle) 100%);
 }
+
+/* ===================== MARS 랜딩 / 로그인 전환 ===================== */
+@keyframes marsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes marsSpin  { to { transform: rotate(360deg); } }
+@keyframes marsBob   { 0%,100% { transform: translateY(0); opacity:.55; } 50% { transform: translateY(6px); opacity:1; } }
+@keyframes marsReveal { from { opacity:0; transform: translateY(26px); filter: blur(4px); } to { opacity:1; transform:none; filter:none; } }
+
+.mars-root {
+  position: fixed; inset: 0; overflow: hidden;
+  font-family: var(--font-sans);
+  background: linear-gradient(180deg,#ffeef1 0%,#fdf3f5 10%,#ffffff 26%,#fdf5f7 44%,#ffffff 62%,#fff5f7 100%);
+}
+
+/* 인트로 레이어(스크롤) : auth일 땐 백드롭처럼 살짝 페이드(크로스페이드) */
+.mars-intro { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; z-index:10; transition: opacity .5s ease; }
+.mars-root[data-view="auth"] .mars-intro { opacity:.22; pointer-events:none; }
+
+/* 히어로 행성 : 히어로 섹션 안의 자식 → 왼쪽 텍스트와 함께 스크롤·이동, features로 넘치지 않음 */
+.mars-hero-planet { position:absolute; right:5vw; top:50%; transform:translateY(-50%); z-index:0; pointer-events:none; }
+.mars-planet-body { position:relative; width:min(40vw,440px); height:min(40vw,440px); }
+.mars-planet-float { animation: marsFloat 7s ease-in-out infinite; }
+
+/* 카드 행성 : 카드 왼쪽 칸의 자식 → MARS 텍스트 위에 정확히 가운데, 작게 */
+.mars-card-planet { width:110px; height:110px; margin-bottom:22px; flex:none; }
+
+/* 히어로 아래 섹션들 : 불투명 배경 */
+.mars-below { position: relative; z-index:2; background: linear-gradient(180deg,#fdf4f6 0%,#ffffff 22%,#fdf5f7 52%,#ffffff 74%,#fff5f7 100%); }
+
+/* 궤도 링 (히어로 행성 전용) */
+.mars-orbit { position:absolute; inset:-13%; border-radius:50%; border:1.5px solid rgba(228,0,43,0.16); transform: rotate(-16deg); animation: marsSpin 34s linear infinite; }
+.mars-orbit::after { content:''; position:absolute; left:-5px; top:48%; width:10px; height:10px; border-radius:50%; background:#e4002b; box-shadow:0 0 12px 3px rgba(228,0,43,0.55); }
+
+/* 로그인 카드 오버레이 : 중앙 정렬, 페이드+스케일로 등장(가로 슬라이드 없음) */
+.mars-auth-overlay {
+  position: fixed; inset:0; z-index:30;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  opacity:0; pointer-events:none;
+  transition: opacity .5s ease;
+}
+.mars-root[data-view="auth"] .mars-auth-overlay { opacity:1; pointer-events:auto; }
+
+/* 카드 높이 고정 → 로그인/회원가입 전환 시 흰 박스 크기 변화 없음(회원가입 필드는 빈 공간에 채움) */
+.mars-card {
+  position: relative; display:flex; overflow:hidden;
+  width: min(760px, 92vw); height: 476px;
+  border-radius: 28px; background:#fff;
+  border:1px solid rgba(220,20,60,0.10);
+  box-shadow: 0 40px 90px rgba(150,0,40,0.18);
+  transform: translateY(14px) scale(.98); opacity:0;
+  transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .45s ease;
+}
+.mars-root[data-view="auth"] .mars-card { transform: none; opacity:1; }
+
+/* 왼쪽 : 행성 + MARS 브랜딩 (세로 중앙) */
+.mars-card-left {
+  flex: 0 0 42%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 44px 22px; text-align:center;
+  border-right:1px solid rgba(220,20,60,0.08);
+  background: linear-gradient(180deg,#fff 0%,#fff6f8 100%);
+}
+
+/* 오른쪽 : 로그인 폼 (세로 중앙 정렬 → 필드 수가 달라도 박스는 그대로, 넘치면 내부 스크롤) */
+.mars-card-right {
+  flex:1; display:flex; flex-direction:column; justify-content:center;
+  padding: 44px 42px; overflow-y:auto;
+}
+
+/* 등장 애니메이션 (인트로) */
+.mars-reveal { opacity:0; }
+.mars-reveal.is-shown { animation: marsReveal .8s cubic-bezier(.2,.7,.2,1) forwards; }
+
+@media (max-width: 640px) {
+  .mars-card { flex-direction:column; height:auto; max-height:90vh; overflow-y:auto; }
+  .mars-card-left { flex:none; border-right:none; border-bottom:1px solid rgba(220,20,60,0.08); padding:34px 22px 26px; }
+  .mars-card-planet { width:88px; height:88px; margin-bottom:16px; }
+  .mars-card-right { padding:28px 26px 34px; }
+  .mars-hero-planet { right:auto; left:50%; transform:translate(-50%,-50%); opacity:.5; z-index:0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mars-planet-float, .mars-orbit { animation: none; }
+}
