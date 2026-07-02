@@ -210,10 +210,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
   }
 
-  // 빈/실패 응답 후 백엔드에 남은 잔여물(방금 보낸 질문 + 빈 AI 답변)을 정리한다.
-  // 꼬리(가장 최근)만 본다: 마지막이 빈 ai면 삭제, 질문과 같은 '마지막' human을 삭제.
-  // (이전에 보낸 동일 내용 질문은 건드리지 않음 — 오삭제 방지)
-  // 정리 후 세션에 메시지가 하나도 안 남으면 세션 자체도 삭제한다(빈 세션 제거).
   const cleanupEmptyExchange = async (sessionId: string, question: string) => {
     try {
       const res = await getMessages(sessionId)
@@ -236,7 +232,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (toDelete.length > 0) {
         await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)))
       }
-      // 정리 후 세션이 비었으면(재확인 후) 세션 자체 삭제
       if (server.length - toDelete.length <= 0) {
         const after = await getMessages(sessionId)
         if (after.data.data.messages.length === 0) {
@@ -272,9 +267,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
       writer.flushNow()
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
-      // 사용자가 직접 정지(signal.aborted)한 경우만 '중단'으로 보존한다.
-      // idle 타임아웃 등은 진짜 오류로 취급(첫 대화면 세션 삭제). 단 첫 대화가 아니면
-      // 타임아웃도 기존처럼 '중단'으로 남겨 '다시 시도'가 가능하게 둔다.
       const userAborted = signal.aborted
       const keepInterrupted = isAbortError(e) && (userAborted || !isFirstMessage)
       if (!keepInterrupted) clearCache(sessionId)
@@ -392,8 +384,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
     queryClient.invalidateQueries({ queryKey: ['sessions'] })
   }
 
-  // 재생성: 기존 AI 메시지(assistantId)에 새 응답을 in-place로 스트리밍한다.
-  // 중단/오류/빈응답 시엔 일반 생성처럼 '중단됨'으로 표시해 '다시 시도'를 노출한다.
   const executeRegenerate = async (
     sessionId: string,
     assistantId: string,
@@ -402,8 +392,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
-    // 실패/중단 시: 일반 생성처럼 해당 메시지를 '중단됨'으로 남겨 '다시 시도'를 노출한다.
-    // (백엔드는 재생성 시 기존 답변을 먼저 지우므로 복원하지 않음. '다시 시도'는 재조회/재전송으로 복구)
     const markInterrupted = (errorMsg?: string) => {
       streamRegistry.delete(sessionId)
       if (get().sessionId !== sessionId) return
@@ -527,8 +515,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
       }));
 
-      // 질문/답변이 같은 시각(createdAt)이면 백엔드가 순서를 뒤집어 줄 수 있어([답변, 질문]),
-      // createdAt 오름차순 + 같은 시각이면 질문(user)을 먼저 오도록 안정 정렬한다(V8 sort는 stable).
       const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
       const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
       const ordered = [...rawMessages].sort((a, b) => {
@@ -579,8 +565,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      // 대화가 전혀 없는 빈 세션은 열었을 때 정리한다(보낼 메시지·로컬 캐시 모두 없을 때).
-      // 일시적 빈 응답으로 '실제 세션'을 지우지 않도록 삭제 직전 한 번 더 확인한다.
       if (base.length === 0 && !pending && loadCache(sessionId).length === 0) {
         let stillEmpty: boolean;
         try {
@@ -673,7 +657,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const target = messages[idx];
       if (target.role !== 'assistant' || target.type !== 'text') return;
 
-      // 클릭한 답변 '바로 위'의 질문(화면에 보이는 구조 기준). 이 질문의 답변을 재생성한다.
       let prevUserId: string | null = null;
       let question: string | null = null;
       for (let i = idx - 1; i >= 0; i--) {
@@ -686,7 +669,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return;
       }
 
-      // 무조건 '마지막 AI'를 쓰지 않고, 그 질문(question)에 대한 답변 AI의 id를 찾는다(오매핑 방지).
       const qNorm = question.trim();
       let serverId: string | undefined;
       try {
