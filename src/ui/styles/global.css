@@ -175,17 +175,27 @@ body.modal-open {
 .mars-below { position: relative; z-index:2; background: linear-gradient(180deg,#fdf8fa 0%,#ffffff 50%,#fdf8fa 100%); }
 .mars-wordmark { font-size: 90px; line-height: 0.9; letter-spacing: -0.02em; }
 
+.mars-focus { opacity:0; transform: translateY(40px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+.mars-focus.in-view { opacity:1; transform:none; }
+
+.mars-section { min-height: 100vh; }
 /* ===== 히어로 행성 : 히어로 섹션 안(스크롤과 함께 이동). 로그인 시 왼쪽으로 이동 ===== */
 .mars-hero-planet {
   position:absolute; right:0; top:0; bottom:0; z-index:0; pointer-events:none;
   display:flex; align-items:center; justify-content:flex-end; padding-right:5vw;
+  transition: transform .7s cubic-bezier(.6,.02,.2,1);
 }
 .mars-hero-planet-inner {
   width: clamp(300px, 34vw, 460px); height: clamp(300px, 34vw, 460px);
+  transform-origin: right center;   /* 스케일 기준점 = 우측 경계 → 커질 때 왼쪽(중간)으로만 확장, 우측 여백 유지 */
   transition: transform .7s cubic-bezier(.6,.02,.2,1);
   will-change: transform;
 }
-.mars-root[data-view="auth"] .mars-hero-planet-inner { transform: translateX(-30vw) scale(0.82); }
+/* 인트로 행성 크기 : 우측 경계 고정 상태로 키워 중간 여백을 채움(숫자 ↑ = 더 크게) */
+.mars-root[data-view="intro"] .mars-hero-planet-inner { transform: scale(1.17); }
+/* 로그인 상태 행성 : 위치(컨테이너)와 크기(inner)를 분리 → 서로 영향 없이 따로 조절 */
+.mars-root[data-view="auth"] .mars-hero-planet       { transform: translate(-10vw, 0); }  /* 위치 : 가로(-왼쪽), 세로(+아래) */
+.mars-root[data-view="auth"] .mars-hero-planet-inner { transform: scale(1.5); }           /* 크기 : 숫자 ↑ = 크게 */
 .mars-planet-body { position:relative; width:100%; height:100%; }
 .mars-planet-float { width:100%; height:100%; animation: marsFloat 7s ease-in-out infinite; }
 

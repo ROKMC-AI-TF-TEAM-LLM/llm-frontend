@@ -128,9 +128,9 @@ const LoginPage = () => {
   return (
     <div className="mars-root" data-view={view}>
       {/* ===== 인트로 (스크롤) ===== */}
-      <div ref={introRef} className="mars-intro">
+      <div ref={introRef} className="mars-intro ">
         {/* Hero */}
-        <section className="mars-hero relative flex items-center min-h-screen px-[6vw]">
+        <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw]">
           <div className="max-w-[600px] relative z-[1]">
             <div className="mars-reveal flex items-center gap-3 mb-6">
               <span className="w-8 h-0.5 bg-brand" />
@@ -138,7 +138,7 @@ const LoginPage = () => {
             </div>
             <h1 className="mars-reveal mars-wordmark m-0 font-black text-brand text-glow-brand">MARS</h1>
             <p className="mars-reveal mt-5 font-extrabold leading-snug text-text-primary text-[27px]">
-              해병대를 위한 인공지능 챗봇,<br />이제 <span className="text-brand">MARS</span>와 함께.
+              해병대를 위한 인공지능,<br />이제 <span className="text-brand">MARS</span>와 함께.
             </p>
             <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px]">
               Marine Artificial Intelligence Retrieval System. 법령·규정·규칙을 학습한 우리 군 자체 LLM이 장병의 질문에 근거와 함께 답합니다.
@@ -186,14 +186,14 @@ const LoginPage = () => {
 
         <div className="mars-below">
         {/* Features */}
-        <section ref={featuresRef} className="px-[6vw] py-28">
+        <section ref={featuresRef} className="mars-section px-[6vw] py-24 min-h-screen flex flex-col justify-center">
           <div className="max-w-[1180px] mx-auto">
             <div className="mars-reveal text-center mb-3 text-[13px] font-bold tracking-[0.22em] text-brand-hover">가장 큰 특징</div>
             <h2 className="mars-reveal text-center mx-auto max-w-[760px] font-extrabold leading-snug tracking-tight" style={{ fontSize: 'clamp(30px,4vw,50px)' }}>
               법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 학습합니다.
             </h2>
             <p className="mars-reveal text-center mx-auto max-w-[560px] mt-4 mb-16 text-[17px] text-text-secondary leading-relaxed">
-              일반 챗봇과 다릅니다. MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.
+              MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {FEATURES.map((f) => (
@@ -209,51 +209,71 @@ const LoginPage = () => {
           </div>
         </section>
 
-        {/* Usage (채팅 소개) */}
-        <section className="px-[6vw] pb-8">
-          <div className="max-w-[900px] mx-auto">
-            <div className="mars-reveal text-center mb-3 text-[13px] font-bold tracking-[0.22em] text-brand-hover">사용 방법</div>
-            <h2 className="mars-reveal text-center font-extrabold leading-snug tracking-tight mb-14" style={{ fontSize: 'clamp(28px,3.6vw,46px)' }}>물어보고 싶은 것을<br />입력하세요.</h2>
-            <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
-              <div className="p-8 pb-4 flex flex-col gap-6 min-h-[300px]">
-                <div className="self-end max-w-[70%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">정기휴가 신청 절차를 단계별로 알려줘</div>
-                <div className="flex gap-3.5 max-w-[92%]">
-                  <MarsPlanet className="w-8 h-8 shrink-0 mt-0.5" />
-                  <div className="text-[15px] leading-relaxed text-text-primary pt-0.5">
-                    <b className="font-extrabold">정기휴가</b> 신청은 다음 순서로 진행됩니다.
-                    <div className="mt-3 flex flex-col gap-2.5">
-                      {['부대 휴가계획에 따라 희망 기간을 선정합니다.', '휴가원을 작성해 소속 지휘관의 결재를 받습니다.', '승인 후 국방인사정보체계에 등록하면 완료됩니다.'].map((t, i) => (
-                        <div key={i} className="flex gap-3 items-start"><span className="shrink-0 w-6 h-6 rounded-full bg-brand-subtle text-brand text-[13px] font-extrabold flex items-center justify-center mt-0.5">{i + 1}</span><span>{t}</span></div>
-                      ))}
+        {/* Usage (채팅 소개) — 좌우 스플릿 */}
+        <section className="px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20">
+          <div className="max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row gap-14 items-center">
+
+            {/* 왼쪽: 텍스트 + 스텝 */}
+            <div className="flex-1 min-w-0">
+              <div className="mars-reveal mb-3 text-[13px] font-bold tracking-[0.22em] text-brand-hover">사용 방법</div>
+              <h2 className="mars-reveal font-extrabold leading-snug tracking-tight mb-6" style={{ fontSize: 'clamp(30px,3.8vw,52px)' }}>
+                물어보고 싶은<br />것을 입력하세요.
+              </h2>
+              <p className="mars-reveal text-[16px] text-text-secondary leading-relaxed mb-14 max-w-[380px]">
+                궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 관련 조항을 찾아 근거와 함께 답합니다.
+              </p>
+              <div className="flex flex-col gap-8">
+                {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', 'RAG 검색', 'MARS가 규정 문서에서 관련 조항을 찾습니다.'], ['STEP 03', '근거와 함께 답변', '출처 문서를 명시해 신뢰할 수 있게 답합니다.']].map(([s, t, d]) => (
+                  <div key={s} className="mars-reveal flex gap-5 items-start">
+                    <span className="shrink-0 text-[13px] font-extrabold text-brand tracking-wide pt-0.5 w-14">{s}</span>
+                    <div>
+                      <div className="text-[18px] font-extrabold mb-1">{t}</div>
+                      <div className="text-[14px] text-text-secondary leading-relaxed">{d}</div>
                     </div>
-                    <div className="mt-5 pt-4 border-t border-brand-soft/50 flex flex-wrap gap-2 items-center">
-                      <span className="text-xs font-bold text-text-muted">근거 문서</span>
-                      {['군인복무기본법 제18조', '군인의 지위 및 복무에 관한 기본법 시행령'].map((s) => (
-                        <span key={s} className="text-xs font-semibold text-brand-hover bg-brand-subtle border border-brand-soft px-3 py-1.5 rounded-full">{s}</span>
-                      ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 오른쪽: 채팅 카드 */}
+            <div className="flex-1 min-w-0 w-full">
+              <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
+                <div className="p-7 pb-4 flex flex-col gap-5">
+                  <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">정기휴가 신청 절차를 단계별로 알려줘</div>
+                  <div className="flex gap-3.5">
+                    <MarsPlanet className="w-8 h-8 shrink-0 mt-0.5" />
+                    <div className="text-[15px] leading-relaxed text-text-primary pt-0.5">
+                      <b className="font-extrabold">정기휴가</b> 신청은 다음 순서로 진행됩니다.
+                      <div className="mt-3 flex flex-col gap-2.5">
+                        {['부대 휴가계획에 따라 희망 기간을 선정합니다.', '휴가원을 작성해 소속 지휘관의 결재를 받습니다.', '승인 후 국방인사정보체계에 등록하면 완료됩니다.'].map((t, i) => (
+                          <div key={i} className="flex gap-3 items-start"><span className="shrink-0 w-6 h-6 rounded-full bg-brand-subtle text-brand text-[13px] font-extrabold flex items-center justify-center mt-0.5">{i + 1}</span><span>{t}</span></div>
+                        ))}
+                      </div>
+                      <div className="mt-5 pt-4 border-t border-brand-soft/50 flex flex-wrap gap-2 items-center">
+                        <span className="text-xs font-bold text-text-muted">근거 문서</span>
+                        {['군인복무기본법 제18조', '군인의 지위 및 복무에 관한 기본법 시행령'].map((s) => (
+                          <span key={s} className="text-xs font-semibold text-brand-hover bg-brand-subtle border border-brand-soft px-3 py-1.5 rounded-full">{s}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="px-6 pb-4">
-                <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-surface-subtle border border-surface-border">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b09aa0" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11l-8.5 8.5a4 4 0 0 1-5.7-5.7l8.5-8.5a2.5 2.5 0 0 1 3.5 3.5L10 17" /></svg>
-                  <span className="flex-1 text-[15px] text-text-muted">메시지를 입력하세요...</span>
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-brand to-brand-light flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M6 11l6-6 6 6" /></svg></div>
+                <div className="px-6 py-6">
+                  <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-surface-subtle border border-surface-border">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b09aa0" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11l-8.5 8.5a4 4 0 0 1-5.7-5.7l8.5-8.5a2.5 2.5 0 0 1 3.5 3.5L10 17" /></svg>
+                    <span className="flex-1 text-[15px] text-text-muted">메시지를 입력하세요...</span>
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-brand to-brand-light flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M6 11l6-6 6 6" /></svg></div>
+                  </div>
                 </div>
+                <div className="text-center pb-5 text-[13px] text-text-muted">MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.</div>
               </div>
-              <div className="text-center pb-5 text-[13px] text-text-muted">MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.</div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-14">
-              {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', 'RAG 검색', 'MARS가 규정 문서에서 관련 조항을 찾습니다.'], ['STEP 03', '근거와 함께 답변', '출처 문서를 명시해 신뢰할 수 있게 답합니다.']].map(([s, t, d]) => (
-                <div key={s} className="mars-reveal text-center"><div className="text-[13px] font-extrabold text-brand tracking-wide mb-2">{s}</div><div className="text-[17px] font-extrabold mb-1.5">{t}</div><div className="text-[14px] text-text-secondary leading-relaxed">{d}</div></div>
-              ))}
-            </div>
+
           </div>
         </section>
 
         {/* CTA */}
-        <section className="px-[6vw] pt-48 pb-32 text-center">
+        <section className="px-[6vw] mars-section pt-60 pb-32 text-center min-h-screen">
           <h2 className="mars-reveal m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
           <p className="mars-reveal mx-auto mb-9 max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
           <button onClick={openAuth} className="mars-reveal inline-flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[18px] font-extrabold shadow-[0_20px_44px_rgba(220,20,60,0.38)] hover:brightness-105 active:scale-[0.98] transition">
@@ -271,7 +291,7 @@ const LoginPage = () => {
         </button>
         <div className="mars-panel-inner">
           <div className="text-[28px] font-extrabold text-text-primary leading-tight">{mode === 'login' ? '로그인' : '회원가입'}</div>
-          <p className="mt-2 text-[14px] text-text-secondary">{mode === 'login' ? '계정으로 로그인하고 MARS를 시작하세요.' : '몇 가지 정보만 입력하면 바로 시작할 수 있어요.'}</p>
+          <p className="mt-2 text-[14px] text-text-secondary">{mode === 'login' ? '계정으로 로그인하고 MARS를 시작하세요.' : '관리자 승인 후 서비스 이용이 가능합니다!'}</p>
 
           {mode === 'login' ? (
             <form onSubmit={handleLoginSubmit(handleLogin)} className="mt-7 flex flex-col gap-3">
