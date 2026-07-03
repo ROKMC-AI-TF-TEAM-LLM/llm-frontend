@@ -95,7 +95,22 @@ const LoginPage = () => {
     }
   }
 
-  const openAuth = () => { introRef.current?.scrollTo({ top: 0 }); setView('auth') }
+  const openAuth = () => {
+    const el = introRef.current
+    // 이미 상단이면 바로 열고, 아래로 스크롤된 상태면 부드럽게 top까지 올린 뒤 연다(뚝 끊김 방지)
+    if (!el || el.scrollTop <= 4) { setView('auth'); return }
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      clearTimeout(t)
+      el.removeEventListener('scrollend', finish)
+      setView('auth')
+    }
+    const t = window.setTimeout(finish, 1000) // scrollend 미지원 브라우저 폴백
+    el.addEventListener('scrollend', finish)
+    el.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   const closeAuth = () => { setView('intro'); requestAnimationFrame(() => introRef.current?.scrollTo({ top: 0, behavior: 'smooth' })) }
   const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
 
@@ -128,23 +143,23 @@ const LoginPage = () => {
             <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px]">
               Marine Artificial Intelligence Retrieval System. 법령·규정·규칙을 학습한 우리 군 자체 LLM이 장병의 질문에 근거와 함께 답합니다.
             </p>
-            <div className="mars-reveal mt-10 min-h-[56px]">
-              {view === 'intro' ? (
+            {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
+            <div className="mars-reveal mt-10 relative h-14">
+              <div className={`absolute inset-0 flex items-center transition-opacity duration-500 ${view === 'intro' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <button onClick={openAuth} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[17px] font-extrabold shadow-[0_16px_36px_rgba(220,20,60,0.36)] hover:brightness-105 active:scale-[0.98] transition">
                   MARS 시작하기 <span>→</span>
                 </button>
-              ) : (
-                <div className="flex flex-wrap items-center gap-3">
-                  <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                    팀 소개
-                  </button>
-                  <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></svg>
-                    서비스 이용법
-                  </button>
-                </div>
-              )}
+              </div>
+              <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'auth' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                  팀 소개
+                </button>
+                <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></svg>
+                  서비스 이용법
+                </button>
+              </div>
             </div>
           </div>
 

@@ -27,7 +27,7 @@ export default function NewChatPage() {
           {name ? `${name}님, 무엇을 도와드릴까요?` : "무엇을 도와드릴까요?"}
         </h2>
         <ChatInput
-          notice="ROKMCLLM은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오."
+          notice="MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오."
         />
       </div>
       {toastError && <Toast message={toastError} onClose={() => setToastError('')} />}

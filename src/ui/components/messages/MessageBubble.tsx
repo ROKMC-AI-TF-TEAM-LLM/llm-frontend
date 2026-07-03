@@ -108,10 +108,10 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
       )}
       <div
         className={`
-          max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed wrap-break-word
+          max-w-[70%] py-3 leading-relaxed wrap-break-word
           ${isUser
-            ? 'bg-brand text-white rounded-tr-sm whitespace-pre-wrap'
-            : 'bg-white text-text-primary rounded-tl-sm'}
+            ? 'px-5 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] shadow-[0_10px_22px_rgba(220,20,60,0.2)] whitespace-pre-wrap'
+            : 'px-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-sm'}
         `}
       >
         {isUser ? (
