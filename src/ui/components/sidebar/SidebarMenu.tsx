@@ -40,11 +40,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   }`;
 
   return (
-    <nav
-      className={`flex-none pt-[14px] pb-[6px] flex flex-col gap-1 transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${
-        isOpen ? 'px-[12px]' : 'px-[13px]'
-      }`}
-    >
+    <nav className="flex-none px-[12px] pt-[14px] pb-[6px] flex flex-col gap-1">
       {/* 새 채팅 */}
       <button
         onClick={() => navigate("/chat")}
@@ -52,11 +48,9 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
         style={
           isNewChatActive
             ? { background: '#fdeef1', color: '#c0002a' }
-            : { background: 'transparent', color: '#5a5560' }
+            : { color: '#5a5560' }
         }
-        className={`flex items-center rounded-[11px] text-[13px] font-semibold hover:bg-[#f7edf0] transition-all duration-200 cursor-pointer ${
-          isOpen ? 'gap-[10px] px-[13px] py-[9px]' : 'gap-0 justify-center py-[9px]'
-        }`}
+        className="flex items-center gap-[10px] px-[16px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#f2c9d6] transition-colors duration-200 cursor-pointer"
       >
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" style={{ flexShrink: 0 }}>
           <path d="M12 5v14M5 12h14" />
@@ -75,11 +69,9 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             style={
               isActive
                 ? { background: '#fdeef1', color: '#c0002a' }
-                : { background: 'transparent', color: '#5a5560' }
+                : { color: '#5a5560' }
             }
-            className={`flex items-center rounded-[11px] text-[13px] font-semibold hover:bg-[#f7edf0] transition-all duration-200 cursor-pointer ${
-              isOpen ? 'gap-[10px] px-[13px] py-[8px]' : 'gap-0 justify-center py-[9px]'
-            }`}
+            className="flex items-center gap-[10px] px-[16px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#f2c9d6] transition-colors duration-200 cursor-pointer"
           >
             <span style={{ flexShrink: 0 }}>{item.icon}</span>
             <span className={labelCls}>{item.label}</span>

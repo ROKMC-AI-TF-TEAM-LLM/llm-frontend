@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useChatStore } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import Toast from '../Toast';

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useRef, useState } from "react";
 
 interface SidebarHeaderProps {
   isOpen: boolean;
@@ -7,6 +8,17 @@ interface SidebarHeaderProps {
 
 export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) {
   const navigate = useNavigate();
+  const [showTip, setShowTip] = useState(false);
+  const tipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTip = () => {
+    if (tipTimer.current) { clearTimeout(tipTimer.current); tipTimer.current = null; }
+  };
+  // 마우스를 올리고 잠깐 있어야 툴팁이 뜬다
+  const onEnter = () => { clearTip(); tipTimer.current = setTimeout(() => setShowTip(true), 450); };
+  const onLeave = () => { clearTip(); setShowTip(false); };
+  // 누르면 즉시 숨김 → 텍스트가 바로 바뀌는 게 안 보이고, 다시 갖다대야 뜬다
+  const onClick = () => { clearTip(); setShowTip(false); onToggle(); };
 
   return (
     <div
@@ -27,18 +39,25 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
 
       {/* 토글 버튼 (패널 아이콘 + 커스텀 호버 툴팁) */}
       <button
-        onClick={onToggle}
+        onClick={onClick}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
         style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0 }}
-        className="relative group flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-[#f7edf0] hover:text-[#c0002a] transition-colors cursor-pointer"
+        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-[#f2c9d6] hover:text-[#c0002a] transition-colors cursor-pointer"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
         <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M9 3v18" />
         </svg>
-        <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-semibold text-white bg-[#2c2b30] shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-          {isOpen ? '사이드바 접기' : '사이드바 펴기'}
-        </span>
+        {/* 오른쪽으로 나오는 툴팁 (사이드바 밖) — 클릭 시 즉시 사라지도록 조건부 렌더 */}
+        {showTip && (
+          <span
+            className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in"
+          >
+            {isOpen ? '사이드바 접기' : '사이드바 펴기'}
+          </span>
+        )}
       </button>
     </div>
   );

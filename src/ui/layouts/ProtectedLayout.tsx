@@ -80,7 +80,7 @@ const ProtectedLayout = () => {
         className={`h-screen overflow-hidden transition-[margin-left] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'ml-60' : 'ml-[74px]'}`}
       >
         <ErrorBoundary>
-          <div key={location.pathname} className="h-full animate-page-in">
+          <div key={location.pathname} className="h-full">
             <Outlet />
           </div>
         </ErrorBoundary>

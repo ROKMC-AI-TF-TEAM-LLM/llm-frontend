@@ -26,7 +26,7 @@ export default function NewChatPage() {
       style={{ background: 'linear-gradient(180deg,#fdf3f5 0%,#ffffff 46%,#fdf8fa 100%)' }}
       className="flex-1 flex flex-col items-center justify-center px-6 h-full"
     >
-      <div className="w-full max-w-2xl flex flex-col items-center">
+      <div className="w-full max-w-2xl flex flex-col items-center animate-page-in">
         {/* 행성 */}
         <MarsPlanet
           glow

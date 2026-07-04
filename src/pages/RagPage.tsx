@@ -103,7 +103,7 @@ const RagPage = () => {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto px-8 py-12">
+      <div className="max-w-5xl mx-auto px-8 py-12 animate-page-in">
         <h1 className="text-2xl font-semibold text-text-primary mb-5">문서</h1>
         <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." />
 
