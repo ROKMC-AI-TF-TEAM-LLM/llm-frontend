@@ -15,13 +15,14 @@ const RagSearchInput = ({
 
   return (
     <div
-      className="group flex items-center gap-3 pl-[18px] pr-4 py-4 rounded-full bg-surface-subtle/60 border border-surface-border transition-all duration-150 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand cursor-text"
+      style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }}
+      className="group flex items-center gap-3 pl-[20px] pr-5 py-[18px] rounded-[22px] transition-all duration-200 focus-within:border-[#e4002b] focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.08)] cursor-text"
       onClick={() => inputRef.current?.focus()}
     >
       <svg
-        className="shrink-0 transition-colors duration-150 text-text-muted group-focus-within:text-brand"
-        width="18"
-        height="18"
+        className="shrink-0 transition-colors duration-200 text-[#c9aab2] group-focus-within:text-[#e4002b]"
+        width="20"
+        height="20"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -37,7 +38,7 @@ const RagSearchInput = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
+        className="flex-1 bg-transparent text-[15px] text-text-primary placeholder:text-[#b8a7ac] outline-none"
       />
     </div>
   )

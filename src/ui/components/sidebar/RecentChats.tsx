@@ -76,9 +76,9 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   }
 
   return (
-    <div className={`px-3 pt-4 overflow-hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+    <div className={`px-[12px] pt-[12px] overflow-hidden transition-opacity duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
       {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
-      <p className="px-3 text-xs text-text-muted mb-2 whitespace-nowrap">최근 대화</p>
+      <p className="px-[11px] text-[10.5px] font-extrabold tracking-[0.12em] text-[#c9aab2] mb-2 whitespace-nowrap uppercase">최근 대화</p>
 
       {isInitialLoading ? (
         <ul className="space-y-0.5">
@@ -104,30 +104,41 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
               ) : (
                 <button
                   onClick={() => navigate(`/chat/${chat.id}`)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-text-primary hover:bg-brand-subtle hover:text-brand transition-colors text-sm text-left pr-16"
+                  style={
+                    chat.id === currentId
+                      ? { background: '#fdeef1', color: '#c0002a' }
+                      : {}
+                  }
+                  className={`w-full flex items-center gap-[9px] px-[11px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors group/item relative pr-12 ${
+                    chat.id === currentId
+                      ? 'font-bold'
+                      : 'text-[#5a5560] font-medium hover:bg-[#f7edf0] hover:text-[#c0002a]'
+                  }`}
                 >
-                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${chat.id === currentId ? 'bg-brand' : 'bg-gray-300'}`} />
-                  <span className="truncate">{chat.title}</span>
+                  <span
+                    style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: chat.id === currentId ? '#e4002b' : '#d9c3c9', transition: 'background 0.2s' }}
+                  />
+                  <span className="truncate overflow-hidden">{chat.title}</span>
                 </button>
               )}
               {editingId !== chat.id && (
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1">
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingId(chat.id); setEditingTitle(chat.title); }}
-                    className="p-1 rounded text-text-muted hover:text-brand transition-colors"
+                    className="p-1.5 rounded-lg text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors"
                     aria-label="제목 수정"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                     </svg>
                   </button>
                   <button
                     onClick={(e) => handleDelete(chat.id, e)}
-                    className="p-1 rounded text-text-muted hover:text-red-500 transition-colors"
+                    className="p-1.5 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-50 transition-colors"
                     aria-label="세션 삭제"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>

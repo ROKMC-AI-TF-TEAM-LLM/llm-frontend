@@ -101,6 +101,18 @@ body {
   .animate-fade-in { animation: none; }
 }
 
+/* 페이지 전환 : 아래에서 위로 부드럽게 올라오며 페이드 인 */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-page-in {
+  animation: page-in 0.34s cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in { animation: none; }
+}
+
 @keyframes chase {
   0%, 100% { opacity: 0.15; transform: scale(0.7); }
   50%       { opacity: 1;    transform: scale(1);   }
@@ -230,3 +242,9 @@ body.modal-open {
 @media (prefers-reduced-motion: reduce) {
   .mars-planet-float, .mars-orbit { animation: none; }
 }
+
+/* ===================== RAG 문서 카드 ===================== */
+.doc-card { transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease; }
+.doc-card:hover { transform: translateY(-4px); box-shadow: 0 22px 44px rgba(160,0,40,0.14) !important; border-color: #f2c3cc !important; }
+.doc-open { opacity: 0; transform: translateX(-6px); transition: opacity .3s cubic-bezier(.2,.7,.2,1), transform .3s cubic-bezier(.2,.7,.2,1); }
+.doc-card:hover .doc-open { opacity: 1 !important; transform: translateX(0) !important; }

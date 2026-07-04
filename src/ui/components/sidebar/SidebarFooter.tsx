@@ -88,22 +88,28 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         </>
       )}
 
-      <div className={`border-t border-surface-border py-4 flex items-center gap-2 transition-[padding] duration-300 ${isOpen ? "px-4" : "px-[22px]"}`}>
+      <div style={{ borderTop: '1px solid #f4e6ea' }} className="flex-none px-[12px] py-[9px]">
         <button
-          className={`flex-1 flex items-center rounded-lg p-1 transition-colors ${showMenu ? 'bg-brand-subtle' : 'hover:bg-brand-subtle'}`}
           onClick={() => setShowMenu((v) => !v)}
+          className={`w-full flex items-center py-[7px] rounded-[11px] transition-colors cursor-pointer ${isOpen ? 'gap-2 px-[9px]' : 'gap-0 justify-center px-0'} ${showMenu ? 'bg-[#f7edf0]' : 'hover:bg-[#f7edf0]'}`}
         >
-          <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          {/* 아바타 */}
+          <div
+            style={{
+              width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
+              boxShadow: '0 4px 11px rgba(228,0,43,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
             </svg>
           </div>
-          <div className={`flex flex-col items-start min-w-0 transition-[opacity,margin] duration-300 ${
-            isOpen ? "opacity-100 ml-3" : "opacity-0 w-0 overflow-hidden ml-0"
-          }`}>
-            <span className="text-sm text-text-primary font-medium whitespace-nowrap">
-              {user.name}
-            </span>
+
+          {/* 이름 */}
+          <div className={`flex flex-col items-start min-w-0 overflow-hidden transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100 max-w-[160px]' : 'opacity-0 max-w-0'}`}>
+            <span className="text-[12.5px] font-bold text-text-primary whitespace-nowrap">{user.name}</span>
           </div>
         </button>
       </div>

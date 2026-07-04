@@ -42,7 +42,7 @@ const SearchPage = () => {
   return (
     <div className="flex flex-col h-full px-6 pt-16 pb-6">
       {showError && <Toast message="데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." onClose={() => setErrorDismissed(true)} />}
-      <div className="max-w-2xl w-full mx-auto flex flex-col min-h-0 flex-1">
+      <div className="max-w-5xl w-full mx-auto flex flex-col min-h-0 flex-1">
 
         <h1 className="text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
           대화 검색
@@ -71,15 +71,19 @@ const SearchPage = () => {
               <p className="text-sm text-text-muted text-center py-8">대화 내역이 없습니다.</p>
             ) : (
               <div className="overflow-y-auto flex-1 custom-scroll">
-                <div className="grid grid-cols-2 gap-3 pr-1">
+                <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">
                   {recentSessions.map((session) => (
                     <button
                       key={session.session_id}
                       onClick={() => navigate(`/chat/${session.session_id}`)}
-                      className="flex flex-col gap-1.5 p-4 rounded-2xl border border-surface-border hover:bg-surface-subtle text-left transition-colors group"
+                      style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 12px 28px rgba(160,0,40,0.04)' }}
+                      className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer"
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-surface group-hover:bg-brand-subtle transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          style={{ background: 'linear-gradient(135deg,#fff0f3,#fde3e8)', border: '1px solid #f7d7de', color: '#e4002b' }}
+                          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px]"
+                        >
                           <svg
                             viewBox="0 0 24 24"
                             width="16"
@@ -89,16 +93,15 @@ const SearchPage = () => {
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="text-text-muted group-hover:text-brand transition-colors"
                           >
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-text-primary truncate">
+                        <span className="text-[15px] font-bold text-text-primary truncate">
                           {session.title}
                         </span>
                       </div>
-                      <span className="text-xs text-text-muted ml-10">
+                      <span className="text-xs text-[#a89aa0] ml-[46px]">
                         {new Date(session.updated_at).toLocaleString('ko-KR')}
                       </span>
                     </button>

@@ -140,8 +140,12 @@ const LoginPage = () => {
             <p className="mars-reveal mt-5 font-extrabold leading-snug text-text-primary text-[27px]">
               해병대를 위한 인공지능,<br />이제 <span className="text-brand">MARS</span>와 함께.
             </p>
-            <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px]">
-              Marine Artificial Intelligence Retrieval System. 법령·규정·규칙을 학습한 우리 군 자체 LLM이 장병의 질문에 근거와 함께 답합니다.
+            <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
+              Marine Artificial Intelligence Retrieval System.
+              <br />
+              법령·규정·규칙을 학습한 우리 군 자체 LLM이
+              <br />
+              장병의 질문에 근거와 함께 답합니다.
             </p>
             {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
             <div className="mars-reveal mt-10 relative h-14">
@@ -259,8 +263,8 @@ const LoginPage = () => {
                   </div>
                 </div>
                 <div className="px-6 py-6">
-                  <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-surface-subtle border border-surface-border">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b09aa0" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11l-8.5 8.5a4 4 0 0 1-5.7-5.7l8.5-8.5a2.5 2.5 0 0 1 3.5 3.5L10 17" /></svg>
+                  <div style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }} className="flex items-center gap-3 px-4 py-3 rounded-[30px] bg-white cursor-default select-none">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b09aa0" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11l-8.5 8.5a4 4 0 0 1-5.7-5.7l8.5-8.5a2.5 2.5 0 0 1 3.5 3.5L10 17" /></svg>
                     <span className="flex-1 text-[15px] text-text-muted">메시지를 입력하세요...</span>
                     <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-brand to-brand-light flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M6 11l6-6 6 6" /></svg></div>
                   </div>

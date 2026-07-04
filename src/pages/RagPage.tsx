@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagCard from '../ui/components/rag/RagCard'
 import { useInfiniteDocuments } from '../hooks/useDocument'
@@ -19,6 +19,24 @@ const RagPage = () => {
     doc.name.toLowerCase().includes(query.toLowerCase())
   )
 
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage && !query) {
+          fetchNextPage()
+        }
+      },
+      { root: scrollRef.current, rootMargin: '240px', threshold: 0 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, query])
+
   useEffect(() => {
     if (!selectedDoc) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedDoc(null) }
@@ -31,7 +49,7 @@ const RagPage = () => {
   }, [selectedDoc])
 
   return (
-    <div className="h-full w-full overflow-y-auto custom-scroll" onClick={() => setSelectedDoc(null)}>
+    <div ref={scrollRef} className="h-full w-full overflow-y-auto custom-scroll" onClick={() => setSelectedDoc(null)}>
 
       {selectedDoc && (
         <div
@@ -85,7 +103,7 @@ const RagPage = () => {
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto px-8 py-12">
+      <div className="max-w-5xl mx-auto px-8 py-12">
         <h1 className="text-2xl font-semibold text-text-primary mb-5">문서</h1>
         <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." />
 
@@ -136,17 +154,16 @@ const RagPage = () => {
               ))}
             </div>
 
-            {hasNextPage && !query && (
-              <div className="flex justify-center mt-8">
-                <button
-                  onClick={(e) => { e.stopPropagation(); fetchNextPage() }}
-                  disabled={isFetchingNextPage}
-                  className="px-6 py-2 rounded-full text-sm font-medium bg-surface border border-surface-border text-text-secondary hover:bg-surface-subtle disabled:opacity-50 transition-colors"
-                >
-                  {isFetchingNextPage ? '불러오는 중...' : '더 보기'}
-                </button>
+            {isFetchingNextPage && !query && (
+              <div className="grid grid-cols-2 gap-5 mt-5">
+                {[...Array(2)].map((_, i) => (
+                  <div key={`more-${i}`} className="card h-36 bg-surface-subtle animate-pulse" />
+                ))}
               </div>
             )}
+
+            {/* 무한 스크롤 감지 지점 */}
+            {hasNextPage && !query && <div ref={sentinelRef} className="h-2" />}
           </>
         )}
       </div>

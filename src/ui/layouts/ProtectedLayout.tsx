@@ -76,11 +76,11 @@ const ProtectedLayout = () => {
         isLoadingMore={isFetchingNextPage}
       />
       <main
-        style={{ '--sidebar-width': isOpen ? '16rem' : '5rem' } as CSSProperties}
-        className={`h-screen overflow-hidden transition-[margin-left] duration-300 ease-in-out ${isOpen ? 'ml-64' : 'ml-20'}`}
+        style={{ '--sidebar-width': isOpen ? '15rem' : '74px' } as CSSProperties}
+        className={`h-screen overflow-hidden transition-[margin-left] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'ml-60' : 'ml-[74px]'}`}
       >
         <ErrorBoundary>
-          <div key={location.pathname} className="h-full animate-fade-in">
+          <div key={location.pathname} className="h-full animate-page-in">
             <Outlet />
           </div>
         </ErrorBoundary>

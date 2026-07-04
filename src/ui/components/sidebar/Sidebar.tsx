@@ -19,8 +19,9 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: SidebarProps) {
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 flex flex-col bg-surface-card2 border-r border-surface-border transition-[width] duration-300 ease-in-out overflow-hidden ${
-        isOpen ? "w-64" : "w-20"
+      style={{ background: 'linear-gradient(190deg,#fdf3f5 0%,#faf6f7 40%,#ffffff 100%)', borderRight: '1px solid #f2e2e6' }}
+      className={`fixed inset-y-0 left-0 z-30 flex flex-col transition-[width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] overflow-hidden ${
+        isOpen ? "w-60" : "w-[74px]"
       }`}
     >
       <SidebarHeader isOpen={isOpen} onToggle={onToggle} />
