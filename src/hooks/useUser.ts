@@ -39,6 +39,7 @@ export const useInquiryUsers = (userId: string) => {
   return useQuery({
     queryKey: ['users', userId],
     queryFn: () => inquiryUsers(userId),
+    retry: false,
   })
 }
 

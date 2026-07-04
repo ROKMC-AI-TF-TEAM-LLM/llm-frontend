@@ -9,7 +9,7 @@ import Toast from '../ui/components/Toast'
 import { getApiError, isNetworkError, DEFAULT_STATUS_ERRORS } from '../utils/error'
 import { logError } from '../utils/logError'
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i
+const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i
 
 const loginSchema = z.object({
   email: z.string().min(1, '이메일을 입력해주세요.').refine((v) => EMAIL_REGEX.test(v), '이메일 형식이 올바르지 않습니다.'),

@@ -18,7 +18,7 @@ export default function NewChatPage() {
       setToastError(msg)
       window.history.replaceState({}, '')
     }
-  }, [])
+  }, [location.state])
 
   return (
     <main

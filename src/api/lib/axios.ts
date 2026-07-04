@@ -31,7 +31,7 @@ const decodeTokenExp = (token: string): number | null => {
 
 const isTokenExpired = (token: string): boolean => {
   const exp = decodeTokenExp(token)
-  if (!exp) return false
+  if (!exp) return true
   return Date.now() >= exp * 1000 - 5_000
 }
 
