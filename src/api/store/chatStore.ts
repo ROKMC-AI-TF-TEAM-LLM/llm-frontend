@@ -5,6 +5,8 @@ import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenera
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
+import { uuid } from '../../utils/uuid';
+
 
 interface ChatStore {
   sessionId: string;
@@ -495,7 +497,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           set((state) => ({
             messages: [
               ...state.messages,
-              { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+              { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
             ],
           }));
           get().retryLastMessage();
@@ -506,7 +508,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
       const rawMessages: Message[] = res.data.data.messages.map((m) => ({
-        id: m.message_id || crypto.randomUUID(),
+        id: m.message_id || uuid(),
         role: m.role === 'human' ? 'user' : 'assistant',
         type: 'text' as const,
         content: extractContent(m.content),
@@ -558,7 +560,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         set((state) => ({
           messages: [
             ...state.messages,
-            { id: crypto.randomUUID(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+            { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
           ],
         }));
         get().retryLastMessage();
@@ -592,7 +594,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     sendMessage: async (content: string) => {
       if (get().isStreaming) return
       const controller = new AbortController()
-      const assistantId = crypto.randomUUID()
+      const assistantId = uuid()
       const { sessionId, messages: existingMessages } = get()
       const isFirstMessage = existingMessages.length === 0
 
@@ -603,7 +605,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         abortController: controller,
         messages: [
           ...state.messages,
-          { id: crypto.randomUUID(), role: 'user', type: 'text', content, createdAt: now },
+          { id: uuid(), role: 'user', type: 'text', content, createdAt: now },
           { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
         ],
       }))
@@ -622,7 +624,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       saveInflight(sessionId, last.content)
       const controller = new AbortController()
-      const assistantId = crypto.randomUUID()
+      const assistantId = uuid()
       const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,
@@ -642,7 +644,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => ({
         messages: [
           ...state.messages,
-          { id: crypto.randomUUID(), role: 'user' as const, type: 'image' as const, filename, caption },
+          { id: uuid(), role: 'user' as const, type: 'image' as const, filename, caption },
         ],
       }));
     },
