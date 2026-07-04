@@ -106,13 +106,13 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
                   onClick={() => navigate(`/chat/${chat.id}`)}
                   style={
                     chat.id === currentId
-                      ? { background: '#fdeef1', color: '#c0002a' }
+                      ? { background: '#fdedf2', color: '#c0002a' }
                       : {}
                   }
                   className={`w-full flex items-center gap-[9px] px-[11px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors group/item relative pr-12 ${
                     chat.id === currentId
                       ? 'font-bold'
-                      : 'text-[#5a5560] font-medium hover:bg-[#f2c9d6] hover:text-[#c0002a]'
+                      : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
                   }`}
                 >
                   <span

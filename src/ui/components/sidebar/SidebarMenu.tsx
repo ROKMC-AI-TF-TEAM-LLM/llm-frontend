@@ -40,17 +40,17 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   }`;
 
   return (
-    <nav className="flex-none px-[12px] pt-[14px] pb-[6px] flex flex-col gap-1">
+    <nav className="flex-none px-[10px] pt-[14px] pb-[6px] flex flex-col gap-1">
       {/* 새 채팅 */}
       <button
         onClick={() => navigate("/chat")}
         title="새 채팅"
         style={
           isNewChatActive
-            ? { background: '#fdeef1', color: '#c0002a' }
+            ? { background: '#fdedf2', color: '#c0002a' }
             : { color: '#5a5560' }
         }
-        className="flex items-center gap-[10px] px-[16px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#f2c9d6] transition-colors duration-200 cursor-pointer"
+        className="flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
       >
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" style={{ flexShrink: 0 }}>
           <path d="M12 5v14M5 12h14" />
@@ -68,10 +68,10 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             title={item.label}
             style={
               isActive
-                ? { background: '#fdeef1', color: '#c0002a' }
+                ? { background: '#fdedf2', color: '#c0002a' }
                 : { color: '#5a5560' }
             }
-            className="flex items-center gap-[10px] px-[16px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#f2c9d6] transition-colors duration-200 cursor-pointer"
+            className="flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
           >
             <span style={{ flexShrink: 0 }}>{item.icon}</span>
             <span className={labelCls}>{item.label}</span>

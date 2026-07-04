@@ -76,7 +76,7 @@ const SearchPage = () => {
                     <button
                       key={session.session_id}
                       onClick={() => navigate(`/chat/${session.session_id}`)}
-                      style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 12px 28px rgba(160,0,40,0.04)' }}
+                      style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 10px 24px rgba(40,30,35,0.05)' }}
                       className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer"
                     >
                       <div className="flex items-center gap-2.5">

@@ -245,6 +245,6 @@ body.modal-open {
 
 /* ===================== RAG 문서 카드 ===================== */
 .doc-card { transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease; }
-.doc-card:hover { transform: translateY(-4px); box-shadow: 0 22px 44px rgba(160,0,40,0.14) !important; border-color: #f2c3cc !important; }
+.doc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(40,30,35,0.10) !important; border-color: #e7dde0 !important; }
 .doc-open { opacity: 0; transform: translateX(-6px); transition: opacity .3s cubic-bezier(.2,.7,.2,1), transform .3s cubic-bezier(.2,.7,.2,1); }
 .doc-card:hover .doc-open { opacity: 1 !important; transform: translateX(0) !important; }

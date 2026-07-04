@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
@@ -20,7 +20,8 @@ export default function ChatPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sessionError, setSessionError] = useState('');
-  const [isConnecting, setIsConnecting] = useState(true);
+  // 캐시된 세션이면 스켈레톤 없이 바로 표시(첫 렌더부터 false)
+  const [isConnecting, setIsConnecting] = useState(() => peekSessionMessages(sessionId).length === 0);
   const [retryKey, setRetryKey] = useState(0);
 
   const { data: infiniteData } = useInfiniteSessions();
@@ -44,7 +45,8 @@ export default function ChatPage() {
     }
   }, [isDeleted, error, resetDeleted, clearError, navigate]);
 
-  useEffect(() => {
+  // paint 전에 스토어를 현재 세션 캐시로 맞춰(useLayoutEffect) 이전 세션 잔상/깜빡 방지
+  useLayoutEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     let cancelled = false;
     const hasCached = peekSessionMessages(sessionId).length > 0;

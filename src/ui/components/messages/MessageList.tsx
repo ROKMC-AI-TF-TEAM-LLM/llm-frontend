@@ -119,17 +119,15 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     window.addEventListener('mouseup', onUp);
   };
 
-  // 세션 로드 시: 최신(맨 아래) 표시
-  useEffect(() => {
+  // 세션 로드 시: 최신(맨 아래) 표시 — paint 전(useLayoutEffect)에 스크롤해 '맨 위 깜빡' 방지
+  useLayoutEffect(() => {
     if (isLoading) return;
     const el = scrollRef.current;
     if (!el) return;
     if (isFirstLoad.current && messages.length > 0 && !isStreaming) {
       isFirstLoad.current = false;
-      requestAnimationFrame(() => {
-        el.scrollTo({ top: el.scrollHeight, behavior: 'instant' });
-        positionThumb();
-      });
+      el.scrollTo({ top: el.scrollHeight, behavior: 'instant' });
+      positionThumb();
     }
   }, [messages, isLoading, isStreaming]);
 

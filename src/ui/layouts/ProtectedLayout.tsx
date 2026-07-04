@@ -76,8 +76,8 @@ const ProtectedLayout = () => {
         isLoadingMore={isFetchingNextPage}
       />
       <main
-        style={{ '--sidebar-width': isOpen ? '15rem' : '74px' } as CSSProperties}
-        className={`h-screen overflow-hidden transition-[margin-left] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'ml-60' : 'ml-[74px]'}`}
+        style={{ '--sidebar-width': isOpen ? '15rem' : '56px' } as CSSProperties}
+        className={`h-screen overflow-hidden transition-[margin-left] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'ml-60' : 'ml-[56px]'}`}
       >
         <ErrorBoundary>
           <div key={location.pathname} className="h-full">

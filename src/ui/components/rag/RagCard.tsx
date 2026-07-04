@@ -17,8 +17,8 @@ const RagCard = ({ title, fileType, preview, selected = false, onClick }: RagCar
         background: selected ? '#fdeef1' : '#fff',
         border: selected ? '1.5px solid #e4002b' : '1px solid #f0e3e6',
         boxShadow: selected
-          ? '0 0 0 3px rgba(228,0,43,0.08), 0 12px 28px rgba(160,0,40,0.06)'
-          : '0 12px 28px rgba(160,0,40,0.04)',
+          ? '0 0 0 3px rgba(228,0,43,0.08), 0 12px 28px rgba(40,30,35,0.06)'
+          : '0 10px 24px rgba(40,30,35,0.05)',
         transition: 'transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease',
       }}
     >

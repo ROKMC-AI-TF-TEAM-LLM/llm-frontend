@@ -88,10 +88,10 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         </>
       )}
 
-      <div style={{ borderTop: '1px solid #f4e6ea' }} className="flex-none px-[12px] py-[9px]">
+      <div style={{ borderTop: '1px solid #f4e6ea' }} className="flex-none px-[8px] py-[9px]">
         <button
           onClick={() => setShowMenu((v) => !v)}
-          className={`w-full flex items-center gap-2 px-[11px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${showMenu ? 'bg-[#f2c9d6]' : 'hover:bg-[#f2c9d6]'}`}
+          className={`w-full flex items-center gap-2 px-[6px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${showMenu ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
         >
           {/* 아바타 */}
           <div
