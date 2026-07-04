@@ -132,19 +132,19 @@ if (typeof window !== 'undefined') {
 const INFLIGHT_KEY = 'rokm_inflight'
 
 export const saveInflight = (sessionId: string, question: string) =>
-  localStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question }))
+  sessionStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question }))
 
 export const clearInflight = (sessionId: string) => {
   try {
-    const raw = localStorage.getItem(INFLIGHT_KEY)
+    const raw = sessionStorage.getItem(INFLIGHT_KEY)
     if (!raw) return
-    if (JSON.parse(raw).sessionId === sessionId) localStorage.removeItem(INFLIGHT_KEY)
+    if (JSON.parse(raw).sessionId === sessionId) sessionStorage.removeItem(INFLIGHT_KEY)
   } catch (e) { logError('clearInflight', e) }
 }
 
 const getInflight = (sessionId: string): string | null => {
   try {
-    const raw = localStorage.getItem(INFLIGHT_KEY)
+    const raw = sessionStorage.getItem(INFLIGHT_KEY)
     if (!raw) return null
     const data = JSON.parse(raw)
     return data.sessionId === sessionId ? data.question : null

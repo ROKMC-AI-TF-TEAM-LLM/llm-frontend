@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagCard from '../ui/components/rag/RagCard'
 import { useInfiniteDocuments } from '../hooks/useDocument'
@@ -13,10 +13,14 @@ const RagPage = () => {
 
   const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage, refetch, isRefetching } = useInfiniteDocuments()
 
-  const allDocuments = data?.pages.flatMap((p) => pickDocuments(p.data.data)) ?? []
+  const allDocuments = useMemo(
+    () => data?.pages.flatMap((p) => pickDocuments(p.data.data)) ?? [],
+    [data],
+  )
 
-  const filtered = allDocuments.filter((doc) =>
-    doc.name.toLowerCase().includes(query.toLowerCase())
+  const filtered = useMemo(
+    () => allDocuments.filter((doc) => doc.name.toLowerCase().includes(query.toLowerCase())),
+    [allDocuments, query],
   )
 
   const scrollRef = useRef<HTMLDivElement>(null)

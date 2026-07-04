@@ -19,7 +19,10 @@ const parseStorageItem = (raw: string | null): string | null => {
 
 const decodeTokenExp = (token: string): number | null => {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
+    // JWT payload는 base64url(-, _) 인코딩 → 표준 base64로 변환 + 패딩 후 디코드
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+    const payload = JSON.parse(atob(padded))
     return typeof payload.exp === 'number' ? payload.exp : null
   } catch {
     return null
