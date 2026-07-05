@@ -22,7 +22,7 @@ export default function NewChatPage() {
 
   return (
     <main
-      style={{ background: 'linear-gradient(180deg,#fdf3f5 0%,#ffffff 46%,#fdf8fa 100%)' }}
+      style={{ background: '#fff' }}
       className="flex-1 flex flex-col items-center justify-center px-6 h-full"
     >
       <div className="w-full max-w-2xl flex flex-col items-center animate-page-in">
