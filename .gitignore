@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 개인 학습 노트 (깃허브 제외)
+study/

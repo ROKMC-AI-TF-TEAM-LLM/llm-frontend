@@ -132,7 +132,9 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   }, [messages, isLoading, isStreaming]);
 
   // 전송 시: 새 질문을 화면 위로 올리고, 아래는 '딱 한 화면'만 차도록 공간 확보(그 이상 빈 공간 X).
-  useEffect(() => {
+  // useLayoutEffect + 동기 스크롤: paint 전에 위치를 확정해 스트리밍 조각이 들어와도 스크롤이 끊기지 않고
+  // '됐다 안 됐다' 없이 매번 질문이 확실히 위로 올라간다.
+  useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const justStarted = isStreaming && !prevStreaming.current;
@@ -148,14 +150,11 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     const contentBelow = (el.scrollHeight - spacerHRef.current) - userEl.offsetTop;
     setSpacer(Math.max(0, el.clientHeight - contentBelow - GAP));
 
+    // 새 질문을 상단으로 즉시(동기) 고정 — 첫 조각 도착 전에 확정하므로 애니메이션 취소로 인한 실패가 없다.
     if (justStarted) {
-      requestAnimationFrame(() => {
-        el.scrollTo({ top: el.scrollHeight - el.clientHeight, behavior: 'smooth' });
-        positionThumb();
-      });
-    } else {
-      requestAnimationFrame(positionThumb);
+      el.scrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
     }
+    positionThumb();
   }, [messages, isStreaming]);
 
   const handleCopy = (text: string) => {

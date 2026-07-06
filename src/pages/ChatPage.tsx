@@ -45,7 +45,6 @@ export default function ChatPage() {
     }
   }, [isDeleted, error, resetDeleted, clearError, navigate]);
 
-  // paint 전에 스토어를 현재 세션 캐시로 맞춰(useLayoutEffect) 이전 세션 잔상/깜빡 방지
   useLayoutEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     let cancelled = false;
