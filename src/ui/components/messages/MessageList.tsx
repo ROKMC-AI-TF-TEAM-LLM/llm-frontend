@@ -231,7 +231,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
                     createdAt={msg.createdAt}
                   />
                   {isInterrupted && (
-                    <div className="flex items-center gap-3 ml-12 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
+                    <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
                       <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <circle cx="12" cy="12" r="10" />
                         <path strokeLinecap="round" d="M12 8v4m0 4h.01" />

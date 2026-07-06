@@ -33,7 +33,7 @@ export default function NewChatPage() {
         </h1>
 
         {/* 부제 */}
-        <p className="mt-3 mb-9 text-[15px] text-text-muted text-center">
+        <p className="mt-3 mb-3 text-[15px] text-text-muted text-center">
           법령·규정·규칙을 학습한 MARS가 근거와 함께 답합니다.
         </p>
 

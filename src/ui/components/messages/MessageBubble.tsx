@@ -1,7 +1,6 @@
 import { Streamdown } from 'streamdown';
 import type { Components } from 'streamdown';
 import type { MessageRole } from '../../../types';
-import MarsPlanet from '../MarsPlanet';
 
 // 볼드 보정: 내부 공백 정리 + 단어에 붙은 닫는 ** 뒤(또는 여는 ** 앞)에 공백을 넣어
 // `...)**와` 처럼 한글에 붙어 인식 안 되던 볼드를 살린다. (스트리밍 중에도 안전 — 글자 출렁임 없음)
@@ -101,17 +100,12 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
 
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-1`}>
-      {!isUser && (
-        <div className="shrink-0 mr-3 mt-2">
-          <MarsPlanet className="w-7 h-7" />
-        </div>
-      )}
       <div
         className={`
           max-w-[70%] py-3 leading-relaxed wrap-break-word
           ${isUser
             ? 'px-5 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] shadow-[0_10px_22px_rgba(220,20,60,0.2)] whitespace-pre-wrap'
-            : 'px-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-sm'}
+            : 'pl-1 pr-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-[15px]'}
         `}
       >
         {isUser ? (

@@ -143,9 +143,10 @@ const LoginPage = () => {
             <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
               Marine Artificial Intelligence Retrieval System.
               <br />
-              법령·규정·규칙을 학습한 우리 군 자체 LLM이
+              법령·규정·규칙을 참조해
               <br />
               장병의 질문에 근거와 함께 답합니다.
+
             </p>
             {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
             <div className="mars-reveal mt-10 relative h-14">
@@ -196,7 +197,7 @@ const LoginPage = () => {
             <h2 className="mars-reveal text-center mx-auto max-w-[760px] font-extrabold leading-snug tracking-tight" style={{ fontSize: 'clamp(30px,4vw,50px)' }}>
               법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 학습합니다.
             </h2>
-            <p className="mars-reveal text-center mx-auto max-w-[560px] mt-4 mb-16 text-[17px] text-text-secondary leading-relaxed">
+            <p className="mars-reveal text-center mx-auto max-w-[620px] mt-4 mb-16 text-[17px] text-text-secondary leading-relaxed">
               MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -283,7 +284,7 @@ const LoginPage = () => {
           <button onClick={openAuth} className="mars-reveal inline-flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[18px] font-extrabold shadow-[0_20px_44px_rgba(220,20,60,0.38)] hover:brightness-105 active:scale-[0.98] transition">
             MARS 시작하기 <span>→</span>
           </button>
-          <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS(ROKMC LLM) · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
+          <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
         </section>
         </div>
       </div>
@@ -295,7 +296,7 @@ const LoginPage = () => {
         </button>
         <div className="mars-panel-inner">
           <div className="text-[28px] font-extrabold text-text-primary leading-tight">{mode === 'login' ? '로그인' : '회원가입'}</div>
-          <p className="mt-2 text-[14px] text-text-secondary">{mode === 'login' ? '계정으로 로그인하고 MARS를 시작하세요.' : '관리자 승인 후 서비스 이용이 가능합니다!'}</p>
+          <p className="mt-2 text-[14px] text-text-secondary">{mode === 'login' ? '계정으로 로그인하고 MARS를 시작하세요.' : '관리자 승인 후 서비스 이용이 가능합니다.'}</p>
 
           {mode === 'login' ? (
             <form onSubmit={handleLoginSubmit(handleLogin)} className="mt-7 flex flex-col gap-3">

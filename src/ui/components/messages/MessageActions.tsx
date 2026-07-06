@@ -45,7 +45,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
 
   return (
     <div
-      className={`flex items-center gap-0.5 mt-0.5 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150 ${isUser ? 'justify-end' : 'ml-10'}`}
+      className={`flex items-center gap-0.5 mt-0.5 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150 ${isUser ? 'justify-end' : 'ml-1'}`}
     >
       {time && (
         <div className="relative group/time mr-1.5">
