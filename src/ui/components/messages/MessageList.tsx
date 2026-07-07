@@ -178,26 +178,25 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (!isNewQuestion && !anchored.current) return;
     if (isNewQuestion) { isFirstLoad.current = false; anchored.current = true; }
 
-    // 핀 위치(질문이 상단 GAP)가 곧 스크롤 '맨 아래'가 되도록 spacer 계산.
-    // 중요: 질문 위치를 offsetTop(offsetParent 기준)이 아니라 애니메이션 목표와 '동일한' getBoundingClientRect
-    // 좌표계로 구한다. offsetParent가 스크롤 컨테이너가 아니라 offsetTop이 실제 스크롤 위치와 달라(예: 60 vs 454)
-    // spacer가 과소 계산되어 maxScroll이 목표보다 작아지고 스크롤이 clamp되던 버그가 있었다.
+    // spacer 계산: realContent(=spacer 제외 실제 콘텐츠 높이)를 '실측'한다. spacer를 잠깐 0으로 만든 뒤
+    // scrollHeight를 읽으면(리플로우) 정확히 잴 수 있다. 추적 ref/offsetHeight는 세션 리셋·언마운트 등으로
+    // 실제 DOM과 어긋나 spacer가 과소 계산(→maxScroll이 목표보다 작아 clamp)되던 게 근본 원인이었다.
     const GAP = 8;
-    const qDocPos = el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top; // 질문의 문서상 위치
-    // realContent(=spacer 제외 실제 콘텐츠)를 구할 때, 추적 ref(spacerHRef)가 실제 DOM spacer와 어긋날 수 있어
-    // (예: 세션 리셋 시 spacer 언마운트 상태로 setSpacer(0) 호출) 실제 DOM spacer 높이(offsetHeight)를 직접 읽는다.
-    const spacerNow = spacerRef.current?.offsetHeight ?? 0;
-    const shBefore = el.scrollHeight;
-    const contentBelow = (shBefore - spacerNow) - qDocPos;
-    const newSpacer = Math.max(0, el.clientHeight - contentBelow - GAP);
-    setSpacer(newSpacer);
+    const qDocPos = el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top; // 질문의 문서상 위치(스크롤 무관)
+    const savedTop = el.scrollTop;
+    // 실제 콘텐츠 높이 측정: spacer를 0으로 두면 콘텐츠가 뷰포트보다 짧을 때 scrollHeight가 clientHeight로
+    // '바닥(floor)'에 걸려 과대측정된다. 그래서 반대로 충분히 큰 spacer를 넣어 floor를 피한 뒤 빼서 잰다.
+    const PROBE = el.clientHeight;
+    setSpacer(PROBE);
+    const realContent = el.scrollHeight - PROBE; // floor 회피 → 정확한 실제 콘텐츠 높이(패딩 포함)
+    const contentBelow = realContent - qDocPos;
+    setSpacer(Math.max(0, el.clientHeight - contentBelow - GAP));
+    if (el.scrollTop !== savedTop) el.scrollTop = savedTop; // setSpacer(0)로 클램프된 스크롤 복원
+
+    // 새 질문을 상단(GAP)으로 부드럽게 고정. spacer가 maxScroll = qDocPos-GAP 이 되도록 맞춰져 목표까지 도달 가능.
     if (isNewQuestion) {
       // eslint-disable-next-line no-console
-      console.log('[S]', { sIdx, qDocPos: Math.round(qDocPos), spacerNow, shBefore, contentBelow: Math.round(contentBelow), newSpacer: Math.round(newSpacer), shAfter: el.scrollHeight, ch: el.clientHeight, maxScroll: el.scrollHeight - el.clientHeight });
-    }
-
-    // 새 질문을 상단(GAP)으로 부드럽게 고정. 목표는 spacer와 동일한 getBoundingClientRect 좌표(리플로우 무관).
-    if (isNewQuestion) {
+      console.log('[X]', 'sIdx', sIdx, '| qDocPos', Math.round(qDocPos), '| maxScroll', el.scrollHeight - el.clientHeight, '| realContent', realContent, '| contentBelow', Math.round(contentBelow), '| ch', el.clientHeight, '| sh', el.scrollHeight);
       anchoredIdRef.current = anchorId;
       animateAnchor(el, () =>
         Math.max(0, el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top - GAP)
