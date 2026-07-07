@@ -118,7 +118,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             style={{
               width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
               background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
-              boxShadow: '0 4px 11px rgba(228,0,43,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >

@@ -194,7 +194,7 @@ export default function ChatInput({
             onChange={handleFileChange}
           />
           <button
-            className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0 self-center"
             aria-label="첨부"
             onClick={() => fileInputRef.current?.click()}
           >

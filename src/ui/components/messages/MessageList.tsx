@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useChatStore } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
+import { copyText } from '../../../utils/clipboard';
 import Toast from '../Toast';
 import type { Message } from '../../../types';
 import ChatHeader from './ChatHeader';
@@ -18,14 +19,15 @@ interface MessageListProps {
 export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
+  const sessionId = useChatStore((s) => s.sessionId);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const lastUserRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
   const anchored = useRef(false);
-  const prevStreaming = useRef(false);
+  const anchoredIdRef = useRef<string | null>(null);
   const spacerHRef = useRef(0);
   const spacerRef = useRef<HTMLDivElement>(null);
+  const scrollAnimRef = useRef(0);
   const [copyFailed, setCopyFailed] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
 
@@ -35,7 +37,29 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (spacerRef.current) spacerRef.current.style.height = `${h}px`;
   };
 
-  useEffect(() => { isFirstLoad.current = true; anchored.current = false; setSpacer(0); }, [title]);
+  // 부드러운 앵커 스크롤: 목표를 매 프레임 getTarget()으로 재계산해 이동. native smooth와 달리 스트리밍 중
+  // 레이아웃 변화(빈 답변→답변, spacer 재계산)에도 취소되지 않고 목표에 정확히 안착한다.
+  const animateAnchor = (el: HTMLDivElement, getTarget: () => number, duration = 340) => {
+    cancelAnimationFrame(scrollAnimRef.current);
+    const startTop = el.scrollTop;
+    const target0 = getTarget();
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || Math.abs(target0 - startTop) < 2) { el.scrollTop = target0; return; }
+    const t0 = performance.now();
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+    const step = (now: number) => {
+      const p = Math.min((now - t0) / duration, 1);
+      el.scrollTop = startTop + (getTarget() - startTop) * ease(p);
+      if (p < 1) scrollAnimRef.current = requestAnimationFrame(step);
+    };
+    scrollAnimRef.current = requestAnimationFrame(step);
+  };
+
+  // 세션 진입 시에만 리셋. (title은 첫 메시지 후 비동기로 확정되므로, title에 걸면 대화 도중 리셋되어
+  // first-load '맨 아래로' 스크롤이 오작동 → 2번째 질문이 상단 고정에 실패하던 버그의 원인이었음)
+  useEffect(() => { isFirstLoad.current = true; anchored.current = false; anchoredIdRef.current = null; setSpacer(0); }, [sessionId]);
+
+  useEffect(() => () => cancelAnimationFrame(scrollAnimRef.current), []);
 
   const thumbRef = useRef<HTMLDivElement>(null);
   const scrollHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -126,53 +150,65 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (!el) return;
     if (isFirstLoad.current && messages.length > 0 && !isStreaming) {
       isFirstLoad.current = false;
-      el.scrollTo({ top: el.scrollHeight, behavior: 'instant' });
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
       positionThumb();
     }
   }, [messages, isLoading, isStreaming]);
 
   // 전송 시: 새 질문을 화면 위로 올리고, 아래는 '딱 한 화면'만 차도록 공간 확보(그 이상 빈 공간 X).
-  // useLayoutEffect + 동기 스크롤: paint 전에 위치를 확정해 스트리밍 조각이 들어와도 스크롤이 끊기지 않고
-  // '됐다 안 됐다' 없이 매번 질문이 확실히 위로 올라간다.
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const justStarted = isStreaming && !prevStreaming.current;
-    prevStreaming.current = isStreaming;
-    if (justStarted) { isFirstLoad.current = false; anchored.current = true; }
 
-    const userEl = lastUserRef.current;
-    if (!anchored.current || !userEl) return;
+    // 앵커 대상 질문 id: 스트리밍 중 답변 바로 앞의 user 질문(없으면 마지막 user). DOM에서 data-mid로 직접 조회.
+    const sIdx = messages.findIndex((m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming');
+    const from = sIdx === -1 ? messages.length - 1 : sIdx - 1;
+    let anchorId: string | null = null;
+    for (let i = from; i >= 0; i--) {
+      if (messages[i].role === 'user' && messages[i].type === 'text') { anchorId = messages[i].id; break; }
+    }
+    const escId = anchorId ? (window.CSS?.escape ? window.CSS.escape(anchorId) : anchorId) : null;
+    const userEl = escId ? el.querySelector<HTMLElement>(`[data-mid="${escId}"]`) : null;
+
+    // '새 질문(스트리밍 시작)'을 id로 판단 → justStarted 같은 1회성 엣지 트리거에 의존하지 않는다.
+    // 스크롤할 순간에 DOM 요소가 아직 없으면(요소 미부착) 앵커 완료 표시를 하지 않고 return → 다음 렌더에서 재시도.
+    const isNewQuestion = sIdx !== -1 && anchorId !== null && anchorId !== anchoredIdRef.current;
+
+    if (!userEl) return;
+    if (!isNewQuestion && !anchored.current) return;
+    if (isNewQuestion) { isFirstLoad.current = false; anchored.current = true; }
 
     // 핀 위치(질문이 상단 GAP)가 곧 스크롤 '맨 아래'가 되도록 spacer 계산.
-    // → 핀 상태에서 더 이상 아래로 스크롤되지 않고, 남는 빈 공간도 없음.
+    // 중요: 질문 위치를 offsetTop(offsetParent 기준)이 아니라 애니메이션 목표와 '동일한' getBoundingClientRect
+    // 좌표계로 구한다. offsetParent가 스크롤 컨테이너가 아니라 offsetTop이 실제 스크롤 위치와 달라(예: 60 vs 454)
+    // spacer가 과소 계산되어 maxScroll이 목표보다 작아지고 스크롤이 clamp되던 버그가 있었다.
     const GAP = 8;
-    const contentBelow = (el.scrollHeight - spacerHRef.current) - userEl.offsetTop;
-    setSpacer(Math.max(0, el.clientHeight - contentBelow - GAP));
+    const qDocPos = el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top; // 질문의 문서상 위치
+    // realContent(=spacer 제외 실제 콘텐츠)를 구할 때, 추적 ref(spacerHRef)가 실제 DOM spacer와 어긋날 수 있어
+    // (예: 세션 리셋 시 spacer 언마운트 상태로 setSpacer(0) 호출) 실제 DOM spacer 높이(offsetHeight)를 직접 읽는다.
+    const spacerNow = spacerRef.current?.offsetHeight ?? 0;
+    const shBefore = el.scrollHeight;
+    const contentBelow = (shBefore - spacerNow) - qDocPos;
+    const newSpacer = Math.max(0, el.clientHeight - contentBelow - GAP);
+    setSpacer(newSpacer);
+    if (isNewQuestion) {
+      // eslint-disable-next-line no-console
+      console.log('[S]', { sIdx, qDocPos: Math.round(qDocPos), spacerNow, shBefore, contentBelow: Math.round(contentBelow), newSpacer: Math.round(newSpacer), shAfter: el.scrollHeight, ch: el.clientHeight, maxScroll: el.scrollHeight - el.clientHeight });
+    }
 
-    // 새 질문을 상단으로 즉시(동기) 고정 — 첫 조각 도착 전에 확정하므로 애니메이션 취소로 인한 실패가 없다.
-    if (justStarted) {
-      el.scrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
+    // 새 질문을 상단(GAP)으로 부드럽게 고정. 목표는 spacer와 동일한 getBoundingClientRect 좌표(리플로우 무관).
+    if (isNewQuestion) {
+      anchoredIdRef.current = anchorId;
+      animateAnchor(el, () =>
+        Math.max(0, el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top - GAP)
+      );
     }
     positionThumb();
   }, [messages, isStreaming]);
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text).catch((e) => { logError('MessageList.copy', e); setCopyFailed(true); });
+    copyText(text).catch((e) => { logError('MessageList.copy', e); setCopyFailed(true); });
   };
-
-  // 스크롤 앵커: 스트리밍 중인(전송/재생성 공통) 메시지의 '바로 앞 user 질문'을 위로 올린다.
-  // 스트리밍이 없으면(로드 시) 가장 마지막 user 질문을 기준으로 한다.
-  let lastUserId: string | null = null;
-  {
-    const streamingIdx = messages.findIndex(
-      (m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming'
-    );
-    const from = streamingIdx === -1 ? messages.length - 1 : streamingIdx - 1;
-    for (let i = from; i >= 0; i--) {
-      if (messages[i].role === 'user' && messages[i].type === 'text') { lastUserId = messages[i].id; break; }
-    }
-  }
 
   // 재생성 버튼은 '맨 아래' 어시스턴트 메시지에만 노출한다.
   let lastAssistantId: string | null = null;
@@ -186,7 +222,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
       {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
       <div className="relative flex-1 min-h-0">
-      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 pt-6 pb-40 scrollbar-hide" aria-live="polite" aria-atomic="false">
+      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 pt-6 pb-40 scrollbar-hide [overflow-anchor:none]" aria-live="polite" aria-atomic="false">
         {isLoading ? (
           <MessagesSkeleton />
         ) : (
@@ -204,7 +240,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
           if (msg.role === 'user') {
             return (
-              <div key={msg.id} ref={msg.id === lastUserId ? lastUserRef : undefined} className="group/msg">
+              <div key={msg.id} data-mid={msg.id} className="group/msg">
                 <MessageBubble role="user" content={msg.content} />
                 <MessageActions
                   role="user"

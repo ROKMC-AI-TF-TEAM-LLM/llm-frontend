@@ -40,9 +40,9 @@ const SearchPage = () => {
   const showError = (isSearchError || isSessionsError) && !errorDismissed
 
   return (
-    <div className="flex flex-col h-full px-6 pt-16 pb-6">
+    <div className="h-full overflow-y-auto custom-scroll px-6 pt-16 pb-6">
       {showError && <Toast message="데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." onClose={() => setErrorDismissed(true)} />}
-      <div className="max-w-3xl w-full mx-auto flex flex-col min-h-0 flex-1 animate-page-in">
+      <div className="max-w-3xl w-full mx-auto flex flex-col animate-page-in">
 
         <h1 className="text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
           대화 검색
@@ -60,7 +60,7 @@ const SearchPage = () => {
             isLoading={isSearching}
           />
         ) : (
-          <div className="mt-8 flex flex-col min-h-0 flex-1">
+          <div className="mt-8">
             <h2 className="text-sm font-medium text-text-muted mb-4 shrink-0">최근 대화</h2>
 
             {isSessionsLoading ? (
@@ -70,7 +70,7 @@ const SearchPage = () => {
             ) : recentSessions.length === 0 ? (
               <p className="text-sm text-text-muted text-center py-8">대화 내역이 없습니다.</p>
             ) : (
-              <div className="overflow-y-auto flex-1 custom-scroll">
+              <div>
                 <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">
                   {recentSessions.map((session) => (
                     <button

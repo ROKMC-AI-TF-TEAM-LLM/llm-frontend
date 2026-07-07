@@ -269,6 +269,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
       writer.flushNow()
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
+      // 사용자가 중단한 스트림은 abortStream에서 메시지·전역 상태를 이미 마무리했다. 그 사이 새 전송이
+      // 시작됐을 수 있으므로, 뒤늦은 이 정리가 새 스트림의 상태를 덮어쓰지 않도록 여기서 끝낸다.
+      if (signal.aborted) return
       const userAborted = signal.aborted
       const keepInterrupted = isAbortError(e) && (userAborted || !isFirstMessage)
       if (!keepInterrupted) clearCache(sessionId)
@@ -416,6 +419,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
     } catch (e) {
       logError('executeRegenerate', e)
       writer.flushNow()
+      // 사용자 중단은 abortStream에서 이미 마무리됨 → 새 스트림을 덮어쓰지 않도록 종료.
+      if (signal.aborted) { streamRegistry.delete(sessionId); return }
       markInterrupted(isAbortError(e) ? undefined : ((e as Error)?.message || '재생성 중 오류가 발생했습니다.'))
       return
     }
@@ -455,7 +460,19 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
     abortStream: () => {
       get().abortController?.abort()
-      set({ abortController: null, isStreaming: false })
+      // 중단 즉시 스트리밍 메시지를 interrupted로 '동기' 마무리한다. 비동기 정리(catch)에만 맡기면 그 사이
+      // 새 전송이 끼어들어 '점 2개'가 뜨거나, 뒤늦은 정리가 새 스트림의 isStreaming/abortController를 덮어쓴다.
+      set((state) => ({
+        abortController: null,
+        isStreaming: false,
+        messages: state.messages.map((m) =>
+          m.type === 'text' && m.role === 'assistant' && m.status === 'streaming'
+            ? { ...m, status: 'interrupted' as const }
+            : m
+        ),
+      }))
+      const sid = get().sessionId
+      if (sid) messageCache.set(sid, get().messages)
     },
 
     connect: async (sessionId: string) => {

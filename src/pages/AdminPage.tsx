@@ -5,6 +5,7 @@ import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
 import Toast from '../ui/components/Toast';
 import { getApiError } from '../utils/error';
 import { logError } from '../utils/logError';
+import { copyText } from '../utils/clipboard';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
@@ -310,7 +311,7 @@ export default function AdminPage() {
     deleteUser(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
 
   const handleCopyId = (userId: string) =>
-    navigator.clipboard.writeText(userId)
+    copyText(userId)
       .then(() => setCopiedKey((k) => k + 1))
       .catch((e) => { logError('AdminPage.copy', e); setMutationError('복사에 실패했습니다.'); });
 

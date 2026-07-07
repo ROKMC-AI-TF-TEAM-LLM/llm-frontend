@@ -52,9 +52,11 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
         }
         className="flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
       >
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" style={{ flexShrink: 0 }}>
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <span className="w-[18px] flex justify-center shrink-0">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
         <span className={labelCls}>새 채팅</span>
       </button>
 
@@ -73,7 +75,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             }
             className="flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
           >
-            <span style={{ flexShrink: 0 }}>{item.icon}</span>
+            <span className="w-[18px] flex justify-center shrink-0">{item.icon}</span>
             <span className={labelCls}>{item.label}</span>
           </button>
         );

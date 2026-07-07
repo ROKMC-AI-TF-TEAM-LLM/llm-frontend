@@ -85,7 +85,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
           {[...Array(6)].map((_, i) => <SessionItemSkeleton key={i} />)}
         </ul>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-0">
           {chats.map((chat) => (
             <li key={chat.id} className="group relative">
               {editingId === chat.id ? (
@@ -109,15 +109,12 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
                       ? { background: '#fdedf2', color: '#c0002a' }
                       : {}
                   }
-                  className={`w-full flex items-center gap-[9px] px-[11px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors group/item relative pr-12 ${
+                  className={`w-full flex items-center px-[11px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors group/item relative pr-12 ${
                     chat.id === currentId
                       ? 'font-bold'
                       : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
                   }`}
                 >
-                  <span
-                    style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: chat.id === currentId ? '#e4002b' : '#d9c3c9', transition: 'background 0.2s' }}
-                  />
                   <span className="truncate overflow-hidden">{chat.title}</span>
                 </button>
               )}

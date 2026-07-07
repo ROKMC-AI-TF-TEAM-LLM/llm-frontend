@@ -11,7 +11,7 @@ export default function SourceBadge({ sources }: SourceBadgeProps) {
   if (!sources || sources.length === 0) return null;
 
   return (
-    <div className="ml-10 mb-3 mt-1">
+    <div className="ml-1 mb-3 mt-1">
       <button
         type="button"
         onClick={() => setOpen(!open)}
