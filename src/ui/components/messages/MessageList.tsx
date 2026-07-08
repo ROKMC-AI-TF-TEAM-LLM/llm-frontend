@@ -19,6 +19,7 @@ interface MessageListProps {
 export default function MessageList({ title, isLoading }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
+  const statusText = useChatStore((s) => s.statusText);
   const sessionId = useChatStore((s) => s.sessionId);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -255,7 +256,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
           const isLastAssistant = msg.id === lastAssistantId;
           return (
             <div key={msg.id} className="group/msg">
-              <MessageBubble role="assistant" content={msg.content} isStreaming={msgStreaming} />
+              <MessageBubble role="assistant" content={msg.content} isStreaming={msgStreaming} statusText={msgStreaming ? statusText : undefined} />
               {!msgStreaming && (
                 <>
                   <MessageActions

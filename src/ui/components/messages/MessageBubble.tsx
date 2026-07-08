@@ -78,10 +78,20 @@ interface MessageBubbleProps {
   role?: MessageRole;
   content: string;
   isStreaming?: boolean;
+  statusText?: string | null;
 }
 
 
-function GeneratingIndicator() {
+function GeneratingIndicator({ statusText }: { statusText?: string | null }) {
+  // 진행상태 문구가 오면 shimmer 문구만 표시(예: "관련 문서를 선별하는 중...").
+  // 문구가 없으면(백엔드 미전송) 기존 점 3개 로딩 인디케이터 유지.
+  if (statusText) {
+    return (
+      <span className="text-sm font-medium status-shimmer animate-fade-in py-0.5">
+        {statusText}
+      </span>
+    );
+  }
   return (
     <div className="flex items-center gap-[7px] py-0.5">
       {[0, 200, 400, 600].map((delay) => (
@@ -95,7 +105,7 @@ function GeneratingIndicator() {
   );
 }
 
-export default function MessageBubble({ role = 'assistant', content, isStreaming = false }: MessageBubbleProps) {
+export default function MessageBubble({ role = 'assistant', content, isStreaming = false, statusText }: MessageBubbleProps) {
   const isUser = role === 'user';
 
   return (
@@ -111,7 +121,7 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
         {isUser ? (
           content
         ) : isStreaming && !content ? (
-          <GeneratingIndicator />
+          <GeneratingIndicator statusText={statusText} />
         ) : (
           <Streamdown
             mode={isStreaming ? 'streaming' : 'static'}

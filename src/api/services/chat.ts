@@ -13,6 +13,7 @@ export const deleteMessage = (sessionId: string, messageId: string) =>
 interface SseHandlers {
   onChunk: (chunk: string) => void
   onSources?: (sources: Source[]) => void
+  onStatus?: (message: string) => void
   signal?: AbortSignal
 }
 
@@ -52,7 +53,7 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
 
 // SSE(text/event-stream) 본문을 읽어 텍스트 토큰/sources/done/error 이벤트를 처리한다.
 // 일반 채팅 스트리밍과 재생성 스트리밍이 동일한 이벤트 형식을 쓰므로 공유한다.
-const readSse = async (response: Response, { onChunk, onSources, signal }: SseHandlers) => {
+const readSse = async (response: Response, { onChunk, onSources, onStatus, signal }: SseHandlers) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
 
@@ -112,6 +113,9 @@ const readSse = async (response: Response, { onChunk, onSources, signal }: SseHa
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
         /* 완료 신호 — 별도 처리 없음(루프 종료는 reader done으로 처리) */
+      } else if (evt.type === 'status') {
+        // 진행상태 이벤트(예: "관련 문서를 선별하는 중..."). 답변 본문이 아니므로 onChunk가 아닌 onStatus로 전달.
+        if (evt.message) onStatus?.(evt.message)
       } else if (
         evt.type === 'text' ||
         evt.type === 'token' ||
@@ -143,13 +147,14 @@ export const streamMessage = async (
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
   onSources?: (sources: Source[]) => void,
+  onStatus?: (message: string) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
     data,
     signal,
   )
-  await readSse(response, { onChunk, onSources, signal })
+  await readSse(response, { onChunk, onSources, onStatus, signal })
 }
 
 // AI 메시지 재생성: 기존 AI 응답(messageId)을 서버에서 삭제하고 동일 질문으로 재스트리밍한다.
@@ -160,11 +165,12 @@ export const regenerateMessageStream = async (
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
   onSources?: (sources: Source[]) => void,
+  onStatus?: (message: string) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
     undefined,
     signal,
   )
-  await readSse(response, { onChunk, onSources, signal })
+  await readSse(response, { onChunk, onSources, onStatus, signal })
 }

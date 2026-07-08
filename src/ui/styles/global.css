@@ -125,6 +125,34 @@ body {
   animation: chase 1.2s ease-in-out infinite;
 }
 
+/* 진행상태 문구(예: "관련 문서를 선별하는 중...") : 밝은 하이라이트가 좌우로 흐르는 shimmer */
+@keyframes status-shimmer {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}
+.status-shimmer {
+  background: linear-gradient(
+    100deg,
+    var(--color-text-muted) 35%,
+    var(--color-text-primary) 50%,
+    var(--color-text-muted) 65%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: status-shimmer 1.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-shimmer {
+    animation: none;
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--color-text-secondary);
+  }
+}
+
 body.modal-open main,
 body.modal-open {
   overflow: hidden !important;

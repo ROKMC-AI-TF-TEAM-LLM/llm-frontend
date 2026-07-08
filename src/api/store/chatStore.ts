@@ -12,6 +12,7 @@ interface ChatStore {
   sessionId: string;
   messages: Message[];
   isStreaming: boolean;
+  statusText: string | null;
   error: string | null;
   isDeleted: boolean;
   abortController: AbortController | null;
@@ -174,6 +175,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return
       }
       set((state) => ({
+        // 실제 답변 글자가 도착하면 진행상태 문구는 지운다(로딩 인디케이터가 답변 본문으로 대체됨).
+        ...(get().statusText ? { statusText: null } : {}),
         messages: state.messages.map((m) =>
           m.id === assistantId && m.type === 'text' ? { ...m, content: m.content + chunk } : m
         ),
@@ -208,6 +211,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
             m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
           ),
         }))
+      },
+      setStatus: (message: string) => {
+        // 다른 세션으로 이동한 상태면 무시(현재 보고 있는 세션의 스트림만 문구 표시).
+        if (get().sessionId !== sessionId) return
+        set({ statusText: message })
       },
     }
   }
@@ -262,6 +270,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         writer.push,
         signal,
         writer.setSources,
+        writer.setStatus,
       )
       writer.flushNow()
     } catch (e) {
@@ -414,7 +423,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -451,6 +460,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     sessionId: '',
     messages: [],
     isStreaming: false,
+    statusText: null,
     error: null,
     isDeleted: false,
     abortController: null,
@@ -459,6 +469,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     resetDeleted: () => set({ isDeleted: false }),
 
     abortStream: () => {
+      set({ statusText: null })
       get().abortController?.abort()
       // 중단 즉시 스트리밍 메시지를 interrupted로 '동기' 마무리한다. 비동기 정리(catch)에만 맡기면 그 사이
       // 새 전송이 끼어들어 '점 2개'가 뜨거나, 뒤늦은 정리가 새 스트림의 isStreaming/abortController를 덮어쓴다.
@@ -605,7 +616,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
 
     disconnect: () => {
-      set({ sessionId: '', messages: [], isStreaming: false, abortController: null, isDeleted: false });
+      set({ sessionId: '', messages: [], isStreaming: false, statusText: null, abortController: null, isDeleted: false });
     },
 
     sendMessage: async (content: string) => {
@@ -619,6 +630,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,
+        statusText: null,
         abortController: controller,
         messages: [
           ...state.messages,
@@ -645,6 +657,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,
+        statusText: null,
         abortController: controller,
         messages: [
           ...state.messages,
@@ -715,6 +728,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const controller = new AbortController();
       set((state) => ({
         isStreaming: true,
+        statusText: null,
         abortController: controller,
         error: null,
         messages: state.messages.map((m) =>
