@@ -1,176 +1,131 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
-import RagCard from '../ui/components/rag/RagCard'
-import { useInfiniteDocuments } from '../hooks/useDocument'
-import { pickDocuments } from '../api/services/document'
+import RagListItem from '../ui/components/rag/RagListItem'
+import RagDetail from '../ui/components/rag/RagDetail'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-import type { DocumentItem } from '../types/document'
+import { MOCK_RAG_DOCS, type RagDoc } from '../mocks/ragDocuments'
+
+// 카테고리 탭. 도메인이 아직 확정되지 않아 지금은 '전체'만 노출한다.
+// 도메인이 정해지면 이 배열에 카테고리를 추가하고 아래 필터를 연결하면 된다.
+const TABS = ['전체'] as const
+
+// 드로어 슬라이드 전환 시간(ms) — 닫힘 애니메이션 후 언마운트 타이밍과 맞춘다.
+const DRAWER_MS = 320
 
 const RagPage = () => {
   useDocumentTitle('Documents')
   const [query, setQuery] = useState('')
-  const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null)
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('전체')
 
-  const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingNextPage, refetch, isRefetching } = useInfiniteDocuments()
+  // selectedDoc: 드로어에 렌더할 문서(닫힘 애니메이션 동안 유지). drawerOpen: 슬라이드 상태.
+  const [selectedDoc, setSelectedDoc] = useState<RagDoc | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const allDocuments = useMemo(
-    () => data?.pages.flatMap((p) => pickDocuments(p.data.data)) ?? [],
-    [data],
-  )
+  // TODO(API): 목업(MOCK_RAG_DOCS)을 실제 문서 조회로 교체. 응답을 RagDoc 형태로 매핑.
+  const allDocuments = MOCK_RAG_DOCS
 
   const filtered = useMemo(
-    () => allDocuments.filter((doc) => doc.name.toLowerCase().includes(query.toLowerCase())),
-    [allDocuments, query],
+    () =>
+      allDocuments.filter((doc) => {
+        const matchTab = activeTab === '전체' || doc.category === activeTab
+        const matchQuery =
+          doc.name.toLowerCase().includes(query.toLowerCase()) ||
+          doc.description.toLowerCase().includes(query.toLowerCase())
+        return matchTab && matchQuery
+      }),
+    [allDocuments, query, activeTab],
   )
 
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
+  const openDoc = (doc: RagDoc) => {
+    setSelectedDoc(doc)
+    // 다음 프레임에 open → mount 직후 transform 전환이 걸려 슬라이드 인 된다.
+    requestAnimationFrame(() => setDrawerOpen(true))
+  }
 
-  useEffect(() => {
-    const el = sentinelRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage && !query) {
-          fetchNextPage()
-        }
-      },
-      { root: scrollRef.current, rootMargin: '240px', threshold: 0 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, query])
+  const closeDoc = useCallback(() => {
+    setDrawerOpen(false)
+    // 슬라이드 아웃이 끝난 뒤 언마운트.
+    setTimeout(() => setSelectedDoc(null), DRAWER_MS)
+  }, [])
 
+  // 드로어 열림 동안 ESC 닫기 + 뒤 배경 스크롤 잠금
   useEffect(() => {
     if (!selectedDoc) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedDoc(null) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDoc() }
     window.addEventListener('keydown', onKey)
     document.body.classList.add('modal-open')
     return () => {
       window.removeEventListener('keydown', onKey)
       document.body.classList.remove('modal-open')
     }
-  }, [selectedDoc])
+  }, [selectedDoc, closeDoc])
 
   return (
-    <div ref={scrollRef} className="h-full w-full overflow-y-auto custom-scroll" onClick={() => setSelectedDoc(null)}>
-
-      {selectedDoc && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm [transform:translateZ(0)] [will-change:transform]"
-          onClick={() => setSelectedDoc(null)}
-        >
-          <div
-            className="bg-surface rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-surface-border">
-              <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-surface-border text-text-secondary">
-                {selectedDoc.type ?? '-'}
-              </span>
-              <button
-                onClick={() => setSelectedDoc(null)}
-                className="text-text-muted hover:text-text-primary transition-colors"
-                aria-label="닫기"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="px-6 py-5 space-y-5">
-              <div>
-                <p className="text-xs font-medium text-text-muted mb-1.5">문서 이름</p>
-                <p className="text-sm font-semibold text-text-primary break-all leading-relaxed">
-                  {selectedDoc.name}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-text-muted mb-1.5">문서 요약</p>
-                <p className="text-sm text-text-secondary leading-relaxed">요약 정보가 없습니다.</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-text-muted mb-1.5">등록일</p>
-                <p className="text-sm text-text-secondary">
-                  {selectedDoc.applied_at
-                    ? new Date(selectedDoc.applied_at).toLocaleDateString('ko-KR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : '-'}
-                </p>
-              </div>
-            </div>
-          </div>
+    <div className="h-full w-full overflow-y-auto custom-scroll">
+      <div className="max-w-4xl mx-auto px-8 py-12 animate-page-in">
+        {/* 헤더: 제목 + 건수 */}
+        <div className="flex items-baseline gap-3 mb-5">
+          <h1 className="text-2xl font-semibold text-text-primary">문서</h1>
+          <span className="text-sm font-medium text-text-muted">{filtered.length}건</span>
         </div>
-      )}
 
-      <div className="max-w-3xl mx-auto px-8 py-12 animate-page-in">
-        <h1 className="text-2xl font-semibold text-text-primary mb-5">문서</h1>
         <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." />
 
-        {isError && (() => {
-          const code = (error as { response?: { data?: { error?: { code?: string } } } })?.response?.data?.error?.code
-          const msg = code === 'LLM_SERVER_ERROR'
-            ? 'LLM 서버에 연결할 수 없습니다. 백엔드 서버 상태를 확인해주세요.'
-            : code === 'UNAUTHORIZED' || code === 'TOKEN_INVALID'
-            ? '인증이 만료되었습니다. 다시 로그인해주세요.'
-            : '문서를 불러오지 못했습니다.'
-          return (
-            <div className="mt-6 flex flex-col items-center gap-3">
-              <p className="text-sm text-center text-text-muted">{msg}</p>
-              <button
-                onClick={() => refetch()}
-                disabled={isRefetching}
-                className="px-4 py-1.5 rounded-full text-xs font-medium bg-surface border border-surface-border text-text-secondary hover:bg-surface-subtle disabled:opacity-50 transition-colors"
-              >
-                {isRefetching ? '재시도 중...' : '다시 시도'}
-              </button>
-            </div>
-          )
-        })()}
+        {/* 카테고리 탭 (현재 '전체'만) */}
+        <div className="flex items-center gap-1 mt-6 border-b border-surface-border">
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`relative px-3 pb-2.5 text-[14px] font-medium transition-colors ${
+                activeTab === tab ? 'text-[var(--color-brand)]' : 'text-text-muted hover:text-text-secondary'
+              }`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <span className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-[var(--color-brand)]" />
+              )}
+            </button>
+          ))}
+        </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-5 mt-7">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="card h-36 bg-surface-subtle animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <>
-            {filtered.length === 0 && !isError && (
-              <p className="mt-6 text-sm text-center text-text-muted">
-                {query ? '검색 결과가 없습니다.' : '등록된 문서가 없습니다.'}
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-5 mt-7">
-              {filtered.map((doc) => (
-                <RagCard
-                  key={`${doc.name}|${doc.type ?? ''}|${doc.applied_at ?? ''}`}
-                  title={doc.name}
-                  fileType={doc.type ?? ''}
-                  preview={doc.applied_at ? new Date(doc.applied_at).toLocaleDateString('ko-KR') : ''}
-                  selected={selectedDoc?.name === doc.name}
-                  onClick={() => setSelectedDoc(doc)}
-                />
-              ))}
-            </div>
-
-            {isFetchingNextPage && !query && (
-              <div className="grid grid-cols-2 gap-5 mt-5">
-                {[...Array(2)].map((_, i) => (
-                  <div key={`more-${i}`} className="card h-36 bg-surface-subtle animate-pulse" />
-                ))}
-              </div>
-            )}
-
-            {/* 무한 스크롤 감지 지점 */}
-            {hasNextPage && !query && <div ref={sentinelRef} className="h-2" />}
-          </>
-        )}
+        {/* 리스트 */}
+        <div className="flex flex-col gap-2.5 mt-5">
+          {filtered.length === 0 ? (
+            <p className="mt-6 text-sm text-center text-text-muted">
+              {query ? '검색 결과가 없습니다.' : '등록된 문서가 없습니다.'}
+            </p>
+          ) : (
+            filtered.map((doc) => (
+              <RagListItem key={doc.id} doc={doc} onClick={() => openDoc(doc)} />
+            ))
+          )}
+        </div>
       </div>
+
+      {/* 오른쪽 슬라이드 드로어 */}
+      {selectedDoc && (
+        <>
+          {/* 배경 딤 */}
+          <div
+            onClick={closeDoc}
+            className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${
+              drawerOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          {/* 패널 */}
+          <aside
+            className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-surface shadow-[-24px_0_60px_rgba(40,30,35,0.14)] transition-transform duration-300 ease-[cubic-bezier(.6,.02,.2,1)] ${
+              drawerOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+            role="dialog"
+            aria-modal="true"
+          >
+            <RagDetail doc={selectedDoc} onClose={closeDoc} />
+          </aside>
+        </>
+      )}
     </div>
   )
 }
