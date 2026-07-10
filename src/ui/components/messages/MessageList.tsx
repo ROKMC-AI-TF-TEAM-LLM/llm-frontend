@@ -1,14 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useChatStore } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import { copyText } from '../../../utils/clipboard';
 import Toast from '../Toast';
 import type { Message } from '../../../types';
 import ChatHeader from './ChatHeader';
-import MessageBubble from './MessageBubble';
-import MessageActions from './MessageActions';
-import SourceBadge from './SourceBadge';
-import ImageAttachment from './ImageAttachment';
+import MessageRow from './MessageRow';
 import { MessagesSkeleton } from '../Skeleton';
 
 interface MessageListProps {
@@ -206,9 +203,10 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     positionThumb();
   }, [messages, isStreaming]);
 
-  const handleCopy = (text: string) => {
+  // MessageRow가 memo이므로 콜백은 안정 참조여야 memo가 유지된다(매 렌더 새 함수 X).
+  const handleCopy = useCallback((text: string) => {
     copyText(text).catch((e) => { logError('MessageList.copy', e); setCopyFailed(true); });
-  };
+  }, []);
 
   // 재생성 버튼은 '맨 아래' 어시스턴트 메시지에만 노출한다.
   let lastAssistantId: string | null = null;
@@ -227,67 +225,18 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
           <MessagesSkeleton />
         ) : (
         <div className="max-w-3xl mx-auto">
-        {messages.map((msg: Message) => {
-          if (msg.type === 'image') {
-            return (
-              <ImageAttachment
-                key={msg.id}
-                filename={msg.filename}
-                caption={msg.caption}
-              />
-            );
-          }
-
-          if (msg.role === 'user') {
-            return (
-              <div key={msg.id} data-mid={msg.id} className="group/msg">
-                <MessageBubble role="user" content={msg.content} />
-                <MessageActions
-                  role="user"
-                  onCopy={() => handleCopy(msg.content)}
-                  createdAt={msg.createdAt}
-                />
-              </div>
-            );
-          }
-
-          const msgStreaming = msg.status === 'streaming';
-          const isInterrupted = msg.status === 'interrupted';
-          const isLastAssistant = msg.id === lastAssistantId;
-          return (
-            <div key={msg.id} className="group/msg">
-              <MessageBubble role="assistant" content={msg.content} isStreaming={msgStreaming} statusText={msgStreaming ? statusText : undefined} />
-              {!msgStreaming && (
-                <>
-                  <MessageActions
-                    role="assistant"
-                    onCopy={() => handleCopy(msg.content)}
-                    onRegenerate={isLastAssistant ? () => regenerateMessage(msg.id) : undefined}
-                    regenerateDisabled={isStreaming}
-                    createdAt={msg.createdAt}
-                  />
-                  {isInterrupted && (
-                    <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
-                      <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <circle cx="12" cy="12" r="10" />
-                        <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-                      </svg>
-                      <span>응답이 중단되었습니다.</span>
-                      <button
-                        onClick={() => regenerateMessage(msg.id)}
-                        disabled={isStreaming}
-                        className="ml-auto px-3 py-1 rounded-lg border border-surface-border bg-surface text-sm text-text-primary hover:bg-surface-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface"
-                      >
-                        다시 시도
-                      </button>
-                    </div>
-                  )}
-                  <SourceBadge sources={msg.sources} />
-                </>
-              )}
-            </div>
-          );
-        })}
+        {messages.map((msg: Message) => (
+          <MessageRow
+            key={msg.id}
+            msg={msg}
+            isLast={msg.id === lastAssistantId}
+            isStreaming={isStreaming}
+            // 스트리밍 중인 행에만 statusText 전달 → 그 외 행은 항상 null이라 memo 유지
+            statusText={msg.role === 'assistant' && msg.type === 'text' && msg.status === 'streaming' ? statusText : null}
+            onCopy={handleCopy}
+            onRegenerate={regenerateMessage}
+          />
+        ))}
         <div ref={spacerRef} style={{ height: 0 }} aria-hidden />
       </div>
         )}
