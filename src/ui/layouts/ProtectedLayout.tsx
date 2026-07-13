@@ -59,9 +59,11 @@ const ProtectedLayout = () => {
     ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
     : { id: '', name: '사용자' };
 
+  // 서버 응답(SessionData) -> 화면 모델(ChatItem) 매핑 지점.
+  // TODO(API): 즐겨찾기 필드명이 확정되면 여기 한 줄(s.is_favorite)만 바꾸면 된다.
   const chats = (sessionsInfinite?.pages ?? [])
     .flatMap((page) => page.data.data.items)
-    .map((s) => ({ id: s.session_id, title: s.title }));
+    .map((s) => ({ id: s.session_id, title: s.title, isFavorite: s.is_favorite ?? false }));
 
   return (
     <>

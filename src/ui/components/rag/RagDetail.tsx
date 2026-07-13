@@ -1,4 +1,4 @@
-import { CATEGORY_STYLE, type RagDoc } from '../../../mocks/ragDocuments'
+import { getCategoryStyle, type RagDoc } from '../../../mocks/ragDocuments'
 
 interface RagDetailProps {
   doc: RagDoc
@@ -7,9 +7,10 @@ interface RagDetailProps {
 }
 
 // 오른쪽 슬라이드 드로어 안에 들어가는 문서 상세 내용.
-// 상단 닫기(X) + 카테고리 뱃지 + 아이콘/제목 + 통계 카드 + 요약 + 태그 + "문서 열기"
+// 상단 닫기(X) + 도메인 뱃지 + 아이콘/제목 + 통계 카드 + 요약 + "문서 열기"
 const RagDetail = ({ doc, onClose, onOpen }: RagDetailProps) => {
-  const style = CATEGORY_STYLE[doc.category]
+  // 도메인 값을 미리 모르므로 색은 값에서 결정적으로 파생한다.
+  const style = getCategoryStyle(doc.category)
 
   return (
     <div className="flex flex-col h-full">
@@ -34,7 +35,7 @@ const RagDetail = ({ doc, onClose, onOpen }: RagDetailProps) => {
           className="inline-block text-[12px] font-semibold px-3 py-1 rounded-full"
           style={{ background: style.badgeBg, color: style.badgeText }}
         >
-          {doc.category}
+          {doc.categoryLabel}
         </span>
 
         {/* 아이콘 + 제목 */}
@@ -70,14 +71,6 @@ const RagDetail = ({ doc, onClose, onOpen }: RagDetailProps) => {
           <p className="text-[12.5px] font-medium text-text-muted mb-2">문서 요약</p>
           <p className="text-[14px] text-text-primary leading-relaxed">{doc.summary}</p>
         </div>
-
-        {/* 태그 */}
-        <span
-          className="inline-block mt-5 text-[12px] font-semibold px-3 py-1 rounded-full"
-          style={{ background: style.badgeBg, color: style.badgeText }}
-        >
-          #{doc.badge}
-        </span>
 
         {/* 문서 열기 */}
         <div className="mt-7">

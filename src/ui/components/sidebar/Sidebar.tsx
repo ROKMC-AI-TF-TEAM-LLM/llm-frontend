@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import SidebarHeader from "./SidebarHeader";
 import SidebarMenu from "./SidebarMenu";
+import FavoriteChats from "./FavoriteChats";
 import RecentChats from "./RecentChats";
 import SidebarFooter from "./SidebarFooter";
 import type { ChatItem, User } from "../../../types";
@@ -17,6 +19,11 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: SidebarProps) {
+  // 즐겨찾기는 별도 상태로 저장하지 않는다 — 세션 목록 하나를 진실로 두고 '파생'시킨다.
+  // (두 곳에 저장하면 삭제/이름변경/토글 때마다 어긋난다)
+  const favorites = useMemo(() => chats.filter((c) => c.isFavorite), [chats]);
+  const others = useMemo(() => chats.filter((c) => !c.isFavorite), [chats]);
+
   return (
     <aside
       style={{ background: 'linear-gradient(190deg,#fdf3f5 0%,#faf6f7 40%,#ffffff 100%)', borderRight: '1px solid #f2e2e6' }}
@@ -27,7 +34,15 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
       <SidebarHeader isOpen={isOpen} onToggle={onToggle} />
       <SidebarMenu isOpen={isOpen} activeLabel={activeLabel} />
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <RecentChats isOpen={isOpen} chats={chats} hasMore={hasMore} onLoadMore={onLoadMore} isLoadingMore={isLoadingMore} isInitialLoading={isInitialLoading} />
+        <FavoriteChats isOpen={isOpen} favorites={favorites} />
+        <RecentChats
+          isOpen={isOpen}
+          chats={others}
+          hasMore={hasMore}
+          onLoadMore={onLoadMore}
+          isLoadingMore={isLoadingMore}
+          isInitialLoading={isInitialLoading}
+        />
       </div>
       <SidebarFooter isOpen={isOpen} user={user} />
     </aside>
