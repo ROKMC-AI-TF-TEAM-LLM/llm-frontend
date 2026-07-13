@@ -4,7 +4,7 @@ import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
 import { useChatStore, saveInflight, peekSessionMessages } from '../api/store/chatStore';
-import { useInfiniteSessions } from '../hooks/useSession';
+import { useAllSessions } from '../hooks/useSession';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { isNetworkError } from '../utils/error';
 import type { SessionData } from '../types/session';
@@ -24,8 +24,8 @@ export default function ChatPage() {
   const [isConnecting, setIsConnecting] = useState(() => peekSessionMessages(sessionId).length === 0);
   const [retryKey, setRetryKey] = useState(0);
 
-  const { data: infiniteData } = useInfiniteSessions();
-  const allSessions = (infiniteData?.pages ?? []).flatMap((p) => p.data.data.items);
+  // 세션 목록이 즐겨찾기/최근 두 API로 나뉘므로, 제목 조회는 둘을 합친 목록에서 찾는다.
+  const { items: allSessions } = useAllSessions();
   const currentSession = allSessions.find((s: SessionData) => s.session_id === sessionId);
   const title = currentSession?.title ?? '채팅';
   useDocumentTitle(title);

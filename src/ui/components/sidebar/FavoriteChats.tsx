@@ -1,20 +1,40 @@
-import { useState } from 'react'
-import type { ChatItem } from '../../../types'
+import { useState, useEffect, useRef } from 'react'
 import SessionItem from './SessionItem'
+import { SessionItemSkeleton } from '../Skeleton'
 import Toast from '../Toast'
+import { useInfiniteSessions } from '../../../hooks/useSession'
 
 interface FavoriteChatsProps {
   isOpen: boolean
-  /** 즐겨찾기된 세션들. 별도 상태가 아니라 세션 목록에서 파생된 값이다. */
-  favorites: ChatItem[]
 }
 
-// 사이드바 '즐겨찾기' 섹션. 즐겨찾기가 하나도 없으면 섹션 자체를 렌더하지 않는다.
-// 세션 한 줄은 '최근 대화'와 동일한 SessionItem을 써서 별/수정/삭제 동작이 같다.
-export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps) {
+// 사이드바 '즐겨찾기' 섹션. GET /sessions?is_favorite=true 로 전용 목록을 받는다.
+// (세션 목록에서 필터링하면 아직 로드 안 된 페이지의 즐겨찾기가 누락되므로 API를 분리했다)
+export default function FavoriteChats({ isOpen }: FavoriteChatsProps) {
   const [sidebarError, setSidebarError] = useState('')
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
-  if (favorites.length === 0) return null
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteSessions(true)
+
+  const favorites = (data?.pages ?? [])
+    .flatMap((page) => page.data.data.items)
+    .map((s) => ({ id: s.session_id, title: s.title, isFavorite: true }))
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage()
+      },
+      { threshold: 0.1 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  // 로딩 중이 아니고 즐겨찾기가 하나도 없으면 섹션 자체를 렌더하지 않는다.
+  if (!isLoading && favorites.length === 0) return null
 
   return (
     <div
@@ -27,11 +47,20 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
         즐겨찾기
       </p>
 
-      <ul className="space-y-0">
-        {favorites.map((chat) => (
-          <SessionItem key={chat.id} chat={chat} onError={setSidebarError} />
-        ))}
-      </ul>
+      {isLoading ? (
+        <ul className="space-y-0.5">
+          {[...Array(2)].map((_, i) => <SessionItemSkeleton key={i} />)}
+        </ul>
+      ) : (
+        <ul className="space-y-0">
+          {favorites.map((chat) => (
+            <SessionItem key={chat.id} chat={chat} onError={setSidebarError} />
+          ))}
+          {isFetchingNextPage && <SessionItemSkeleton />}
+        </ul>
+      )}
+
+      <div ref={sentinelRef} className="h-2" />
     </div>
   )
 }
