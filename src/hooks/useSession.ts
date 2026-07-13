@@ -1,6 +1,6 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
-import { getSessions, createSession, searchSessions, updateSession, deleteSession } from '../api/services/session'
+import { getSessions, createSession, searchSessions, updateSession, setFavorite, deleteSession } from '../api/services/session'
 import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest, GetSessionsResponse } from '../types/session'
 import { useAuth } from '../context/AuthContext'
 
@@ -64,16 +64,14 @@ export const useDeleteSession = () => {
 
 /**
  * 즐겨찾기 토글 — 낙관적 업데이트(즉시 별이 켜지고, 실패하면 롤백).
- *
- * TODO(API): 백엔드 확정 시 mutationFn의 필드명(is_favorite)만 맞추면 된다.
- *            전용 엔드포인트를 새로 파지 않고 기존 PATCH /sessions/{id} 를 재사용한다.
+ * 전용 엔드포인트 PATCH /sessions/{id}/favorite 를 사용한다(제목 수정 PATCH와 별개).
  */
 export const useToggleFavorite = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ sessionId, next }: { sessionId: string; next: boolean }) =>
-      updateSession(sessionId, { is_favorite: next }),
+      setFavorite(sessionId, { is_favorite: next }),
 
     // 요청 직전: 캐시를 먼저 바꾸고(즉각 반응), 롤백용 스냅샷을 남긴다.
     onMutate: async ({ sessionId, next }) => {

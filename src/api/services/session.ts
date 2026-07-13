@@ -4,6 +4,7 @@ import type {
   CreateSessionRequest, CreateSessionResponse,
   SearchSessionsRequest, SearchSessionsResponse,
   UpdateSessionRequest, UpdateSessionResponse,
+  SetFavoriteRequest, SetFavoriteResponse,
   DeleteSessionResponse,
 } from '../../types/session'
 
@@ -18,6 +19,10 @@ export const searchSessions = (params: SearchSessionsRequest) =>
 
 export const updateSession = (sessionId: string, data: UpdateSessionRequest) =>
   backendApi.patch<UpdateSessionResponse>(`/api/v1/sessions/${sessionId}`, data)
+
+// 즐겨찾기는 제목 수정(PATCH /sessions/{id})과 별개인 전용 엔드포인트다.
+export const setFavorite = (sessionId: string, data: SetFavoriteRequest) =>
+  backendApi.patch<SetFavoriteResponse>(`/api/v1/sessions/${sessionId}/favorite`, data)
 
 export const deleteSession = (sessionId: string) =>
   backendApi.delete<DeleteSessionResponse>(`/api/v1/sessions/${sessionId}`)
