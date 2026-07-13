@@ -82,26 +82,22 @@ interface MessageBubbleProps {
 }
 
 
+// 상태 문구가 오기 전(스트리밍 시작 ~ 첫 status 이벤트)에 보여줄 기본 문구.
+// 점(●●●) 애니메이션 대신 처음부터 같은 shimmer 문구로 시작해야, 백엔드 상태 문구로
+// 바뀔 때 '점 → 텍스트'로 튀지 않고 텍스트만 자연스럽게 교체된다.
+const DEFAULT_STATUS = '생각하는 중...';
+
 function GeneratingIndicator({ statusText }: { statusText?: string | null }) {
-  // 진행상태 문구가 오면 shimmer 문구만 표시(예: "관련 문서를 선별하는 중...").
-  // 문구가 없으면(백엔드 미전송) 기존 점 3개 로딩 인디케이터 유지.
-  if (statusText) {
-    return (
-      <span className="text-sm font-medium status-shimmer animate-fade-in py-0.5">
-        {statusText}
-      </span>
-    );
-  }
+  const text = statusText || DEFAULT_STATUS;
   return (
-    <div className="flex items-center gap-[7px] py-0.5">
-      {[0, 200, 400, 600].map((delay) => (
-        <span
-          key={delay}
-          className="dot-chase"
-          style={{ animationDelay: `${delay}ms` }}
-        />
-      ))}
-    </div>
+    // key={text}: 문구가 바뀔 때마다 다시 마운트되며 fade-in → 교체가 부드럽게 이어진다.
+    <span
+      key={text}
+      // 크기/굵기를 사용자 입력 말풍선 텍스트(text-[15px], 기본 굵기)와 동일하게 맞춘다.
+      className="block text-[15px] status-shimmer animate-fade-in py-0.5"
+    >
+      {text}
+    </span>
   );
 }
 

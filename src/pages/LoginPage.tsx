@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { useForm as useHookForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -113,6 +113,19 @@ const LoginPage = () => {
   }
   const closeAuth = () => { setView('intro'); requestAnimationFrame(() => introRef.current?.scrollTo({ top: 0, behavior: 'smooth' })) }
   const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
+
+  // 로그인 패널은 항상 마운트된 채 transform으로만 밀려나므로(.mars-auth-panel), 닫아도 입력값이 남는다.
+  // → 패널이 '열릴 때' 폼/에러/모드를 비운다. (닫힐 때 비우면 슬라이드 아웃 도중 글자가 사라지는 게 보이고,
+  //    타이머로 미루면 그 사이에 다시 열었을 때 입력이 남는 경합이 생긴다)
+  // useLayoutEffect: 패널이 그려지기 '전'에 비워야 이전 입력이 한 프레임도 보이지 않는다.
+  useLayoutEffect(() => {
+    if (view !== 'auth') return
+    resetLogin()
+    resetSignup()
+    setMode('login')
+    setToastError('')
+    setSignupSuccess(false)
+  }, [view, resetLogin, resetSignup])
 
   // 인트로 등장 애니메이션
   useEffect(() => {
