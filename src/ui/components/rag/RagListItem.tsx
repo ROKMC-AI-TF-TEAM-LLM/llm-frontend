@@ -1,21 +1,28 @@
-import { CATEGORY_STYLE, type RagDoc } from '../../../mocks/ragDocuments'
+import { getCategoryStyle, type RagDoc } from '../../../mocks/ragDocuments'
 
 interface RagListItemProps {
   doc: RagDoc
   onClick?: () => void
 }
 
-// 문서 리스트의 한 행: 좌측 카테고리 색 보더 + 파일 아이콘 + 제목/뱃지/설명 + 우측 메타(페이지·용량·날짜) + →
+// 문서 리스트의 한 행: 좌측 도메인 색 보더 + 파일 아이콘 + 제목/뱃지/설명 + 우측 메타(페이지·용량·날짜) + →
 const RagListItem = ({ doc, onClick }: RagListItemProps) => {
-  const style = CATEGORY_STYLE[doc.category]
+  // 도메인 값을 미리 모르므로 색은 값에서 결정적으로 파생한다.
+  const style = getCategoryStyle(doc.category)
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="doc-card group w-full flex items-center gap-4 py-4 pl-4 pr-5 text-left bg-surface rounded-xl border border-surface-border"
-      style={{ borderLeft: `3px solid ${style.bar}` }}
+      className="group w-full flex items-center gap-4 py-3 pl-2 pr-5 text-left bg-surface border-b border-surface-border transition-colors hover:bg-surface-subtle"
     >
+      {/* 도메인 색 막대 — 행 전체 높이가 아니라, 행 안에서 위아래 여백을 두고 끊긴 짧은 막대 */}
+      <span
+        className="shrink-0 flex items-center rounded-full"
+        style={{ height: 40, width: 5, background: style.bar }}
+        aria-hidden
+      />
+
       {/* 파일 아이콘 */}
       <div
         className="shrink-0 flex items-center justify-center"
@@ -23,7 +30,7 @@ const RagListItem = ({ doc, onClick }: RagListItemProps) => {
       >
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <path d="M14 2v6h6M8 13h8M8 17h5" />
+          <path d="M14 2v6h6M8" />
         </svg>
       </div>
 

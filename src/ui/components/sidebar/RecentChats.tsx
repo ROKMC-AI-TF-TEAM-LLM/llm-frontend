@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from "../../../types";
 import type { ApiError } from '../../../utils/error';
-import { useDeleteSession, useUpdateSession } from '../../../hooks/useSession';
+import { useDeleteSession, useUpdateSession, useToggleFavorite } from '../../../hooks/useSession';
 import { clearCache } from '../../../api/store/chatStore';
 import { SessionItemSkeleton } from '../Skeleton';
 import Toast from '../Toast';
@@ -32,6 +32,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const { id: currentId } = useParams()
   const { mutate: deleteSession } = useDeleteSession()
   const { mutate: updateSession } = useUpdateSession()
+  const { mutate: toggleFavorite } = useToggleFavorite()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [sidebarError, setSidebarError] = useState('')
@@ -120,6 +121,29 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
               )}
               {editingId !== chat.id && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleFavorite({ sessionId: chat.id, next: !chat.isFavorite })
+                    }}
+                    className={`p-1.5 rounded-lg transition-colors hover:bg-brand-subtle ${
+                      chat.isFavorite ? 'text-[#e4b100]' : 'text-text-muted hover:text-[#e4b100]'
+                    }`}
+                    aria-label={chat.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                  >
+                    {/* 즐겨찾기면 채워진 별, 아니면 빈 별 */}
+                    <svg
+                      className="w-3 h-3"
+                      viewBox="0 0 24 24"
+                      fill={chat.isFavorite ? 'currentColor' : 'none'}
+                      stroke="currentColor"
+                      strokeWidth={2.2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2l2.9 6.26 6.6.72-4.9 4.6 1.35 6.42L12 16.9 6.05 20l1.35-6.42L2.5 8.98l6.6-.72L12 2z" />
+                    </svg>
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingId(chat.id); setEditingTitle(chat.title); }}
                     className="p-1.5 rounded-lg text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors"
