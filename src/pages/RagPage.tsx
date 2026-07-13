@@ -3,12 +3,11 @@ import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagListItem from '../ui/components/rag/RagListItem'
 import RagDetail from '../ui/components/rag/RagDetail'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-import { MOCK_RAG_DOCS, extractDomains, type RagDoc } from '../mocks/ragDocuments'
+import { MOCK_RAG_DOCS, type RagDoc } from '../mocks/ragDocuments'
 
-// '전체' 탭만 프론트가 소유하는 값. 나머지 도메인 탭은 전부 서버 데이터에서 파생한다.
-// (도메인 목록을 프론트에 하드코딩하지 않는다 — 언제든 추가·변경될 수 있으므로)
-// 탭은 코드(HR)로 필터하고, 화면에는 서버가 준 한글 라벨(인사·복지)을 표시한다.
-const ALL = '__ALL__'
+// 카테고리 탭. 도메인이 아직 확정되지 않아 지금은 '전체'만 노출한다.
+// 도메인이 정해지면 이 배열에 카테고리를 추가하고 아래 필터를 연결하면 된다.
+const TABS = ['전체'] as const
 
 // 드로어 슬라이드 전환 시간(ms) — 닫힘 애니메이션 후 언마운트 타이밍과 맞춘다.
 const DRAWER_MS = 320
@@ -16,27 +15,19 @@ const DRAWER_MS = 320
 const RagPage = () => {
   useDocumentTitle('Documents')
   const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<string>(ALL)
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('전체')
 
   // selectedDoc: 드로어에 렌더할 문서(닫힘 애니메이션 동안 유지). drawerOpen: 슬라이드 상태.
   const [selectedDoc, setSelectedDoc] = useState<RagDoc | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   // TODO(API): 목업(MOCK_RAG_DOCS)을 실제 문서 조회로 교체. 응답을 RagDoc 형태로 매핑.
-  //            백엔드 도메인 필드명(domain/category)이 확정되면 매핑 시 doc.category에 넣어주면
-  //            아래 코드는 손댈 필요가 없다.
   const allDocuments = MOCK_RAG_DOCS
-
-  // 탭 = [전체, ...서버 데이터에 실제로 존재하는 도메인(코드+라벨)]
-  const tabs = useMemo(
-    () => [{ code: ALL, label: '전체' }, ...extractDomains(allDocuments)],
-    [allDocuments],
-  )
 
   const filtered = useMemo(
     () =>
       allDocuments.filter((doc) => {
-        const matchTab = activeTab === ALL || doc.category === activeTab
+        const matchTab = activeTab === '전체' || doc.category === activeTab
         const matchQuery =
           doc.name.toLowerCase().includes(query.toLowerCase()) ||
           doc.description.toLowerCase().includes(query.toLowerCase())
@@ -71,39 +62,36 @@ const RagPage = () => {
 
   return (
     <div className="h-full w-full overflow-y-auto custom-scroll">
-      <div className="max-w-5xl mx-auto px-8 py-12 animate-page-in">
-        {/* 헤더: (좌) 제목 + 건수  /  (우) 검색 */}
-        <div className="flex items-center justify-between gap-6 mb-6">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-semibold text-text-primary">문서</h1>
-            <span className="text-sm font-medium text-text-muted">{filtered.length}건</span>
-          </div>
-          <div className="w-full max-w-[300px] shrink-0">
-            <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." compact />
-          </div>
+      <div className="max-w-4xl mx-auto px-8 py-12 animate-page-in">
+        {/* 헤더: 제목 + 건수 */}
+        <div className="flex items-baseline gap-3 mb-5">
+          <h1 className="text-2xl font-semibold text-text-primary">문서</h1>
+          <span className="text-sm font-medium text-text-muted">{filtered.length}건</span>
         </div>
 
-        {/* 도메인 탭 — '전체' + 서버 데이터에서 파생된 도메인들 */}
-        <div className="flex items-center gap-1 border-b border-surface-border overflow-x-auto scrollbar-hide">
-          {tabs.map((tab) => (
+        <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." />
+
+        {/* 카테고리 탭 (현재 '전체'만) */}
+        <div className="flex items-center gap-1 mt-6 border-b border-surface-border">
+          {TABS.map((tab) => (
             <button
-              key={tab.code}
+              key={tab}
               type="button"
-              onClick={() => setActiveTab(tab.code)}
-              className={`relative shrink-0 px-3 pb-2.5 text-[14px] font-medium transition-colors ${
-                activeTab === tab.code ? 'text-[var(--color-brand)]' : 'text-text-muted hover:text-text-secondary'
+              onClick={() => setActiveTab(tab)}
+              className={`relative px-3 pb-2.5 text-[14px] font-medium transition-colors ${
+                activeTab === tab ? 'text-[var(--color-brand)]' : 'text-text-muted hover:text-text-secondary'
               }`}
             >
-              {tab.label}
-              {activeTab === tab.code && (
+              {tab}
+              {activeTab === tab && (
                 <span className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-[var(--color-brand)]" />
               )}
             </button>
           ))}
         </div>
 
-        {/* 리스트 — 카드가 아니라 구분선으로 이어지는 평평한 행 */}
-        <div className="flex flex-col mt-1">
+        {/* 리스트 */}
+        <div className="flex flex-col gap-2.5 mt-5">
           {filtered.length === 0 ? (
             <p className="mt-6 text-sm text-center text-text-muted">
               {query ? '검색 결과가 없습니다.' : '등록된 문서가 없습니다.'}
