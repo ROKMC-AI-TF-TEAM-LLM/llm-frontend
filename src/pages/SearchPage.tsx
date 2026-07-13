@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import SearchInput from '../ui/components/search/SearchInput'
 import SearchResults from '../ui/components/search/SearchResults'
 import type { SearchResult } from '../ui/components/search/SearchResultItem'
-import { useSearchSessions, useAllSessions } from '../hooks/useSession'
+import { useSearchSessions, useInfiniteSessions } from '../hooks/useSession'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { SearchSessionCardSkeleton } from '../ui/components/Skeleton'
 import Toast from '../ui/components/Toast'
@@ -21,14 +21,15 @@ const SearchPage = () => {
   }, [query])
 
   const { data: searchData, isFetching: isSearching, isError: isSearchError } = useSearchSessions({ q: debouncedQuery })
-  // 세션 목록이 즐겨찾기/최근 두 API로 나뉘므로, 최근 목록은 둘을 합쳐서 보여준다.
-  const { items: recentSessions, isLoading: isSessionsLoading, isError: isSessionsError } = useAllSessions()
+  const { data: sessionsData, isLoading: isSessionsLoading, isError: isSessionsError } = useInfiniteSessions()
 
   const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map((s) => ({
     id: s.session_id,
     title: s.title,
     preview: new Date(s.updated_at).toLocaleString('ko-KR'),
   }))
+
+  const recentSessions = (sessionsData?.pages ?? []).flatMap((p) => p.data.data.items)
 
   const handleSelect = (id: string) => {
     setSelectedId(id)

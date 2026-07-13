@@ -18,14 +18,6 @@ export interface SessionPageData {
 export interface GetSessionsParams {
   cursor?: string | null
   size?: number
-  /**
-   * 즐겨찾기 필터.
-   *  - true      : 즐겨찾기만
-   *  - false     : 즐겨찾기 제외(나머지)
-   *  - undefined : 전체
-   * 두 경우 모두 정렬 기준은 updated_at 내림차순으로 동일하다(즐겨찾기 전용 정렬 없음).
-   */
-  is_favorite?: boolean
 }
 export type GetSessionsErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'VALIDATION_ERROR'
 export interface GetSessionsResponse {

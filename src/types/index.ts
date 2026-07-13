@@ -8,9 +8,10 @@ export interface ChatItem {
   title: string;
   isActive?: boolean;
   /**
-   * 즐겨찾기 여부. 서버의 SessionData.is_favorite 를 매핑한 값.
+   * 즐겨찾기 여부.
+   * TODO(API): 백엔드 필드 확정 시 매핑만 맞추면 된다.
    *   - 매핑 지점: ui/layouts/ProtectedLayout.tsx (SessionData -> ChatItem)
-   *   - 토글 API : PATCH /api/v1/sessions/{id}/favorite
+   *   - 서버 타입 : types/session.ts 의 SessionData.is_favorite
    */
   isFavorite?: boolean;
 }

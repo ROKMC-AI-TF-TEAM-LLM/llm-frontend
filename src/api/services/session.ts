@@ -8,12 +8,8 @@ import type {
   DeleteSessionResponse,
 } from '../../types/session'
 
-// isFavorite: true=즐겨찾기만 / false=즐겨찾기 제외 / undefined=전체.
-// 사이드바의 '즐겨찾기'·'최근 대화' 두 섹션이 각각 true/false로 호출한다.
-export const getSessions = (cursor?: string | null, size = 20, isFavorite?: boolean) =>
-  backendApi.get<GetSessionsResponse>('/api/v1/sessions', {
-    params: { cursor, size, ...(isFavorite !== undefined && { is_favorite: isFavorite }) },
-  })
+export const getSessions = (cursor?: string | null, size = 20) =>
+  backendApi.get<GetSessionsResponse>('/api/v1/sessions', { params: { cursor, size } })
 
 export const createSession = (data: CreateSessionRequest) =>
   backendApi.post<CreateSessionResponse>('/api/v1/sessions', data)

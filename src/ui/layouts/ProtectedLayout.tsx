@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../components/sidebar/Sidebar";
 import { useState, useEffect, type CSSProperties } from "react";
 import { useGetMe } from "../../hooks/useUser";
+import { useInfiniteSessions } from "../../hooks/useSession";
 import { SidebarSkeleton } from "../components/Skeleton";
 import ErrorBoundary from "../components/ErrorBoundary";
 import type { ApiError } from "../../utils/error";
@@ -12,7 +13,7 @@ const ProtectedLayout = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
   const { data: meData, isError, error: meError, isLoading } = useGetMe();
-  // 세션 목록은 사이드바의 두 섹션(즐겨찾기/최근)이 각자 별도 API로 직접 가져간다.
+  const { data: sessionsInfinite, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isSessionsLoading } = useInfiniteSessions();
 
   useEffect(() => {
     if (isError) {
@@ -58,12 +59,23 @@ const ProtectedLayout = () => {
     ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
     : { id: '', name: '사용자' };
 
+  // 서버 응답(SessionData) -> 화면 모델(ChatItem) 매핑 지점.
+  // 목록 API가 is_favorite를 안 내려주면 undefined → false(즐겨찾기 없음)로 취급한다.
+  const chats = (sessionsInfinite?.pages ?? [])
+    .flatMap((page) => page.data.data.items)
+    .map((s) => ({ id: s.session_id, title: s.title, isFavorite: s.is_favorite ?? false }));
+
   return (
     <>
       <Sidebar
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
+        chats={chats}
         user={user}
+        hasMore={!!hasNextPage}
+        onLoadMore={fetchNextPage}
+        isInitialLoading={isSessionsLoading}
+        isLoadingMore={isFetchingNextPage}
       />
       <main
         style={{ '--sidebar-width': isOpen ? '15rem' : '56px' } as CSSProperties}
