@@ -39,8 +39,8 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({ title }: ChatHeaderProps) {
   return (
-    <header style={{ height: '60px' }} className="px-6 flex items-center justify-between">
-      <h1 className="text-[15px] font-bold text-text-primary truncate">{title}</h1>
+    <header style={{ height: '60px' }} className="px-6 flex items-center justify-between gap-4">
+      <h1 title={title} className="min-w-0 text-[15px] font-bold text-text-primary truncate">{title}</h1>
       <ServerStatusLight />
     </header>
   );

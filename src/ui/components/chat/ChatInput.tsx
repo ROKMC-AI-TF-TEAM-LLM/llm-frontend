@@ -16,7 +16,8 @@ const toSessionTitle = (text: string): string => {
     .replace(/[#*`>_~]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  const MAX = 30;
+  // 화면에서의 생략은 CSS(truncate)가 처리한다. 여기서는 비정상적으로 긴 입력만 방어적으로 자른다.
+  const MAX = 200;
   return cleaned.length > MAX ? cleaned.slice(0, MAX).trim() + '…' : cleaned || '새 대화';
 };
 
