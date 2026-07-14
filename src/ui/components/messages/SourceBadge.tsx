@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import type { Source } from '../../../types';
+import { useDocumentLookup } from '../../../hooks/useDocument';
+import { useDocumentDrawer } from '../../../hooks/useDocumentDrawer';
+import { findDocumentByName } from '../../../utils/document';
+import DocumentDrawer from '../rag/DocumentDrawer';
 
 interface SourceBadgeProps {
   sources?: Source[];
@@ -7,6 +11,10 @@ interface SourceBadgeProps {
 
 export default function SourceBadge({ sources }: SourceBadgeProps) {
   const [open, setOpen] = useState(false);
+
+  // 출처를 펼쳤을 때만 문서 목록을 불러온다(상세 매칭용).
+  const { documents } = useDocumentLookup(open);
+  const { doc: drawerDoc, open: drawerOpen, openDoc, closeDoc } = useDocumentDrawer();
 
   if (!sources || sources.length === 0) return null;
 
@@ -25,26 +33,41 @@ export default function SourceBadge({ sources }: SourceBadgeProps) {
 
       {open && (
         <div className="mt-2 space-y-2">
-          {sources.map((s, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle">
-              <div className="shrink-0 w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 2v6h6" />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-text-primary truncate">
-                  {s.name.replace(/\.[^/.]+$/, '')}
-                </p>
-                {s.page && (
-                  <p className="text-xs text-text-muted mt-0.5">페이지 {s.page}</p>
-                )}
-              </div>
-            </div>
-          ))}
+          {sources.map((s, i) => {
+            // 문서 목록에서 이름으로 찾는다. 못 찾으면(로딩 중이거나 목록에 없음) 클릭을 막는다.
+            const matched = findDocumentByName(documents, s.name);
+
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={!matched}
+                onClick={() => matched && openDoc(matched)}
+                className={`w-full flex items-start gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle text-left transition-colors ${
+                  matched ? 'hover:bg-surface hover:border-brand-soft cursor-pointer' : 'cursor-default'
+                }`}
+              >
+                <div className="shrink-0 w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-text-primary truncate">
+                    {s.name.replace(/\.[^/.]+$/, '')}
+                  </p>
+                  {s.page && (
+                    <p className="text-xs text-text-muted mt-0.5">페이지 {s.page}</p>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
+
+      <DocumentDrawer doc={drawerDoc} open={drawerOpen} onClose={closeDoc} />
     </div>
   );
 }

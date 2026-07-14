@@ -71,6 +71,42 @@ export const extractDomains = (docs: DocumentItem[]): string[] => {
   return [...known, ...extra]
 }
 
+// ─── 이름 매칭 ───────────────────────────────────────────────
+// 채팅 SSE의 출처(Source)는 name·page만 준다. 상세 정보(종류·부서·적용일)는
+// 문서 목록(GET /documents)에만 있으므로, 출처를 클릭하면 '이름'으로 문서를 찾아야 한다.
+// 이때 SSE 출처명은 확장자가 없고(예: "국방 정보화업무 훈령(...)")
+// 문서 목록의 name은 확장자가 붙어 있어(".pdf") 그대로 비교하면 안 맞는다.
+// → 확장자를 떼고 공백을 정규화해 비교한다.
+const normalizeDocName = (name: string): string =>
+  name
+    .replace(/\.[^/.]+$/, '') // 확장자 제거
+    .replace(/\s+/g, ' ')     // 연속 공백 → 하나
+    .trim()
+    .toLowerCase()
+
+/**
+ * 문서 목록에서 출처 이름과 일치하는 문서를 찾는다. 없으면 undefined.
+ *
+ * 동명 문서가 여러 개면 applied_at(적용일)이 가장 최신인 것을 고른다 — 개정판이
+ * 올라온 경우 옛 버전의 상세를 보여주지 않기 위함.
+ * (applied_at이 없는 문서는 가장 오래된 것으로 취급한다)
+ * TODO: 서버가 출처에 문서 ID를 실어주면 ID 매칭으로 바꾼다.
+ */
+export const findDocumentByName = (
+  docs: DocumentItem[],
+  sourceName: string,
+): DocumentItem | undefined => {
+  const target = normalizeDocName(sourceName)
+  const matches = docs.filter((d) => normalizeDocName(d.name) === target)
+  if (matches.length <= 1) return matches[0]
+
+  const appliedTime = (d: DocumentItem): number => {
+    const t = d.applied_at ? Date.parse(d.applied_at) : NaN
+    return Number.isNaN(t) ? -Infinity : t
+  }
+  return matches.reduce((latest, d) => (appliedTime(d) > appliedTime(latest) ? d : latest))
+}
+
 // ─── 날짜 ────────────────────────────────────────────────────
 // applied_at은 ISO 8601(2026-07-14T04:25:49.197Z) → "2026.7.14"
 export const formatAppliedAt = (iso?: string | null): string => {

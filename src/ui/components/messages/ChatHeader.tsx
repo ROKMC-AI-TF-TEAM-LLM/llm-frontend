@@ -1,17 +1,7 @@
 import { useServerStatus } from '../../../hooks/useServerStatus'
-import { logError } from '../../../utils/logError'
-
-const SERVER_HOST = (() => {
-  try {
-    return new URL(import.meta.env.VITE_SERVER_API_URL).host
-  } catch (e) {
-    logError('ChatHeader.parseServerHost', e)
-    return import.meta.env.VITE_SERVER_API_URL ?? '서버'
-  }
-})()
 
 const STATUS_CONFIG = {
-  ok:       { dot: 'bg-status-ok',    pulse: false, label: SERVER_HOST,    text: 'text-status-ok'    },
+  ok:       { dot: 'bg-status-ok',    pulse: false, label: '서버 양호',    text: 'text-status-ok'    },
   error:    { dot: 'bg-status-error', pulse: false, label: '서버 오류',    text: 'text-status-error'  },
   checking: { dot: 'bg-status-muted', pulse: false, label: '확인 중...',   text: 'text-text-muted'    },
 }

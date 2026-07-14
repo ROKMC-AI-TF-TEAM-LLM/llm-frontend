@@ -1,28 +1,24 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import RagSearchInput from '../ui/components/rag/RagSearchInput'
 import RagListItem from '../ui/components/rag/RagListItem'
-import RagDetail from '../ui/components/rag/RagDetail'
+import DocumentDrawer from '../ui/components/rag/DocumentDrawer'
 import { RagListSkeleton } from '../ui/components/Skeleton'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useInfiniteDocuments } from '../hooks/useDocument'
+import { useDocumentDrawer } from '../hooks/useDocumentDrawer'
 import { pickDocuments } from '../api/services/document'
 import { extractDomains, getDomainLabel } from '../utils/document'
-import type { DocumentItem } from '../types/document'
 
 // '전체' 탭만 프론트가 소유하는 값. 나머지 도메인 탭은 서버 데이터에서 파생한다.
 const ALL = '__ALL__'
-
-// 드로어 슬라이드 전환 시간(ms) — 닫힘 애니메이션 후 언마운트 타이밍과 맞춘다.
-const DRAWER_MS = 320
 
 const RagPage = () => {
   useDocumentTitle('Documents')
   const [query, setQuery] = useState('')
   const [activeDomain, setActiveDomain] = useState<string>(ALL)
 
-  // selectedDoc: 드로어에 렌더할 문서(닫힘 애니메이션 동안 유지). drawerOpen: 슬라이드 상태.
-  const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  // 상세 드로어 — 채팅 출처(SourceBadge)와 같은 컴포넌트를 쓴다.
+  const { doc: selectedDoc, open: drawerOpen, openDoc, closeDoc } = useDocumentDrawer()
 
   // 도메인 필터는 서버에 넘긴다(GET /documents?domain=HR). '전체'면 미지정.
   const {
@@ -60,30 +56,6 @@ const RagPage = () => {
         (doc.type ?? '').toLowerCase().includes(q),
     )
   }, [documents, query])
-
-  const openDoc = (doc: DocumentItem) => {
-    setSelectedDoc(doc)
-    // 다음 프레임에 open → mount 직후 transform 전환이 걸려 슬라이드 인 된다.
-    requestAnimationFrame(() => setDrawerOpen(true))
-  }
-
-  const closeDoc = useCallback(() => {
-    setDrawerOpen(false)
-    // 슬라이드 아웃이 끝난 뒤 언마운트.
-    setTimeout(() => setSelectedDoc(null), DRAWER_MS)
-  }, [])
-
-  // 드로어 열림 동안 ESC 닫기 + 뒤 배경 스크롤 잠금
-  useEffect(() => {
-    if (!selectedDoc) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeDoc() }
-    window.addEventListener('keydown', onKey)
-    document.body.classList.add('modal-open')
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.classList.remove('modal-open')
-    }
-  }, [selectedDoc, closeDoc])
 
   // 무한 스크롤 센티넬
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -166,27 +138,7 @@ const RagPage = () => {
       </div>
 
       {/* 오른쪽 슬라이드 드로어 */}
-      {selectedDoc && (
-        <>
-          {/* 배경 딤 */}
-          <div
-            onClick={closeDoc}
-            className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${
-              drawerOpen ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-          {/* 패널 */}
-          <aside
-            className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-surface shadow-[-24px_0_60px_rgba(40,30,35,0.14)] transition-transform duration-300 ease-[cubic-bezier(.6,.02,.2,1)] ${
-              drawerOpen ? 'translate-x-0' : 'translate-x-full'
-            }`}
-            role="dialog"
-            aria-modal="true"
-          >
-            <RagDetail doc={selectedDoc} onClose={closeDoc} />
-          </aside>
-        </>
-      )}
+      <DocumentDrawer doc={selectedDoc} open={drawerOpen} onClose={closeDoc} />
     </div>
   )
 }
