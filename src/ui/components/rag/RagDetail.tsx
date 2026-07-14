@@ -1,16 +1,22 @@
-import { getCategoryStyle, type RagDoc } from '../../../mocks/ragDocuments'
+import type { DocumentItem } from '../../../types/document'
+import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../../utils/document'
 
 interface RagDetailProps {
-  doc: RagDoc
+  doc: DocumentItem
   onClose: () => void
-  onOpen?: () => void
 }
 
-// 오른쪽 슬라이드 드로어 안에 들어가는 문서 상세 내용.
-// 상단 닫기(X) + 도메인 뱃지 + 아이콘/제목 + 통계 카드 + 요약 + "문서 열기"
-const RagDetail = ({ doc, onClose, onOpen }: RagDetailProps) => {
-  // 도메인 값을 미리 모르므로 색은 값에서 결정적으로 파생한다.
-  const style = getCategoryStyle(doc.category)
+// 오른쪽 슬라이드 드로어 안에 들어가는 문서 상세.
+// 서버가 주는 필드(name, type, domain, visibility, owning_department, applied_at)만 표시한다.
+const RagDetail = ({ doc, onClose }: RagDetailProps) => {
+  const style = getDomainStyle(doc.domain)
+
+  const rows = [
+    { label: '문서 종류', value: doc.type },
+    { label: '소유 부서', value: doc.owning_department },
+    { label: '공개 범위', value: doc.visibility },
+    { label: '적용일', value: formatAppliedAt(doc.applied_at) },
+  ].filter((r) => !!r.value)
 
   return (
     <div className="flex flex-col h-full">
@@ -30,13 +36,15 @@ const RagDetail = ({ doc, onClose, onOpen }: RagDetailProps) => {
 
       {/* 본문 (넘치면 스크롤) */}
       <div className="flex-1 overflow-y-auto custom-scroll px-8 pb-10">
-        {/* 카테고리 뱃지 */}
-        <span
-          className="inline-block text-[12px] font-semibold px-3 py-1 rounded-full"
-          style={{ background: style.badgeBg, color: style.badgeText }}
-        >
-          {doc.categoryLabel}
-        </span>
+        {/* 도메인 뱃지 */}
+        {doc.domain && (
+          <span
+            className="inline-block text-[12px] font-semibold px-3 py-1 rounded-full"
+            style={{ background: style.badgeBg, color: style.badgeText }}
+          >
+            {getDomainLabel(doc.domain)}
+          </span>
+        )}
 
         {/* 아이콘 + 제목 */}
         <div className="flex items-center gap-3.5 mt-4">
@@ -52,43 +60,17 @@ const RagDetail = ({ doc, onClose, onOpen }: RagDetailProps) => {
           <h1 className="text-lg font-bold text-text-primary break-all leading-snug">{doc.name}</h1>
         </div>
 
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-3 mt-6 rounded-2xl bg-surface-subtle overflow-hidden">
-          {[
-            { label: '페이지', value: `${doc.pages}p` },
-            { label: '용량', value: doc.size },
-            { label: '등록일', value: doc.date },
-          ].map((s) => (
-            <div key={s.label} className="flex flex-col items-center justify-center py-5">
-              <span className="text-[11.5px] text-text-muted mb-1.5">{s.label}</span>
-              <span className="text-[15px] font-bold text-text-primary">{s.value}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* 요약 */}
-        <div className="mt-7">
-          <p className="text-[12.5px] font-medium text-text-muted mb-2">문서 요약</p>
-          <p className="text-[14px] text-text-primary leading-relaxed">{doc.summary}</p>
-        </div>
-
-        {/* 문서 열기 */}
-        <div className="mt-7">
-          <button
-            type="button"
-            onClick={onOpen}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-[15px] font-semibold text-white transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
-            style={{
-              background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
-              boxShadow: '0 10px 24px rgba(228,0,43,0.28)',
-            }}
-          >
-            문서 열기
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </button>
-        </div>
+        {/* 상세 정보 */}
+        {rows.length > 0 && (
+          <dl className="mt-7 rounded-2xl bg-surface-subtle overflow-hidden divide-y divide-surface-border">
+            {rows.map((r) => (
+              <div key={r.label} className="flex items-center justify-between gap-4 px-5 py-4">
+                <dt className="text-[12.5px] text-text-muted shrink-0">{r.label}</dt>
+                <dd className="text-[14px] font-semibold text-text-primary text-right break-all">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
     </div>
   )
