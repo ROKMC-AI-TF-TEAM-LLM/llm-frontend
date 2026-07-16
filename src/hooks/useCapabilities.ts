@@ -25,7 +25,7 @@ export const useDomainCapabilities = (enabled = true) => {
     retry: 1,
   })
 
-  const { documents } = useDocumentLookup(enabled)
+  const { documents, isLoading: docsLoading } = useDocumentLookup(enabled)
 
   const allDomains: DomainCapability[] | undefined = capQuery.data?.data.data.domains
 
@@ -38,5 +38,6 @@ export const useDomainCapabilities = (enabled = true) => {
     return caps.filter((d) => present.has(d.code))
   }, [allDomains, documents])
 
-  return { domains, isLoading: capQuery.isLoading }
+  // 교집합에는 capabilities·문서 목록 둘 다 필요하므로, 하나라도 로딩 중이면 로딩으로 본다.
+  return { domains, isLoading: capQuery.isLoading || docsLoading }
 }

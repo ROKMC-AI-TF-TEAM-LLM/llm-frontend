@@ -9,7 +9,7 @@ interface DomainPickerProps {
 }
 
 export default function DomainPicker({ value, onChange }: DomainPickerProps) {
-  const { domains } = useDomainCapabilities();
+  const { domains, isLoading } = useDomainCapabilities();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -49,7 +49,14 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
 
-  // 서버가 도메인을 안 주면(없거나 로딩 실패) 버튼 자체를 숨긴다 — 없는 도메인은 노출하지 않는다.
+  // 로딩 중엔 스켈레톤으로 자리를 채워, 목록이 나중에 채워질 때 깜빡이지 않게 한다.
+  if (isLoading) {
+    return (
+      <div className="h-10 w-[84px] rounded-full bg-surface-subtle animate-pulse" aria-hidden />
+    );
+  }
+
+  // 로딩이 끝났는데도 도메인이 하나도 없으면(문서에 존재하는 도메인 없음) 버튼을 숨긴다.
   if (domains.length === 0) return null;
 
   const select = (domain: DomainSelection | null) => {
@@ -62,19 +69,19 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className={`inline-flex items-center gap-1.5 pl-2.5 pr-2 py-1.5 rounded-full text-[13px] font-medium border transition-colors ${
-          value
-            ? 'bg-brand-subtle text-brand border-brand-soft'
-            : 'bg-surface-subtle text-text-secondary border-surface-border hover:text-text-primary'
+        className={`group inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-[13.5px] font-medium transition-colors duration-150 ${
+          open || value
+            ? 'bg-brand-subtle text-brand'
+            : 'text-text-muted hover:bg-brand-subtle hover:text-brand'
         }`}
       >
-        {value ? <DomainIcon code={value.code} /> : (
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        {value ? <DomainIcon code={value.code} size={20} /> : (
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 7h18M3 12h18M3 17h18" />
           </svg>
         )}
         <span>{value ? value.label : '전체'}</span>
-        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
+        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
           <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
@@ -82,52 +89,73 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
       {open && pos && (
         <div
           ref={menuRef}
-          className="fixed min-w-[168px] bg-surface rounded-2xl border border-surface-border shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-1.5 z-50 animate-fade-in"
+          className="fixed min-w-[184px] rounded-2xl border border-surface-border shadow-[0_10px_30px_rgba(40,30,35,0.10)] p-1.5 z-50 animate-fade-in"
           style={{ background: '#fff', left: pos.left, bottom: pos.bottom }}
         >
           {domains.map((d) => {
             const active = value?.code === d.code;
             return (
-              <button
+              <MenuRow
                 key={d.code}
-                type="button"
+                active={active}
                 onClick={() => select({ code: d.code, label: d.label })}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-[13.5px] text-left transition-colors ${
-                  active ? 'text-brand font-semibold' : 'text-text-secondary hover:bg-surface-subtle'
-                }`}
-              >
-                <DomainIcon code={d.code} className="shrink-0" />
-                <span className="flex-1">{d.label}</span>
-                {active && (
-                  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
-              </button>
+                icon={<DomainIcon code={d.code} size={14} />}
+                label={d.label}
+              />
             );
           })}
 
           {/* 구분선 + 전체 */}
-          <div className="my-1 h-px bg-surface-border mx-2" />
-          <button
-            type="button"
+          <div className="my-1 h-px bg-surface-border mx-1.5" />
+          <MenuRow
+            active={!value}
             onClick={() => select(null)}
-            className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-[13.5px] text-left transition-colors ${
-              !value ? 'text-brand font-semibold' : 'text-text-secondary hover:bg-surface-subtle'
-            }`}
-          >
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-              <path d="M3 7h18M3 12h18M3 17h18" />
-            </svg>
-            <span className="flex-1">전체</span>
-            {!value && (
-              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6 9 17l-5-5" />
+            icon={
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7h18M3 12h18M3 17h18" />
               </svg>
-            )}
-          </button>
+            }
+            label="전체"
+          />
         </div>
       )}
     </div>
+  );
+}
+
+// 드롭다운 한 줄: 아이콘 배지 + 라벨 + (선택 시)체크. 활성 항목은 brand-subtle 배경으로 강조.
+function MenuRow({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group w-full flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl text-[13.5px] text-left transition-colors ${
+        active ? 'bg-brand-subtle text-brand font-semibold' : 'text-text-secondary hover:bg-surface-subtle'
+      }`}
+    >
+      <span
+        className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
+          active ? 'bg-brand-soft text-brand' : 'bg-surface-subtle text-text-muted group-hover:bg-brand-subtle group-hover:text-brand'
+        }`}
+      >
+        {icon}
+      </span>
+      <span className="flex-1">{label}</span>
+      {active && (
+        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      )}
+    </button>
   );
 }

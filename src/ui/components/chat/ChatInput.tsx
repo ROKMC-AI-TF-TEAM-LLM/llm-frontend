@@ -180,7 +180,7 @@ export default function ChatInput({
           }}
           onKeyDown={handleKeyDown}
           placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
-          className="w-full px-5 pt-4 bg-transparent outline-none text-[15px] text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal"
+          className="w-full px-5 pt-6.5 pb-1 bg-transparent outline-none text-[15px] text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal"
         />
 
         {/* 첨부된 파일 칩 (텍스트 아래, 버튼 줄 위) */}
@@ -210,14 +210,14 @@ export default function ChatInput({
           </div>
         )}
 
-        {/* 하단 바: (좌) 첨부 + 도메인 / (우) 전송·중단 — 모두 같은 줄에 맞춘다 */}
-        <div className="flex items-center gap-2 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+        {/* 하단 바: (좌) 첨부 + 도메인 / (우) 전송·중단 — 버튼 높이 40px, 아이콘 20px로 통일 */}
+        <div className="flex items-center gap-1.5 px-3 pb-3 pt-1" onClick={(e) => e.stopPropagation()}>
           <button
             className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
             aria-label="첨부"
             onClick={() => fileInputRef.current?.click()}
           >
-            <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
           </button>
@@ -233,7 +233,7 @@ export default function ChatInput({
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="중단"
             >
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-[18px] h-[18px] text-white" fill="currentColor" viewBox="0 0 24 24">
                 <rect x="5" y="5" width="14" height="14" rx="2" />
               </svg>
             </button>
@@ -244,7 +244,7 @@ export default function ChatInput({
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="전송"
             >
-              <svg className="w-[18px] h-[18px] text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
               </svg>
             </button>
