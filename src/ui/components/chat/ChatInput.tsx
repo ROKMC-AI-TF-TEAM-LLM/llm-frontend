@@ -211,24 +211,28 @@ export default function ChatInput({
         )}
 
         {/* 하단 바: (좌) 첨부 + 도메인 / (우) 전송·중단 — 버튼 높이 40px, 아이콘 20px로 통일 */}
-        <div className="flex items-center gap-1.5 px-3 pb-3 pt-1" onClick={(e) => e.stopPropagation()}>
-          <button
-            className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
-            aria-label="첨부"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-          </button>
+        {/* 바의 '빈 여백'을 눌러도 텍스트에 포커스가 가게 한다(버튼은 각자 동작). */}
+        <div
+          className="flex items-center justify-between px-3 pb-3 pt-1 cursor-text"
+          onClick={() => textareaRef.current?.focus()}
+        >
+          <div className="flex items-center gap-1.5">
+            <button
+              className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
+              aria-label="첨부"
+              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+            >
+              <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+            </button>
 
-          <DomainPicker value={domain} onChange={setDomain} />
-
-          <div className="flex-1" />
+            <DomainPicker value={domain} onChange={setDomain} />
+          </div>
 
           {isStreaming && !isNewChat ? (
             <button
-              onClick={abortStream}
+              onClick={(e) => { e.stopPropagation(); abortStream(); }}
               style={{ background: 'linear-gradient(135deg,#e4002b,#ff2d55)', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="중단"
@@ -239,7 +243,7 @@ export default function ChatInput({
             </button>
           ) : (value.trim() || pendingFile) ? (
             <button
-              onClick={handleSubmit}
+              onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
               style={{ background: 'linear-gradient(135deg,#e4002b,#ff2d55)', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="전송"
