@@ -2,9 +2,11 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import type { ApiError } from '../../../utils/error';
 import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
+import type { DomainSelection } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import { useCreateSession } from '../../../hooks/useSession';
 import Toast from '../Toast';
+import DomainPicker from './DomainPicker';
 
 const inputDrafts = new Map<string, string>();
 const NEW_CHAT_KEY = '__new__';
@@ -43,6 +45,7 @@ export default function ChatInput({
   const { mutateAsync: createSession } = useCreateSession();
   const [value, setValue] = useState(() => inputDrafts.get(draftKey) ?? '');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
+  const [domain, setDomain] = useState<DomainSelection | null>(null);
   const [inputError, setInputError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -113,7 +116,7 @@ export default function ChatInput({
       try {
         const res = await createSession({ title: toSessionTitle(text) });
         const sessionId = res.data.data.session_id;
-        saveInflight(sessionId, text);
+        saveInflight(sessionId, text, domain ?? undefined);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
       } catch (e: unknown) {
         logError('ChatInput.createSession', e);
@@ -129,7 +132,7 @@ export default function ChatInput({
         }
       }
     } else {
-      sendMessage(text);
+      sendMessage(text, domain ?? undefined);
       clearDraft();
       resetTextarea();
     }
@@ -154,17 +157,38 @@ export default function ChatInput({
         className="bg-surface rounded-[30px] focus-within:border-[#e4002b] focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)] transition-all duration-200 overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,.txt,.hwp"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+
+        {/* 텍스트 입력 (위) */}
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          value={value}
+          onChange={(e) => {
+            const el = e.target;
+            updateValue(el.value);
+            el.style.overflowY = 'hidden';
+            el.style.height = 'auto';
+            el.style.height = `${el.scrollHeight}px`;
+            if (el.scrollHeight > 192) el.style.overflowY = 'auto';
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
+          className="w-full px-5 pt-4 bg-transparent outline-none text-[15px] text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal"
+        />
+
+        {/* 첨부된 파일 칩 (텍스트 아래, 버튼 줄 위) */}
         {pendingFile && (
-          <div className="flex items-center gap-2 px-3 pt-3 pb-1">
+          <div className="flex items-center gap-2 px-3 pt-2">
             <div className="flex items-center gap-2 bg-brand text-white rounded-xl px-3 py-2 max-w-full">
               <div className="bg-brand-soft rounded-lg p-1.5 shrink-0">
-                <svg
-                  className="w-4 h-4 text-brand"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
+                <svg className="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14 2v6h6" />
                 </svg>
@@ -186,16 +210,10 @@ export default function ChatInput({
           </div>
         )}
 
-        <div className="flex items-end px-4 py-3.5">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,.txt,.hwp"
-            className="hidden"
-            onChange={handleFileChange}
-          />
+        {/* 하단 바: (좌) 첨부 + 도메인 / (우) 전송·중단 — 모두 같은 줄에 맞춘다 */}
+        <div className="flex items-center gap-2 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
           <button
-            className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0 self-center"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
             aria-label="첨부"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -203,22 +221,11 @@ export default function ChatInput({
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
           </button>
-          <textarea
-            ref={textareaRef}
-            rows={1}
-            value={value}
-            onChange={(e) => {
-              const el = e.target;
-              updateValue(el.value);
-              el.style.overflowY = 'hidden';
-              el.style.height = 'auto';
-              el.style.height = `${el.scrollHeight}px`;
-              if (el.scrollHeight > 192) el.style.overflowY = 'auto';
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
-            className="flex-1 mx-2.5 bg-transparent outline-none text-[15px] text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal self-center py-2"
-          />
+
+          <DomainPicker value={domain} onChange={setDomain} />
+
+          <div className="flex-1" />
+
           {isStreaming && !isNewChat ? (
             <button
               onClick={abortStream}

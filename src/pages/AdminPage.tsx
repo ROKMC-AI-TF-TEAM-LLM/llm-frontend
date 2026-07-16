@@ -393,8 +393,20 @@ export default function AdminPage() {
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setUserPage(1); }}
               placeholder="이름 또는 이메일 검색.."
-              className="pl-9 pr-4 py-1.5 text-sm rounded-xl border border-surface-border bg-surface text-text-primary placeholder-text-muted focus:outline-none transition-colors w-56 text-center"
+              className="pl-9 pr-9 py-1.5 text-sm rounded-xl border border-surface-border bg-surface text-text-primary placeholder-text-muted focus:outline-none transition-colors w-56 text-center"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setUserPage(1); }}
+                aria-label="검색어 지우기"
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
         <div className="overflow-x-auto rounded-xl border border-surface-border shadow-sm overflow-hidden">

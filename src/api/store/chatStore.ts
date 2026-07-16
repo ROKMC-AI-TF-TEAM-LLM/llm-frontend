@@ -7,6 +7,12 @@ import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
 import { uuid } from '../../utils/uuid';
 
+// 채팅 전송 시 선택한 도메인. code는 서버 요청(domain 필드)용, label은 말풍선 태그 표시용.
+// '전체' 검색이면 undefined를 넘긴다.
+export interface DomainSelection {
+  code: string;
+  label: string;
+}
 
 interface ChatStore {
   sessionId: string;
@@ -21,7 +27,7 @@ interface ChatStore {
   abortStream: () => void;
   connect: (sessionId: string) => Promise<void>;
   disconnect: () => void;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, domain?: DomainSelection) => Promise<void>;
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
@@ -132,8 +138,8 @@ if (typeof window !== 'undefined') {
 
 const INFLIGHT_KEY = 'rokm_inflight'
 
-export const saveInflight = (sessionId: string, question: string) =>
-  sessionStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question }))
+export const saveInflight = (sessionId: string, question: string, domain?: DomainSelection) =>
+  sessionStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question, domain }))
 
 export const clearInflight = (sessionId: string) => {
   try {
@@ -143,12 +149,14 @@ export const clearInflight = (sessionId: string) => {
   } catch (e) { logError('clearInflight', e) }
 }
 
-const getInflight = (sessionId: string): string | null => {
+interface InflightData { question: string; domain?: DomainSelection }
+
+const getInflight = (sessionId: string): InflightData | null => {
   try {
     const raw = sessionStorage.getItem(INFLIGHT_KEY)
     if (!raw) return null
     const data = JSON.parse(raw)
-    return data.sessionId === sessionId ? data.question : null
+    return data.sessionId === sessionId ? { question: data.question, domain: data.domain } : null
   } catch (e) {
     logError('getInflight', e)
     return null
@@ -260,13 +268,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
     isFirstMessage: boolean,
     signal: AbortSignal,
     removePairOnFail = true,
+    domain?: string,
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
     try {
       await streamMessage(
         sessionId,
-        { question },
+        { question, ...(domain ? { domain } : {}) },
         writer.push,
         signal,
         writer.setSources,
@@ -525,7 +534,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           set((state) => ({
             messages: [
               ...state.messages,
-              { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+              { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending.question, createdAt: new Date().toISOString(), domainCode: pending.domain?.code, domainLabel: pending.domain?.label },
             ],
           }));
           get().retryLastMessage();
@@ -588,7 +597,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         set((state) => ({
           messages: [
             ...state.messages,
-            { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+            { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending.question, createdAt: new Date().toISOString(), domainCode: pending.domain?.code, domainLabel: pending.domain?.label },
           ],
         }));
         get().retryLastMessage();
@@ -619,7 +628,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set({ sessionId: '', messages: [], isStreaming: false, statusText: null, abortController: null, isDeleted: false });
     },
 
-    sendMessage: async (content: string) => {
+    sendMessage: async (content: string, domain?: DomainSelection) => {
       if (get().isStreaming) return
       const controller = new AbortController()
       const assistantId = uuid()
@@ -634,14 +643,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
         abortController: controller,
         messages: [
           ...state.messages,
-          { id: uuid(), role: 'user', type: 'text', content, createdAt: now },
+          { id: uuid(), role: 'user', type: 'text', content, createdAt: now, domainCode: domain?.code, domainLabel: domain?.label },
           { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
         ],
       }))
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal)
+      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, true, domain?.code)
     },
 
     retryLastMessage: async () => {
@@ -650,6 +659,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const last = messages[messages.length - 1]
       if (!last || last.role !== 'user' || last.type !== 'text') return
       const isFirstMessage = messages.length === 1
+      const domainCode = last.domainCode
 
       saveInflight(sessionId, last.content)
       const controller = new AbortController()
@@ -667,7 +677,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal)
+      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, true, domainCode)
     },
 
     sendImageMessage: (filename: string, caption?: string) => {
@@ -691,9 +701,15 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       let prevUserId: string | null = null;
       let question: string | null = null;
+      let prevDomain: DomainSelection | undefined;
       for (let i = idx - 1; i >= 0; i--) {
         const m = messages[i];
-        if (m.role === 'user' && m.type === 'text') { prevUserId = m.id; question = m.content; break; }
+        if (m.role === 'user' && m.type === 'text') {
+          prevUserId = m.id;
+          question = m.content;
+          if (m.domainCode && m.domainLabel) prevDomain = { code: m.domainCode, label: m.domainLabel };
+          break;
+        }
       }
       if (question == null || prevUserId == null) {
         logError('regenerateMessage.noQuestion', '클릭한 답변 위에서 사용자 질문을 못 찾음(대화 구조 이상)', { assistantId, idx });
@@ -721,7 +737,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (!serverId) {
         const removeIds = new Set<string>([prevUserId, assistantId]);
         set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-        await get().sendMessage(question);
+        await get().sendMessage(question, prevDomain);
         return;
       }
 

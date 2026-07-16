@@ -23,6 +23,8 @@ export interface GetMessagesResponse {
 
 export interface StreamMessageRequest {
   question: string
+  /** 검색을 특정 도메인으로 한정(예: HR). '전체' 검색이면 생략. GET /capabilities 참조. */
+  domain?: string
 }
 export type StreamMessageErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED' | 'VALIDATION_ERROR'
 

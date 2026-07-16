@@ -51,6 +51,33 @@ const RagSearchInput = ({
           compact ? 'text-[14px]' : 'text-[15px]'
         }`}
       />
+      {value && (
+        <button
+          type="button"
+          onClick={(e) => {
+            // 부모 div의 onClick(포커스)로 이벤트가 번지지 않게 한 뒤, 지우고 포커스는 유지.
+            e.stopPropagation()
+            onChange('')
+            inputRef.current?.focus()
+          }}
+          aria-label="검색어 지우기"
+          className="shrink-0 flex items-center justify-center rounded-full text-[#c9aab2] hover:text-text-primary hover:bg-surface-subtle transition-colors"
+          style={{ width: compact ? 22 : 26, height: compact ? 22 : 26 }}
+        >
+          <svg
+            width={compact ? 15 : 17}
+            height={compact ? 15 : 17}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
