@@ -154,7 +154,7 @@ const LoginPage = () => {
               해병대를 위한 인공지능,<br />이제 <span className="text-brand">MARS</span>와 함께.
             </p>
             <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
-              Marine Artificial Intelligence Retrieval System.
+              Marine Artificial Intelligence Reasoning System.
               <br />
               법령·규정·규칙을 참조해
               <br />
@@ -342,8 +342,10 @@ const LoginPage = () => {
               </div>
             </form>
           )}
-          <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center text-[12px] text-text-muted leading-relaxed">
-            대한민국 해병대 · MARS<br />본 서비스는 참고용이며 공식 규정을 우선합니다.
+          <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center text-[14px] text-text-muted leading-relaxed">
+            해병대사 지휘통신참모처 지능정보화발전과 
+              <br />
+              AI DATA TEAM
           </div>
         </div>
       </div>

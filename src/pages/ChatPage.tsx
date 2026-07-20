@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
-import { useChatStore, saveInflight, peekSessionMessages } from '../api/store/chatStore';
+import { useChatStore, peekSessionMessages } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { isNetworkError } from '../utils/error';
@@ -51,9 +51,8 @@ export default function ChatPage() {
     const hasCached = peekSessionMessages(sessionId).length > 0;
     setIsConnecting(!hasCached);
 
-    if (initialMessage) {
-      saveInflight(sessionId, initialMessage);
-    }
+    // inflight(질문+도메인)는 ChatInput이 navigate 직전에 이미 저장한다.
+    // 여기서 다시 saveInflight를 부르면 도메인 없이 덮어써 '전체'로 떨어지므로 하지 않는다.
 
     connect(sessionId)
       .then(() => {

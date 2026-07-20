@@ -94,7 +94,8 @@ function GeneratingIndicator({ statusText }: { statusText?: string | null }) {
     <span
       key={text}
       // 크기/굵기를 사용자 입력 말풍선 텍스트(text-[15px], 기본 굵기)와 동일하게 맞춘다.
-      className="block text-[15px] status-shimmer animate-fade-in py-0.5"
+      // select-none: 로딩 문구라 드래그·선택되지 않게 한다.
+      className="block text-[15px] status-shimmer animate-fade-in py-0.5 select-none"
     >
       {text}
     </span>

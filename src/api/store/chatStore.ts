@@ -579,7 +579,27 @@ export const useChatStore = create<ChatStore>((set, get) => {
       );
 
       const cached = messageCache.get(sessionId) ?? [];
-      const base = cached.length > dbMessages.length ? cached : dbMessages;
+      let base = cached.length > dbMessages.length ? cached : dbMessages;
+
+      // 서버 메시지는 도메인 정보를 안 준다(백엔드 미저장). 그래서 DB를 택하면 질문 위 도메인
+      // 태그가 사라진다. 로컬 캐시엔 도메인이 남아있으므로, 같은 질문(content)에 매핑해 복원한다.
+      if (base === dbMessages) {
+        const domainByContent = new Map<string, { code?: string; label?: string }>();
+        for (const m of cached) {
+          if (m.role === 'user' && m.type === 'text' && m.domainLabel) {
+            domainByContent.set(m.content, { code: m.domainCode, label: m.domainLabel });
+          }
+        }
+        if (domainByContent.size > 0) {
+          base = dbMessages.map((m) => {
+            if (m.role === 'user' && m.type === 'text') {
+              const d = domainByContent.get(m.content);
+              if (d) return { ...m, domainCode: d.code, domainLabel: d.label };
+            }
+            return m;
+          });
+        }
+      }
 
       const pending = getInflight(sessionId);
 
@@ -660,8 +680,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (!last || last.role !== 'user' || last.type !== 'text') return
       const isFirstMessage = messages.length === 1
       const domainCode = last.domainCode
+      // 도메인 정보를 유지해 재연결/재시도 시에도 '전체'로 떨어지지 않게 한다.
+      const domain = last.domainCode && last.domainLabel
+        ? { code: last.domainCode, label: last.domainLabel }
+        : undefined
 
-      saveInflight(sessionId, last.content)
+      saveInflight(sessionId, last.content, domain)
       const controller = new AbortController()
       const assistantId = uuid()
       const now = new Date().toISOString()
