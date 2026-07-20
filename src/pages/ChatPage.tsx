@@ -111,7 +111,7 @@ export default function ChatPage() {
         <div className="pointer-events-auto bg-surface pb-2">
           <ChatInput isConnecting={isConnecting} />
           <p className="text-xs text-center text-text-muted pt-2">
-            MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
+            MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
           </p>
         </div>
       </div>

@@ -9,6 +9,8 @@ import Toast from '../Toast';
 import DomainPicker from './DomainPicker';
 
 const inputDrafts = new Map<string, string>();
+// 선택한 도메인도 초안처럼 세션별로 기억한다 — 페이지 전환/리마운트 후에도 유지되게.
+const domainDrafts = new Map<string, DomainSelection | null>();
 const NEW_CHAT_KEY = '__new__';
 
 const toSessionTitle = (text: string): string => {
@@ -45,8 +47,15 @@ export default function ChatInput({
   const { mutateAsync: createSession } = useCreateSession();
   const [value, setValue] = useState(() => inputDrafts.get(draftKey) ?? '');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
-  const [domain, setDomain] = useState<DomainSelection | null>(null);
+  const [domain, setDomainState] = useState<DomainSelection | null>(() => domainDrafts.get(draftKey) ?? null);
   const [inputError, setInputError] = useState('');
+
+  // 도메인 선택을 세션별로 기억한다(초안과 동일 패턴).
+  const setDomain = (d: DomainSelection | null) => {
+    setDomainState(d);
+    if (d) domainDrafts.set(draftKey, d);
+    else domainDrafts.delete(draftKey);
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -63,6 +72,7 @@ export default function ChatInput({
 
   useEffect(() => {
     setValue(inputDrafts.get(draftKey) ?? '');
+    setDomainState(domainDrafts.get(draftKey) ?? null);
     requestAnimationFrame(resizeTextarea);
   }, [draftKey]);
 
@@ -117,6 +127,9 @@ export default function ChatInput({
         const res = await createSession({ title: toSessionTitle(text) });
         const sessionId = res.data.data.session_id;
         saveInflight(sessionId, text, domain ?? undefined);
+        // 새 채팅(__new__)에서 고른 도메인을 방금 만든 세션 키로 넘겨, 채팅 페이지에서도 유지되게 한다.
+        if (domain) domainDrafts.set(sessionId, domain);
+        domainDrafts.delete(NEW_CHAT_KEY);
         navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
       } catch (e: unknown) {
         logError('ChatInput.createSession', e);

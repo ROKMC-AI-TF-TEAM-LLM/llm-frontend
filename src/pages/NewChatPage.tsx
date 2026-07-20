@@ -29,7 +29,8 @@ export default function NewChatPage() {
         {/* 헤딩 */}
         <h1 className="text-center font-extrabold text-text-primary leading-tight tracking-tight text-[clamp(26px,3.2vw,36px)]">
           {name ? `${name}님, ` : ''}
-          <span className="text-brand">무엇을{' '}</span>
+          <span className="text-brand">무엇</span>
+          <span className="text-primary">을{' '}</span>
           도와드릴까요?
         </h1>
 
@@ -40,7 +41,7 @@ export default function NewChatPage() {
         </p>
 
         <ChatInput
-          notice="MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오."
+          notice="MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오."
         />
       </div>
       {toastError && <Toast message={toastError} onClose={() => setToastError('')} />}
