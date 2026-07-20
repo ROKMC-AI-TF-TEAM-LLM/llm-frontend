@@ -591,20 +591,20 @@ export const useChatStore = create<ChatStore>((set, get) => {
       // 같은 질문("안녕")이 여러 개일 때 엉뚱한 도메인이 붙는다. 세션 내 user 메시지 '순서'는
       // 캐시와 DB가 동일하므로, user 메시지를 순서대로 짝지어 도메인만 이식한다.
       if (base === dbMessages) {
-        const cachedUserDomains: { code?: string; label?: string }[] = [];
-        for (const m of cached) {
-          if (m.role === 'user' && m.type === 'text') {
-            cachedUserDomains.push({ code: m.domainCode, label: m.domainLabel });
-          }
-        }
-        const hasAnyDomain = cachedUserDomains.some((d) => d.label);
-        if (hasAnyDomain) {
+        const cachedUsers = cached.filter((m) => m.role === 'user' && m.type === 'text');
+        const dbUserCount = dbMessages.filter((m) => m.role === 'user' && m.type === 'text').length;
+        const hasAnyDomain = cachedUsers.some((m) => m.type === 'text' && m.domainLabel);
+        // 순서 매칭은 캐시와 DB의 user 메시지 개수가 '정확히 같을 때만' 안전하다.
+        // (개수가 어긋나면 인덱스가 밀려 엉뚱한 질문에 태그가 붙으므로, 그 경우 이식을 건너뛴다.)
+        if (hasAnyDomain && cachedUsers.length === dbUserCount) {
           let userIdx = 0;
           base = dbMessages.map((m) => {
             if (m.role === 'user' && m.type === 'text') {
-              const d = cachedUserDomains[userIdx++];
+              const c = cachedUsers[userIdx++];
               // 캐시의 그 질문이 도메인 없이(전체) 보낸 것이면 태그도 없어야 한다.
-              if (d?.label) return { ...m, domainCode: d.code, domainLabel: d.label };
+              if (c && c.type === 'text' && c.domainLabel) {
+                return { ...m, domainCode: c.domainCode, domainLabel: c.domainLabel };
+              }
             }
             return m;
           });
@@ -665,7 +665,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const { sessionId, messages: existingMessages } = get()
       const isFirstMessage = existingMessages.length === 0
 
-      saveInflight(sessionId, content)
+      // domain을 함께 저장해야 스트리밍 중 새로고침 시에도 '전체'로 떨어지지 않는다.
+      saveInflight(sessionId, content, domain)
       const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,

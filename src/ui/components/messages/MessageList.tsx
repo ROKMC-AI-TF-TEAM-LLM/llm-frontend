@@ -257,7 +257,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
           type="button"
           onClick={scrollToBottom}
           aria-label="맨 아래로"
-          className="absolute bottom-28 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-surface border border-surface-border shadow-md text-text-secondary hover:bg-surface-subtle transition-colors animate-fade-in"
+          className="absolute bottom-44 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-surface border border-surface-border shadow-md text-text-secondary hover:bg-surface-subtle transition-colors animate-fade-in"
         >
           <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14M19 12l-7 7-7-7" />
