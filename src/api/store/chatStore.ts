@@ -7,6 +7,12 @@ import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
 import { uuid } from '../../utils/uuid';
 
+// 채팅 전송 시 선택한 도메인. code는 서버 요청(domain 필드)용, label은 말풍선 태그 표시용.
+// '전체' 검색이면 undefined를 넘긴다.
+export interface DomainSelection {
+  code: string;
+  label: string;
+}
 
 interface ChatStore {
   sessionId: string;
@@ -21,7 +27,7 @@ interface ChatStore {
   abortStream: () => void;
   connect: (sessionId: string) => Promise<void>;
   disconnect: () => void;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, domain?: DomainSelection) => Promise<void>;
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
@@ -97,6 +103,8 @@ export const peekSessionMessages = (sessionId: string): Message[] => {
 
 const CACHE_KEY = (id: string) => `rokm_cache_${id}`
 
+// 메시지 캐시는 localStorage에 둔다 — 탭을 닫았다 열어도 대화 태그(도메인 등) 기록이 남게.
+// (입력창의 도메인 '선택'은 임시 상태라 별개로 sessionStorage에 저장한다 — ChatInput.tsx)
 const saveCache = (sessionId: string, messages: Message[]) => {
   if (!sessionId || messages.length === 0) return
   try {
@@ -104,13 +112,13 @@ const saveCache = (sessionId: string, messages: Message[]) => {
       (m) => !(m.type === 'text' && m.role === 'assistant' && m.status === 'streaming')
     )
     if (cacheable.length > 0)
-      sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
+      localStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
   } catch (e) { logError('saveCache', e) }
 }
 
 const loadCache = (sessionId: string): Message[] => {
   try {
-    const raw = sessionStorage.getItem(CACHE_KEY(sessionId))
+    const raw = localStorage.getItem(CACHE_KEY(sessionId))
     return raw ? JSON.parse(raw) : []
   } catch (e) {
     logError('loadCache', e)
@@ -120,7 +128,7 @@ const loadCache = (sessionId: string): Message[] => {
 
 export const clearCache = (sessionId: string) => {
   messageCache.delete(sessionId)
-  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch (e) { logError('clearCache', e) }
+  try { localStorage.removeItem(CACHE_KEY(sessionId)) } catch (e) { logError('clearCache', e) }
 }
 
 if (typeof window !== 'undefined') {
@@ -132,8 +140,8 @@ if (typeof window !== 'undefined') {
 
 const INFLIGHT_KEY = 'rokm_inflight'
 
-export const saveInflight = (sessionId: string, question: string) =>
-  sessionStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question }))
+export const saveInflight = (sessionId: string, question: string, domain?: DomainSelection) =>
+  sessionStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question, domain }))
 
 export const clearInflight = (sessionId: string) => {
   try {
@@ -143,12 +151,14 @@ export const clearInflight = (sessionId: string) => {
   } catch (e) { logError('clearInflight', e) }
 }
 
-const getInflight = (sessionId: string): string | null => {
+interface InflightData { question: string; domain?: DomainSelection }
+
+const getInflight = (sessionId: string): InflightData | null => {
   try {
     const raw = sessionStorage.getItem(INFLIGHT_KEY)
     if (!raw) return null
     const data = JSON.parse(raw)
-    return data.sessionId === sessionId ? data.question : null
+    return data.sessionId === sessionId ? { question: data.question, domain: data.domain } : null
   } catch (e) {
     logError('getInflight', e)
     return null
@@ -260,13 +270,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
     isFirstMessage: boolean,
     signal: AbortSignal,
     removePairOnFail = true,
+    domain?: string,
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
     try {
       await streamMessage(
         sessionId,
-        { question },
+        { question, ...(domain ? { domain } : {}) },
         writer.push,
         signal,
         writer.setSources,
@@ -525,7 +536,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           set((state) => ({
             messages: [
               ...state.messages,
-              { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+              { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending.question, createdAt: new Date().toISOString(), domainCode: pending.domain?.code, domainLabel: pending.domain?.label },
             ],
           }));
           get().retryLastMessage();
@@ -569,8 +580,36 @@ export const useChatStore = create<ChatStore>((set, get) => {
         (msg) => !(msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '')
       );
 
-      const cached = messageCache.get(sessionId) ?? [];
-      const base = cached.length > dbMessages.length ? cached : dbMessages;
+      // 메모리 캐시(messageCache)는 새로고침 시 날아간다. 그때는 sessionStorage(loadCache)를
+      // 폴백으로 읽어야 도메인 태그 등 로컬 전용 정보가 복원된다.
+      const memCached = messageCache.get(sessionId) ?? [];
+      const cached = memCached.length > 0 ? memCached : loadCache(sessionId);
+      let base = cached.length > dbMessages.length ? cached : dbMessages;
+
+      // 서버 메시지는 도메인 정보를 안 준다(백엔드 미저장). 그래서 DB를 택하면 질문 위 도메인
+      // 태그가 사라진다. 로컬 캐시엔 도메인이 남아있으므로 복원하되, content로 매칭하면
+      // 같은 질문("안녕")이 여러 개일 때 엉뚱한 도메인이 붙는다. 세션 내 user 메시지 '순서'는
+      // 캐시와 DB가 동일하므로, user 메시지를 순서대로 짝지어 도메인만 이식한다.
+      if (base === dbMessages) {
+        const cachedUserDomains: { code?: string; label?: string }[] = [];
+        for (const m of cached) {
+          if (m.role === 'user' && m.type === 'text') {
+            cachedUserDomains.push({ code: m.domainCode, label: m.domainLabel });
+          }
+        }
+        const hasAnyDomain = cachedUserDomains.some((d) => d.label);
+        if (hasAnyDomain) {
+          let userIdx = 0;
+          base = dbMessages.map((m) => {
+            if (m.role === 'user' && m.type === 'text') {
+              const d = cachedUserDomains[userIdx++];
+              // 캐시의 그 질문이 도메인 없이(전체) 보낸 것이면 태그도 없어야 한다.
+              if (d?.label) return { ...m, domainCode: d.code, domainLabel: d.label };
+            }
+            return m;
+          });
+        }
+      }
 
       const pending = getInflight(sessionId);
 
@@ -588,7 +627,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         set((state) => ({
           messages: [
             ...state.messages,
-            { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending, createdAt: new Date().toISOString() },
+            { id: uuid(), role: 'user' as const, type: 'text' as const, content: pending.question, createdAt: new Date().toISOString(), domainCode: pending.domain?.code, domainLabel: pending.domain?.label },
           ],
         }));
         get().retryLastMessage();
@@ -619,7 +658,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set({ sessionId: '', messages: [], isStreaming: false, statusText: null, abortController: null, isDeleted: false });
     },
 
-    sendMessage: async (content: string) => {
+    sendMessage: async (content: string, domain?: DomainSelection) => {
       if (get().isStreaming) return
       const controller = new AbortController()
       const assistantId = uuid()
@@ -634,14 +673,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
         abortController: controller,
         messages: [
           ...state.messages,
-          { id: uuid(), role: 'user', type: 'text', content, createdAt: now },
+          { id: uuid(), role: 'user', type: 'text', content, createdAt: now, domainCode: domain?.code, domainLabel: domain?.label },
           { id: assistantId, role: 'assistant', type: 'text', content: '', status: 'streaming' as const, createdAt: now },
         ],
       }))
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal)
+      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, true, domain?.code)
     },
 
     retryLastMessage: async () => {
@@ -650,8 +689,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const last = messages[messages.length - 1]
       if (!last || last.role !== 'user' || last.type !== 'text') return
       const isFirstMessage = messages.length === 1
+      const domainCode = last.domainCode
+      // 도메인 정보를 유지해 재연결/재시도 시에도 '전체'로 떨어지지 않게 한다.
+      const domain = last.domainCode && last.domainLabel
+        ? { code: last.domainCode, label: last.domainLabel }
+        : undefined
 
-      saveInflight(sessionId, last.content)
+      saveInflight(sessionId, last.content, domain)
       const controller = new AbortController()
       const assistantId = uuid()
       const now = new Date().toISOString()
@@ -667,7 +711,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal)
+      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, true, domainCode)
     },
 
     sendImageMessage: (filename: string, caption?: string) => {
@@ -691,9 +735,15 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
       let prevUserId: string | null = null;
       let question: string | null = null;
+      let prevDomain: DomainSelection | undefined;
       for (let i = idx - 1; i >= 0; i--) {
         const m = messages[i];
-        if (m.role === 'user' && m.type === 'text') { prevUserId = m.id; question = m.content; break; }
+        if (m.role === 'user' && m.type === 'text') {
+          prevUserId = m.id;
+          question = m.content;
+          if (m.domainCode && m.domainLabel) prevDomain = { code: m.domainCode, label: m.domainLabel };
+          break;
+        }
       }
       if (question == null || prevUserId == null) {
         logError('regenerateMessage.noQuestion', '클릭한 답변 위에서 사용자 질문을 못 찾음(대화 구조 이상)', { assistantId, idx });
@@ -721,7 +771,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (!serverId) {
         const removeIds = new Set<string>([prevUserId, assistantId]);
         set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-        await get().sendMessage(question);
+        await get().sendMessage(question, prevDomain);
         return;
       }
 

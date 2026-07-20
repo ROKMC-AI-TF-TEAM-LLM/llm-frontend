@@ -17,6 +17,7 @@ import { SearchPageSkeleton, RagPageSkeleton, AdminPageSkeleton } from './ui/com
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const RAGPage = lazy(() => import('./pages/RagPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
+const GuidePage = lazy(() => import('./pages/GuidePage'));
 
 const publicRoutes: RouteObject[] = [
   {
@@ -25,6 +26,15 @@ const publicRoutes: RouteObject[] = [
     children: [
       { path: '/', element: <LoginPage /> },
     ]
+  },
+  {
+    path: '/guide',
+    errorElement: <ErrorPage />,
+    element: (
+      <Suspense fallback={null}>
+        <GuidePage />
+      </Suspense>
+    ),
   },
 ];
 

@@ -4,6 +4,7 @@ import MessageBubble from './MessageBubble';
 import MessageActions from './MessageActions';
 import SourceBadge from './SourceBadge';
 import ImageAttachment from './ImageAttachment';
+import DomainIcon from '../chat/DomainIcon';
 
 interface MessageRowProps {
   msg: Message;
@@ -24,6 +25,14 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
   if (msg.role === 'user') {
     return (
       <div data-mid={msg.id} className="group/msg">
+        {msg.domainLabel && msg.domainCode && (
+          <div className="flex justify-end mb-1">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-subtle text-brand text-[12px] font-medium border border-brand-soft">
+              <DomainIcon code={msg.domainCode} size={13} />
+              {msg.domainLabel}
+            </span>
+          </div>
+        )}
         <MessageBubble role="user" content={msg.content} />
         <MessageActions role="user" onCopy={() => onCopy(msg.content)} createdAt={msg.createdAt} />
       </div>

@@ -30,6 +30,12 @@ export interface UserMessage {
   type: 'text';
   content: string;
   createdAt?: string;
+  /**
+   * 이 질문을 보낼 때 선택했던 도메인. 전체 검색이면 없음.
+   * code는 재생성 폴백(재전송) 시 서버 domain 필드 복원용, label은 말풍선 위 태그 표시용.
+   */
+  domainCode?: string;
+  domainLabel?: string;
 }
 
 export interface AssistantMessage {

@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { useForm as useHookForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -50,6 +51,7 @@ const FEATURES = [
 ]
 
 const LoginPage = () => {
+  const navigate = useNavigate()
   const [view, setView] = useState<'intro' | 'auth'>('intro')
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [toastSeq, setToastSeq] = useState(0)
@@ -154,7 +156,7 @@ const LoginPage = () => {
               해병대를 위한 인공지능,<br />이제 <span className="text-brand">MARS</span>와 함께.
             </p>
             <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
-              Marine Artificial Intelligence Retrieval System.
+              Marine Artificial Intelligence Reasoning System.
               <br />
               법령·규정·규칙을 참조해
               <br />
@@ -173,7 +175,7 @@ const LoginPage = () => {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                   팀 소개
                 </button>
-                <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                <button type="button" onClick={() => navigate('/guide')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></svg>
                   서비스 이용법
                 </button>
@@ -297,7 +299,7 @@ const LoginPage = () => {
           <button onClick={openAuth} className="mars-reveal inline-flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[18px] font-extrabold shadow-[0_20px_44px_rgba(220,20,60,0.38)] hover:brightness-105 active:scale-[0.98] transition">
             MARS 시작하기 <span>→</span>
           </button>
-          <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
+          <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS v1.0.0 · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
         </section>
         </div>
       </div>
@@ -342,8 +344,12 @@ const LoginPage = () => {
               </div>
             </form>
           )}
-          <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center text-[12px] text-text-muted leading-relaxed">
-            대한민국 해병대 · MARS<br />본 서비스는 참고용이며 공식 규정을 우선합니다.
+          <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
+              해병대사 지휘통신참모처 지능정보화발전과
+            </p>
+            <p className="mt-0.5 text-[13px] font-semibold text-text-secondary">AI DATA TF</p>
+            <p className="mt-2 text-[11px] tracking-wide text-text-muted">MARS v1.0.0</p>
           </div>
         </div>
       </div>
