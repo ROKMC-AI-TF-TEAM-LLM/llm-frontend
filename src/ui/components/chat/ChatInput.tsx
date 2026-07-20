@@ -9,9 +9,41 @@ import Toast from '../Toast';
 import DomainPicker from './DomainPicker';
 
 const inputDrafts = new Map<string, string>();
-// 선택한 도메인도 초안처럼 세션별로 기억한다 — 페이지 전환/리마운트 후에도 유지되게.
-const domainDrafts = new Map<string, DomainSelection | null>();
 const NEW_CHAT_KEY = '__new__';
+
+// 선택한 도메인을 세션별로 기억한다 — 페이지 전환/리마운트뿐 아니라 새로고침 후에도
+// 유지되도록 sessionStorage에 저장한다. (Map과 같은 get/set/delete 인터페이스 유지)
+const DOMAIN_DRAFT_KEY = 'rokm_domain_drafts';
+const domainDrafts = {
+  read(): Record<string, DomainSelection> {
+    try {
+      const raw = sessionStorage.getItem(DOMAIN_DRAFT_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  },
+  write(map: Record<string, DomainSelection>) {
+    try {
+      sessionStorage.setItem(DOMAIN_DRAFT_KEY, JSON.stringify(map));
+    } catch {
+      /* 저장 불가 시 무시 */
+    }
+  },
+  get(key: string): DomainSelection | null {
+    return this.read()[key] ?? null;
+  },
+  set(key: string, value: DomainSelection) {
+    const map = this.read();
+    map[key] = value;
+    this.write(map);
+  },
+  delete(key: string) {
+    const map = this.read();
+    delete map[key];
+    this.write(map);
+  },
+};
 
 const toSessionTitle = (text: string): string => {
   const firstLine =
@@ -163,7 +195,7 @@ export default function ChatInput({
   const pendingBasename = dotIndex !== -1 ? pendingFile!.slice(0, dotIndex) : pendingFile;
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-210 mx-auto">
       {inputError && <Toast message={inputError} onClose={() => setInputError('')} />}
       <div
         style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }}

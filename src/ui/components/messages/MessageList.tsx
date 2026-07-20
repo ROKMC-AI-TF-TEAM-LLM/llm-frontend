@@ -21,6 +21,8 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
+  // 사용자가 첫 로드 자동 스크롤 전에 직접 스크롤하면, 하단 앵커를 포기한다(도로 내려가는 것 방지).
+  const userScrolledBeforeAnchor = useRef(false);
   const anchored = useRef(false);
   const anchoredIdRef = useRef<string | null>(null);
   const spacerHRef = useRef(0);
@@ -55,7 +57,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
   // 세션 진입 시에만 리셋. (title은 첫 메시지 후 비동기로 확정되므로, title에 걸면 대화 도중 리셋되어
   // first-load '맨 아래로' 스크롤이 오작동 → 2번째 질문이 상단 고정에 실패하던 버그의 원인이었음)
-  useEffect(() => { isFirstLoad.current = true; anchored.current = false; anchoredIdRef.current = null; setSpacer(0); }, [sessionId]);
+  useEffect(() => { isFirstLoad.current = true; userScrolledBeforeAnchor.current = false; anchored.current = false; anchoredIdRef.current = null; setSpacer(0); }, [sessionId]);
 
   useEffect(() => () => cancelAnimationFrame(scrollAnimRef.current), []);
 
@@ -101,6 +103,8 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
+    // 첫 로드 하단 앵커가 끝나기 전에 사용자가 직접 스크롤하면, 자동 하단 이동을 포기한다.
+    if (isFirstLoad.current) userScrolledBeforeAnchor.current = true;
     // 실제 컨텐츠 끝(spacer 제외) 기준으로 '맨 아래' 판단
     const realBottom = el.scrollHeight - spacerHRef.current;
     setShowScrollDown(realBottom - (el.scrollTop + el.clientHeight) > 160);
@@ -148,7 +152,10 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (!el) return;
     if (isFirstLoad.current && messages.length > 0 && !isStreaming) {
       isFirstLoad.current = false;
-      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      // 사용자가 그 사이 위로 스크롤했다면 강제로 내리지 않는다.
+      if (!userScrolledBeforeAnchor.current) {
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      }
       positionThumb();
     }
   }, [messages, isLoading, isStreaming]);
@@ -193,8 +200,6 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
     // 새 질문을 상단(GAP)으로 부드럽게 고정. spacer가 maxScroll = qDocPos-GAP 이 되도록 맞춰져 목표까지 도달 가능.
     if (isNewQuestion) {
-      // eslint-disable-next-line no-console
-      console.log('[X]', 'sIdx', sIdx, '| qDocPos', Math.round(qDocPos), '| maxScroll', el.scrollHeight - el.clientHeight, '| realContent', realContent, '| contentBelow', Math.round(contentBelow), '| ch', el.clientHeight, '| sh', el.scrollHeight);
       anchoredIdRef.current = anchorId;
       animateAnchor(el, () =>
         Math.max(0, el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top - GAP)

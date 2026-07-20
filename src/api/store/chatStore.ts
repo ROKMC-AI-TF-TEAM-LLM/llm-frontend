@@ -103,6 +103,8 @@ export const peekSessionMessages = (sessionId: string): Message[] => {
 
 const CACHE_KEY = (id: string) => `rokm_cache_${id}`
 
+// 메시지 캐시는 localStorage에 둔다 — 탭을 닫았다 열어도 대화 태그(도메인 등) 기록이 남게.
+// (입력창의 도메인 '선택'은 임시 상태라 별개로 sessionStorage에 저장한다 — ChatInput.tsx)
 const saveCache = (sessionId: string, messages: Message[]) => {
   if (!sessionId || messages.length === 0) return
   try {
@@ -110,13 +112,13 @@ const saveCache = (sessionId: string, messages: Message[]) => {
       (m) => !(m.type === 'text' && m.role === 'assistant' && m.status === 'streaming')
     )
     if (cacheable.length > 0)
-      sessionStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
+      localStorage.setItem(CACHE_KEY(sessionId), JSON.stringify(cacheable))
   } catch (e) { logError('saveCache', e) }
 }
 
 const loadCache = (sessionId: string): Message[] => {
   try {
-    const raw = sessionStorage.getItem(CACHE_KEY(sessionId))
+    const raw = localStorage.getItem(CACHE_KEY(sessionId))
     return raw ? JSON.parse(raw) : []
   } catch (e) {
     logError('loadCache', e)
@@ -126,7 +128,7 @@ const loadCache = (sessionId: string): Message[] => {
 
 export const clearCache = (sessionId: string) => {
   messageCache.delete(sessionId)
-  try { sessionStorage.removeItem(CACHE_KEY(sessionId)) } catch (e) { logError('clearCache', e) }
+  try { localStorage.removeItem(CACHE_KEY(sessionId)) } catch (e) { logError('clearCache', e) }
 }
 
 if (typeof window !== 'undefined') {
@@ -578,23 +580,31 @@ export const useChatStore = create<ChatStore>((set, get) => {
         (msg) => !(msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '')
       );
 
-      const cached = messageCache.get(sessionId) ?? [];
+      // 메모리 캐시(messageCache)는 새로고침 시 날아간다. 그때는 sessionStorage(loadCache)를
+      // 폴백으로 읽어야 도메인 태그 등 로컬 전용 정보가 복원된다.
+      const memCached = messageCache.get(sessionId) ?? [];
+      const cached = memCached.length > 0 ? memCached : loadCache(sessionId);
       let base = cached.length > dbMessages.length ? cached : dbMessages;
 
       // 서버 메시지는 도메인 정보를 안 준다(백엔드 미저장). 그래서 DB를 택하면 질문 위 도메인
-      // 태그가 사라진다. 로컬 캐시엔 도메인이 남아있으므로, 같은 질문(content)에 매핑해 복원한다.
+      // 태그가 사라진다. 로컬 캐시엔 도메인이 남아있으므로 복원하되, content로 매칭하면
+      // 같은 질문("안녕")이 여러 개일 때 엉뚱한 도메인이 붙는다. 세션 내 user 메시지 '순서'는
+      // 캐시와 DB가 동일하므로, user 메시지를 순서대로 짝지어 도메인만 이식한다.
       if (base === dbMessages) {
-        const domainByContent = new Map<string, { code?: string; label?: string }>();
+        const cachedUserDomains: { code?: string; label?: string }[] = [];
         for (const m of cached) {
-          if (m.role === 'user' && m.type === 'text' && m.domainLabel) {
-            domainByContent.set(m.content, { code: m.domainCode, label: m.domainLabel });
+          if (m.role === 'user' && m.type === 'text') {
+            cachedUserDomains.push({ code: m.domainCode, label: m.domainLabel });
           }
         }
-        if (domainByContent.size > 0) {
+        const hasAnyDomain = cachedUserDomains.some((d) => d.label);
+        if (hasAnyDomain) {
+          let userIdx = 0;
           base = dbMessages.map((m) => {
             if (m.role === 'user' && m.type === 'text') {
-              const d = domainByContent.get(m.content);
-              if (d) return { ...m, domainCode: d.code, domainLabel: d.label };
+              const d = cachedUserDomains[userIdx++];
+              // 캐시의 그 질문이 도메인 없이(전체) 보낸 것이면 태그도 없어야 한다.
+              if (d?.label) return { ...m, domainCode: d.code, domainLabel: d.label };
             }
             return m;
           });
