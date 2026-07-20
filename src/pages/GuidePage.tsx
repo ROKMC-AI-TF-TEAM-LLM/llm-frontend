@@ -546,7 +546,6 @@ export default function GuidePage() {
           </button>
           <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS v1.0.0 · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
         </Reveal>
-        <div className="absolute left-1/2 -bottom-[320px] -translate-x-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 30%, rgba(255,45,85,0.14), transparent 62%)' }} />
       </section>
     </div>
   );
