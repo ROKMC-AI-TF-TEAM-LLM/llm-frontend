@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message, Source } from '../../types';
+import type { Message, Source, FileAttachment } from '../../types';
 import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
@@ -222,6 +222,17 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ),
         }))
       },
+      // file 이벤트는 0회 이상 올 수 있어 누적한다(url 중복은 무시).
+      addFile: (file: FileAttachment) => {
+        set((state) => ({
+          messages: state.messages.map((m) => {
+            if (m.id !== assistantId || m.role !== 'assistant' || m.type !== 'text') return m
+            const files = m.files ?? []
+            if (files.some((f) => f.url === file.url)) return m
+            return { ...m, files: [...files, file] }
+          }),
+        }))
+      },
       setStatus: (message: string) => {
         // 다른 세션으로 이동한 상태면 무시(현재 보고 있는 세션의 스트림만 문구 표시).
         if (get().sessionId !== sessionId) return
@@ -282,6 +293,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         signal,
         writer.setSources,
         writer.setStatus,
+        writer.addFile,
       )
       writer.flushNow()
     } catch (e) {
@@ -434,7 +446,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.addFile)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -554,6 +566,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         status: 'done' as const,
         createdAt: m.created_at,
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+        ...(m.files && m.files.length > 0 ? { files: m.files } : {}),
       }));
 
       const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };

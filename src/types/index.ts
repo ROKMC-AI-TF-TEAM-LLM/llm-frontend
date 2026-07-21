@@ -3,6 +3,14 @@ export interface Source {
   page?: string | null;
 }
 
+// SSE 'file' 이벤트로 오는 첨부(예: HWP 내보내기 결과). 미들웨어가 자체 URL을 준다.
+// { "type": "file", "name": "MARS_답변_....hwpx", "url": "/files/...", "tool": "HWP_EXPORT" }
+export interface FileAttachment {
+  name: string;
+  url: string;
+  tool?: string | null;
+}
+
 export interface ChatItem {
   id: string;
   title: string;
@@ -45,6 +53,7 @@ export interface AssistantMessage {
   content: string;
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
+  files?: FileAttachment[];
   createdAt?: string;
 }
 

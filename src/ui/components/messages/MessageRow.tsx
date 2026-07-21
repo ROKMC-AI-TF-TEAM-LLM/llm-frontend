@@ -3,6 +3,7 @@ import type { Message } from '../../../types';
 import MessageBubble from './MessageBubble';
 import MessageActions from './MessageActions';
 import SourceBadge from './SourceBadge';
+import FileDownload from './FileDownload';
 import ImageAttachment from './ImageAttachment';
 import DomainIcon from '../chat/DomainIcon';
 
@@ -75,6 +76,7 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
               </button>
             </div>
           )}
+          <FileDownload files={msg.files} />
           <SourceBadge sources={msg.sources} />
         </>
       )}

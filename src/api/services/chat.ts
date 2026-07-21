@@ -2,7 +2,7 @@ import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import { logError } from '../../utils/logError'
 import type { GetMessagesResponse, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
-import type { Source } from '../../types'
+import type { Source, FileAttachment } from '../../types'
 
 export const getMessages = (sessionId: string, options?: { signal?: AbortSignal }) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, options)
@@ -13,6 +13,7 @@ export const deleteMessage = (sessionId: string, messageId: string) =>
 interface SseHandlers {
   onChunk: (chunk: string) => void
   onSources?: (sources: Source[]) => void
+  onFile?: (file: FileAttachment) => void
   onStatus?: (message: string) => void
   signal?: AbortSignal
 }
@@ -53,7 +54,7 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
 
 // SSE(text/event-stream) 본문을 읽어 텍스트 토큰/sources/done/error 이벤트를 처리한다.
 // 일반 채팅 스트리밍과 재생성 스트리밍이 동일한 이벤트 형식을 쓰므로 공유한다.
-const readSse = async (response: Response, { onChunk, onSources, onStatus, signal }: SseHandlers) => {
+const readSse = async (response: Response, { onChunk, onSources, onFile, onStatus, signal }: SseHandlers) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
 
@@ -105,9 +106,12 @@ const readSse = async (response: Response, { onChunk, onSources, onStatus, signa
         continue
       }
 
-      const evt = parsed as { type?: string; items?: Source[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string }
+      const evt = parsed as { type?: string; items?: Source[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; name?: string; url?: string; tool?: string }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
         onSources?.(evt.items)
+      } else if (evt.type === 'file' && evt.name && evt.url) {
+        // 미들웨어가 준 첨부(HWP 등). name·url 필수, tool은 선택.
+        onFile?.({ name: evt.name, url: evt.url, tool: evt.tool ?? null })
       } else if (evt.type === 'error') {
         logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
@@ -148,13 +152,14 @@ export const streamMessage = async (
   signal?: AbortSignal,
   onSources?: (sources: Source[]) => void,
   onStatus?: (message: string) => void,
+  onFile?: (file: FileAttachment) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
     data,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onStatus, signal })
+  await readSse(response, { onChunk, onSources, onFile, onStatus, signal })
 }
 
 // AI 메시지 재생성: 기존 AI 응답(messageId)을 서버에서 삭제하고 동일 질문으로 재스트리밍한다.
@@ -166,11 +171,12 @@ export const regenerateMessageStream = async (
   signal?: AbortSignal,
   onSources?: (sources: Source[]) => void,
   onStatus?: (message: string) => void,
+  onFile?: (file: FileAttachment) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
     undefined,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onStatus, signal })
+  await readSse(response, { onChunk, onSources, onFile, onStatus, signal })
 }

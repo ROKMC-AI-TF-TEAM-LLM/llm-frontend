@@ -346,9 +346,8 @@ const LoginPage = () => {
           )}
           <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center">
             <p className="text-[13px] text-text-secondary leading-relaxed">
-              해병대사 지휘통신참모처 지능정보화발전과
+              해병대사 지휘통신참모처 지능정보화발전과 AI DATA TF
             </p>
-            <p className="mt-0.5 text-[13px] font-semibold text-text-secondary">AI DATA TF</p>
             <p className="mt-2 text-[11px] tracking-wide text-text-muted">MARS v1.0.0</p>
           </div>
         </div>

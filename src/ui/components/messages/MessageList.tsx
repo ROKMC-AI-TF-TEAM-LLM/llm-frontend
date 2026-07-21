@@ -25,6 +25,9 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const userScrolledBeforeAnchor = useRef(false);
   const anchored = useRef(false);
   const anchoredIdRef = useRef<string | null>(null);
+  // 이번에 앵커를 건 '스트리밍 assistant id'. 재생성은 질문 id가 그대로라 질문 id로는
+  // 새 스트림을 구분 못 한다 → 스트리밍 중 assistant id 기준으로 앵커 여부를 판단한다.
+  const anchoredStreamIdRef = useRef<string | null>(null);
   const spacerHRef = useRef(0);
   const spacerRef = useRef<HTMLDivElement>(null);
   const scrollAnimRef = useRef(0);
@@ -57,7 +60,19 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
   // 세션 진입 시에만 리셋. (title은 첫 메시지 후 비동기로 확정되므로, title에 걸면 대화 도중 리셋되어
   // first-load '맨 아래로' 스크롤이 오작동 → 2번째 질문이 상단 고정에 실패하던 버그의 원인이었음)
-  useEffect(() => { isFirstLoad.current = true; userScrolledBeforeAnchor.current = false; anchored.current = false; anchoredIdRef.current = null; setSpacer(0); }, [sessionId]);
+  useEffect(() => { isFirstLoad.current = true; userScrolledBeforeAnchor.current = false; anchored.current = false; anchoredIdRef.current = null; anchoredStreamIdRef.current = null; setSpacer(0); }, [sessionId]);
+
+  // 스트림 시작 엣지 감지: 어떤 assistant가 '스트리밍 아님 → 스트리밍'으로 바뀌면(새 질문이든 재생성이든)
+  // 이번 스트림은 아직 앵커 전이므로 anchoredStreamIdRef를 리셋한다.
+  // (재생성은 같은 assistant id를 재사용해 id 비교만으로는 새 스트림을 구분 못 하는 문제를 해결)
+  const wasStreamingRef = useRef(false);
+  useEffect(() => {
+    const isStreamingNow = messages.some((m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming');
+    if (isStreamingNow && !wasStreamingRef.current) {
+      anchoredStreamIdRef.current = null; // 새 스트림 → 앵커 다시 걸리도록
+    }
+    wasStreamingRef.current = isStreamingNow;
+  }, [messages]);
 
   useEffect(() => () => cancelAnimationFrame(scrollAnimRef.current), []);
 
@@ -167,6 +182,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
     // 앵커 대상 질문 id: 스트리밍 중 답변 바로 앞의 user 질문(없으면 마지막 user). DOM에서 data-mid로 직접 조회.
     const sIdx = messages.findIndex((m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming');
+    const streamingId = sIdx !== -1 ? messages[sIdx].id : null;
     const from = sIdx === -1 ? messages.length - 1 : sIdx - 1;
     let anchorId: string | null = null;
     for (let i = from; i >= 0; i--) {
@@ -175,9 +191,11 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     const escId = anchorId ? (window.CSS?.escape ? window.CSS.escape(anchorId) : anchorId) : null;
     const userEl = escId ? el.querySelector<HTMLElement>(`[data-mid="${escId}"]`) : null;
 
-    // '새 질문(스트리밍 시작)'을 id로 판단 → justStarted 같은 1회성 엣지 트리거에 의존하지 않는다.
+    // '새 스트림 시작'을 스트리밍 assistant id로 판단한다. 재생성(서버 경로)은 같은 assistant id를
+    // 재사용하지만 매번 done→streaming으로 전환되므로, 그 사이 anchoredStreamIdRef를 null로 리셋해
+    // 같은 질문을 다시 재생성해도 앵커가 걸리게 한다(아래 별도 effect).
     // 스크롤할 순간에 DOM 요소가 아직 없으면(요소 미부착) 앵커 완료 표시를 하지 않고 return → 다음 렌더에서 재시도.
-    const isNewQuestion = sIdx !== -1 && anchorId !== null && anchorId !== anchoredIdRef.current;
+    const isNewQuestion = sIdx !== -1 && anchorId !== null && streamingId !== anchoredStreamIdRef.current;
 
     if (!userEl) return;
     if (!isNewQuestion && !anchored.current) return;
@@ -201,6 +219,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     // 새 질문을 상단(GAP)으로 부드럽게 고정. spacer가 maxScroll = qDocPos-GAP 이 되도록 맞춰져 목표까지 도달 가능.
     if (isNewQuestion) {
       anchoredIdRef.current = anchorId;
+      anchoredStreamIdRef.current = streamingId;
       animateAnchor(el, () =>
         Math.max(0, el.scrollTop + userEl.getBoundingClientRect().top - el.getBoundingClientRect().top - GAP)
       );
@@ -225,7 +244,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
       {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
       <div className="relative flex-1 min-h-0">
-      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 pt-6 pb-40 scrollbar-hide [overflow-anchor:none]" aria-live="polite" aria-atomic="false">
+      <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 pt-6 pb-2 scrollbar-hide [overflow-anchor:none]" aria-live="polite" aria-atomic="false">
         {isLoading ? (
           <MessagesSkeleton />
         ) : (
@@ -257,7 +276,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
           type="button"
           onClick={scrollToBottom}
           aria-label="맨 아래로"
-          className="absolute bottom-44 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-surface border border-surface-border shadow-md text-text-secondary hover:bg-surface-subtle transition-colors animate-fade-in"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-surface border border-surface-border shadow-md text-text-secondary hover:bg-surface-subtle transition-colors animate-fade-in"
         >
           <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 5v14M19 12l-7 7-7-7" />

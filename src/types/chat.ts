@@ -1,4 +1,4 @@
-import type { Source } from './index'
+import type { Source, FileAttachment } from './index'
 
 export interface MessageItem {
   message_id: string
@@ -6,6 +6,7 @@ export interface MessageItem {
   content: string
   created_at: string
   sources?: Source[]
+  files?: FileAttachment[]
 }
 
 export interface MessageListData {
