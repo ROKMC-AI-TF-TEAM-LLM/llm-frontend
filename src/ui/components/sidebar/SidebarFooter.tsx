@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '../../../types';
 import { useAuth } from '../../../context/AuthContext';
@@ -11,107 +11,76 @@ interface SidebarFooterProps {
 export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
+  // ESC + 바깥 클릭으로 닫기
   useEffect(() => {
-    if (!showModal) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowModal(false); };
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const onDown = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [showModal]);
+    document.addEventListener('mousedown', onDown);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDown);
+    };
+  }, [open]);
+
+  const go = (path: string) => { setOpen(false); navigate(path); };
 
   return (
-    <>
-      {showModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className="bg-surface rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden animate-fade-in"
-            onClick={(e) => e.stopPropagation()}
+    <div ref={wrapRef} className="relative" style={{ borderTop: '1px solid #f4e6ea' }}>
+      {/* 위로 뜨는 팝업 메뉴 (Claude 스타일) */}
+      {open && (
+        <div className="absolute bottom-full left-2 right-2 mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in">
+          {/* 헤더: 이메일 */}
+          {user.email && (
+            <div className="px-4 pb-2 mb-1 border-b border-surface-border">
+              <p className="text-[13px] font-semibold text-text-primary truncate">{user.name}</p>
+              <p className="text-[12px] text-text-muted truncate">{user.email}</p>
+            </div>
+          )}
+
+          <MenuItem
+            icon={<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0 .01M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />}
+            label="팀 소개"
+            onClick={() => go('/guide')}
+          />
+          <MenuItem
+            icon={<><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></>}
+            label="서비스 이용법"
+            onClick={() => go('/guide')}
+          />
+          {user.role === 'admin' && (
+            <MenuItem
+              icon={<><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></>}
+              label="관리자 페이지"
+              onClick={() => go('/admin')}
+            />
+          )}
+
+          <div className="my-1 h-px bg-surface-border mx-3" />
+
+          <button
+            onClick={() => { setOpen(false); logout(); }}
+            className="w-full flex items-center gap-3 px-4 py-2 text-[13.5px] text-red-500 hover:bg-red-50 transition-colors"
           >
-            {/* 헤더: 아바타 + 이름 + 이메일 */}
-            <div className="relative px-6 pt-6 pb-5 flex flex-col items-center text-center border-b border-surface-border">
-              <button
-                onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 text-text-muted hover:text-text-primary transition-colors"
-                aria-label="닫기"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <p className="text-base font-semibold text-text-primary">{user.name}</p>
-              {user.email && (
-                <p className="text-sm text-text-muted mt-0.5">{user.email}</p>
-              )}
-            </div>
-
-            {/* 상세 정보 */}
-            <div className="px-6 py-5 space-y-4 border-b border-surface-border">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-text-muted">역할</span>
-                <span className={[
-                  'text-[11px] font-medium px-2.5 py-0.5 rounded-full',
-                  user.role === 'admin'
-                    ? 'bg-brand-soft text-brand'
-                    : 'bg-surface-border text-text-secondary',
-                ].join(' ')}>
-                  {user.role === 'admin' ? '관리자' : '사용자'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-text-muted">가입일</span>
-                <span className="text-sm text-text-secondary">
-                  {user.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString('ko-KR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : '-'}
-                </span>
-              </div>
-            </div>
-
-            {/* 관리자 페이지(관리자만) + 로그아웃 */}
-            <div className="px-6 py-4 space-y-2">
-              {user.role === 'admin' && (
-                <button
-                  onClick={() => { setShowModal(false); navigate('/admin'); }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:bg-brand-subtle transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  관리자 페이지
-                </button>
-              )}
-              <button
-                onClick={logout}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                로그아웃
-              </button>
-            </div>
-          </div>
+            <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            로그아웃
+          </button>
         </div>
       )}
 
-      <div style={{ borderTop: '1px solid #f4e6ea' }} className="flex-none flex items-center gap-1 px-[8px] py-[9px]">
+      {/* 프로필 버튼 */}
+      <div className="flex items-center gap-1 px-[8px] py-[9px]">
         <button
-          onClick={() => setShowModal(true)}
-          className={`flex-1 min-w-0 flex items-center gap-2 px-[6px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${showModal ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
+          onClick={() => setOpen((v) => !v)}
+          className={`flex-1 min-w-0 flex items-center gap-2 px-[6px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
         >
           {/* 아바타 */}
           <div
@@ -133,21 +102,30 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               <span className="max-w-full truncate text-[11px] text-text-muted">{user.email}</span>
             )}
           </div>
-        </button>
 
-        {isOpen && (
-          <button
-            onClick={logout}
-            title="로그아웃"
-            aria-label="로그아웃"
-            className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          {/* 펼침 화살표 */}
+          {isOpen && (
+            <svg className={`shrink-0 ml-auto w-4 h-4 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="m6 9 6 6 6-6" />
             </svg>
-          </button>
-        )}
+          )}
+        </button>
       </div>
-    </>
+    </div>
+  );
+}
+
+// 팝업 메뉴 한 줄
+function MenuItem({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-2 text-[13.5px] text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
+    >
+      <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+        {icon}
+      </svg>
+      {label}
+    </button>
   );
 }

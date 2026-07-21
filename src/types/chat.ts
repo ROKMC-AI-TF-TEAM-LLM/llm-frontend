@@ -6,7 +6,8 @@ export interface MessageItem {
   content: string
   created_at: string
   sources?: Source[]
-  files?: FileAttachment[]
+  // 대화 이력의 각 메시지에 포함되는 첨부(sources와 동일 위치). 과거 대화에서도 다운로드 버튼 복원.
+  attachments?: FileAttachment[]
 }
 
 export interface MessageListData {

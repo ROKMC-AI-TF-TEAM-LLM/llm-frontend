@@ -222,15 +222,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ),
         }))
       },
-      // file 이벤트는 0회 이상 올 수 있어 누적한다(url 중복은 무시).
-      addFile: (file: FileAttachment) => {
+      // 'files' 이벤트(done 직전 1회)로 온 첨부 목록을 해당 AI 메시지에 세팅한다.
+      setAttachments: (attachments: FileAttachment[]) => {
         set((state) => ({
-          messages: state.messages.map((m) => {
-            if (m.id !== assistantId || m.role !== 'assistant' || m.type !== 'text') return m
-            const files = m.files ?? []
-            if (files.some((f) => f.url === file.url)) return m
-            return { ...m, files: [...files, file] }
-          }),
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, attachments } : m
+          ),
         }))
       },
       setStatus: (message: string) => {
@@ -293,7 +290,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         signal,
         writer.setSources,
         writer.setStatus,
-        writer.addFile,
+        writer.setAttachments,
       )
       writer.flushNow()
     } catch (e) {
@@ -446,7 +443,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.addFile)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -566,7 +563,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         status: 'done' as const,
         createdAt: m.created_at,
         ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
-        ...(m.files && m.files.length > 0 ? { files: m.files } : {}),
+        ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
       }));
 
       const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };

@@ -3,12 +3,14 @@ export interface Source {
   page?: string | null;
 }
 
-// SSE 'file' 이벤트로 오는 첨부(예: HWP 내보내기 결과). 미들웨어가 자체 URL을 준다.
-// { "type": "file", "name": "MARS_답변_....hwpx", "url": "/files/...", "tool": "HWP_EXPORT" }
+// SSE 'files' 이벤트(done 직전 1회) 및 대화 이력의 message.attachments로 오는 첨부.
+// 다운로드는 인증이 필요해 <a href> 직접 링크가 아니라 fetch→blob 방식으로 받는다.
+// ev.items = [{ attachment_id, name, size, url }]
 export interface FileAttachment {
+  attachment_id: string;
   name: string;
-  url: string;
-  tool?: string | null;
+  size?: number;
+  url?: string; // 있으면 이 URL, 없으면 /api/v1/files/{attachment_id}
 }
 
 export interface ChatItem {
@@ -53,7 +55,7 @@ export interface AssistantMessage {
   content: string;
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
-  files?: FileAttachment[];
+  attachments?: FileAttachment[];
   createdAt?: string;
 }
 

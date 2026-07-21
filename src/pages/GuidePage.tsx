@@ -27,6 +27,7 @@ const TIPS = [
   { n: 1, text: '"휴가"보다 "정기휴가 신청 절차"처럼 구체적으로 물을수록 정확한 근거를 찾습니다.' },
   { n: 2, text: '답변이 범위를 벗어난 것 같다면 도메인을 좁혀 같은 질문을 다시 보내보세요.' },
   { n: 3, text: '중요한 결정 전에는 "출처 보기"로 펼친 원문 조항을 반드시 함께 확인하세요.' },
+  { n: 4, text: '"해병대 창설 배경을 정리한 한글 문서를 만들어줘" 처럼 요청해 보세요. 직접 HWP파일로 만들어줄 수 있습니다!' }
 ];
 
 const FAQ = [
@@ -37,12 +38,12 @@ const FAQ = [
   { q: '개인정보나 민감한 내용을 입력해도 되나요?', a: '개인 식별정보나 부대 기밀에 해당하는 내용은 입력하지 않는 것을 권장합니다. 일반적인 규정·절차 문의 위주로 이용해 주세요.' },
 ];
 
-const Q_TEXT = '국가를 당사자로 하는 계약에 관한 법률에 대해 알려줄래?';
+const Q_TEXT = '해병대 창설과 그 배경에 대해 알려줄래?';
 const ANSWER_LINES = [
-  '국가계약법은 국가가 당사자가 되는 계약의 기본 사항을 규정합니다.',
-  '1. 적용 범위: 국제입찰에 따른 정부조달계약 등',
-  '2. 계약의 원칙: 신의성실 원칙에 따라 이행',
-  '3. 계약 이행 관리: 감독·검사 및 지체상금 부과',
+  <h3 className="text-[20.5px] font-bold text-text-primary">대한민국 해병대 창설 배경</h3>,
+  '대한민국 해병대는 1949년 4월 15일, 경상남도 창원시 진해구 덕산동에 위치한 진해 해군기지의 진해비행장(덕산비행장)에서 대한민국 해군에서 선발한 380명(장교 26명, 부사관 54명, 병 300명)의 병력으로 창설되었다.',
+  '1948년 여수·순천 10·19 사건 진압에 참가한 해군 임시정대사령 신현준 중령이, 사건을 처음부터 끝까지 파악하고 있던 통영정 정장 공정식 대위가 작성한 초안을 바탕으로, "상륙군 없이 반란군을 완전히 진압하지 못한다"는 작전경과서를 보고하자 해군총사령관 손원일 제독이 해병대 창설을 지시했다.',
+  '창설 직후의 해병대는...',
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -223,7 +224,7 @@ function Step02Mock() {
       <div className="flex-1 px-9 pt-8 pb-3 overflow-hidden">
         <div className="flex justify-end mb-5">
           <div className="max-w-[82%] px-5 py-3 rounded-[18px_18px_4px_18px] bg-gradient-to-br from-brand to-[#ff2d55] text-white text-[14.5px] leading-[1.5]">
-            국가를 당사자로 하는 계약에 관한 법률에 대해 알려줄래?
+            해병대 창설과 그 배경에 대해 알려줄래?
           </div>
         </div>
         <div
@@ -335,6 +336,17 @@ export default function GuidePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  // '아래로 스크롤': 현재 위치보다 아래에 있는 가장 가까운 섹션의 '절대 위치'로 이동한다.
+  // (scrollBy 상대 이동은 조금 스크롤한 뒤 누르면 어긋나므로, 섹션 top으로 정확히 스냅)
+  const scrollToNextSection = () => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-guide-section]'));
+    const cur = window.scrollY;
+    // 현재보다 살짝(+4px) 아래에서 시작하는 첫 섹션
+    const next = sections.find((s) => s.offsetTop > cur + 4);
+    const target = next ? next.offsetTop : document.body.scrollHeight;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  };
+
   return (
     <div
       className="min-h-screen select-none"
@@ -359,14 +371,10 @@ export default function GuidePage() {
         <button onClick={() => navigate('/')} className="flex items-center">
           <span className="text-[18px] font-black text-brand tracking-tight">MARS</span>
         </button>
-        <button onClick={() => navigate('/')} className="inline-flex items-center gap-1.5 text-sm font-bold text-[#c0002a] whitespace-nowrap hover:opacity-70 transition-opacity">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M9 22V12h6v10" /></svg>
-          홈으로
-        </button>
       </div>
 
       {/* 헤드라인 */}
-      <section className="relative px-[6vw] min-h-[calc(100vh-73px)] flex items-center overflow-hidden">
+      <section data-guide-section className="relative px-[6vw] min-h-[calc(100vh-73px)] flex items-center overflow-hidden">
         <div className="absolute right-[4%] top-[14%] w-[340px] h-[340px] opacity-90 pointer-events-none animate-[marsFloat_8s_ease-in-out_infinite]">
           <div className="absolute -inset-[14%] rounded-full border-[1.5px] border-[rgba(228,0,43,0.16)] animate-[marsSpin_40s_linear_infinite]" style={{ transform: 'rotate(-16deg)' }}>
             <div className="absolute -left-1 top-[48%] w-[9px] h-[9px] rounded-full bg-brand shadow-[0_0_12px_3px_rgba(228,0,43,0.5)]" />
@@ -397,7 +405,7 @@ export default function GuidePage() {
         <div className="absolute left-1/2 -translate-x-1/2 bottom-9 animate-[hintIn_.8s_ease_.5s_both]">
           <button
             type="button"
-            onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+            onClick={scrollToNextSection}
             className="group flex flex-col items-center gap-2 text-[#b89aa0] hover:text-brand transition-colors"
           >
             <span className="text-[12px] font-semibold tracking-wider">아래로 스크롤</span>
@@ -439,7 +447,7 @@ export default function GuidePage() {
       <StepRow
         step="STEP 03"
         title={<>근거를 찾아<br />실시간으로 답합니다</>}
-        desc="질문을 보내면 MARS가 관련 규정을 찾아 실시간으로 답을 작성합니다."
+        desc="질문을 보내면 MARS가 관련 문서를 찾아 실시간으로 답을 작성합니다."
         bullets={[
           'RAG 검색으로 실제 규정 원문에서 근거를 찾습니다.',
           '답변은 완성될 때까지 기다리지 않고 실시간으로 표시됩니다.',
@@ -465,10 +473,10 @@ export default function GuidePage() {
       />
 
       {/* SMART BEHAVIOR */}
-      <section className="px-[6vw] min-h-screen flex items-center py-16">
+      <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
         <div className="w-full max-w-[960px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.22em] text-[#c0002a]">SMART BEHAVIOR</Reveal>
-          <Reveal delay={60}><h2 className="text-center mx-auto mb-4 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>이런 점이 다릅니다</h2></Reveal>
+          <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>이런 점이 다릅니다</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">단순히 그럴듯한 답을 내놓는 대신, 규정에 근거해 정직하게 답하도록 설계했습니다.</p></Reveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {SMARTS.map((s, i) => (
@@ -482,10 +490,10 @@ export default function GuidePage() {
       </section>
 
       {/* TIPS */}
-      <section className="px-[6vw] min-h-screen flex items-center py-16">
+      <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
         <div className="w-full max-w-[820px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.22em] text-[#c0002a]">TIPS</Reveal>
-          <Reveal delay={60}><h2 className="text-center mx-auto mb-4 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>더 정확하게 쓰는 법</h2></Reveal>
+          <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>더 정확하게 쓰는 법</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">같은 질문도 조금만 다듬으면 훨씬 정확한 근거를 찾을 수 있습니다.</p></Reveal>
           <div className="flex flex-col gap-4">
             {TIPS.map((tip, i) => (
@@ -499,10 +507,10 @@ export default function GuidePage() {
       </section>
 
       {/* FAQ */}
-      <section className="px-[6vw] min-h-screen flex items-center py-16">
+      <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
         <div className="w-full max-w-[760px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.22em] text-[#c0002a]">FAQ</Reveal>
-          <Reveal delay={60}><h2 className="text-center mx-auto mb-4 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}>자주 묻는 질문</h2></Reveal>
+          <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}>자주 묻는 질문</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">MARS를 쓰기 전 궁금해할 만한 것들을 모았습니다.</p></Reveal>
           <div className="flex flex-col gap-3">
             {FAQ.map((item, i) => {
@@ -534,7 +542,7 @@ export default function GuidePage() {
       </section>
 
       {/* CTA — 소개(로그인) 페이지와 동일 */}
-      <section className="relative px-[6vw] min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
+      <section data-guide-section className="relative px-[6vw] min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
         <Reveal className="relative z-[2]">
           <h2 className="m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
           <p className="mx-auto mb-9 max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
@@ -594,7 +602,7 @@ function StepRow({
     </Reveal>
   );
   return (
-    <section className="px-[6vw] min-h-screen flex items-center py-16">
+    <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
       <div className={`max-w-[1160px] w-full mx-auto flex items-center gap-16 flex-wrap ${reverse ? 'flex-row-reverse' : ''}`}>
         {card}
         {text}
