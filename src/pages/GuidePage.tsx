@@ -341,8 +341,9 @@ export default function GuidePage() {
   const scrollToNextSection = () => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-guide-section]'));
     const cur = window.scrollY;
-    // 현재보다 살짝(+4px) 아래에서 시작하는 첫 섹션
-    const next = sections.find((s) => s.offsetTop > cur + 4);
+    // 버튼이 속한 섹션(헤드라인) 자신의 offsetTop은 헤더 높이만큼 0보다 커서 "다음 섹션"으로
+    // 잘못 인식될 수 있다 — 뷰포트 높이 이상 떨어진 섹션만 진짜 다음 섹션으로 본다.
+    const next = sections.find((s) => s.offsetTop > cur + window.innerHeight * 0.5);
     const target = next ? next.offsetTop : document.body.scrollHeight;
     window.scrollTo({ top: target, behavior: 'smooth' });
   };

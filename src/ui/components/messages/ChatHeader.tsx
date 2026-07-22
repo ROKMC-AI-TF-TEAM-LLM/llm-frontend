@@ -61,11 +61,22 @@ export default function ChatHeader({ title }: ChatHeaderProps) {
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-semibold text-text-secondary hover:bg-brand-subtle hover:text-brand transition-colors"
             aria-label="첨부 파일 보기"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6" />
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              {/* 문서 본체: 채워진 흰 종이 + 얇은 회색 테두리 */}
+              <path
+                d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+                fill="white"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinejoin="round"
+              />
+              {/* 접힌 모서리: 옅은 회색 삼각형으로 종이가 접힌 입체감 표현 */}
+              <path d="M14 2v6h6z" fill="currentColor" fillOpacity={0.18} stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round" />
+              {/* 텍스트 줄무늬: 문서 안쪽에 짧은 가로선 3개 */}
+              <line x1="7.5" y1="13" x2="16.5" y2="13" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeOpacity={0.55} />
+              <line x1="7.5" y1="16" x2="16.5" y2="16" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeOpacity={0.55} />
+              <line x1="7.5" y1="19" x2="13" y2="19" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeOpacity={0.55} />
             </svg>
-            파일 {files.length}
           </button>
         )}
         <ServerStatusLight />

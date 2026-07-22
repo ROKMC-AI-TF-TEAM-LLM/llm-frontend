@@ -33,9 +33,15 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
 
   return (
     <div ref={wrapRef} className="relative" style={{ borderTop: '1px solid #f4e6ea' }}>
-      {/* 위로 뜨는 팝업 메뉴 (Claude 스타일) */}
+      {/* 위로 뜨는 팝업 메뉴 (Claude 스타일).
+          사이드바가 접혔을 땐(56px) left-2/right-2로 폭을 잡으면 팝업이 눌려 글자가 세로로 쪼개진다.
+          그래서 접힌 상태에선 고정 폭(w-64)으로 왼쪽 정렬해 사이드바 밖으로 자연스럽게 걸치게 한다. */}
       {open && (
-        <div className="absolute bottom-full left-2 right-2 mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in">
+        <div
+          className={`absolute bottom-full mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in ${
+            isOpen ? 'left-2 right-2' : 'left-2 w-64'
+          }`}
+        >
           {/* 헤더: 이메일 */}
           {user.email && (
             <div className="px-4 pb-2 mb-1 border-b border-surface-border">
@@ -102,14 +108,20 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               <span className="max-w-full truncate text-[11px] text-text-muted">{user.email}</span>
             )}
           </div>
-
-          {/* 펼침 화살표 */}
-          {isOpen && (
-            <svg className={`shrink-0 ml-auto w-4 h-4 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          )}
         </button>
+
+        {isOpen && (
+          <button
+            onClick={logout}
+            title="로그아웃"
+            aria-label="로그아웃"
+            className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -76,8 +76,8 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
               </button>
             </div>
           )}
-          <FileDownload attachments={msg.attachments} />
           <SourceBadge sources={msg.sources} />
+          <FileDownload attachments={msg.attachments} />
         </>
       )}
     </div>
