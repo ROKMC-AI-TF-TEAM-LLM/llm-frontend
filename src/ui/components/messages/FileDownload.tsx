@@ -1,34 +1,12 @@
 import { useState } from 'react';
 import type { FileAttachment } from '../../../types';
-import { getValidAccessToken } from '../../../api/lib/axios';
-import { logError } from '../../../utils/logError';
+import { downloadAttachment, fileExtOf, formatFileSize } from '../../../utils/downloadAttachment';
 
 interface FileDownloadProps {
   attachments?: FileAttachment[];
 }
 
-// url이 상대경로면 백엔드 origin을 붙인다. url이 없으면 attachment_id로 경로를 만든다.
-const resolveUrl = (att: FileAttachment): string => {
-  const base = import.meta.env.VITE_SERVER_API_URL ?? '';
-  const path = att.url ?? `/api/v1/files/${att.attachment_id}`;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
-};
-
-const extOf = (name: string): string | null => {
-  const i = name.lastIndexOf('.');
-  return i > 0 ? name.slice(i + 1).toUpperCase() : null;
-};
-
-const formatSize = (size?: number): string | null => {
-  if (!size || size <= 0) return null;
-  if (size < 1024) return `${size}B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)}KB`;
-  return `${(size / 1024 / 1024).toFixed(1)}MB`;
-};
-
 // 답변에 첨부된 파일(HWP 내보내기 등)의 다운로드 버튼.
-// 다운로드 엔드포인트는 인증이 필요하므로 <a href> 직접 링크가 아니라 fetch→blob으로 받는다.
 export default function FileDownload({ attachments }: FileDownloadProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -39,36 +17,18 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
     if (busyId) return;
     setBusyId(att.attachment_id);
     setErr(null);
-    try {
-      const token = await getValidAccessToken();
-      const res = await fetch(resolveUrl(att), {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) {
-        setErr('파일을 찾을 수 없습니다.'); // 404 FILE_NOT_FOUND 등
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = Object.assign(document.createElement('a'), { href: url, download: att.name });
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      logError('FileDownload', e);
-      setErr('다운로드 중 오류가 발생했습니다.');
-    } finally {
-      setBusyId(null);
-    }
+    const msg = await downloadAttachment(att);
+    if (msg) setErr(msg);
+    setBusyId(null);
   };
 
   return (
     <div className="ml-1 mb-3 mt-1 space-y-2">
       {attachments.map((att) => {
-        const ext = extOf(att.name);
-        const sizeText = formatSize(att.size);
+        const ext = fileExtOf(att.name);
+        const sizeText = formatFileSize(att.size);
         const busy = busyId === att.attachment_id;
+        const meta = [ext, sizeText].filter(Boolean).join(' · ');
         return (
           <button
             key={att.attachment_id}
@@ -86,9 +46,7 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold text-text-primary truncate">{att.name}</p>
               <p className="text-[11.5px] text-brand-hover font-medium mt-0.5">
-                {[ext, sizeText].filter(Boolean).join(' · ')}
-                {(ext || sizeText) ? ' · ' : ''}
-                {busy ? '내려받는 중...' : '다운로드'}
+                {meta ? `${meta} · ` : ''}{busy ? '내려받는 중...' : '다운로드'}
               </p>
             </div>
             {busy ? (
