@@ -7,6 +7,7 @@ import { getApiError } from '../utils/error';
 import { logError } from '../utils/logError';
 import { copyText } from '../utils/clipboard';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import AdminDocuments from './AdminDocuments';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type UserStatusTab = 'all' | 'pending' | 'approved' | 'rejected';
@@ -264,6 +265,7 @@ const Pagination = ({ page, totalPages, onChange }: { page: number; totalPages: 
 
 export default function AdminPage() {
   useDocumentTitle('Admin');
+  const [mainTab, setMainTab] = useState<'users' | 'documents'>('users');
   const [adminPage, setAdminPage] = useState(1);
   const [userPage, setUserPage] = useState(1);
   const [userStatusTab, setUserStatusTab] = useState<UserStatusTab>('all');
@@ -330,8 +332,37 @@ export default function AdminPage() {
         <Toast message="데이터를 불러오지 못했습니다." onClose={() => setErrorDismissed(true)} />
       )}
 
-      <h1 className="text-2xl font-bold text-text-primary mb-8">관리자 - 회원 관리</h1>
+      <h1 className="text-2xl font-bold text-text-primary mb-6">관리자</h1>
 
+      {/* 상단 탭: 회원 관리 / 문서 관리 */}
+      <div className="flex items-center gap-1 border-b border-surface-border mb-8" role="tablist">
+        {([
+          { key: 'users', label: '회원 관리' },
+          { key: 'documents', label: '문서 관리' },
+        ] as const).map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={mainTab === tab.key}
+            onClick={() => setMainTab(tab.key)}
+            className={`relative px-4 py-2.5 text-sm font-semibold transition-colors ${
+              mainTab === tab.key
+                ? 'text-brand'
+                : 'text-text-muted hover:text-text-primary'
+            }`}
+          >
+            {tab.label}
+            {mainTab === tab.key && (
+              <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-brand to-brand-light" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {mainTab === 'documents' && <AdminDocuments />}
+
+      {mainTab === 'users' && (<>
       <section className="mb-10">
         <h2 className="text-base font-semibold text-text-primary mb-3">관리자</h2>
         <div className="overflow-x-auto rounded-xl border border-surface-border shadow-sm overflow-hidden">
@@ -439,6 +470,7 @@ export default function AdminPage() {
         </div>
         <Pagination page={userPage} totalPages={userTotalPages} onChange={setUserPage} />
       </section>
+      </>)}
     </div>
   );
 }
