@@ -15,11 +15,15 @@ export const useAdminDocuments = (params?: GetAdminDocumentsParams) => {
     queryFn: () => getAdminDocuments(params),
     enabled: !!accessToken,
     retry: 1,
-    // 색인 진행 상태(PROCESSING → COMPLETED)를 반영하려고, 처리 중 문서가 하나라도 있으면 3초마다 폴링.
+    // 색인 진행 상태(PROCESSING → COMPLETED) 폴링 — useServerStatus의 헬스체크와 같은 조건부 방식.
+    // - 문서별 status API를 개별 호출하지 않고, 목록 1회 호출로 처리 중 문서 전체를 한 번에 갱신(배치).
+    // - 처리 중 문서가 하나도 없으면 폴링 자체를 멈춘다(완료된 문서에는 호출 없음).
+    // - 요청이 실패한 상태면 멈춘다(장애 난 서버에 5초마다 계속 쏘는 것 방지).
     refetchInterval: (query) => {
+      if (query.state.status === 'error') return false
       const docs = query.state.data?.data.data.documents ?? []
       const hasProcessing = docs.some((d) => d.status === 'PROCESSING')
-      return hasProcessing ? 3000 : false
+      return hasProcessing ? 5000 : false
     },
   })
 }
