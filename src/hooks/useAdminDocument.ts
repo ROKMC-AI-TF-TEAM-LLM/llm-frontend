@@ -2,9 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   uploadAdminDocument,
   getAdminDocuments,
+  getAdminDocumentStatus,
   deleteAdminDocument,
 } from '../api/services/adminDocument'
 import type { GetAdminDocumentsParams, UploadDocumentFields } from '../types/adminDocument'
+import { normalizeDocStatus } from '../utils/document'
 import { useAuth } from '../context/AuthContext'
 
 // 관리자 문서 목록. 처리 중(PROCESSING) 문서가 있으면 색인이 끝날 때까지 주기적으로 다시 불러온다.
@@ -22,7 +24,7 @@ export const useAdminDocuments = (params?: GetAdminDocumentsParams) => {
     refetchInterval: (query) => {
       if (query.state.status === 'error') return false
       const docs = query.state.data?.data.data.documents ?? []
-      const hasProcessing = docs.some((d) => d.status === 'PROCESSING')
+      const hasProcessing = docs.some((d) => normalizeDocStatus(d.status) === 'processing')
       return hasProcessing ? 5000 : false
     },
   })
@@ -46,6 +48,22 @@ export const useDeleteDocument = () => {
     mutationFn: (documentId: string) => deleteAdminDocument(documentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'documents'] })
+    },
+  })
+}
+
+// 개별 문서 색인 상태 검증. processing인 동안만 폴링, 완료/실패면 멈춘다.
+export const useAdminDocumentStatus = (documentId: string | undefined) => {
+  const { accessToken } = useAuth()
+  return useQuery({
+    queryKey: ['admin', 'document-status', documentId],
+    queryFn: () => getAdminDocumentStatus(documentId!),
+    enabled: !!accessToken && !!documentId,
+    retry: 1,   // ← 목록 훅과 동일하게. 404 검증 실패 시 과도한 재시도 방지
+    refetchInterval: (query) => {
+      if (query.state.status === 'error') return false
+      const status = query.state.data?.data.data.status
+      return normalizeDocStatus(status) === 'processing' ? 5000 : false
     },
   })
 }

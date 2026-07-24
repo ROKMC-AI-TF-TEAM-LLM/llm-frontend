@@ -1,7 +1,11 @@
 import { useState, useRef, useMemo } from 'react';
-import { useAdminDocuments, useUploadDocument, useDeleteDocument } from '../hooks/useAdminDocument';
-import { downloadDocumentByName } from '../utils/downloadAttachment';
-import { DOMAINS, getDomainLabel, getDomainStyle } from '../utils/document';
+import {
+  useAdminDocuments,
+  useUploadDocument,
+  useDeleteDocument,
+  useAdminDocumentStatus,
+} from '../hooks/useAdminDocument';
+import { DOMAINS, getDomainLabel, getDomainStyle, normalizeDocStatus } from '../utils/document';
 import DomainIcon from '../ui/components/chat/DomainIcon';
 import Toast from '../ui/components/Toast';
 import { getApiError, DEFAULT_STATUS_ERRORS } from '../utils/error';
@@ -16,14 +20,13 @@ const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: '실패', value: 'failed' },
 ];
 
-// 서버 status(PROCESSING/COMPLETED/FAILED) → 화면 배지
+// 정규화한 상태 → 화면 배지 (normalizeDocStatus로 대소문자·표현 차이 흡수)
 const statusBadge = (status: AdminDocStatus) => {
-  switch (status) {
-    case 'COMPLETED':
+  switch (normalizeDocStatus(status)) {
+    case 'completed':
       return { label: '완료', cls: 'bg-status-ok/12 text-status-ok' };
-    case 'FAILED':
+    case 'failed':
       return { label: '실패', cls: 'bg-status-error/12 text-status-error' };
-    case 'PROCESSING':
     default:
       return { label: '처리 중', cls: 'bg-amber-100 text-amber-700' };
   }
@@ -31,10 +34,66 @@ const statusBadge = (status: AdminDocStatus) => {
 
 const matchesFilter = (status: AdminDocStatus, f: StatusFilter): boolean => {
   if (f === 'all') return true;
-  if (f === 'processing') return status === 'PROCESSING';
-  if (f === 'completed') return status === 'COMPLETED';
-  return status === 'FAILED';
+  return normalizeDocStatus(status) === f;
 };
+
+// 문서 한 행. 목록 status가 '처리 중'이면 전용 status API(/status)로 개별 검증해
+// 그 결과(완료/실패)를 목록 값보다 우선 표시한다. 완료/실패면 개별 호출을 하지 않는다.
+function DocumentRow({
+  doc,
+  onDelete,
+  deleting,
+}: {
+  doc: AdminDocumentItem;
+  onDelete: (doc: AdminDocumentItem) => void;
+  deleting: boolean;
+}) {
+  const listStatus = normalizeDocStatus(doc.status);
+  // 목록상 처리 중인 문서만 개별 검증(완료/실패면 호출 안 함).
+  const isProcessing = listStatus === 'processing';
+  const { data: statusRes } = useAdminDocumentStatus(isProcessing ? doc.document_id : undefined);
+
+  // 전용 status 응답이 오면 그 값을, 없으면 목록 값을 쓴다.
+  const verifiedStatus = statusRes?.data.data.status ?? doc.status;
+  const badge = statusBadge(verifiedStatus);
+  const style = getDomainStyle(doc.domain);
+
+  return (
+    <tr className="border-t border-surface-border hover:bg-surface-subtle/50 transition-colors">
+      <td className="px-5 py-3.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="shrink-0 w-1 h-8 rounded-full" style={{ background: style.bar }} />
+          <div className="min-w-0">
+            <p className="font-semibold text-text-primary truncate max-w-[360px]">{doc.name}</p>
+            <p className="text-[11.5px] text-text-muted">{doc.content_type || '문서'} · {formatSize(doc.size)}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3.5">
+        <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold" style={{ color: style.badgeText }}>
+          <DomainIcon code={doc.domain} size={14} />
+          {getDomainLabel(doc.domain)}
+        </span>
+      </td>
+      <td className="px-4 py-3.5 text-text-secondary">해병대</td>
+      <td className="px-4 py-3.5">
+        <span className={`inline-block text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>{badge.label}</span>
+      </td>
+      <td className="px-4 py-3.5 text-text-muted whitespace-nowrap">
+        {doc.created_at ? new Date(doc.created_at).toLocaleDateString('ko-KR') : '-'}
+      </td>
+      <td className="px-5 py-3.5 text-right">
+        <button
+          onClick={() => onDelete(doc)}
+          disabled={deleting}
+          className="px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
+        >
+          삭제
+        </button>
+      </td>
+    </tr>
+  );
+}
 
 const formatSize = (size?: number): string => {
   if (!size || size <= 0) return '-';
@@ -86,16 +145,6 @@ export default function AdminDocuments() {
     deleteMut.mutate(doc.document_id, {
       onError: () => setToast({ msg: '삭제에 실패했습니다.', type: 'error' }),
     });
-  };
-
-  // 원본 다운로드 — 인증 헤더가 필요해 fetch→blob 방식으로 받는다.
-  const [downloadingName, setDownloadingName] = useState<string | null>(null);
-  const handleDownload = async (doc: AdminDocumentItem) => {
-    if (downloadingName) return;
-    setDownloadingName(doc.name);
-    const msg = await downloadDocumentByName(doc.name);
-    if (msg) setToast({ msg, type: 'error' });
-    setDownloadingName(null);
   };
 
   return (
@@ -245,55 +294,14 @@ export default function AdminDocuments() {
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} className="px-5 py-10 text-center text-text-muted">{search || statusFilter !== 'all' ? '조건에 맞는 문서가 없습니다.' : '업로드된 문서가 없습니다.'}</td></tr>
             ) : (
-              filtered.map((doc) => {
-                const badge = statusBadge(doc.status);
-                const style = getDomainStyle(doc.domain);
-                return (
-                  <tr key={doc.document_id} className="border-t border-surface-border hover:bg-surface-subtle/50 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="shrink-0 w-1 h-8 rounded-full" style={{ background: style.bar }} />
-                        <div className="min-w-0">
-                          <p className="font-semibold text-text-primary truncate max-w-[360px]">{doc.name}</p>
-                          <p className="text-[11.5px] text-text-muted">{doc.content_type || '문서'} · {formatSize(doc.size)}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold" style={{ color: style.badgeText }}>
-                        <DomainIcon code={doc.domain} size={14} />
-                        {getDomainLabel(doc.domain)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-text-secondary">해병대</td>
-                    <td className="px-4 py-3.5">
-                      <span className={`inline-block text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>{badge.label}</span>
-                    </td>
-                    <td className="px-4 py-3.5 text-text-muted whitespace-nowrap">
-                      {doc.created_at ? new Date(doc.created_at).toLocaleDateString('ko-KR') : '-'}
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="inline-flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleDownload(doc)}
-                          disabled={downloadingName !== null}
-                          title="원본 다운로드"
-                          className="px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-brand-subtle hover:text-brand hover:border-brand-soft transition-colors disabled:opacity-50"
-                        >
-                          {downloadingName === doc.name ? '...' : '다운로드'}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(doc)}
-                          disabled={deleteMut.isPending}
-                          className="px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+              filtered.map((doc) => (
+                <DocumentRow
+                  key={doc.document_id}
+                  doc={doc}
+                  onDelete={handleDelete}
+                  deleting={deleteMut.isPending}
+                />
+              ))
             )}
           </tbody>
         </table>
