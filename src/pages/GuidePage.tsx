@@ -352,7 +352,6 @@ export default function GuidePage() {
     <div
       className="min-h-screen select-none"
       style={{
-        fontFamily: 'Inter, sans-serif',
         color: '#1f1f22',
         background: 'linear-gradient(180deg,#ffeef1 0%,#fdf3f5 9%,#ffffff 26%,#ffffff 100%)',
       }}
@@ -383,7 +382,7 @@ export default function GuidePage() {
           <div className="absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle at 34% 30%, #ff6a5a 0%, #ef2740 34%, #d5001f 62%, #9c0016 100%)', boxShadow: '0 0 90px 24px rgba(228,0,43,0.2), inset -24px -20px 60px rgba(90,0,15,0.7)' }} />
         </div>
         <div className="relative w-full max-w-[760px] mx-auto text-center">
-          <Reveal className="text-[13px] font-bold tracking-[0.24em] text-[#c0002a] mb-[14px]">GUIDE</Reveal>
+          <Reveal className="text-[13px] font-bold tracking-[0.14em] text-[#c0002a] mb-[14px]">GUIDE</Reveal>
           <Reveal delay={70}>
             <h1 className="m-0 font-black leading-[1.18] tracking-tight" style={{ fontSize: 'clamp(38px,5.2vw,60px)' }}>
               <span className="text-brand">MARS</span> 이용법
@@ -476,7 +475,7 @@ export default function GuidePage() {
       {/* SMART BEHAVIOR */}
       <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
         <div className="w-full max-w-[960px] mx-auto">
-          <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.22em] text-[#c0002a]">SMART BEHAVIOR</Reveal>
+          <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">SMART BEHAVIOR</Reveal>
           <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>이런 점이 다릅니다</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">단순히 그럴듯한 답을 내놓는 대신, 규정에 근거해 정직하게 답하도록 설계했습니다.</p></Reveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -493,7 +492,7 @@ export default function GuidePage() {
       {/* TIPS */}
       <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
         <div className="w-full max-w-[820px] mx-auto">
-          <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.22em] text-[#c0002a]">TIPS</Reveal>
+          <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">TIPS</Reveal>
           <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>더 정확하게 쓰는 법</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">같은 질문도 조금만 다듬으면 훨씬 정확한 근거를 찾을 수 있습니다.</p></Reveal>
           <div className="flex flex-col gap-4">
@@ -510,7 +509,7 @@ export default function GuidePage() {
       {/* FAQ */}
       <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
         <div className="w-full max-w-[760px] mx-auto">
-          <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.22em] text-[#c0002a]">FAQ</Reveal>
+          <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">FAQ</Reveal>
           <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}>자주 묻는 질문</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">MARS를 쓰기 전 궁금해할 만한 것들을 모았습니다.</p></Reveal>
           <div className="flex flex-col gap-3">

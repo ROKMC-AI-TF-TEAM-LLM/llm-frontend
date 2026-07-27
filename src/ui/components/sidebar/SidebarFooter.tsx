@@ -83,10 +83,10 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
       )}
 
       {/* 프로필 버튼 */}
-      <div className="flex items-center gap-1 px-[8px] py-[9px]">
+      <div className="flex items-center gap-1 px-[12px] py-[9px]">
         <button
           onClick={() => setOpen((v) => !v)}
-          className={`flex-1 min-w-0 flex items-center gap-2 px-[6px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
+          className={`flex-1 min-w-0 flex items-center gap-2 px-[8px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
         >
           {/* 아바타 */}
           <div

@@ -33,7 +33,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   return (
     <div className={`px-[12px] pt-[12px] overflow-hidden transition-opacity duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
       {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
-      <p className="px-[11px] text-[10.5px] font-extrabold tracking-[0.12em] text-[#c9aab2] mb-2 whitespace-nowrap uppercase">최근 대화</p>
+      <p className="px-[8px] text-[10.5px] font-extrabold tracking-[0.12em] text-[#c9aab2] mb-2 whitespace-nowrap uppercase">최근 대화</p>
 
       {isInitialLoading ? (
         <ul className="space-y-0.5">

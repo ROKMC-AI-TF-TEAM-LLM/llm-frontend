@@ -1,12 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
-
 @import "tailwindcss";
 
 /* streamdown(스트리밍 마크다운) 내부 컴포넌트의 Tailwind 클래스 생성 */
 @source "../../../node_modules/streamdown/dist/index.js";
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
+  /* 폐쇄망(내부망) 운용 : 외부 폰트 CDN이 차단되고 폰트 파일 반입도 번거로우므로,
+     추가 파일 없이 'OS에 이미 깔린' 폰트만 스택으로 지정한다.
+     - Windows  : 라틴 Segoe UI + 한글 Malgun Gothic(맑은 고딕)
+     - macOS/iOS: -apple-system(SF) + Apple SD Gothic Neo
+     - 안드로이드: Roboto + Noto Sans KR
+     맨 앞 시스템 UI 폰트가 라틴(MARS 등)을, 그 뒤 한글 폰트가 한글을 담당한다. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --color-brand: #DC143C;

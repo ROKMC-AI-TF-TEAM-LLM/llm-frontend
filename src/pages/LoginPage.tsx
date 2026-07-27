@@ -148,23 +148,20 @@ const LoginPage = () => {
         <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw]">
           <div className="max-w-[600px] relative z-[1]">
             <div className="mars-reveal flex items-center gap-3 mb-6">
-              <span className="w-8 h-0.5 bg-brand" />
-              <span className="text-[13px] font-bold tracking-[0.22em] text-brand-hover">대한민국 해병대 · ROKMC LLM</span>
+              <span className="w-8 h-0.5 rounded-full bg-brand shrink-0" />
+              <span className="text-[13px] font-bold tracking-[0.06em] text-brand-hover">Marine Artificial Intelligence Reasoning System</span>
             </div>
-            <h1 className="mars-reveal mars-wordmark m-0 font-black text-brand text-glow-brand">MARS</h1>
-            <p className="mars-reveal mt-5 font-extrabold leading-snug text-text-primary text-[27px]">
+            <h1 className="mars-reveal mars-wordmark -ml-1 m-0 font-black text-brand text-glow-brand">MARS</h1>
+            <p className="mars-reveal mt-6 font-extrabold leading-snug text-text-primary text-[27px]">
               해병대를 위한 인공지능,<br />이제 <span className="text-brand">MARS</span>와 함께.
             </p>
-            <p className="mars-reveal mt-4 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
-              Marine Artificial Intelligence Reasoning System.
-              <br />
+            <p className="mars-reveal mt-5 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
               법령·규정·규칙을 참조해
               <br />
               장병의 질문에 근거와 함께 답합니다.
-
             </p>
             {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
-            <div className="mars-reveal mt-10 relative h-14">
+            <div className="mars-reveal mt-9 relative h-14">
               <div className={`absolute inset-0 flex items-center transition-opacity duration-500 ${view === 'intro' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <button onClick={openAuth} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[17px] font-extrabold shadow-[0_16px_36px_rgba(220,20,60,0.36)] hover:brightness-105 active:scale-[0.98] transition">
                   MARS 시작하기 <span>→</span>
@@ -208,7 +205,7 @@ const LoginPage = () => {
         {/* Features */}
         <section ref={featuresRef} className="mars-section px-[6vw] py-24 min-h-screen flex flex-col justify-center">
           <div className="max-w-[1180px] mx-auto">
-            <div className="mars-reveal text-center mb-3 text-[13px] font-bold tracking-[0.22em] text-brand-hover">가장 큰 특징</div>
+            <div className="mars-reveal text-center mb-3 text-[13px] font-bold tracking-tight text-brand-hover">가장 큰 특징</div>
             <h2 className="mars-reveal text-center mx-auto max-w-[760px] font-extrabold leading-snug tracking-tight" style={{ fontSize: 'clamp(30px,4vw,50px)' }}>
               법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 학습합니다.
             </h2>
@@ -235,7 +232,7 @@ const LoginPage = () => {
 
             {/* 왼쪽: 텍스트 + 스텝 */}
             <div className="flex-1 min-w-0">
-              <div className="mars-reveal mb-3 text-[13px] font-bold tracking-[0.22em] text-brand-hover">사용 방법</div>
+              <div className="mars-reveal mb-3 text-[13px] font-bold tracking-tight text-brand-hover">사용 방법</div>
               <h2 className="mars-reveal font-extrabold leading-snug tracking-tight mb-6" style={{ fontSize: 'clamp(30px,3.8vw,52px)' }}>
                 물어보고 싶은<br />것을 입력하세요.
               </h2>

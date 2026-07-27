@@ -23,7 +23,7 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
       }`}
     >
       {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
-      <p className="px-[11px] text-[10.5px] font-extrabold tracking-[0.12em] text-[#c9aab2] mb-2 whitespace-nowrap uppercase">
+      <p className="px-[8px] text-[10.5px] font-extrabold tracking-[0.12em] text-[#c9aab2] mb-2 whitespace-nowrap uppercase">
         즐겨찾기
       </p>
 
