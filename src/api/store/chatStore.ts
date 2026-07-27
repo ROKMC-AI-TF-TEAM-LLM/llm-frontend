@@ -6,6 +6,7 @@ import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
 import { uuid } from '../../utils/uuid';
+import { getDomainLabel } from '../../utils/document';
 
 // 채팅 전송 시 선택한 도메인. code는 서버 요청(domain 필드)용, label은 말풍선 태그 표시용.
 // '전체' 검색이면 undefined를 넘긴다.
@@ -555,16 +556,22 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
-      const rawMessages: Message[] = res.data.data.messages.map((m) => ({
-        id: m.message_id || uuid(),
-        role: m.role === 'human' ? 'user' : 'assistant',
-        type: 'text' as const,
-        content: extractContent(m.content),
-        status: 'done' as const,
-        createdAt: m.created_at,
-        ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
-        ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
-      }));
+      const rawMessages: Message[] = res.data.data.messages.map((m) => {
+        // 서버가 저장해준 도메인 코드(예: 'HR'). 질문(human) 메시지에만 태그로 붙인다.
+        // 전체 검색이면 빈 문자열/null이 오므로 그 땐 태그 없음.
+        const domainCode = m.role === 'human' && m.domain ? m.domain : undefined;
+        return {
+          id: m.message_id || uuid(),
+          role: m.role === 'human' ? 'user' : 'assistant',
+          type: 'text' as const,
+          content: extractContent(m.content),
+          status: 'done' as const,
+          createdAt: m.created_at,
+          ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
+          ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+          ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
+        };
+      });
 
       const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
       const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
@@ -596,10 +603,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const cached = memCached.length > 0 ? memCached : loadCache(sessionId);
       let base = cached.length > dbMessages.length ? cached : dbMessages;
 
-      // 서버 메시지는 도메인 정보를 안 준다(백엔드 미저장). 그래서 DB를 택하면 질문 위 도메인
-      // 태그가 사라진다. 로컬 캐시엔 도메인이 남아있으므로 복원하되, content로 매칭하면
-      // 같은 질문("안녕")이 여러 개일 때 엉뚱한 도메인이 붙는다. 세션 내 user 메시지 '순서'는
-      // 캐시와 DB가 동일하므로, user 메시지를 순서대로 짝지어 도메인만 이식한다.
+      // 이제 서버가 도메인을 저장해 돌려주므로(위 매핑에서 domainCode/domainLabel 반영),
+      // 새 메시지는 새로고침해도 태그가 그대로 복원된다. 다만 이 기능 배포 이전에 저장된
+      // '옛 메시지'는 서버 domain이 없을 수 있어, 그런 메시지에 한해 로컬 캐시에서 태그를
+      // 폴백 이식한다. 서버가 도메인을 준 메시지(m.domainLabel 있음)는 절대 덮지 않는다.
       if (base === dbMessages) {
         const cachedUsers = cached.filter((m) => m.role === 'user' && m.type === 'text');
         const dbUserCount = dbMessages.filter((m) => m.role === 'user' && m.type === 'text').length;
@@ -611,8 +618,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
           base = dbMessages.map((m) => {
             if (m.role === 'user' && m.type === 'text') {
               const c = cachedUsers[userIdx++];
-              // 캐시의 그 질문이 도메인 없이(전체) 보낸 것이면 태그도 없어야 한다.
-              if (c && c.type === 'text' && c.domainLabel) {
+              // 서버가 이미 도메인을 준 메시지는 그대로 둔다(캐시로 덮어쓰지 않음).
+              // 서버 도메인이 없는 옛 메시지에만, 캐시에 도메인이 있으면 이식한다.
+              if (!m.domainLabel && c && c.type === 'text' && c.domainLabel) {
                 return { ...m, domainCode: c.domainCode, domainLabel: c.domainLabel };
               }
             }
