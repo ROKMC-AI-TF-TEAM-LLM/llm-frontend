@@ -75,7 +75,7 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
             if (e.key === 'Enter') submitEdit()
             if (e.key === 'Escape') setIsEditing(false)
           }}
-          className="w-full px-3 py-[7px] text-sm rounded-lg border border-surface-border focus:border-brand focus:ring-1 focus:ring-brand outline-none bg-surface text-text-primary"
+          className="w-full px-[8px] py-[7px] text-sm rounded-lg border border-surface-border focus:border-brand focus:ring-1 focus:ring-brand outline-none bg-surface text-text-primary"
         />
       </li>
     )
@@ -86,7 +86,7 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
       <button
         onClick={() => navigate(`/chat/${chat.id}`)}
         style={isActive ? { background: HOVER_BG, color: '#c0002a' } : {}}
-        className={`w-full flex items-center px-[11px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors relative ${
+        className={`w-full flex items-center px-[8px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors relative ${
           isActive ? 'font-bold' : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
         }`}
       >

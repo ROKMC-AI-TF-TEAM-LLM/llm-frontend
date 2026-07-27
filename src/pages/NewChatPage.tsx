@@ -27,17 +27,17 @@ export default function NewChatPage() {
     >
       <div className="w-full max-w-2xl flex flex-col items-center animate-page-in">
         {/* 헤딩 */}
-        <h1 className="text-center font-extrabold text-text-primary leading-tight tracking-tight text-[clamp(26px,3.2vw,36px)]">
+        <h1
+          style={{ textRendering: 'optimizeLegibility' }}
+          className="text-center font-semibold text-text-primary leading-[1.28] tracking-[-0.01em] text-[clamp(25px,3vw,34px)]"
+        >
           {name ? `${name}님, ` : ''}
-          <span className="text-brand">무엇</span>
-          <span className="text-primary">을{' '}</span>
-          도와드릴까요?
+          <span className="font-bold text-brand">무엇</span>을 도와드릴까요?
         </h1>
 
         {/* 부제 */}
-        <p className="mt-3 mb-7 text-[15px] text-text-muted text-center">
-          법령·규정·규칙을 학습한{' '}
-          <span className="text-primary">MARS</span>가 근거와 함께 답합니다.
+        <p className="mt-3.5 mb-8 text-[15px] text-text-secondary text-center">
+          법령·규정·규칙을 학습한 MARS가 근거와 함께 답합니다.
         </p>
 
         <ChatInput

@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { DocumentItem } from '../../../types/document'
 import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../../utils/document'
+import { downloadDocumentByName } from '../../../utils/downloadAttachment'
 
 interface RagDetailProps {
   doc: DocumentItem
@@ -10,6 +12,18 @@ interface RagDetailProps {
 // 서버가 주는 필드(name, type, domain, visibility, owning_department, applied_at)만 표시한다.
 const RagDetail = ({ doc, onClose }: RagDetailProps) => {
   const style = getDomainStyle(doc.domain)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadErr, setDownloadErr] = useState<string | null>(null)
+
+  // 원본 다운로드는 인증이 필요해 fetch→blob 방식(downloadDocumentByName)으로 받는다.
+  const handleDownload = async () => {
+    if (downloading) return
+    setDownloading(true)
+    setDownloadErr(null)
+    const msg = await downloadDocumentByName(doc.name)
+    if (msg) setDownloadErr(msg)
+    setDownloading(false)
+  }
 
   const rows = [
     { label: '문서 종류', value: doc.type },
@@ -71,6 +85,27 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
             ))}
           </dl>
         )}
+
+        {/* 원본 다운로드 */}
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white text-[14px] font-bold shadow-[0_10px_24px_rgba(220,20,60,0.25)] hover:brightness-105 active:scale-[0.99] transition disabled:opacity-60"
+        >
+          {downloading ? (
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.3" />
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+            </svg>
+          )}
+          {downloading ? '내려받는 중...' : '원본 다운로드'}
+        </button>
+        {downloadErr && <p className="mt-2 text-[12.5px] text-status-error text-center">{downloadErr}</p>}
       </div>
     </div>
   )

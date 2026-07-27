@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message, Source } from '../../types';
+import type { Message, Source, FileAttachment } from '../../types';
 import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
 import { uuid } from '../../utils/uuid';
+import { getDomainLabel } from '../../utils/document';
 
 // 채팅 전송 시 선택한 도메인. code는 서버 요청(domain 필드)용, label은 말풍선 태그 표시용.
 // '전체' 검색이면 undefined를 넘긴다.
@@ -222,6 +223,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ),
         }))
       },
+      // 'files' 이벤트(done 직전 1회)로 온 첨부 목록을 해당 AI 메시지에 세팅한다.
+      setAttachments: (attachments: FileAttachment[]) => {
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, attachments } : m
+          ),
+        }))
+      },
       setStatus: (message: string) => {
         // 다른 세션으로 이동한 상태면 무시(현재 보고 있는 세션의 스트림만 문구 표시).
         if (get().sessionId !== sessionId) return
@@ -282,6 +291,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         signal,
         writer.setSources,
         writer.setStatus,
+        writer.setAttachments,
       )
       writer.flushNow()
     } catch (e) {
@@ -434,7 +444,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -546,15 +556,22 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
-      const rawMessages: Message[] = res.data.data.messages.map((m) => ({
-        id: m.message_id || uuid(),
-        role: m.role === 'human' ? 'user' : 'assistant',
-        type: 'text' as const,
-        content: extractContent(m.content),
-        status: 'done' as const,
-        createdAt: m.created_at,
-        ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
-      }));
+      const rawMessages: Message[] = res.data.data.messages.map((m) => {
+        // 서버가 저장해준 도메인 코드(예: 'HR'). 질문(human) 메시지에만 태그로 붙인다.
+        // 전체 검색이면 빈 문자열/null이 오므로 그 땐 태그 없음.
+        const domainCode = m.role === 'human' && m.domain ? m.domain : undefined;
+        return {
+          id: m.message_id || uuid(),
+          role: m.role === 'human' ? 'user' : 'assistant',
+          type: 'text' as const,
+          content: extractContent(m.content),
+          status: 'done' as const,
+          createdAt: m.created_at,
+          ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
+          ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+          ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
+        };
+      });
 
       const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
       const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
@@ -586,25 +603,26 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const cached = memCached.length > 0 ? memCached : loadCache(sessionId);
       let base = cached.length > dbMessages.length ? cached : dbMessages;
 
-      // 서버 메시지는 도메인 정보를 안 준다(백엔드 미저장). 그래서 DB를 택하면 질문 위 도메인
-      // 태그가 사라진다. 로컬 캐시엔 도메인이 남아있으므로 복원하되, content로 매칭하면
-      // 같은 질문("안녕")이 여러 개일 때 엉뚱한 도메인이 붙는다. 세션 내 user 메시지 '순서'는
-      // 캐시와 DB가 동일하므로, user 메시지를 순서대로 짝지어 도메인만 이식한다.
+      // 이제 서버가 도메인을 저장해 돌려주므로(위 매핑에서 domainCode/domainLabel 반영),
+      // 새 메시지는 새로고침해도 태그가 그대로 복원된다. 다만 이 기능 배포 이전에 저장된
+      // '옛 메시지'는 서버 domain이 없을 수 있어, 그런 메시지에 한해 로컬 캐시에서 태그를
+      // 폴백 이식한다. 서버가 도메인을 준 메시지(m.domainLabel 있음)는 절대 덮지 않는다.
       if (base === dbMessages) {
-        const cachedUserDomains: { code?: string; label?: string }[] = [];
-        for (const m of cached) {
-          if (m.role === 'user' && m.type === 'text') {
-            cachedUserDomains.push({ code: m.domainCode, label: m.domainLabel });
-          }
-        }
-        const hasAnyDomain = cachedUserDomains.some((d) => d.label);
-        if (hasAnyDomain) {
+        const cachedUsers = cached.filter((m) => m.role === 'user' && m.type === 'text');
+        const dbUserCount = dbMessages.filter((m) => m.role === 'user' && m.type === 'text').length;
+        const hasAnyDomain = cachedUsers.some((m) => m.type === 'text' && m.domainLabel);
+        // 순서 매칭은 캐시와 DB의 user 메시지 개수가 '정확히 같을 때만' 안전하다.
+        // (개수가 어긋나면 인덱스가 밀려 엉뚱한 질문에 태그가 붙으므로, 그 경우 이식을 건너뛴다.)
+        if (hasAnyDomain && cachedUsers.length === dbUserCount) {
           let userIdx = 0;
           base = dbMessages.map((m) => {
             if (m.role === 'user' && m.type === 'text') {
-              const d = cachedUserDomains[userIdx++];
-              // 캐시의 그 질문이 도메인 없이(전체) 보낸 것이면 태그도 없어야 한다.
-              if (d?.label) return { ...m, domainCode: d.code, domainLabel: d.label };
+              const c = cachedUsers[userIdx++];
+              // 서버가 이미 도메인을 준 메시지는 그대로 둔다(캐시로 덮어쓰지 않음).
+              // 서버 도메인이 없는 옛 메시지에만, 캐시에 도메인이 있으면 이식한다.
+              if (!m.domainLabel && c && c.type === 'text' && c.domainLabel) {
+                return { ...m, domainCode: c.domainCode, domainLabel: c.domainLabel };
+              }
             }
             return m;
           });
@@ -665,7 +683,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const { sessionId, messages: existingMessages } = get()
       const isFirstMessage = existingMessages.length === 0
 
-      saveInflight(sessionId, content)
+      // domain을 함께 저장해야 스트리밍 중 새로고침 시에도 '전체'로 떨어지지 않는다.
+      saveInflight(sessionId, content, domain)
       const now = new Date().toISOString()
       set((state) => ({
         isStreaming: true,

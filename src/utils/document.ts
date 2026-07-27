@@ -43,6 +43,20 @@ export const getDomainStyle = (domain?: string | null): DomainStyle => {
 // TODO(API): GET /capabilities 가 생기면 서버 응답으로 교체한다.
 //            (그때 아래 DOMAINS 상수와 extractDomains의 폴백을 삭제)
 //            서버는 코드(HR, MANUAL)만 주므로 한글 라벨은 프론트가 매핑한다.
+// 관리자 문서 색인 상태 정규화.
+// 서버가 대소문자(COMPLETED/completed)나 다른 표현을 줘도 완료/실패/처리중으로 인식되게 폭넓게 매칭한다.
+// - 완료: complete/success/done/indexed/ready/ok
+// - 실패: fail/error/reject
+// - 처리 중: queued(대기열)/pending/processing/running/indexing 등 그 외 진행 상태
+// (queued는 색인 워커가 아직 집어가지 않은 '대기' 상태 → 사용자에겐 처리 중으로 보여준다)
+export type DocIndexStatus = 'completed' | 'failed' | 'processing'
+export const normalizeDocStatus = (status: string | null | undefined): DocIndexStatus => {
+  const s = String(status ?? '').toLowerCase()
+  if (/(complete|success|done|indexed|ready|\bok\b)/.test(s)) return 'completed'
+  if (/(fail|error|reject|cancel)/.test(s)) return 'failed'
+  return 'processing'
+}
+
 export const DOMAINS: { code: string; label: string }[] = [
   { code: 'HR', label: '인사·복지' },
   { code: 'TECH', label: '정보화·보안' },

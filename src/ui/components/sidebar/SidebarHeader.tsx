@@ -23,7 +23,7 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
   return (
     <div
       style={{ height: '60px' }}
-      className={`flex-none flex items-center justify-between transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'px-[16px]' : 'px-[13px]'}`}
+      className={`flex-none flex items-center justify-between transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'px-[20px]' : 'px-[13px]'}`}
     >
       {/* 로고 (텍스트) — 접힐 때 페이드+슬라이드 아웃 */}
       <div

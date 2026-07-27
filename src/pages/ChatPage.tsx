@@ -105,15 +105,17 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="relative h-full">
-      <MessageList title={title} isLoading={isConnecting} />
-      <div className="pointer-events-none absolute bottom-0 left-0 right-2.5 px-4 pt-3">
-        <div className="pointer-events-auto bg-surface pb-2">
-          <ChatInput isConnecting={isConnecting} />
-          <p className="text-xs text-center text-text-muted pt-2">
-            MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
-          </p>
-        </div>
+    // 채팅 영역과 입력창을 하나의 세로 flex로 쌓아, 사이드바 폭 변화 시 함께 움직이게 한다.
+    // (입력창을 absolute로 얹으면 채팅만 움직여 어긋나 보이던 문제 해결)
+    <div className="flex flex-col h-full">
+      <div className="flex-1 min-h-0">
+        <MessageList title={title} isLoading={isConnecting} />
+      </div>
+      <div className="shrink-0 bg-surface px-4 pb-2">
+        <ChatInput isConnecting={isConnecting} />
+        <p className="text-xs text-center text-text-muted pt-2">
+          MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
+        </p>
       </div>
       {error && <Toast message={error} onClose={clearError} />}
     </div>

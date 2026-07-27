@@ -3,6 +3,16 @@ export interface Source {
   page?: string | null;
 }
 
+// SSE 'files' 이벤트(done 직전 1회) 및 대화 이력의 message.attachments로 오는 첨부.
+// 다운로드는 인증이 필요해 <a href> 직접 링크가 아니라 fetch→blob 방식으로 받는다.
+// ev.items = [{ attachment_id, name, size, url }]
+export interface FileAttachment {
+  attachment_id: string;
+  name: string;
+  size?: number;
+  url?: string; // 있으면 이 URL, 없으면 /api/v1/files/{attachment_id}
+}
+
 export interface ChatItem {
   id: string;
   title: string;
@@ -45,6 +55,7 @@ export interface AssistantMessage {
   content: string;
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
+  attachments?: FileAttachment[];
   createdAt?: string;
 }
 
