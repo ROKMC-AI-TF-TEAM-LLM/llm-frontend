@@ -103,30 +103,35 @@ function DomainScene() {
   )
 }
 
-/* ── STEP 03 : 질문 말풍선 뒤로 답변이 한 줄씩 차오른다 ── */
+/* ── STEP 03 : 질문을 보내면 답변이 실제로 한 글자씩 흘러나온다 ── */
+const ANSWER = '군인은 연 21일의 정기휴가를 받으며, 부대 사정에 따라 분할 사용할 수 있습니다.'
 function StreamScene() {
-  const t = useTick(560)
-  const p = t % 6           // 0:생각중 → 1~3:줄 등장 → 4~5:유지
-  const lines = Math.max(0, Math.min(3, p))
+  const t = useTick(90)
+  // 0~8틱: 근거 찾는 중 → 이후 한 글자씩 → 다 쓰면 잠시 머물고 처음으로
+  const THINK = 8
+  const HOLD = 22
+  const cycle = THINK + ANSWER.length + HOLD
+  const p = t % cycle
+  const thinking = p < THINK
+  const len = Math.max(0, Math.min(p - THINK, ANSWER.length))
+  const done = len === ANSWER.length
+
   return (
     <Frame label="찾는 즉시 실시간으로 답합니다">
       <div className="mars-navprev-fill">
-      <div className="mars-navprev-chat">
-        <div className="mars-navprev-bubble">정기휴가 며칠인가요?</div>
-        <div className="mars-navprev-answer">
-          {p === 0 ? (
-            <span className="mars-navprev-thinking">근거를 찾는 중</span>
-          ) : (
-            [82, 96, 60].map((w, i) => (
-              <span
-                key={i}
-                className="mars-navprev-line"
-                style={{ width: `${w}%`, opacity: i < lines ? 1 : 0 }}
-              />
-            ))
-          )}
+        <div className="mars-navprev-chat">
+          <div className="mars-navprev-bubble">정기휴가 며칠인가요?</div>
+          <div className="mars-navprev-answer">
+            {thinking ? (
+              <span className="mars-navprev-thinking">근거를 찾는 중...</span>
+            ) : (
+              <span className="mars-navprev-answertext">
+                {ANSWER.slice(0, len)}
+                {!done && <span className="mars-navprev-caret" />}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
       </div>
     </Frame>
   )

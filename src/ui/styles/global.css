@@ -667,10 +667,11 @@ body.modal-open {
   background: var(--color-brand); color: #fff;
   font-size: 11.5px; line-height: 1.45;
 }
-.mars-navprev-answer { display: flex; flex-direction: column; gap: 7px; min-height: 40px; }
-.mars-navprev-line {
-  height: 8px; border-radius: 999px; background: var(--color-brand-soft);
-  transition: opacity .5s ease;
+.mars-navprev-answer { display: flex; flex-direction: column; min-height: 58px; }
+/* 답변 본문 — 회색 막대 대신 실제 글자가 흘러나온다 */
+.mars-navprev-answertext {
+  font-size: 11.5px; line-height: 1.65; color: var(--color-text-primary);
+  word-break: keep-all;
 }
 .mars-navprev-thinking {
   font-size: 11.5px; color: var(--color-text-muted);
