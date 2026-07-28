@@ -248,7 +248,7 @@ function Step02Mock() {
           <div className="px-5 pt-3.5 pb-1 text-sm text-[#b09aa0]">메시지를 입력하세요...</div>
           <div className="flex items-center gap-3 px-4 pt-0.5 pb-3">
             <PaperclipIcon small />
-            <DomainChip code="FINANCE_LEGAL" label="재무·법무" />
+            <DomainChip code="GENERAL" label="일반" />
           </div>
         </div>
       </div>
