@@ -12,7 +12,7 @@ export const getMessages = (
   options?: { signal?: AbortSignal },
 ) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
-    params: { limit: 20, ...params },
+    params: { limit: 4, ...params },
     ...options,
   })
 

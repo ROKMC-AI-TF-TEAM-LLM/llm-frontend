@@ -41,8 +41,8 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
   }
 
   const msgStreaming = msg.status === 'streaming';
-  const isInterrupted = msg.status === 'interrupted';
-  // 내용이 없는데 중단된 답변(예: 답변 실패로 빈 채로 남은 경우)은 빈 말풍선을 숨기고 아래 배너만 보인다.
+  const isInterrupted = msg.status === 'interrupted'; // 답변이 끊김(중단/세션이동/새로고침 모두)
+  // 내용이 없는 중단 답변은 빈 말풍선을 숨기고 아래 배너만 보인다.
   const hideEmptyBubble = isInterrupted && msg.content.trim() === '';
 
   return (
@@ -73,7 +73,7 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
                 <circle cx="12" cy="12" r="10" />
                 <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
               </svg>
-              <span>{hideEmptyBubble ? '답변 중 오류가 발생했습니다.' : '응답이 중단되었습니다.'}</span>
+              <span>응답이 중단되었습니다.</span>
               <button
                 onClick={() => onRegenerate(msg.id)}
                 disabled={isStreaming}
