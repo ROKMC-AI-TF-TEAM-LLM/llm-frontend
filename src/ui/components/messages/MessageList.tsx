@@ -19,6 +19,14 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   const statusText = useChatStore((s) => s.statusText);
   const sessionId = useChatStore((s) => s.sessionId);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
+  const hasMore = useChatStore((s) => s.hasMore);
+  const isLoadingMore = useChatStore((s) => s.isLoadingMore);
+  const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
+  // 과거 페이지 prepend 시 스크롤이 위로 튀지 않게, 로드 직전 높이를 기억해 위치를 보정한다.
+  const restoreScrollRef = useRef<number | null>(null);
+  // prepend(과거 로드) 진행 중 표시. true인 동안엔 진입/전송 앵커 effect가 스크롤을 건드리지 않는다
+  // (여러 useLayoutEffect가 같은 [messages]에 반응해 scrollTop을 서로 덮어써 '끊김·중간 정지'가 생겼음).
+  const prependingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFirstLoad = useRef(true);
   // 사용자가 첫 로드 자동 스크롤 전에 직접 스크롤하면, 하단 앵커를 포기한다(도로 내려가는 것 방지).
@@ -120,11 +128,45 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
     if (!el) return;
     // 첫 로드 하단 앵커가 끝나기 전에 사용자가 직접 스크롤하면, 자동 하단 이동을 포기한다.
     if (isFirstLoad.current) userScrolledBeforeAnchor.current = true;
+    // 맨 위 근처(120px)에 닿으면 과거 메시지 한 페이지를 로드. 첫 로드 앵커 중엔 막는다.
+    // prependingRef까지 확인해, 로딩 시작~완료 사이의 스크롤 이벤트가 중복 요청/중복 보정을 내는 것을 막는다.
+    if (!isFirstLoad.current && !prependingRef.current && el.scrollTop < 120 && hasMore && !isLoadingMore) {
+      // prepend 후 위치 복원용으로 '바닥에서부터의 거리(scrollHeight-scrollTop)'를 기억.
+      restoreScrollRef.current = el.scrollHeight - el.scrollTop;
+      prependingRef.current = true; // 이 messages 갱신은 prepend임을 앵커 effect들에 알린다
+      loadMoreMessages();
+    }
     // 실제 컨텐츠 끝(spacer 제외) 기준으로 '맨 아래' 판단
     const realBottom = el.scrollHeight - spacerHRef.current;
     setShowScrollDown(realBottom - (el.scrollTop + el.clientHeight) > 160);
     showThumb();
   };
+
+  // 과거 페이지가 앞에 붙으면 콘텐츠가 위로 밀려 스크롤이 튄다. 로드 직전 기억해둔 '바닥에서부터의
+  // 거리'를 그대로 복원해 사용자가 보던 위치를 유지한다. paint 전(useLayoutEffect)에 보정 → 깜빡임 없음.
+  // 다른 앵커 effect보다 먼저 선언해 이 useLayoutEffect가 먼저 실행되게 한다(스크롤 소유권 우선).
+  useLayoutEffect(() => {
+    if (restoreScrollRef.current == null) return;
+    const el = scrollRef.current;
+    if (!el) { restoreScrollRef.current = null; prependingRef.current = false; return; }
+    el.scrollTop = el.scrollHeight - restoreScrollRef.current;
+    restoreScrollRef.current = null;
+    prependingRef.current = false; // 보정 끝 → 이후 앵커 effect 정상화
+  }, [messages]);
+
+  // 첫 페이지가 화면을 다 못 채우면 스크롤이 안 생겨 위로 스크롤 트리거가 불가능하다.
+  // 그럴 때 화면이 찰 때까지(또는 hasMore 소진까지) 자동으로 과거 페이지를 당겨온다.
+  // 첫 진입 하단 앵커가 끝난 뒤에만(isFirstLoad=false) 동작해 앵커와 경쟁하지 않게 한다.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || isLoading || isFirstLoad.current || prependingRef.current) return;
+    const noScrollbar = el.scrollHeight <= el.clientHeight + 8;
+    if (noScrollbar && hasMore && !isLoadingMore) {
+      restoreScrollRef.current = el.scrollHeight - el.scrollTop;
+      prependingRef.current = true;
+      loadMoreMessages();
+    }
+  }, [messages, isLoading, hasMore, isLoadingMore, loadMoreMessages]);
 
   const scrollToBottom = () => {
     const el = scrollRef.current;
@@ -162,15 +204,19 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
   // 세션 로드 시: 최신(맨 아래) 표시 — paint 전(useLayoutEffect)에 스크롤해 '맨 위 깜빡' 방지
   useLayoutEffect(() => {
-    if (isLoading) return;
+    if (isLoading || prependingRef.current) return; // 과거 로드 중엔 위치 보정에 양보
     const el = scrollRef.current;
     if (!el) return;
     if (isFirstLoad.current && messages.length > 0 && !isStreaming) {
-      isFirstLoad.current = false;
       // 사용자가 그 사이 위로 스크롤했다면 강제로 내리지 않는다.
       if (!userScrolledBeforeAnchor.current) {
-        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+        // 이전 세션의 전송 앵커가 남긴 spacer가 남아 scrollHeight를 부풀리면 위치가 어긋난다.
+        // spacer를 0으로 리셋한 뒤 실제 바닥으로 내린다.
+        setSpacer(0);
+        el.scrollTop = el.scrollHeight;
       }
+      // 앵커 완료 표시는 실제로 바닥에 놓은 '다음 프레임'에 한다(scrollTop 반영 전 handleScroll 오발동 방지).
+      requestAnimationFrame(() => { isFirstLoad.current = false; });
       positionThumb();
     }
   }, [messages, isLoading, isStreaming]);
@@ -179,6 +225,11 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    if (prependingRef.current) return; // 과거 로드로 인한 messages 변경엔 전송 앵커가 개입하지 않는다
+    // 세션 진입 중(아직 하단 앵커 전)엔 이 effect의 spacer 조작이 진입 앵커와 충돌해 '아래로 확 튄다'.
+    // 새 질문 스트리밍이 아니면(=단순 진입) 개입하지 않는다.
+    const isStreamingNow = messages.some((m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming');
+    if (isFirstLoad.current && !isStreamingNow) return;
 
     // 앵커 대상 질문 id: 스트리밍 중 답변 바로 앞의 user 질문(없으면 마지막 user). DOM에서 data-mid로 직접 조회.
     const sIdx = messages.findIndex((m) => m.type === 'text' && m.role === 'assistant' && m.status === 'streaming');
@@ -248,7 +299,17 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
         {isLoading ? (
           <MessagesSkeleton />
         ) : (
-        <div className="max-w-3xl mx-auto">
+        // 로딩 → 목록 전환을 페이드로(팍 튀지 않게). 하단 앵커는 paint 전에 끝나므로 최하단부터 부드럽게 나타난다.
+        <div className="max-w-3xl mx-auto animate-fade-in">
+        {/* 과거 메시지 로딩 스피너 — 높이 고정(h-9) 컨테이너로 감싸, 로딩 전후 레이아웃 점프를 없앤다.
+            (스피너가 나타났다 사라지며 높이가 바뀌면 prepend 위치 보정이 그만큼 어긋나 끊긴다) */}
+        {hasMore && (
+          <div className="flex justify-center items-center h-9">
+            {isLoadingMore && (
+              <span className="w-5 h-5 rounded-full border-2 border-surface-border border-t-brand animate-spin" />
+            )}
+          </div>
+        )}
         {messages.map((msg: Message) => (
           <MessageRow
             key={msg.id}

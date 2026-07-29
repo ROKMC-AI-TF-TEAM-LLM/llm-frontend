@@ -42,31 +42,38 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
 
   const msgStreaming = msg.status === 'streaming';
   const isInterrupted = msg.status === 'interrupted';
+  // 내용이 없는데 중단된 답변(예: 답변 실패로 빈 채로 남은 경우)은 빈 말풍선을 숨기고 아래 배너만 보인다.
+  const hideEmptyBubble = isInterrupted && msg.content.trim() === '';
 
   return (
     <div className="group/msg">
-      <MessageBubble
-        role="assistant"
-        content={msg.content}
-        isStreaming={msgStreaming}
-        statusText={msgStreaming ? statusText : undefined}
-      />
+      {!hideEmptyBubble && (
+        <MessageBubble
+          role="assistant"
+          content={msg.content}
+          isStreaming={msgStreaming}
+          statusText={msgStreaming ? statusText : undefined}
+        />
+      )}
       {!msgStreaming && (
         <>
-          <MessageActions
-            role="assistant"
-            onCopy={() => onCopy(msg.content)}
-            onRegenerate={isLast ? () => onRegenerate(msg.id) : undefined}
-            regenerateDisabled={isStreaming}
-            createdAt={msg.createdAt}
-          />
+          {/* 빈 채로 실패한 답변은 복사/재생성 액션바 대신 아래 배너의 '다시 시도'만 노출한다. */}
+          {!hideEmptyBubble && (
+            <MessageActions
+              role="assistant"
+              onCopy={() => onCopy(msg.content)}
+              onRegenerate={isLast ? () => onRegenerate(msg.id) : undefined}
+              regenerateDisabled={isStreaming}
+              createdAt={msg.createdAt}
+            />
+          )}
           {isInterrupted && (
             <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
               <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <circle cx="12" cy="12" r="10" />
                 <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
               </svg>
-              <span>응답이 중단되었습니다.</span>
+              <span>{hideEmptyBubble ? '답변 중 오류가 발생했습니다.' : '응답이 중단되었습니다.'}</span>
               <button
                 onClick={() => onRegenerate(msg.id)}
                 disabled={isStreaming}

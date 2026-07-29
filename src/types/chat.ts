@@ -13,9 +13,20 @@ export interface MessageItem {
   domain?: string | null
 }
 
+// 메시지 조회는 커서 기반 페이지네이션이다.
+//  - items      : 이 페이지의 메시지들
+//  - next_cursor: 다음(과거 방향) 페이지를 요청할 커서. 없으면 더 없음
+//  - has_next   : 과거 메시지가 더 있는지
 export interface MessageListData {
-  session_id: string
-  messages: MessageItem[]
+  items: MessageItem[]
+  next_cursor: string | null
+  has_next: boolean
+}
+
+export interface GetMessagesParams {
+  cursor?: string | null
+  /** 한 번에 가져올 메시지 수. 서버 파라미터 이름은 limit (기본 20, 1~100). */
+  limit?: number
 }
 
 export type GetMessagesErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED'

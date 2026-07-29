@@ -1,11 +1,20 @@
 import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import { logError } from '../../utils/logError'
-import type { GetMessagesResponse, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
+import type { GetMessagesResponse, GetMessagesParams, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source, FileAttachment } from '../../types'
 
-export const getMessages = (sessionId: string, options?: { signal?: AbortSignal }) =>
-  backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, options)
+// 커서 페이지네이션: cursor 없으면 최신 페이지, 있으면 그 지점부터 과거 방향으로 limit개.
+// 서버 파라미터 이름은 limit (스웨거 기준, 기본 20 / 1~100).
+export const getMessages = (
+  sessionId: string,
+  params?: GetMessagesParams,
+  options?: { signal?: AbortSignal },
+) =>
+  backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
+    params: { limit: 20, ...params },
+    ...options,
+  })
 
 export const deleteMessage = (sessionId: string, messageId: string) =>
   backendApi.delete<DeleteMessageResponse>(`/api/v1/sessions/${sessionId}/messages/${messageId}`)
