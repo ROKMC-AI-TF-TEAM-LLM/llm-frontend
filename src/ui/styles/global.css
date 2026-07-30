@@ -497,27 +497,31 @@ body.modal-open {
 }
 .mars-nav-brand:hover { color: var(--color-brand-hover); }
 
-.mars-nav-links { display: flex; align-items: center; gap: 22px; }
-.mars-nav-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+/* 링크 묶음을 오른쪽으로 몬다 — 워드마크만 왼쪽에 남고 나머지는 CTA 옆에 붙는다. */
+.mars-nav-links { margin-left: auto; display: flex; align-items: center; gap: 26px; }
+.mars-nav-actions { display: flex; align-items: center; gap: 10px; }
 
 .mars-nav-item { position: relative; }
 
-/* 텍스트 링크 — 밑줄 없이 색만 바뀐다(배경색도 쓰지 않는다). */
+/* 텍스트 링크 — 밑줄 없이 색만 바뀐다(배경색도 쓰지 않는다).
+   히어로의 분홍빛 배경 위에서 회색은 묻혀 보이므로 기본을 먹색으로 두고,
+   호버에서 브랜드 빨강으로 바뀌게 해 눌리는 지점을 분명히 한다. */
 .mars-nav-trigger {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 0; border: 0; background: none; cursor: pointer;
-  font-size: 15px; font-weight: 500; color: var(--color-text-secondary);
+  font-size: 15px; font-weight: 600; color: var(--color-text-primary);
   text-decoration: none;
   transition: color .2s ease;
 }
 .mars-nav-trigger:hover, .mars-nav-trigger.is-open {
-  color: var(--color-text-primary);
+  color: var(--color-brand);
 }
 
-/* CTA — 각진 브랜드 빨강 버튼. 오른쪽 칸은 세로선으로 분리된 드롭다운. */
+/* CTA — 각진 브랜드 빨강 버튼. 오른쪽 칸은 세로선으로 분리된 드롭다운.
+   상단 바에서 혼자 튀지 않게 크기·굵기를 눌렀다(글씨 600→500, 높이·좌우 여백 축소). */
 .mars-nav-cta-group {
   display: inline-flex; align-items: stretch;
-  border-radius: 7px; overflow: hidden;
+  border-radius: 6px; overflow: hidden;
   background: var(--color-brand);
 }
 .mars-nav-cta-main,
@@ -526,23 +530,25 @@ body.modal-open {
   transition: background .2s ease;
 }
 .mars-nav-cta-main {
-  padding: 10px 18px; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;
+  padding: 7px 15px; font-size: 13.5px; font-weight: 500; letter-spacing: -0.01em;
 }
 .mars-nav-cta-caret {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 36px;
+  width: 28px;
   border-left: 1px solid rgba(255,255,255,0.22);
 }
-.mars-nav-cta-main:hover, .mars-nav-cta-caret:hover { background: rgba(255,255,255,0.13); }
+.mars-nav-cta-main:hover, .mars-nav-cta-caret:hover { background: rgba(0,0,0,0.10); }
 .mars-nav-caret { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
 .mars-nav-trigger.is-open .mars-nav-caret { transform: rotate(180deg); }
 
-/* 드롭다운 패널 : 살짝 떠오르며 나타나고, 닫힐 땐 더 빠르게 사라진다 */
+/* 드롭다운 패널 : 살짝 떠오르며 나타나고, 닫힐 땐 더 빠르게 사라진다.
+   링크가 오른쪽에 몰려 있으므로 오른쪽 끝을 기준으로 펼친다
+   (왼쪽 기준이면 넓은 패널이 화면 밖으로 잘려 나간다). */
 .mars-nav-panel {
-  position: absolute; top: calc(100% + 10px); left: 0;
+  position: absolute; top: calc(100% + 10px); right: 0;
   opacity: 0; visibility: hidden;
   transform: translateY(-8px) scale(0.985);
-  transform-origin: top left;
+  transform-origin: top right;
   transition: opacity .22s ease, transform .22s cubic-bezier(.2,.7,.2,1), visibility .22s;
 }
 .mars-nav-panel.is-open {
@@ -563,8 +569,7 @@ body.modal-open {
 }
 .mars-nav-col { width: 268px; display: flex; flex-direction: column; gap: 1px; }
 
-/* CTA 캐럿으로 여는 짧은 메뉴 — 오른쪽 끝에 붙으므로 오른쪽 기준으로 펼친다. */
-.mars-nav-panel-sm { left: auto; right: 0; transform-origin: top right; }
+/* CTA 캐럿으로 여는 짧은 메뉴 — 항목이 둘뿐이라 좁게 */
 .mars-nav-col-sm { width: 232px; }
 .mars-nav-colhead {
   padding: 6px 12px 8px; font-size: 11.5px; font-weight: 700;

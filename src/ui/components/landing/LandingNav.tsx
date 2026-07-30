@@ -127,6 +127,10 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           </div>
         </div>
 
+        <button type="button" onClick={() => navigate('/tutorials')} className="mars-nav-trigger">
+          튜토리얼
+        </button>
+
         <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="mars-nav-trigger">
           팀 소개
         </button>
