@@ -1,7 +1,5 @@
-import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-import { copyText } from '../utils/clipboard'
 import LandingFooter from '../ui/components/landing/LandingFooter'
 import { TUTORIALS, findTutorial } from '../features/tutorials/tutorials'
 import { Reveal, TutorialCard, TutorialHeader } from '../features/tutorials/parts'
@@ -38,7 +36,11 @@ export default function TutorialPage() {
   const related = TUTORIALS.filter((t) => t.slug !== tutorial.slug).slice(0, 3)
 
   return (
-    <div className="min-h-screen bg-white">
+    // 목록 페이지와 같은 바탕 — 위쪽만 아주 옅게 분홍이 돈다.
+    <div
+      className="min-h-screen"
+      style={{ background: 'linear-gradient(180deg,#fdf6f8 0%,#ffffff 20%,#ffffff 100%)' }}
+    >
       <TutorialHeader />
 
       {/* 브레드크럼 */}
@@ -54,34 +56,33 @@ export default function TutorialPage() {
         <span className="truncate text-text-muted">{tutorial.title}</span>
       </div>
 
-      {/* 제목 + 메타 */}
-      <div className="mx-auto max-w-[1160px] px-[6vw] pt-16 pb-12 lg:px-8">
-        <Reveal>
-          <div className="flex flex-wrap items-start justify-between gap-x-16 gap-y-8">
-            <div className="min-w-[300px] max-w-[660px] flex-1">
-              <h1 className="mars-display text-[clamp(34px,5vw,54px)] text-text-primary break-keep">
-                {tutorial.title}
-              </h1>
-              <p className="mt-6 text-[clamp(16px,1.6vw,20px)] leading-[1.7] text-text-secondary break-keep">
-                {tutorial.summary}
-              </p>
-            </div>
-
-            {/* 오른쪽 메타 — 분류 / 대상 / 공유 (시청 시간은 두지 않는다) */}
-            <dl className="flex w-[200px] shrink-0 flex-col gap-5 border-l border-[#f4eced] pl-6">
-              <MetaItem label="분류" value={tutorial.category} />
-              <MetaItem label="대상" value={tutorial.product} />
-              <div>
-                <dt className="text-[11.5px] font-extrabold uppercase tracking-[0.12em] text-[#c9aab2]">
-                  공유
-                </dt>
-                <dd className="mt-1.5">
-                  <CopyLinkButton />
-                </dd>
+      {/* 제목 + 메타 — 위쪽에 옅은 빛무리를 깔아 흰 화면이 밋밋하지 않게 한다.
+          장식은 이것 하나로 끝내고 나머지는 여백과 활자로만 정리한다. */}
+      <div className="relative overflow-hidden">
+        <div
+          className="mars-glow-bg"
+          style={{ width: 560, height: 560, top: -330, right: -80 }}
+        />
+        <div className="relative mx-auto max-w-[1160px] px-[6vw] pt-16 pb-12 lg:px-8">
+          <Reveal>
+            <div className="flex flex-wrap items-start justify-between gap-x-16 gap-y-8">
+              <div className="min-w-[300px] max-w-[660px] flex-1">
+                <h1 className="mars-display text-[clamp(34px,5vw,54px)] text-text-primary break-keep">
+                  {tutorial.title}
+                </h1>
+                <p className="mt-6 text-[clamp(16px,1.6vw,20px)] leading-[1.7] text-text-secondary break-keep">
+                  {tutorial.summary}
+                </p>
               </div>
-            </dl>
-          </div>
-        </Reveal>
+
+              {/* 오른쪽 메타 — 분류 / 대상 */}
+              <dl className="flex w-[200px] shrink-0 flex-col gap-5 border-l border-[#f4eced] pl-6">
+                <MetaItem label="분류" value={tutorial.category} />
+                <MetaItem label="대상" value={tutorial.product} />
+              </dl>
+            </div>
+          </Reveal>
+        </div>
       </div>
 
       {/* 영상 — 본문과 같은 폭(1160px)에 맞춘다.
@@ -160,7 +161,8 @@ export default function TutorialPage() {
               이어서 볼 만한 튜토리얼
             </h2>
           </Reveal>
-          <div className="mx-auto mt-12 grid max-w-[1160px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* 여기는 3개라 3열이 딱 맞는다 */}
+          <div className="mx-auto mt-11 grid max-w-[1100px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((t, i) => (
               <Reveal key={t.slug} delay={i * 70} className="flex">
                 <TutorialCard tutorial={t} onOpen={() => navigate(`/tutorials/${t.slug}`)} />
@@ -172,29 +174,6 @@ export default function TutorialPage() {
 
       <LandingFooter />
     </div>
-  )
-}
-
-/** 링크 복사 — 누르면 잠깐 '복사됨'으로 바뀐다. */
-function CopyLinkButton() {
-  const [copied, setCopied] = useState(false)
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        copyText(window.location.href)
-          .then(() => {
-            setCopied(true)
-            setTimeout(() => setCopied(false), 1600)
-          })
-          .catch(() => {
-            /* 복사 실패는 조용히 넘긴다 — 주소창에서 직접 복사할 수 있다 */
-          })
-      }}
-      className="text-[14.5px] font-semibold text-text-primary underline decoration-[rgba(26,25,23,0.25)] underline-offset-4 transition-colors hover:text-brand hover:decoration-current"
-    >
-      {copied ? '복사됨' : '링크 복사'}
-    </button>
   )
 }
 

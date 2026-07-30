@@ -928,24 +928,55 @@ body.modal-open {
 }
 
 /* ===================== 튜토리얼 카드 =====================
-   호버하면 카드가 살짝 떠오르고, 썸네일 속 재생 표시가 커진다.
-   색면 썸네일은 살짝 확대돼 '영상이 눌린다'는 느낌을 준다. */
+   세로형 카드(색면 썸네일 + 본문). 색면이 단색 판으로 보이지 않게
+   아주 옅은 사선 결과 빛무리를 얹었다 — 가까이서만 보이는 정도의 세기. */
 .tut-card {
   transition: transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease, border-color .32s ease;
 }
 .tut-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   border-color: var(--color-brand-soft);
-  box-shadow: 0 22px 44px rgba(150,0,40,0.10);
+  box-shadow: 0 18px 38px rgba(150,0,40,0.09);
 }
 
-.tut-play {
-  transition: transform .32s cubic-bezier(.34,1.5,.64,1), background-color .25s ease;
+/* 썸네일 속 사선 결 — 색면에 질감을 준다 */
+.tut-thumb-grain {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,0.5) 0px,
+    rgba(255,255,255,0.5) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+  opacity: 0.35;
+  pointer-events: none;
 }
+
+/* 왼쪽 위에서 비스듬히 드는 빛 + 아래쪽으로 살짝 지는 그늘 */
+.tut-thumb-light {
+  background:
+    radial-gradient(120% 90% at 18% 8%, rgba(255,255,255,0.75) 0%, transparent 55%),
+    linear-gradient(180deg, transparent 60%, rgba(60,20,30,0.05) 100%);
+  pointer-events: none;
+}
+
+/* 호버하면 썸네일이 아주 살짝 확대된다(카드가 살아 있는 느낌) */
+.tut-thumb > * { transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+.tut-card:hover .tut-thumb-grain,
+.tut-card:hover .tut-thumb-light { transform: scale(1.04); }
+
+.tut-play { transition: transform .32s cubic-bezier(.34,1.5,.64,1), box-shadow .3s ease; }
 .tut-card:hover .tut-play,
 .tut-slot:hover .tut-play {
   transform: scale(1.12);
-  background-color: #fff;
+  box-shadow: 0 8px 22px rgba(60,20,30,0.16);
+}
+
+/* 화살표 — 오른쪽으로 살짝 밀리며 브랜드색으로 */
+.tut-arrow { transition: transform .3s cubic-bezier(.2,.7,.2,1), color .25s ease; }
+.tut-card:hover .tut-arrow {
+  transform: translateX(3px);
+  color: var(--color-brand);
 }
 
 /* 영상 자리 — 커서를 올리면 아주 살짝 밝아진다(누를 수 있다는 신호) */
@@ -953,9 +984,13 @@ body.modal-open {
 .tut-slot:hover { filter: brightness(1.02); }
 
 @media (prefers-reduced-motion: reduce) {
-  .tut-card, .tut-play, .tut-slot { transition: none; }
+  .tut-card, .tut-play, .tut-slot, .tut-arrow, .tut-thumb > * { transition: none; }
   .tut-card:hover { transform: none; }
-  .tut-card:hover .tut-play, .tut-slot:hover .tut-play { transform: none; }
+  .tut-card:hover .tut-play,
+  .tut-slot:hover .tut-play,
+  .tut-card:hover .tut-arrow,
+  .tut-card:hover .tut-thumb-grain,
+  .tut-card:hover .tut-thumb-light { transform: none; }
 }
 
 /* ===================== RAG 문서 카드 ===================== */

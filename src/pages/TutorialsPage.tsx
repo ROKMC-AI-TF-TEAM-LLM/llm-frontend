@@ -10,7 +10,11 @@ export default function TutorialsPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-white">
+    // 위에서 아래로 아주 옅게 분홍이 빠지는 바탕 — 흰 판 하나로 두면 밋밋하다.
+    <div
+      className="min-h-screen"
+      style={{ background: 'linear-gradient(180deg,#fdf6f8 0%,#ffffff 22%,#ffffff 100%)' }}
+    >
       <TutorialHeader />
 
       {/* 히어로 — 옅은 빛무리를 깔아 흰 화면이 비어 보이지 않게 한다 */}
@@ -33,9 +37,10 @@ export default function TutorialsPage() {
         </div>
       </div>
 
-      {/* 카드 그리드 — 차례로 올라오게 delay를 준다 */}
-      <div className="mx-auto max-w-[1160px] px-[6vw] pb-24 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* 카드 목록 — 2열로 둔다. 지금 4개라 딱 두 줄로 맞고,
+          3열이면 마지막 한 칸이 비어 허전해진다. 차례로 올라오게 delay를 준다. */}
+      <div className="mx-auto max-w-[900px] px-[6vw] pb-24 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {TUTORIALS.map((t, i) => (
             <Reveal key={t.slug} delay={i * 70} className="flex">
               <TutorialCard tutorial={t} onOpen={() => navigate(`/tutorials/${t.slug}`)} />
