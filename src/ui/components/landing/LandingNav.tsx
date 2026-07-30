@@ -19,6 +19,35 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
   const [hovered, setHovered] = useState(GUIDE_SECTIONS[0].id)
   const closeTimer = useRef<number | undefined>(undefined)
   const wrapRef = useRef<HTMLDivElement>(null)
+  // CTA 오른쪽 캐럿으로 여는 짧은 메뉴 (본문 드롭다운과 독립)
+  const [ctaOpen, setCtaOpen] = useState(false)
+  const ctaTimer = useRef<number | undefined>(undefined)
+
+  const cancelCtaClose = () => {
+    if (ctaTimer.current !== undefined) {
+      clearTimeout(ctaTimer.current)
+      ctaTimer.current = undefined
+    }
+  }
+  const closeCtaSoon = () => {
+    cancelCtaClose()
+    ctaTimer.current = window.setTimeout(() => setCtaOpen(false), 160)
+  }
+  useEffect(() => cancelCtaClose, [])
+
+  // 스크롤하면 바에 흰 배경을 덮는다(본문이 바 아래를 지나며 글자가 겹치는 걸 막는다).
+  // 랜딩은 window가 아니라 .mars-intro 안에서 스크롤되므로 그 요소를 관찰한다.
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const scroller = document.querySelector('.mars-intro')
+    const target: HTMLElement | Window = scroller instanceof HTMLElement ? scroller : window
+    const read = () =>
+      target === window ? window.scrollY : (target as HTMLElement).scrollTop
+    const onScroll = () => setScrolled(read() > 8)
+    onScroll()
+    target.addEventListener('scroll', onScroll, { passive: true })
+    return () => target.removeEventListener('scroll', onScroll)
+  }, [])
 
   const cancelClose = () => {
     if (closeTimer.current !== undefined) {
@@ -51,7 +80,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
   }
 
   return (
-    <header className="mars-nav">
+    <header className={`mars-nav ${scrolled ? 'is-scrolled' : ''}`}>
       <button type="button" onClick={() => navigate('/')} className="mars-nav-brand">
         MARS
       </button>
@@ -103,10 +132,77 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
         </button>
       </nav>
 
+      {/* CTA : 각진 검정 버튼 + 분리된 드롭다운 칸.
+          캐럿을 누르면 가이드/팀 소개로 갈 수 있는 짧은 메뉴가 열린다. */}
       <div className="mars-nav-actions">
-        <button type="button" onClick={onStart} className="mars-pill mars-pill-brand mars-nav-cta">
-          시작하기
-        </button>
+        <div
+          className="mars-nav-item"
+          onMouseEnter={cancelCtaClose}
+          onMouseLeave={closeCtaSoon}
+        >
+          <div className="mars-nav-cta-group">
+            <button type="button" onClick={onStart} className="mars-nav-cta-main">
+              시작하기
+            </button>
+            <button
+              type="button"
+              className="mars-nav-cta-caret"
+              aria-label="더 보기"
+              aria-expanded={ctaOpen}
+              aria-haspopup="true"
+              onClick={() => setCtaOpen((v) => !v)}
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mars-nav-caret"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+
+          <div className={`mars-nav-panel mars-nav-panel-sm ${ctaOpen ? 'is-open' : ''}`} role="menu">
+            <div className="mars-nav-panel-inner">
+              <div className="mars-nav-col mars-nav-col-sm">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="mars-nav-row"
+                  onClick={() => {
+                    setCtaOpen(false)
+                    go('step-01')
+                  }}
+                >
+                  <span className="mars-nav-rowbody">
+                    <span className="mars-nav-rowlabel">서비스 이용법</span>
+                    <span className="mars-nav-rowdesc">처음이라면 단계별 사용법부터</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="mars-nav-row"
+                  onClick={() => {
+                    setCtaOpen(false)
+                    onStart()
+                  }}
+                >
+                  <span className="mars-nav-rowbody">
+                    <span className="mars-nav-rowlabel">로그인</span>
+                    <span className="mars-nav-rowdesc">계정으로 바로 들어가기</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   )

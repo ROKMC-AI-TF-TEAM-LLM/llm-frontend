@@ -19,6 +19,10 @@ const RAGPage = lazy(() => import('./pages/RagPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const GuidePage = lazy(() => import('./pages/GuidePage'));
 
+// 프로젝트 — 목록(홈) 화면은 없다. 사이드바 '프로젝트' 섹션이 목록 역할을 하고,
+// 프로젝트를 누르면 곧바로 이 화면으로 들어온다.
+const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
+
 const publicRoutes: RouteObject[] = [
   {
     element: <AuthLayout />,
@@ -58,6 +62,23 @@ const protectedRoutes: RouteObject[] = [
         element: (
           <Suspense fallback={<RagPageSkeleton />}>
             <RAGPage />
+          </Suspense>
+        )
+      },
+      {
+        path: '/projects/:id',
+        element: (
+          <Suspense fallback={null}>
+            <ProjectPage />
+          </Suspense>
+        )
+      },
+      // 프로젝트 안의 특정 대화를 바로 열 때 (사이드바 '최근 대화'에서 진입).
+      {
+        path: '/projects/:id/:chatId',
+        element: (
+          <Suspense fallback={null}>
+            <ProjectPage />
           </Suspense>
         )
       },

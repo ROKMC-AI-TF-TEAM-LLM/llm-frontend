@@ -184,11 +184,9 @@ const LoginPage = () => {
             {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
             <div className="mars-reveal mt-8 relative h-[52px]">
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'intro' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                {/* 히어로에는 시작하기만 둔다 — '서비스 이용법'은 상단 탭에 이미 있다. */}
                 <button onClick={openAuth} className="mars-pill mars-pill-brand">
                   MARS 시작하기 <span aria-hidden>→</span>
-                </button>
-                <button type="button" onClick={() => navigate('/guide')} className="mars-pill mars-pill-ghost">
-                  서비스 이용법
                 </button>
               </div>
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'auth' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>

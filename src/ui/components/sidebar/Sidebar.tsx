@@ -3,6 +3,7 @@ import SidebarHeader from "./SidebarHeader";
 import SidebarMenu from "./SidebarMenu";
 import FavoriteChats from "./FavoriteChats";
 import RecentChats from "./RecentChats";
+import SidebarProjects from "./SidebarProjects";
 import SidebarFooter from "./SidebarFooter";
 import type { ChatItem, User } from "../../../types";
 
@@ -68,6 +69,9 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
         }`}
       >
         <FavoriteChats isOpen={isOpen} favorites={favorites} />
+        {/* 프로젝트는 '최근 대화' 위에 둔다 — 최근 대화는 계속 늘어나는 목록이라
+            아래에 붙이면 스크롤을 한참 내려야 프로젝트가 보인다. */}
+        <SidebarProjects isOpen={isOpen} />
         <RecentChats
           isOpen={isOpen}
           chats={others}

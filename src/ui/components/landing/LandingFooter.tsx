@@ -62,9 +62,9 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
           </FooterCol>
 
           <FooterCol title="이용 안내">
-            <span className="mars-footer-note">답변은 참고용이며 공식 규정이 우선합니다</span>
-            <span className="mars-footer-note">개인정보·기밀 입력을 삼가 주세요</span>
-            <span className="mars-footer-note">계정은 관리자 승인 후 사용 가능합니다</span>
+            <span className="mars-footer-note"></span>
+            <span className="mars-footer-note"></span>
+            <span className="mars-footer-note"></span>
           </FooterCol>
         </div>
       </div>

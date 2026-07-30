@@ -4,6 +4,7 @@ import type { ChatItem } from '../../../types'
 import type { ApiError } from '../../../utils/error'
 import { useDeleteSession, useUpdateSession, useToggleFavorite } from '../../../hooks/useSession'
 import { clearCache } from '../../../api/store/chatStore'
+import { displaySessionTitle } from '../../../utils/sessionTitle'
 
 const SESSION_ERRORS: Record<string, string> = {
   SESSION_NOT_FOUND: '세션을 찾을 수 없습니다.',
@@ -27,6 +28,7 @@ interface SessionItemProps {
 }
 
 // 사이드바 세션 한 줄. '최근 대화'와 '즐겨찾기' 섹션이 동일한 동작을 갖도록 공용화했다.
+// 대화는 아이콘이 없으므로 제목이 왼쪽에 그대로 붙는다(프로젝트 줄에 맞춰 들여쓰지 않는다).
 export default function SessionItem({ chat, onError }: SessionItemProps) {
   const navigate = useNavigate()
   const { id: currentId } = useParams()
@@ -38,6 +40,7 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
   const [draft, setDraft] = useState(chat.title)
 
   const isActive = chat.id === currentId
+  const { text: titleText, isUntitled } = displaySessionTitle(chat.title)
 
   const submitEdit = () => {
     const next = draft.trim()
@@ -90,7 +93,10 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
           isActive ? 'font-bold' : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
         }`}
       >
-        <span className="truncate overflow-hidden">{chat.title}</span>
+        {/* 제목이 없으면 '제목 없음'을 회색으로 (활성 상태에서도 회색을 유지한다) */}
+        <span className={`truncate overflow-hidden ${isUntitled ? 'text-text-muted font-normal' : ''}`}>
+          {titleText}
+        </span>
       </button>
 
       {/* 페이드: 제목이 액션 버튼과 겹치는 구간을 배경색으로 자연스럽게 가린다(hover 시에만). */}
