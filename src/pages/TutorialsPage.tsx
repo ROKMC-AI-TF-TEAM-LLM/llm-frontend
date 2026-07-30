@@ -2,56 +2,44 @@ import { useNavigate } from 'react-router-dom'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import LandingFooter from '../ui/components/landing/LandingFooter'
 import { TUTORIALS } from '../features/tutorials/tutorials'
+import { Reveal, TutorialCard, TutorialHeader } from '../features/tutorials/parts'
 
-// 튜토리얼 목록 — 브레드크럼의 '튜토리얼'이 여기로 온다.
+// 튜토리얼 목록. 히어로를 가운데 두고 아래에 카드 그리드를 깐다(클로드 구성).
 export default function TutorialsPage() {
   useDocumentTitle('튜토리얼')
   const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-30 flex items-center gap-7 border-b border-[#f4eced] bg-white/90 px-[6vw] py-3.5 backdrop-blur-md">
-        <button onClick={() => navigate('/')} className="mars-nav-brand">
-          MARS
-        </button>
-        <div className="ml-auto">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            style={{ background: 'var(--color-brand)' }}
-            className="rounded-[7px] px-4 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
-          >
-            시작하기
-          </button>
+      <TutorialHeader />
+
+      {/* 히어로 — 옅은 빛무리를 깔아 흰 화면이 비어 보이지 않게 한다 */}
+      <div className="relative overflow-hidden">
+        <div
+          className="mars-glow-bg"
+          style={{ width: 520, height: 520, top: -260, left: '50%', marginLeft: -260 }}
+        />
+        <div className="relative mx-auto max-w-[820px] px-[6vw] pt-20 pb-16 text-center">
+          <Reveal>
+            <p className="mars-eyebrow justify-center">TUTORIALS</p>
+            <h1 className="mars-display mt-5 text-[clamp(34px,5vw,54px)] text-text-primary break-keep">
+              MARS <span className="text-brand">튜토리얼</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-[560px] text-[clamp(16px,1.6vw,19px)] leading-[1.7] text-text-secondary break-keep">
+              기능별 사용법을 짧은 영상으로 하나씩 익혀보세요.
+              필요한 것만 골라 봐도 됩니다.
+            </p>
+          </Reveal>
         </div>
-      </header>
+      </div>
 
-      <div className="mx-auto max-w-[1160px] px-[6vw] pt-16 pb-14 lg:px-8">
-        <h1 className="text-[clamp(38px,5.5vw,60px)] font-bold leading-[1.1] tracking-[-0.03em] text-text-primary">
-          튜토리얼
-        </h1>
-        <p className="mt-6 max-w-[620px] text-[clamp(17px,1.6vw,21px)] leading-[1.6] text-text-secondary break-keep">
-          짧은 영상으로 MARS를 익혀보세요. 처음 쓰는 분은 프로젝트부터 보시길 권합니다.
-        </p>
-
-        <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {TUTORIALS.map((t) => (
-            <button
-              key={t.slug}
-              type="button"
-              onClick={() => navigate(`/tutorials/${t.slug}`)}
-              className="flex min-h-[230px] flex-col rounded-[16px] border border-[#f0e6e8] bg-white p-6 text-left transition-colors hover:border-brand-soft hover:bg-[#fffcfd]"
-            >
-              <p className="text-[18px] font-bold leading-[1.35] tracking-[-0.01em] text-text-primary break-keep">
-                {t.title}
-              </p>
-              <p className="mt-3 line-clamp-3 text-[13.5px] leading-[1.7] text-text-secondary break-keep">
-                {t.summary}
-              </p>
-              <span className="mt-auto flex items-center gap-2 pt-6 text-[12.5px] text-text-muted">
-                {t.category} · {t.watchTime}
-              </span>
-            </button>
+      {/* 카드 그리드 — 차례로 올라오게 delay를 준다 */}
+      <div className="mx-auto max-w-[1160px] px-[6vw] pb-24 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {TUTORIALS.map((t, i) => (
+            <Reveal key={t.slug} delay={i * 70} className="flex">
+              <TutorialCard tutorial={t} onOpen={() => navigate(`/tutorials/${t.slug}`)} />
+            </Reveal>
           ))}
         </div>
       </div>

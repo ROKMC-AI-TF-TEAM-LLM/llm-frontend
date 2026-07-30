@@ -927,6 +927,37 @@ body.modal-open {
   }
 }
 
+/* ===================== 튜토리얼 카드 =====================
+   호버하면 카드가 살짝 떠오르고, 썸네일 속 재생 표시가 커진다.
+   색면 썸네일은 살짝 확대돼 '영상이 눌린다'는 느낌을 준다. */
+.tut-card {
+  transition: transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease, border-color .32s ease;
+}
+.tut-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-brand-soft);
+  box-shadow: 0 22px 44px rgba(150,0,40,0.10);
+}
+
+.tut-play {
+  transition: transform .32s cubic-bezier(.34,1.5,.64,1), background-color .25s ease;
+}
+.tut-card:hover .tut-play,
+.tut-slot:hover .tut-play {
+  transform: scale(1.12);
+  background-color: #fff;
+}
+
+/* 영상 자리 — 커서를 올리면 아주 살짝 밝아진다(누를 수 있다는 신호) */
+.tut-slot { transition: filter .3s ease; }
+.tut-slot:hover { filter: brightness(1.02); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tut-card, .tut-play, .tut-slot { transition: none; }
+  .tut-card:hover { transform: none; }
+  .tut-card:hover .tut-play, .tut-slot:hover .tut-play { transform: none; }
+}
+
 /* ===================== RAG 문서 카드 ===================== */
 .doc-card { transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease; }
 .doc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(40,30,35,0.10) !important; border-color: #e7dde0 !important; }

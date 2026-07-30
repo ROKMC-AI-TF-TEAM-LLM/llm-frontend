@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, GUIDE_EXTRAS } from './guideSections'
 import { setPostLoginRedirect } from '../../../utils/postLoginRedirect'
+import { TUTORIALS } from '../../../features/tutorials/tutorials'
 
 /**
  * 랜딩·가이드 공용 하단 푸터.
@@ -61,10 +62,14 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
             ))}
           </FooterCol>
 
-          <FooterCol title="이용 안내">
-            <span className="mars-footer-note"></span>
-            <span className="mars-footer-note"></span>
-            <span className="mars-footer-note"></span>
+          {/* 튜토리얼 — 로그인 없이 볼 수 있는 소개 영상들 */}
+          <FooterCol title="튜토리얼">
+            <FooterBtn onClick={() => navigate('/tutorials')}>전체 보기</FooterBtn>
+            {TUTORIALS.slice(0, 3).map((t) => (
+              <FooterBtn key={t.slug} onClick={() => navigate(`/tutorials/${t.slug}`)}>
+                {t.title}
+              </FooterBtn>
+            ))}
           </FooterCol>
         </div>
       </div>
