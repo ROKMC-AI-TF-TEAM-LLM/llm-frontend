@@ -419,16 +419,8 @@ body.modal-open {
   filter: blur(20px);
 }
 
-/* 옅은 격자 — 배경에 깊이를 주되 글자 가독성은 해치지 않는 세기 */
-.mars-grid-bg {
-  position: absolute; inset: 0; pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(220,20,60,0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(220,20,60,0.045) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
-}
+/* (격자 배경 .mars-grid-bg 는 제거했다 — 옅게 깔아도 선이 그어져 보여 지저분했다.
+    히어로의 깊이는 위 빛무리(.mars-glow-bg)만으로 낸다) */
 
 /* 기능 카드 : 호버 시 살짝 떠오르고 테두리에 브랜드색이 스민다 */
 .mars-card {
@@ -510,23 +502,17 @@ body.modal-open {
 
 .mars-nav-item { position: relative; }
 
-/* 텍스트 링크 — 기본은 은은한 밑줄, 호버하면 또렷해진다(배경색은 쓰지 않는다) */
+/* 텍스트 링크 — 밑줄 없이 색만 바뀐다(배경색도 쓰지 않는다). */
 .mars-nav-trigger {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 0; border: 0; background: none; cursor: pointer;
-  font-size: 15px; font-weight: 500; color: var(--color-text-primary);
-  text-decoration: underline;
-  text-decoration-color: rgba(26,25,23,0.28);
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
-  transition: text-decoration-color .2s ease, color .2s ease;
+  font-size: 15px; font-weight: 500; color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color .2s ease;
 }
 .mars-nav-trigger:hover, .mars-nav-trigger.is-open {
   color: var(--color-text-primary);
-  text-decoration-color: var(--color-text-primary);
 }
-/* 캐럿이 붙는 항목(드롭다운)은 밑줄을 지우고 캐럿으로만 여닫힘을 알린다 */
-.mars-nav-trigger:has(.mars-nav-caret) { text-decoration: none; }
 
 /* CTA — 각진 브랜드 빨강 버튼. 오른쪽 칸은 세로선으로 분리된 드롭다운. */
 .mars-nav-cta-group {

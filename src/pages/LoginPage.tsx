@@ -165,7 +165,8 @@ const LoginPage = () => {
       <div ref={introRef} className="mars-intro ">
         {/* Hero */}
         <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw] pt-20">
-          <div className="mars-grid-bg" />
+          {/* 격자 배경(mars-grid-bg)은 쓰지 않는다 — 옅어도 선이 그어져 보여 지저분하다.
+              깊이는 아래 빛무리(mars-glow-bg) 하나로만 준다. */}
           <div className="mars-glow-bg" style={{ width: 620, height: 620, right: '-6%', top: '2%' }} />
           <div className="max-w-[640px] relative z-[1]">
             {/* 원문 그대로 노출 — 풀네임이라 대문자 변환/넓은 자간은 끈다.
