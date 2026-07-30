@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { copyText } from '../utils/clipboard'
 import LandingFooter from '../ui/components/landing/LandingFooter'
 import { TUTORIALS, findTutorial } from '../features/tutorials/tutorials'
 import { Reveal, TutorialCard, TutorialHeader } from '../features/tutorials/parts'
@@ -65,25 +67,33 @@ export default function TutorialPage() {
               </p>
             </div>
 
-            {/* 오른쪽 메타 — 분류 / 대상 (시청 시간은 두지 않는다) */}
+            {/* 오른쪽 메타 — 분류 / 대상 / 공유 (시청 시간은 두지 않는다) */}
             <dl className="flex w-[200px] shrink-0 flex-col gap-5 border-l border-[#f4eced] pl-6">
               <MetaItem label="분류" value={tutorial.category} />
               <MetaItem label="대상" value={tutorial.product} />
+              <div>
+                <dt className="text-[11.5px] font-extrabold uppercase tracking-[0.12em] text-[#c9aab2]">
+                  공유
+                </dt>
+                <dd className="mt-1.5">
+                  <CopyLinkButton />
+                </dd>
+              </div>
             </dl>
           </div>
         </Reveal>
       </div>
 
-      {/* 영상 */}
-      {/* 영상 영역은 좌우 여백을 최소로 둔다 — 영상 원본이 1308px이라
-          여백으로 폭을 깎으면 축소되면서 영상 속 UI 글자가 흐려진다.
-          화면이 좁을 때만 여백이 생기도록 px는 작게 잡았다. */}
-      <div className="mx-auto max-w-[1340px] px-4 pb-20">
+      {/* 영상 — 본문과 같은 폭(1160px)에 맞춘다.
+          영상 원본은 1920x1080이라 어차피 축소해서 보여주게 되는데,
+          화면 끝까지 넓히면 지나치게 커져서 페이지 균형이 무너진다.
+          원본이 표시 크기보다 크므로 축소돼도 글자는 또렷하다. */}
+      <div className="mx-auto max-w-[1160px] px-[6vw] pb-20 lg:px-8">
         <Reveal delay={80}>
           <VideoSlot title={tutorial.title} tint={tutorial.tint} videoUrl={tutorial.videoUrl} />
         </Reveal>
-        {/* 영상 고지 — 화면 톤을 흐리지 않게 작고 옅은 회색으로. 영상 왼쪽 끝에 맞춘다. */}
-        <p className="mx-auto mt-4 max-w-[1308px] text-[12px] leading-[1.7] text-text-muted">
+        {/* 영상 고지 — 화면 톤을 흐리지 않게 작고 옅은 회색으로. */}
+        <p className="mt-4 text-[12px] leading-[1.7] text-text-muted">
           본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는 인물·부대·문서·상황은
           실제와 무관하며, 예시로 나오는 규정 내용은 실제 규정을 대신할 수 없습니다.
         </p>
@@ -116,6 +126,30 @@ export default function TutorialPage() {
             </Reveal>
           ))}
         </ol>
+
+        {/* 마무리 — 읽고 나면 바로 해볼 수 있게 자리를 만든다.
+            여기가 비어 있으면 본문에서 관련 튜토리얼로 툭 넘어가 허전하다. */}
+        <Reveal delay={80}>
+          <div
+            style={{ background: 'linear-gradient(160deg,#fdf3f5 0%,#fffdfd 100%)' }}
+            className="mt-14 rounded-[18px] border border-[#f2e2e6] px-8 py-9 text-center"
+          >
+            <p className="text-[19px] font-bold tracking-[-0.01em] text-text-primary break-keep">
+              직접 해보는 게 가장 빠릅니다
+            </p>
+            <p className="mx-auto mt-3 max-w-[420px] text-[13.5px] leading-[1.7] text-text-secondary break-keep">
+              지금 MARS에서 방금 본 내용을 그대로 따라 해보세요. 몇 분이면 충분합니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              style={{ background: 'var(--color-brand)' }}
+              className="mt-6 rounded-full px-6 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
+            >
+              MARS 시작하기
+            </button>
+          </div>
+        </Reveal>
       </div>
 
       {/* 관련 튜토리얼 */}
@@ -138,6 +172,29 @@ export default function TutorialPage() {
 
       <LandingFooter />
     </div>
+  )
+}
+
+/** 링크 복사 — 누르면 잠깐 '복사됨'으로 바뀐다. */
+function CopyLinkButton() {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        copyText(window.location.href)
+          .then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1600)
+          })
+          .catch(() => {
+            /* 복사 실패는 조용히 넘긴다 — 주소창에서 직접 복사할 수 있다 */
+          })
+      }}
+      className="text-[14.5px] font-semibold text-text-primary underline decoration-[rgba(26,25,23,0.25)] underline-offset-4 transition-colors hover:text-brand hover:decoration-current"
+    >
+      {copied ? '복사됨' : '링크 복사'}
+    </button>
   )
 }
 
@@ -176,22 +233,26 @@ function VideoSlot({
     // preload="auto" : 로컬 파일이라 미리 받아둬야 재생 중 끊기지 않는다.
     // (metadata로 두면 재생하면서 조금씩 받아 30fps가 고르게 안 나온다)
     //
+    // 비율은 16/9로 고정한다 — 영상이 1920x1080이라 정확히 맞고,
+    // 고정해두면 영상을 다 읽기 전에도 자리가 잡혀 화면이 덜컹이지 않는다.
+    //
     // 모서리는 둥글게 깎지 않는다(각진 사각).
     // <video>는 브라우저가 GPU에서 별도 레이어로 합성하기 때문에,
     // border-radius를 주든 부모에 overflow-hidden을 걸든 곡선 경계에
     // 계단 모양 부스러기가 남는다(안티에일리어싱이 적용되지 않는다).
-    // 억지로 둥글게 만들다 지저분해지는 것보다 각진 편이 깔끔하다.
+    // 배경은 검정이 아니라 영상 바탕색(연회색)으로 둔다 —
+    // 검정으로 두면 영상이 그려지기 전이나 픽셀이 반올림되는 가장자리에서
+    // 검은 테두리가 비쳐 보인다.
     return (
-      <div className="mx-auto w-full max-w-[1308px]">
-        <video
-          src={videoUrl}
-          title={title}
-          controls
-          playsInline
-          preload="auto"
-          className="block h-auto w-full bg-black"
-        />
-      </div>
+      <video
+        src={videoUrl}
+        title={title}
+        controls
+        playsInline
+        preload="auto"
+        className="block w-full"
+        style={{ aspectRatio: '16 / 9', background: '#ece7e6' }}
+      />
     )
   }
 
