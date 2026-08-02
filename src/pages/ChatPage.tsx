@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
 import Toast from '../ui/components/Toast';
-import { useChatStore, peekSessionMessages } from '../api/store/chatStore';
+import { useChatStore } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { isNetworkError } from '../utils/error';
@@ -20,8 +20,6 @@ export default function ChatPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sessionError, setSessionError] = useState('');
-  // 캐시된 세션이면 스켈레톤 없이 바로 표시(첫 렌더부터 false)
-  const [isConnecting, setIsConnecting] = useState(() => peekSessionMessages(sessionId).length === 0);
   const [retryKey, setRetryKey] = useState(0);
 
   const { data: infiniteData } = useInfiniteSessions();
@@ -35,6 +33,8 @@ export default function ChatPage() {
   const clearError = useChatStore((s) => s.clearError);
   const isDeleted = useChatStore((s) => s.isDeleted);
   const resetDeleted = useChatStore((s) => s.resetDeleted);
+  // 로딩 상태는 스토어가 관장한다(connect 시작~서버 첫 페이지 도착). 캐시 유무로 추측하지 않는다.
+  const isConnecting = useChatStore((s) => s.isConnecting);
 
   useEffect(() => {
     if (isDeleted) {
@@ -48,23 +48,20 @@ export default function ChatPage() {
   useLayoutEffect(() => {
     const initialMessage = location.state?.initialMessage as string | undefined;
     let cancelled = false;
-    const hasCached = peekSessionMessages(sessionId).length > 0;
-    setIsConnecting(!hasCached);
 
     // inflight(질문+도메인)는 ChatInput이 navigate 직전에 이미 저장한다.
     // 여기서 다시 saveInflight를 부르면 도메인 없이 덮어써 '전체'로 떨어지므로 하지 않는다.
+    // 로딩(isConnecting)은 connect가 스토어에서 세팅/해제한다.
 
     connect(sessionId)
       .then(() => {
         if (cancelled) return;
-        setIsConnecting(false);
         if (initialMessage) {
           navigate(location.pathname, { replace: true, state: {} });
         }
       })
       .catch((error) => {
         if (cancelled) return;
-        setIsConnecting(false);
         const code = error?.response?.data?.error?.code;
         const status = (error?.response?.status ?? 0) as number;
         const knownMessage = SESSION_ERRORS[code];

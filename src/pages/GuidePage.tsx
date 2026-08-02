@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import DomainIcon from '../ui/components/chat/DomainIcon';
+import LandingFooter from '../ui/components/landing/LandingFooter';
 
 // 실제 도메인 목록(GET /capabilities로 오는 값과 동일한 코드·라벨).
 const DOMAINS = [
@@ -248,7 +249,7 @@ function Step02Mock() {
           <div className="px-5 pt-3.5 pb-1 text-sm text-[#b09aa0]">메시지를 입력하세요...</div>
           <div className="flex items-center gap-3 px-4 pt-0.5 pb-3">
             <PaperclipIcon small />
-            <DomainChip code="FINANCE_LEGAL" label="재무·법무" />
+            <DomainChip code="GENERAL" label="일반" />
           </div>
         </div>
       </div>
@@ -336,14 +337,54 @@ export default function GuidePage() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // '아래로 스크롤': 현재 위치보다 아래에 있는 가장 가까운 섹션의 '절대 위치'로 이동한다.
-  // (scrollBy 상대 이동은 조금 스크롤한 뒤 누르면 어긋나므로, 섹션 top으로 정확히 스냅)
+  // '아래로 스크롤': 현재 보고 있는 섹션의 '바로 다음' 섹션으로 이동한다.
+  //
+  // 예전엔 "현재 위치 + 뷰포트 절반보다 아래"인 섹션을 찾았는데, 헤드라인 섹션의 높이가
+  // 딱 그 경계(100vh - 헤더)에 걸려 STEP 01을 건너뛰고 STEP 02로 가버렸다.
+  // → 위치로 어림잡지 말고, 현재 섹션의 인덱스를 구해 +1 하는 방식으로 바꿨다.
+  // 헤더 높이만큼 빼고 섹션 상단에 맞춘다(sticky 헤더에 제목이 가리지 않게).
+  const HEADER_H = 66;
+  const scrollToSection = (id: string, smooth = true) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    window.scrollTo({
+      top: Math.max(0, el.offsetTop - HEADER_H),
+      behavior: smooth ? 'smooth' : 'auto',
+    });
+  };
+
+  // 랜딩 네비에서 /guide#step-02 형태로 들어오면 해당 섹션으로 이동한다.
+  // 레이아웃이 잡힌 뒤 위치를 재야 하므로 다음 프레임에 실행한다.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    const raf = requestAnimationFrame(() => scrollToSection(id, false));
+    return () => cancelAnimationFrame(raf);
+    // 최초 진입 시 한 번만 — 이후 해시 변경은 아래 hashchange가 맡는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 같은 페이지에 머문 채 해시만 바뀌는 경우(네비에서 다른 항목 선택)
+  useEffect(() => {
+    const onHash = () => {
+      const id = window.location.hash.slice(1);
+      if (id) scrollToSection(id);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const scrollToNextSection = () => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-guide-section]'));
-    const cur = window.scrollY;
-    // 버튼이 속한 섹션(헤드라인) 자신의 offsetTop은 헤더 높이만큼 0보다 커서 "다음 섹션"으로
-    // 잘못 인식될 수 있다 — 뷰포트 높이 이상 떨어진 섹션만 진짜 다음 섹션으로 본다.
-    const next = sections.find((s) => s.offsetTop > cur + window.innerHeight * 0.5);
+    if (!sections.length) return;
+
+    // 현재 위치(살짝 아래로 보정)가 속한 섹션 = offsetTop이 그보다 작거나 같은 마지막 섹션
+    const probe = window.scrollY + 8;
+    let curIdx = 0;
+    sections.forEach((s, i) => { if (s.offsetTop <= probe) curIdx = i; });
+
+    const next = sections[curIdx + 1];
     const target = next ? next.offsetTop : document.body.scrollHeight;
     window.scrollTo({ top: target, behavior: 'smooth' });
   };
@@ -366,10 +407,18 @@ export default function GuidePage() {
         @keyframes hintIn { from { opacity:0; } to { opacity:1; } }
       `}</style>
 
-      {/* 헤더 */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-[6vw] py-5 bg-white/[0.82] backdrop-blur-md border-b border-[#f2e2e6]">
+      {/* 헤더 — 랜딩 상단 네비와 같은 계열. 섹션 바로가기 + 시작하기 */}
+      <div className="sticky top-0 z-20 flex items-center gap-7 px-[6vw] py-4 bg-white/[0.82] backdrop-blur-md border-b border-[#f2e2e6]">
         <button onClick={() => navigate('/')} className="flex items-center">
-          <span className="text-[18px] font-black text-brand tracking-tight">MARS</span>
+          <span className="text-[19px] font-black text-brand tracking-[-0.03em]">MARS</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-[6px] bg-brand px-4 py-2 text-[13.5px] font-medium text-white transition-colors hover:bg-brand-hover"
+        >
+          시작하기
         </button>
       </div>
 
@@ -416,6 +465,7 @@ export default function GuidePage() {
 
       {/* STEP 01 */}
       <StepRow
+        id="step-01"
         step="STEP 01"
         title={<>궁금한 것을<br />그대로 입력하세요</>}
         desc={'"해병대님, 무엇을 도와드릴까요?"로 시작해 궁금한 규정·절차를 평소 말하듯 입력하면 됩니다.'}
@@ -430,6 +480,7 @@ export default function GuidePage() {
 
       {/* STEP 02 — 도메인 선택 (좌우 반전) */}
       <StepRow
+        id="step-02"
         reverse
         step="STEP 02"
         title={<>필요한 도메인만<br />골라서 검색하세요</>}
@@ -445,6 +496,7 @@ export default function GuidePage() {
 
       {/* STEP 03 — 답변 스트리밍 */}
       <StepRow
+        id="step-03"
         step="STEP 03"
         title={<>근거를 찾아<br />실시간으로 답합니다</>}
         desc="질문을 보내면 MARS가 관련 문서를 찾아 실시간으로 답을 작성합니다."
@@ -459,6 +511,7 @@ export default function GuidePage() {
 
       {/* STEP 04 — 출처 (좌우 반전) */}
       <StepRow
+        id="step-04"
         reverse
         step="STEP 04"
         title={<>근거는 다 보여주고,<br />더 깊이 볼 수도 있어요</>}
@@ -473,7 +526,7 @@ export default function GuidePage() {
       />
 
       {/* SMART BEHAVIOR */}
-      <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
+      <section id="smart" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[960px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">SMART BEHAVIOR</Reveal>
           <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>이런 점이 다릅니다</h2></Reveal>
@@ -490,7 +543,7 @@ export default function GuidePage() {
       </section>
 
       {/* TIPS */}
-      <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
+      <section id="tips" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[820px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">TIPS</Reveal>
           <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>더 정확하게 쓰는 법</h2></Reveal>
@@ -507,7 +560,7 @@ export default function GuidePage() {
       </section>
 
       {/* FAQ */}
-      <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
+      <section id="faq" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[760px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">FAQ</Reveal>
           <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}>자주 묻는 질문</h2></Reveal>
@@ -541,26 +594,26 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* CTA — 소개(로그인) 페이지와 동일 */}
+      {/* CTA — 버튼은 상단 헤더에 있으므로 문구만 둔다 */}
       <section data-guide-section className="relative px-[6vw] min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
         <Reveal className="relative z-[2]">
           <h2 className="m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
-          <p className="mx-auto mb-9 max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
-          <button
-            onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[18px] font-extrabold shadow-[0_20px_44px_rgba(220,20,60,0.38)] hover:brightness-105 active:scale-[0.98] transition"
-          >
-            MARS 시작하기 <span>→</span>
+          <p className="mx-auto max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
+          {/* 랜딩 히어로와 같은 알약 CTA — 페이지마다 버튼 모양이 다르면 산만하다. */}
+          <button type="button" onClick={() => navigate('/')} className="mars-pill mars-pill-brand mt-9">
+            MARS 시작하기 <span aria-hidden>→</span>
           </button>
-          <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS v1.0.0 · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
         </Reveal>
       </section>
+
+      <LandingFooter />
     </div>
   );
 }
 
 // STEP 행: (목업 카드 | 텍스트) 좌우 배치. reverse면 순서 반전.
 function StepRow({
+  id,
   step,
   title,
   desc,
@@ -569,6 +622,8 @@ function StepRow({
   mockHeight,
   reverse,
 }: {
+  /** 상단 네비에서 바로가기 대상이 되는 앵커 id */
+  id?: string;
   step: string;
   title: React.ReactNode;
   desc: string;
@@ -602,7 +657,7 @@ function StepRow({
     </Reveal>
   );
   return (
-    <section data-guide-section className="px-[6vw] min-h-screen flex items-center py-16">
+    <section id={id} data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
       <div className={`max-w-[1160px] w-full mx-auto flex items-center gap-16 flex-wrap ${reverse ? 'flex-row-reverse' : ''}`}>
         {card}
         {text}

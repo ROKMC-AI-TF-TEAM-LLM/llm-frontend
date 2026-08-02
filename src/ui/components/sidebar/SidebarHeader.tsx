@@ -46,9 +46,20 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-[#fdedf2] hover:text-[#c0002a] transition-colors cursor-pointer"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
-        <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <path d="M9 3v18" />
+        {/* 접기/펴기 방향을 그대로 가리키는 이중 화살표. 펴져 있으면 «(접기), 접혀 있으면 »(펴기) */}
+        <svg
+          width={18}
+          height={18}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`}
+        >
+          <path d="M17 6l-6 6 6 6" />
+          <path d="M11 6l-6 6 6 6" />
         </svg>
         {/* 오른쪽으로 나오는 툴팁 (사이드바 밖) — 클릭 시 즉시 사라지도록 조건부 렌더 */}
         {showTip && (

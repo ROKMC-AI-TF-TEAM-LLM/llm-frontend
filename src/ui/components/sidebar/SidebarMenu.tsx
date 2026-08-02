@@ -10,7 +10,7 @@ const navItems = [
     label: "대화 검색",
     path: "/search",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+      <svg className="sb-icon sb-icon-search" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
         <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
       </svg>
     ),
@@ -19,7 +19,7 @@ const navItems = [
     label: "문서 검색",
     path: "/rag",
     icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <svg className="sb-icon sb-icon-folder" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       </svg>
     ),
@@ -31,8 +31,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   const location = useLocation();
 
   const isNewChatActive = location.pathname === "/chat";
-  const isSearchActive = location.pathname === "/search";
-  const isDocsActive   = location.pathname === "/rag";
+  const isItemActive = (path: string) => location.pathname === path;
 
   // 라벨: 접힐 때 페이드+슬라이드 아웃 (폭 애니메이션과 동일 타이밍)
   const labelCls = `overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${
@@ -50,19 +49,19 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             ? { background: '#fdedf2', color: '#c0002a' }
             : { color: '#5a5560' }
         }
-        className="flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
+        className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
       >
         <span className="w-[18px] flex justify-center shrink-0">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+          <svg className="sb-icon sb-icon-plus" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
             <path d="M12 5v14M5 12h14" />
           </svg>
         </span>
         <span className={labelCls}>새 채팅</span>
       </button>
 
-      {/* 대화 검색 / 문서 검색 */}
+      {/* 대화 검색 / 문서 검색 (프로젝트는 아래 전용 섹션에서 다룬다) */}
       {navItems.map((item) => {
-        const isActive = item.path === '/search' ? isSearchActive : isDocsActive;
+        const isActive = isItemActive(item.path);
         return (
           <button
             key={item.label}
@@ -73,7 +72,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
                 ? { background: '#fdedf2', color: '#c0002a' }
                 : { color: '#5a5560' }
             }
-            className="flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
+            className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
           >
             <span className="w-[18px] flex justify-center shrink-0">{item.icon}</span>
             <span className={labelCls}>{item.label}</span>

@@ -19,16 +19,27 @@ interface ChatStore {
   sessionId: string;
   messages: Message[];
   isStreaming: boolean;
+  // 세션 진입 후 서버 첫 페이지가 도착할 때까지 true(로딩 오버레이용). 캐시 유무와 무관하게
+  // connect 흐름을 한 곳에서 관장해, 빈 화면→최상단 노출('팍 튀는' 진입)을 없앤다.
+  isConnecting: boolean;
   statusText: string | null;
   error: string | null;
   isDeleted: boolean;
   abortController: AbortController | null;
+  // 위로 스크롤 무한로딩(과거 메시지) 상태.
+  //  - nextCursor  : 다음(과거) 페이지 커서. null이면 더 없음
+  //  - hasMore     : 과거 메시지가 더 있는지
+  //  - isLoadingMore: 과거 페이지 로딩 중(중복 요청 방지)
+  nextCursor: string | null;
+  hasMore: boolean;
+  isLoadingMore: boolean;
   clearError: () => void;
   resetDeleted: () => void;
   abortStream: () => void;
   connect: (sessionId: string) => Promise<void>;
   disconnect: () => void;
-  sendMessage: (content: string, domain?: DomainSelection) => Promise<void>;
+  loadMoreMessages: () => Promise<void>;
+  sendMessage: (content: string, domain?: DomainSelection, forceNotFirst?: boolean) => Promise<void>;
   retryLastMessage: () => Promise<void>;
   sendImageMessage: (filename: string, caption?: string) => void;
   regenerateMessage: (assistantId: string) => Promise<void>;
@@ -95,6 +106,52 @@ const extractContent = (raw: string, _depth = 0): string => {
 const streamRegistry = new Map<string, Message[]>();
 
 const messageCache = new Map<string, Message[]>();
+
+// 서버 MessageItem[] → 화면 Message[] 매핑 + 시간순 정렬 + 인접 중복 제거 + 빈 assistant 제거.
+// connect(첫 페이지)와 loadMoreMessages(과거 페이지)가 공유한다.
+type ServerMessage = {
+  message_id?: string; role: 'human' | 'ai'; content: string; created_at?: string;
+  domain?: string | null; sources?: Source[]; attachments?: FileAttachment[];
+};
+const mapServerMessages = (items: ServerMessage[]): Message[] => {
+  const mapped: Message[] = items.map((m) => {
+    // 서버가 저장해준 도메인 코드(예: 'HR'). 질문(human) 메시지에만 태그로 붙인다.
+    const domainCode = m.role === 'human' && m.domain ? m.domain : undefined;
+    return {
+      id: m.message_id || uuid(),
+      role: m.role === 'human' ? 'user' : 'assistant',
+      type: 'text' as const,
+      content: extractContent(m.content),
+      status: 'done' as const,
+      createdAt: m.created_at,
+      ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
+      ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+      ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
+    };
+  });
+
+  const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
+  const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
+  const ordered = [...mapped].sort((a, b) => {
+    const ta = timeOf(a.createdAt), tb = timeOf(b.createdAt);
+    if (ta !== tb) return ta - tb;
+    return roleRank(a.role) - roleRank(b.role);
+  });
+
+  const deduped = ordered.filter((msg, i) => {
+    if (i === 0) return true;
+    const prev = ordered[i - 1];
+    return !(
+      msg.role === prev.role &&
+      msg.type === 'text' && prev.type === 'text' &&
+      msg.content === prev.content && msg.createdAt === prev.createdAt
+    );
+  });
+
+  return deduped.filter(
+    (msg) => !(msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '')
+  );
+};
 
 export const peekSessionMessages = (sessionId: string): Message[] => {
   const s = useChatStore.getState();
@@ -241,8 +298,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
   const cleanupEmptyExchange = async (sessionId: string, question: string) => {
     try {
+      // 최신 페이지에 마지막 질문/빈 답변이 있으므로 첫 페이지만 보면 된다.
       const res = await getMessages(sessionId)
-      const server = res.data.data.messages
+      const server = res.data.data.items
       const q = question.trim()
       const toDelete: string[] = []
       if (server.length > 0) {
@@ -263,7 +321,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
       if (server.length - toDelete.length <= 0) {
         const after = await getMessages(sessionId)
-        if (after.data.data.messages.length === 0) {
+        if (after.data.data.items.length === 0) {
           await deleteSession(sessionId).catch((e) => logError('deleteSession', e))
           if (get().sessionId === sessionId) set({ isDeleted: true })
         }
@@ -302,121 +360,78 @@ export const useChatStore = create<ChatStore>((set, get) => {
       // 사용자가 중단한 스트림은 abortStream에서 메시지·전역 상태를 이미 마무리했다. 그 사이 새 전송이
       // 시작됐을 수 있으므로, 뒤늦은 이 정리가 새 스트림의 상태를 덮어쓰지 않도록 여기서 끝낸다.
       if (signal.aborted) return
-      const userAborted = signal.aborted
-      const keepInterrupted = isAbortError(e) && (userAborted || !isFirstMessage)
-      if (!keepInterrupted) clearCache(sessionId)
-      // 첫 메시지가 진짜 실패(사용자 중단 아님)면, 현재 보고 있는 세션과 무관하게 빈 세션을 삭제한다.
-      if (isFirstMessage && !keepInterrupted) {
+      const viewing = get().sessionId === sessionId
+      const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? get().messages)
+
+      // 첫 메시지가 진짜 실패(빈 세션) → 삭제. 현재 보는 세션과 무관.
+      if (isFirstMessage) {
+        clearCache(sessionId)
         messageCache.delete(sessionId)
+        streamRegistry.delete(sessionId)
         deleteSession(sessionId)
           .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
           .catch((e) => logError('deleteSession', e))
+        if (viewing) set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, isDeleted: true })
+        return
       }
-      if (get().sessionId === sessionId) {
-        if (keepInterrupted) {
-          set((state) => ({
-            isStreaming: false,
-            abortController: null,
-            messages: state.messages.map((m) =>
-              m.id === assistantId && m.type === 'text'
-                ? { ...m, status: 'interrupted' as const }
-                : m
-            ),
-          }))
-          messageCache.set(sessionId, get().messages)
-        } else if (!removePairOnFail) {
-          set((state) => ({
-            error: '응답 중 오류가 발생했습니다.',
-            isStreaming: false,
-            abortController: null,
-            messages: state.messages.map((m) =>
-              m.id === assistantId && m.type === 'text'
-                ? { ...m, status: 'interrupted' as const }
-                : m
-            ),
-          }))
-          messageCache.set(sessionId, get().messages)
-        } else {
-          const msgs = get().messages
-          const aIdx = msgs.findIndex((m) => m.id === assistantId)
-          const removeIds = new Set<string>([assistantId])
-          if (aIdx > 0 && msgs[aIdx - 1].role === 'user') removeIds.add(msgs[aIdx - 1].id)
-          set((state) => ({
-            error: '응답 중 오류가 발생했습니다.',
-            isStreaming: false,
-            abortController: null,
-            messages: state.messages.filter((m) => !removeIds.has(m.id)),
-            ...(isFirstMessage ? { isDeleted: true } : {}),
-          }))
-          if (!isFirstMessage) {
-            messageCache.set(sessionId, get().messages)
-            // 에러로 빈 답이 된 질문도 백엔드에서 정리(빈 세션이면 세션까지 삭제).
-            cleanupEmptyExchange(sessionId, question)
-          }
-        }
+
+      // 첫 메시지가 아니면: 질문은 지우지 않고 답변을 interrupted로. 다른 세션 보는 중이어도 캐시에 저장해
+      // 원래 세션에 돌아왔을 때 '질문 + 다시 시도'가 복원되게 한다.
+      const interrupted = liveMsgs.map((m) =>
+        m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
+      )
+      messageCache.set(sessionId, interrupted)
+      if (viewing) {
+        set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, messages: interrupted })
       }
       return
     }
 
     streamRegistry.delete(sessionId)
 
-    const finalMsg = get().messages.find((m) => m.id === assistantId)
+    const viewing = get().sessionId === sessionId
+    // 다른 세션을 보는 중이면 화면(get().messages)엔 이 답변이 없다. registry(백그라운드 누적본)로 판정한다.
+    const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? get().messages)
+    const finalMsg = liveMsgs.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
-      logError('executeStream.emptyResponse', 'AI 응답에 내용이 없음(빈 응답 — 백엔드 LLM 생성 실패/스킵)', { sessionId, isFirstMessage })
+      logError('executeStream.emptyResponse', 'AI 응답에 내용이 없음(빈 응답 — 백엔드 LLM 생성 실패/스킵)', { sessionId, isFirstMessage, viewing })
       clearInflight(sessionId)
-      clearCache(sessionId)
-      // 첫 메시지가 빈 응답이면, 현재 보고 있는 세션과 무관하게 빈 세션을 삭제한다.
+
+      // 첫 메시지가 빈 응답 = 빈 세션 → 삭제(현재 보고 있는 세션과 무관하게).
       if (isFirstMessage) {
+        clearCache(sessionId)
         messageCache.delete(sessionId)
+        streamRegistry.delete(sessionId)
         deleteSession(sessionId)
           .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
           .catch((e) => logError('deleteSession', e))
+        if (viewing) set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.', isStreaming: false, abortController: null, isDeleted: true })
+        return
       }
-      if (get().sessionId === sessionId && !removePairOnFail) {
-        set((state) => ({
-          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
-          isStreaming: false,
-          abortController: null,
-          messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text'
-              ? { ...m, status: 'interrupted' as const }
-              : m
-          ),
-        }))
-        messageCache.set(sessionId, get().messages)
-      } else if (get().sessionId === sessionId) {
-        const msgs = get().messages
-        const aIdx = msgs.findIndex((m) => m.id === assistantId)
-        const removeIds = new Set<string>([assistantId])
-        if (aIdx > 0 && msgs[aIdx - 1].role === 'user') removeIds.add(msgs[aIdx - 1].id)
-        set((state) => ({
-          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
-          isStreaming: false,
-          abortController: null,
-          messages: state.messages.filter((m) => !removeIds.has(m.id)),
-          ...(isFirstMessage ? { isDeleted: true } : {}),
-        }))
-        if (!isFirstMessage) {
-          messageCache.set(sessionId, get().messages)
-          // 빈 응답: 백엔드에 남은 질문 + 빈 답변 쌍을 정리(새로고침 시 되살아나지 않도록).
-          cleanupEmptyExchange(sessionId, question)
-        }
+
+      // 첫 메시지가 아니면: 질문을 지우지 않고 답변을 'interrupted'로 만들어 '다시 시도'를 남긴다.
+      // (다른 세션을 보는 중이어도 registry/cache에 저장해, 원래 세션에 돌아왔을 때 복원되게 한다)
+      const interrupted = liveMsgs.map((m) =>
+        m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
+      )
+      streamRegistry.delete(sessionId)
+      messageCache.set(sessionId, interrupted)
+      if (viewing) {
+        set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.', isStreaming: false, abortController: null, messages: interrupted })
       }
       return
     }
-
+    // 정상 완료: 답변을 done으로 확정하고 캐시에 저장한다.
     clearInflight(sessionId)
-    if (get().sessionId !== sessionId) return
-    set((state) => ({
-      isStreaming: false,
-      abortController: null,
-      messages: state.messages.map((m) =>
-        m.id === assistantId ? { ...m, status: 'done' as const } : m
-      ),
-    }))
-    messageCache.set(sessionId, get().messages)
+    const doneMsgs = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
+    streamRegistry.delete(sessionId)
+    messageCache.set(sessionId, doneMsgs)
     queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    // 현재 보고 있는 세션이면 화면에도 반영(다른 세션 보는 중이면 캐시만 갱신 → 재진입 시 복원).
+    if (get().sessionId === sessionId) {
+      set({ isStreaming: false, abortController: null, messages: doneMsgs })
+    }
   }
 
   const executeRegenerate = async (
@@ -427,6 +442,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
+    // 재생성이 중단/실패/빈 응답으로 끝나면 해당 답변을 interrupted로 표시(원본 복원 없음 —
+    // 재생성을 눌러 원본을 비운 뒤 중단하면 옛 답변이 되살아나는 게 오히려 혼란스러웠다).
     const markInterrupted = (errorMsg?: string) => {
       streamRegistry.delete(sessionId)
       if (get().sessionId !== sessionId) return
@@ -435,9 +452,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         isStreaming: false,
         abortController: null,
         messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text'
-            ? { ...m, status: 'interrupted' as const }
-            : m
+          m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
         ),
       }))
       messageCache.set(sessionId, get().messages)
@@ -449,17 +464,28 @@ export const useChatStore = create<ChatStore>((set, get) => {
     } catch (e) {
       logError('executeRegenerate', e)
       writer.flushNow()
-      // 사용자 중단은 abortStream에서 이미 마무리됨 → 새 스트림을 덮어쓰지 않도록 종료.
-      if (signal.aborted) { streamRegistry.delete(sessionId); return }
+      if (signal.aborted) { markInterrupted(); return }
       markInterrupted(isAbortError(e) ? undefined : ((e as Error)?.message || '재생성 중 오류가 발생했습니다.'))
       return
     }
 
-    const finalMsg = get().messages.find((m) => m.id === assistantId)
+    // 스트리밍 중 다른 세션으로 이동했으면, 현재 화면(get().messages)엔 이 답변이 없다.
+    // 이때 빈 응답으로 오판하지 않도록 streamRegistry(백그라운드 누적본)에서 최종 내용을 확인한다.
+    const liveMsgs = get().sessionId === sessionId ? get().messages : (streamRegistry.get(sessionId) ?? get().messages)
+    const finalMsg = liveMsgs.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
       logError('executeRegenerate.emptyResponse', 'AI 재생성 응답에 내용이 없음(빈 응답)', { sessionId })
       markInterrupted('응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.')
+      return
+    }
+
+    // 다른 세션 보는 중이었으면, 완료된 답변을 registry에 확정 저장해 재진입 시 복원되게 한다.
+    if (get().sessionId !== sessionId) {
+      const done = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
+      streamRegistry.set(sessionId, done)
+      messageCache.set(sessionId, done)
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
       return
     }
 
@@ -481,10 +507,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
     sessionId: '',
     messages: [],
     isStreaming: false,
+    isConnecting: false,
     statusText: null,
     error: null,
     isDeleted: false,
     abortController: null,
+    nextCursor: null,
+    hasMore: false,
+    isLoadingMore: false,
 
     clearError: () => set({ error: null }),
     resetDeleted: () => set({ isDeleted: false }),
@@ -512,24 +542,27 @@ export const useChatStore = create<ChatStore>((set, get) => {
       connectAbortController = new AbortController();
       const { signal } = connectAbortController;
 
+      // 세션이 바뀌면 과거 페이지 상태를 초기화(이전 세션 커서 재사용 방지).
+      set({ nextCursor: null, hasMore: false, isLoadingMore: false });
+
       const streaming = streamRegistry.get(sessionId);
       if (streaming) {
-        set({ sessionId, messages: streaming, isStreaming: true });
+        set({ sessionId, messages: streaming, isStreaming: true, isConnecting: false });
         return;
       }
-      const prev = get();
-      if (prev.sessionId === sessionId && prev.messages.length > 0) {
-        set({ sessionId, isStreaming: false });
-      } else {
-        const cachedMessages = messageCache.get(sessionId);
-        set({ sessionId, messages: cachedMessages ?? [], isStreaming: false });
-      }
+      // 진입 시엔 이전/캐시 메시지를 렌더하지 않고 '빈 상태 + 로딩'으로 시작한다.
+      // (프리뷰를 깔면 UI가 그걸로 먼저 하단 앵커를 끝내버려, 이후 서버 첫 페이지로 교체될 때
+      //  다시 안 내려가 '중간부터 열리는' 문제가 생긴다. 로딩 오버레이로 가린 뒤, 서버 첫 페이지가
+      //  도착해 isConnecting=false가 되는 순간 한 번에 하단 앵커한다 → '팍 튀는' 노출이 없다.)
+      // error: null — 이전 세션에서 난 에러 토스트가 다른 세션으로 옮겨도 계속 떠 있는 것을 막는다.
+      set({ sessionId, messages: [], isStreaming: false, isConnecting: true, error: null });
 
       let res;
       try {
-        res = await getMessages(sessionId, { signal });
+        res = await getMessages(sessionId, undefined, { signal });
       } catch (e) {
-        if (isAbortError(e)) return;
+        if (isAbortError(e)) return; // 취소는 다음 connect가 이어받으므로 로딩 상태 유지
+        set({ isConnecting: false }); // 진짜 실패 → 로딩 종료(에러 UI/캐시 폴백으로 넘어감)
         logError('connect.getMessages', e);
         const cached = loadCache(sessionId);
         const pending = getInflight(sessionId);
@@ -556,88 +589,73 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
-      const rawMessages: Message[] = res.data.data.messages.map((m) => {
-        // 서버가 저장해준 도메인 코드(예: 'HR'). 질문(human) 메시지에만 태그로 붙인다.
-        // 전체 검색이면 빈 문자열/null이 오므로 그 땐 태그 없음.
-        const domainCode = m.role === 'human' && m.domain ? m.domain : undefined;
-        return {
-          id: m.message_id || uuid(),
-          role: m.role === 'human' ? 'user' : 'assistant',
-          type: 'text' as const,
-          content: extractContent(m.content),
-          status: 'done' as const,
-          createdAt: m.created_at,
-          ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
-          ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
-          ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
-        };
-      });
+      // 커서 페이지네이션: 첫 페이지(최신)만 받고, 과거 방향 커서를 저장해둔다.
+      // 렌더 기준은 '항상 서버 첫 페이지'다. (예전엔 캐시가 더 길면 캐시 전체를 썼는데,
+      //  그러면 진입 즉시 전체 대화가 다 뜨고 위로 스크롤할 게 없어 페이지네이션이 죽는다.)
+      const page = res.data.data;
+      const dbMessages = mapServerMessages(page.items);
+      set({ nextCursor: page.next_cursor, hasMore: page.has_next });
 
-      const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
-      const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
-      const ordered = [...rawMessages].sort((a, b) => {
-        const ta = timeOf(a.createdAt), tb = timeOf(b.createdAt);
-        if (ta !== tb) return ta - tb;
-        return roleRank(a.role) - roleRank(b.role);
-      });
-
-      const deduped = ordered.filter((msg, i) => {
-        if (i === 0) return true;
-        const prev = ordered[i - 1];
-        return !(
-          msg.role === prev.role &&
-          msg.type === 'text' &&
-          prev.type === 'text' &&
-          msg.content === prev.content &&
-          msg.createdAt === prev.createdAt
-        );
-      });
-
-      const dbMessages = deduped.filter(
-        (msg) => !(msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '')
-      );
-
-      // 메모리 캐시(messageCache)는 새로고침 시 날아간다. 그때는 sessionStorage(loadCache)를
-      // 폴백으로 읽어야 도메인 태그 등 로컬 전용 정보가 복원된다.
+      // 캐시는 '렌더 소스'가 아니라 '도메인 태그 폴백 이식용'으로만 쓴다.
+      // 서버 domain이 없는 옛 메시지에 한해, 캐시에 있던 도메인 태그를 같은 질문(내용 매칭)에 옮겨준다.
+      // (개수 매칭은 첫 페이지 vs 전체 캐시라 안 맞으므로, 내용 기준으로 개별 매칭한다.)
       const memCached = messageCache.get(sessionId) ?? [];
       const cached = memCached.length > 0 ? memCached : loadCache(sessionId);
-      let base = cached.length > dbMessages.length ? cached : dbMessages;
-
-      // 이제 서버가 도메인을 저장해 돌려주므로(위 매핑에서 domainCode/domainLabel 반영),
-      // 새 메시지는 새로고침해도 태그가 그대로 복원된다. 다만 이 기능 배포 이전에 저장된
-      // '옛 메시지'는 서버 domain이 없을 수 있어, 그런 메시지에 한해 로컬 캐시에서 태그를
-      // 폴백 이식한다. 서버가 도메인을 준 메시지(m.domainLabel 있음)는 절대 덮지 않는다.
-      if (base === dbMessages) {
-        const cachedUsers = cached.filter((m) => m.role === 'user' && m.type === 'text');
-        const dbUserCount = dbMessages.filter((m) => m.role === 'user' && m.type === 'text').length;
-        const hasAnyDomain = cachedUsers.some((m) => m.type === 'text' && m.domainLabel);
-        // 순서 매칭은 캐시와 DB의 user 메시지 개수가 '정확히 같을 때만' 안전하다.
-        // (개수가 어긋나면 인덱스가 밀려 엉뚱한 질문에 태그가 붙으므로, 그 경우 이식을 건너뛴다.)
-        if (hasAnyDomain && cachedUsers.length === dbUserCount) {
-          let userIdx = 0;
-          base = dbMessages.map((m) => {
-            if (m.role === 'user' && m.type === 'text') {
-              const c = cachedUsers[userIdx++];
-              // 서버가 이미 도메인을 준 메시지는 그대로 둔다(캐시로 덮어쓰지 않음).
-              // 서버 도메인이 없는 옛 메시지에만, 캐시에 도메인이 있으면 이식한다.
-              if (!m.domainLabel && c && c.type === 'text' && c.domainLabel) {
-                return { ...m, domainCode: c.domainCode, domainLabel: c.domainLabel };
-              }
-            }
-            return m;
-          });
+      const cachedByContent = new Map<string, { domainCode?: string; domainLabel?: string }>();
+      for (const c of cached) {
+        if (c.role === 'user' && c.type === 'text' && c.domainLabel) {
+          cachedByContent.set(c.content, { domainCode: c.domainCode, domainLabel: c.domainLabel });
         }
       }
+      const base = cachedByContent.size === 0 ? dbMessages : dbMessages.map((m) => {
+        if (m.role === 'user' && m.type === 'text' && !m.domainLabel) {
+          const hit = cachedByContent.get(m.content);
+          if (hit) return { ...m, domainCode: hit.domainCode, domainLabel: hit.domainLabel };
+        }
+        return m;
+      });
 
       const pending = getInflight(sessionId);
 
-      set({ messages: base });
+      // 서버 첫 페이지 반영 = 로딩 종료. 이 set이 반영되는 순간 UI가 하단 앵커를 건다.
+      set({ messages: base, isConnecting: false });
       messageCache.set(sessionId, base);
 
       const last = base[base.length - 1];
 
       if (last && last.role === 'user' && last.type === 'text') {
-        if (pending) get().retryLastMessage();
+        // 마지막이 질문(user)인데 답변(ai)이 없다 = 답변 생성이 실패해 서버에 안 남은 상태.
+        // (질문은 전송 즉시 DB 저장돼 재진입/새로고침에도 남지만 답변은 사라짐)
+        if (pending) {
+          // 아직 보내던 중(inflight)이면 재시도로 이어간다.
+          get().retryLastMessage();
+          return;
+        }
+        // inflight가 없으면 '답변 실패'로 확정 → interrupted 답변을 붙여 '다시 시도' 배너를 띄운다.
+        // 단, 방금 답변이 저장되기 전에 조회됐을 수 있으므로(정상인데 오발동 방지) 잠깐 뒤 한 번 재확인한다.
+        try {
+          const recheck = await getMessages(sessionId, undefined, { signal });
+          if (get().sessionId !== sessionId) return;
+          const items = recheck.data.data.items;
+          const serverLast = items[items.length - 1];
+          // 재확인 결과 마지막이 ai(답변 있음)면 정상 → 실패 처리하지 않고 그 답변을 반영한다.
+          if (serverLast && serverLast.role !== 'human') {
+            const remapped = mapServerMessages(items);
+            set({ messages: remapped, error: null });
+            messageCache.set(sessionId, remapped);
+            return;
+          }
+        } catch (e) { if (isAbortError(e)) return; logError('connect.recheckLast', e); }
+
+        if (get().sessionId !== sessionId) return;
+        // 답변이 끊긴 상태(세션 이동·새로고침·중단 등)는 모두 '중단됨'으로 통일한다.
+        // interrupted 답변을 붙여 '다시 시도' 배너를 띄운다.
+        const interrupted: Message = {
+          id: uuid(), role: 'assistant', type: 'text', content: '',
+          status: 'interrupted', createdAt: last.createdAt,
+        };
+        set((state) => ({ messages: [...state.messages, interrupted] }));
+        messageCache.set(sessionId, get().messages);
         return;
       }
 
@@ -655,8 +673,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
       if (base.length === 0 && !pending && loadCache(sessionId).length === 0) {
         let stillEmpty: boolean;
         try {
-          const confirm = await getMessages(sessionId, { signal });
-          stillEmpty = confirm.data.data.messages.length === 0;
+          const confirm = await getMessages(sessionId, undefined, { signal });
+          stillEmpty = confirm.data.data.items.length === 0;
         } catch (e) { logError('connect.confirmEmpty', e); stillEmpty = false; }
         if (get().sessionId !== sessionId) return;
         if (stillEmpty) {
@@ -673,15 +691,44 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
 
     disconnect: () => {
-      set({ sessionId: '', messages: [], isStreaming: false, statusText: null, abortController: null, isDeleted: false });
+      set({ sessionId: '', messages: [], isStreaming: false, isConnecting: false, statusText: null, abortController: null, isDeleted: false, nextCursor: null, hasMore: false, isLoadingMore: false });
     },
 
-    sendMessage: async (content: string, domain?: DomainSelection) => {
+    // 위로 스크롤 시 과거 메시지 한 페이지를 이어 붙인다(맨 앞에 prepend).
+    loadMoreMessages: async () => {
+      const { sessionId, hasMore, isLoadingMore, nextCursor, messages } = get();
+      if (!hasMore || isLoadingMore || !nextCursor || !sessionId) return;
+
+      set({ isLoadingMore: true });
+      try {
+        const res = await getMessages(sessionId, { cursor: nextCursor });
+        // 로딩 중 세션이 바뀌었으면 결과를 버린다(엉뚱한 세션에 붙지 않게).
+        if (get().sessionId !== sessionId) return;
+
+        const page = res.data.data;
+        const older = mapServerMessages(page.items);
+        // 이미 있는 메시지 id는 제외하고 과거 메시지를 앞에 붙인다.
+        const existingIds = new Set(messages.map((m) => m.id));
+        const prepend = older.filter((m) => !existingIds.has(m.id));
+        const merged = [...prepend, ...get().messages];
+
+        set({ messages: merged, nextCursor: page.next_cursor, hasMore: page.has_next });
+        messageCache.set(sessionId, merged);
+      } catch (e) {
+        logError('loadMoreMessages', e);
+      } finally {
+        if (get().sessionId === sessionId) set({ isLoadingMore: false });
+      }
+    },
+
+    sendMessage: async (content: string, domain?: DomainSelection, forceNotFirst = false) => {
       if (get().isStreaming) return
       const controller = new AbortController()
       const assistantId = uuid()
       const { sessionId, messages: existingMessages } = get()
-      const isFirstMessage = existingMessages.length === 0
+      // forceNotFirst: 재전송 폴백처럼 '이미 존재하는 세션'에 다시 보낼 때는, 재전송 직전에 화면을 비워도
+      // 첫 메시지로 오판(빈 응답 시 세션 삭제)하지 않도록 강제로 false 처리한다.
+      const isFirstMessage = existingMessages.length === 0 && !forceNotFirst
 
       // domain을 함께 저장해야 스트리밍 중 새로고침 시에도 '전체'로 떨어지지 않는다.
       saveInflight(sessionId, content, domain)
@@ -689,6 +736,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => ({
         isStreaming: true,
         statusText: null,
+        error: null, // 새 전송 시작 → 이전 에러 토스트 해제
         abortController: controller,
         messages: [
           ...state.messages,
@@ -721,6 +769,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => ({
         isStreaming: true,
         statusText: null,
+        error: null, // 재시도 시작 → 이전 에러 토스트 해제
         abortController: controller,
         messages: [
           ...state.messages,
@@ -771,29 +820,65 @@ export const useChatStore = create<ChatStore>((set, get) => {
       }
 
       const qNorm = question.trim();
-      let serverId: string | undefined;
+
+      // 같은 내용의 질문이 여러 번 있을 수 있으므로(예: "안녕"을 반복 전송) content만으로 매칭하면
+      // 엉뚱한 답을 재생성한다. → 재생성 대상 질문(prevUserId) '앞'에 동일 질문이 몇 개인지(occurrence)
+      // 세고, 서버에서도 같은 순번의 human 질문 다음 ai 답변을 잡는다.
+      const prevUserIdx = messages.findIndex((m) => m.id === prevUserId);
+      let occurrence = 0;
+      for (let i = 0; i < prevUserIdx; i++) {
+        const m = messages[i];
+        if (m.role === 'user' && m.type === 'text' && m.content.trim() === qNorm) occurrence++;
+      }
+
+      let serverId: string | undefined;         // 재생성 대상 ai 답변의 message_id
+      let serverQuestionId: string | undefined; // 그 질문(human)의 message_id
+      const serverEmptyAnswerIds: string[] = []; // 그 질문 다음에 붙은 빈 답변들의 id(정리 대상)
       try {
+        // 재생성 대상 질문은 대개 화면에 보이는(최신 페이지) 메시지이므로 첫 페이지에서 찾는다.
         const res = await getMessages(sessionId);
-        const server = res.data.data.messages;
-        for (let i = server.length - 1; i >= 0; i--) {
+        const server = res.data.data.items;
+        let seen = 0;
+        for (let i = 0; i < server.length; i++) {
           if (server[i].role === 'human' && (server[i].content ?? '').trim() === qNorm) {
-            const next = server[i + 1];
-            if (next && next.role !== 'human' && next.message_id) serverId = next.message_id;
-            break;
+            if (seen === occurrence) {
+              serverQuestionId = server[i].message_id;
+              const next = server[i + 1];
+              if (next && next.role !== 'human') {
+                if ((next.content ?? '').trim().length > 0) serverId = next.message_id; // 정상 답변
+                else if (next.message_id) serverEmptyAnswerIds.push(next.message_id);    // 빈 답변
+              }
+              break;
+            }
+            seen++;
           }
         }
       } catch (e) { logError('regenerate.getMessages', e) }
 
       if (get().sessionId !== sessionId || get().isStreaming) return;
 
-      // 백엔드에서 그 질문의 답변을 못 찾으면 같은 질문으로 재전송한다(재전송 폴백).
+      // 서버에 정상 답변이 없음(빈 답변으로 끝난 경우) = 재생성 대상이 없다.
+      // 이때 재전송하면 백엔드가 '질문을 새로 저장'해 누를 때마다 질문이 쌓인다. → 재전송 전에
+      // 서버의 '이 질문 + 빈 답변'을 message_id로 콕 집어 삭제한다(DELETE /messages/{id}).
+      // content 매칭이 아니라 id 기반이라, 같은 질문이 여러 개여도 정확한 하나만 지운다.
       if (!serverId) {
+        // 서버에서 이 질문 + 딸린 빈 답변 삭제(있으면). 순서: 답변 먼저, 질문 나중.
+        const toDelete = [...serverEmptyAnswerIds, ...(serverQuestionId ? [serverQuestionId] : [])];
+        if (toDelete.length > 0) {
+          await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)));
+        }
+        // 화면에서도 대상 빈 답변 + 질문 제거(재전송 시 sendMessage가 다시 넣으므로 중복 방지).
         const removeIds = new Set<string>([prevUserId, assistantId]);
-        set((state) => ({ messages: state.messages.filter((m) => !removeIds.has(m.id)) }));
-        await get().sendMessage(question, prevDomain);
+        const remaining = get().messages.filter((m) => !removeIds.has(m.id));
+        set({ messages: remaining });
+        messageCache.set(sessionId, remaining);
+        if (get().sessionId !== sessionId || get().isStreaming) return;
+        // forceNotFirst=true: 화면을 비운 상태로 재전송해도 '첫 메시지=빈 세션 삭제'로 오판하지 않게.
+        await get().sendMessage(question, prevDomain, true);
         return;
       }
 
+      // 재생성 시작: 원본 답변을 비우고 스트리밍 상태로.
       const controller = new AbortController();
       set((state) => ({
         isStreaming: true,

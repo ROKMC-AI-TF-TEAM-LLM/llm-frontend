@@ -41,25 +41,32 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
   }
 
   const msgStreaming = msg.status === 'streaming';
-  const isInterrupted = msg.status === 'interrupted';
+  const isInterrupted = msg.status === 'interrupted'; // 답변이 끊김(중단/세션이동/새로고침 모두)
+  // 내용이 없는 중단 답변은 빈 말풍선을 숨기고 아래 배너만 보인다.
+  const hideEmptyBubble = isInterrupted && msg.content.trim() === '';
 
   return (
     <div className="group/msg">
-      <MessageBubble
-        role="assistant"
-        content={msg.content}
-        isStreaming={msgStreaming}
-        statusText={msgStreaming ? statusText : undefined}
-      />
+      {!hideEmptyBubble && (
+        <MessageBubble
+          role="assistant"
+          content={msg.content}
+          isStreaming={msgStreaming}
+          statusText={msgStreaming ? statusText : undefined}
+        />
+      )}
       {!msgStreaming && (
         <>
-          <MessageActions
-            role="assistant"
-            onCopy={() => onCopy(msg.content)}
-            onRegenerate={isLast ? () => onRegenerate(msg.id) : undefined}
-            regenerateDisabled={isStreaming}
-            createdAt={msg.createdAt}
-          />
+          {/* 빈 채로 실패한 답변은 복사/재생성 액션바 대신 아래 배너의 '다시 시도'만 노출한다. */}
+          {!hideEmptyBubble && (
+            <MessageActions
+              role="assistant"
+              onCopy={() => onCopy(msg.content)}
+              onRegenerate={isLast ? () => onRegenerate(msg.id) : undefined}
+              regenerateDisabled={isStreaming}
+              createdAt={msg.createdAt}
+            />
+          )}
           {isInterrupted && (
             <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
               <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

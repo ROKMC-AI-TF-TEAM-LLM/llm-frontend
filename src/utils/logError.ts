@@ -10,6 +10,11 @@ interface AxiosLike {
 }
 
 export const logError = (context: string, error: unknown, extra?: unknown): void => {
+  // 요청 취소(세션 빠르게 전환 시 이전 getMessages를 abort)는 정상 동작이므로 콘솔에 남기지 않는다.
+  const name = (error as Error)?.name
+  const code = (error as { code?: string })?.code
+  if (name === 'AbortError' || name === 'CanceledError' || code === 'ERR_CANCELED') return
+
   const e = error as AxiosLike | undefined
   const resp = e?.response
 
@@ -28,8 +33,7 @@ export const logError = (context: string, error: unknown, extra?: unknown): void
     return
   }
 
-  // 응답이 없는 경우 = 네트워크 실패 / 요청 취소 / 프론트 JS 에러.
-  const name = (error as Error)?.name
+  // 응답이 없는 경우 = 네트워크 실패 / 프론트 JS 에러. (요청 취소는 위에서 이미 걸러졌다)
   const msg = (error as Error)?.message ?? String(error)
   console.error(`[${context}] ${name ? name + ': ' : ''}${msg}`, extra !== undefined ? extra : '', error)
 }

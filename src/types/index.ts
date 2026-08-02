@@ -53,6 +53,7 @@ export interface AssistantMessage {
   role: 'assistant';
   type: 'text';
   content: string;
+  // streaming: 생성 중 / done: 완료 / interrupted: 답변이 끊김(중단·세션이동·새로고침 모두)
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
   attachments?: FileAttachment[];

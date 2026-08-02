@@ -18,6 +18,14 @@ const SearchPage = lazy(() => import('./pages/SearchPage'));
 const RAGPage = lazy(() => import('./pages/RagPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const GuidePage = lazy(() => import('./pages/GuidePage'));
+// 튜토리얼(소개 영상) — 로그인 없이 볼 수 있는 공개 페이지.
+const TutorialsPage = lazy(() => import('./pages/TutorialsPage'));
+const TutorialPage = lazy(() => import('./pages/TutorialPage'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
+
+// 프로젝트 — 목록(홈) 화면은 없다. 사이드바 '프로젝트' 섹션이 목록 역할을 하고,
+// 프로젝트를 누르면 곧바로 이 화면으로 들어온다.
+const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
 
 const publicRoutes: RouteObject[] = [
   {
@@ -33,6 +41,33 @@ const publicRoutes: RouteObject[] = [
     element: (
       <Suspense fallback={null}>
         <GuidePage />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/tutorials',
+    errorElement: <ErrorPage />,
+    element: (
+      <Suspense fallback={null}>
+        <TutorialsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/tutorials/:slug',
+    errorElement: <ErrorPage />,
+    element: (
+      <Suspense fallback={null}>
+        <TutorialPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/team',
+    errorElement: <ErrorPage />,
+    element: (
+      <Suspense fallback={null}>
+        <TeamPage />
       </Suspense>
     ),
   },
@@ -58,6 +93,23 @@ const protectedRoutes: RouteObject[] = [
         element: (
           <Suspense fallback={<RagPageSkeleton />}>
             <RAGPage />
+          </Suspense>
+        )
+      },
+      {
+        path: '/projects/:id',
+        element: (
+          <Suspense fallback={null}>
+            <ProjectPage />
+          </Suspense>
+        )
+      },
+      // 프로젝트 안의 특정 대화를 바로 열 때 (사이드바 '최근 대화'에서 진입).
+      {
+        path: '/projects/:id/:chatId',
+        element: (
+          <Suspense fallback={null}>
+            <ProjectPage />
           </Suspense>
         )
       },

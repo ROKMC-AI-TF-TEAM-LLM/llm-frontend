@@ -7,6 +7,11 @@ import { useAuth } from '../context/AuthContext'
 import { signup } from '../api/services/auth'
 import MarsPlanet from '../ui/components/MarsPlanet'
 import Toast from '../ui/components/Toast'
+import TerminalDemo from '../ui/components/landing/TerminalDemo'
+import Reveal from '../ui/components/landing/Reveal'
+import RotatingWord from '../ui/components/landing/RotatingWord'
+import LandingNav from '../ui/components/landing/LandingNav'
+import LandingFooter from '../ui/components/landing/LandingFooter'
 import { getApiError, isNetworkError, DEFAULT_STATUS_ERRORS } from '../utils/error'
 import { logError } from '../utils/logError'
 
@@ -37,17 +42,29 @@ const LOGIN_ERRORS: Record<string, string> = {
 const SIGNUP_ERRORS: Record<string, string> = { EMAIL_ALREADY_EXISTS: '이미 사용 중인 이메일입니다.' }
 
 // 통일된 라인 아이콘 (기능 카드용)
-const FeatureIcon = ({ type }: { type: 'learn' | 'source' | 'update' }) => {
-  const common = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+type IconType = 'learn' | 'source' | 'update' | 'domain' | 'stream' | 'doc'
+const FeatureIcon = ({ type }: { type: IconType }) => {
+  const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   if (type === 'learn') return (<svg {...common}><path d="M12 3l7 3v5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-3z" /><path d="M9 12l2 2 4-4" /></svg>)
   if (type === 'source') return (<svg {...common}><path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6z" /><path d="M14 3v6h6M8 13h8M8 17h6" /></svg>)
+  if (type === 'domain') return (<svg {...common}><rect x="3" y="3" width="7" height="7" rx="1.6" /><rect x="14" y="3" width="7" height="7" rx="1.6" /><rect x="3" y="14" width="7" height="7" rx="1.6" /><path d="M14 17.5h7M17.5 14v7" /></svg>)
+  if (type === 'stream') return (<svg {...common}><path d="M3 12h4l2.5-6 5 12L17 12h4" /></svg>)
+  if (type === 'doc') return (<svg {...common}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>)
   return (<svg {...common}><path d="M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5" /></svg>)
 }
 
-const FEATURES = [
-  { icon: 'learn' as const, title: '해병대 특화 학습', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서로 학습해 부대 맥락을 이해합니다.' },
-  { icon: 'source' as const, title: '출처 기반 답변', desc: 'RAG 검색으로 실제 규정 원문을 찾아 근거·조항과 함께 답변해 신뢰할 수 있습니다.' },
-  { icon: 'update' as const, title: '최신 규정 반영', desc: '개정된 법령·지침을 문서 저장소에 반영해 언제나 최신 기준으로 안내합니다.' },
+// 히어로 문구 끝에서 계속 바뀌는 동사. 마침표는 밑줄 밖에 따로 찍는다
+// (마침표까지 밑줄이 그어지면 지저분해 보인다).
+const HERO_VERBS = ['물어보세요', '찾아보세요', '확인하세요', '정리하세요']
+
+// 히어로 하단 기능 카드 — Grok의 제품 메뉴처럼 서비스의 축을 한눈에 보여준다.
+const FEATURES: { icon: IconType; title: string; desc: string }[] = [
+  { icon: 'learn', title: '해병대 특화 학습', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서로 학습해 부대 맥락을 이해합니다.' },
+  { icon: 'source', title: '출처 기반 답변', desc: 'RAG 검색으로 실제 규정 원문을 찾아 근거·조항과 함께 답변해 신뢰할 수 있습니다.' },
+  { icon: 'domain', title: '도메인별 검색', desc: '인사·복지, 정보화·보안 등 분야를 좁히면 엉뚱한 문서가 섞이지 않아 정확해집니다.' },
+  { icon: 'stream', title: '실시간 스트리밍', desc: '답이 완성될 때까지 기다리지 않고, 찾는 과정과 결과를 즉시 보여줍니다.' },
+  { icon: 'doc', title: '문서함 직접 열람', desc: '대화 없이도 카테고리와 검색어로 전체 규정 문서를 바로 찾아볼 수 있습니다.' },
+  { icon: 'update', title: '최신 규정 반영', desc: '개정된 법령·지침을 문서 저장소에 반영해 언제나 최신 기준으로 안내합니다.' },
 ]
 
 const LoginPage = () => {
@@ -142,37 +159,43 @@ const LoginPage = () => {
 
   return (
     <div className="mars-root" data-view={view}>
+      <LandingNav onStart={openAuth} />
+
       {/* ===== 인트로 (스크롤) ===== */}
       <div ref={introRef} className="mars-intro ">
         {/* Hero */}
-        <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw]">
-          <div className="max-w-[600px] relative z-[1]">
-            <div className="mars-reveal flex items-center gap-3 mb-6">
-              <span className="w-8 h-0.5 rounded-full bg-brand shrink-0" />
-              <span className="text-[13px] font-bold tracking-[0.06em] text-brand-hover">Marine Artificial Intelligence Reasoning System</span>
+        <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw] pt-20">
+          {/* 격자 배경(mars-grid-bg)은 쓰지 않는다 — 옅어도 선이 그어져 보여 지저분하다.
+              깊이는 아래 빛무리(mars-glow-bg) 하나로만 준다. */}
+          <div className="mars-glow-bg" style={{ width: 620, height: 620, right: '-6%', top: '2%' }} />
+          <div className="max-w-[640px] relative z-[1]">
+            {/* 원문 그대로 노출 — 풀네임이라 대문자 변환/넓은 자간은 끈다.
+                자간을 좁혀 워드마크 폭과 어울리게 하고, 크기는 조금 키워 붕 뜨지 않게 한다. */}
+            <div className="mars-reveal mars-eyebrow mars-eyebrow-full mb-5">
+              Marine Artificial Intelligence Reasoning System
             </div>
-            <h1 className="mars-reveal mars-wordmark -ml-1 m-0 font-black text-brand text-glow-brand">MARS</h1>
-            <p className="mars-reveal mt-6 font-extrabold leading-snug text-text-primary text-[27px]">
-              해병대를 위한 인공지능,<br />이제 <span className="text-brand">MARS</span>와 함께.
+            <h1 className="mars-reveal mars-wordmark mars-display -ml-1 m-0 text-brand text-glow-brand">MARS</h1>
+            <p className="mars-reveal mars-display mt-5 text-text-primary" style={{ fontSize: 'clamp(26px,3vw,38px)' }}>
+              해병대의 모든 규정을,<br />
+              한 번에 <RotatingWord words={HERO_VERBS} />
             </p>
-            <p className="mars-reveal mt-5 text-[16px] leading-relaxed text-text-secondary max-w-[440px] break-keep">
-              법령·규정·규칙을 참조해
-              <br />
-              장병의 질문에 근거와 함께 답합니다.
+            <p className="mars-reveal mt-5 text-[16.5px] leading-[1.7] text-text-secondary max-w-[420px] break-keep">
+              법령·규정·규칙을 참조해 장병의 질문에 근거와 함께 답합니다.
             </p>
             {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
-            <div className="mars-reveal mt-9 relative h-14">
-              <div className={`absolute inset-0 flex items-center transition-opacity duration-500 ${view === 'intro' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <button onClick={openAuth} className="inline-flex items-center gap-2.5 px-9 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[17px] font-extrabold shadow-[0_16px_36px_rgba(220,20,60,0.36)] hover:brightness-105 active:scale-[0.98] transition">
-                  MARS 시작하기 <span>→</span>
+            <div className="mars-reveal mt-8 relative h-[52px]">
+              <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'intro' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                {/* 히어로에는 시작하기만 둔다 — '서비스 이용법'은 상단 탭에 이미 있다. */}
+                <button onClick={openAuth} className="mars-pill mars-pill-brand">
+                  MARS 시작하기 <span aria-hidden>→</span>
                 </button>
               </div>
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'auth' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                <button type="button" onClick={() => navigate('/team')} className="mars-pill mars-pill-ghost text-[14px]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                   팀 소개
                 </button>
-                <button type="button" onClick={() => navigate('/guide')} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-full border border-brand-soft bg-white/70 text-[14px] font-bold text-brand-hover hover:bg-brand-subtle transition-colors">
+                <button type="button" onClick={() => navigate('/guide')} className="mars-pill mars-pill-ghost text-[14px]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></svg>
                   서비스 이용법
                 </button>
@@ -203,26 +226,63 @@ const LoginPage = () => {
 
         <div className="mars-below">
         {/* Features */}
-        <section ref={featuresRef} className="mars-section px-[6vw] py-24 min-h-screen flex flex-col justify-center">
-          <div className="max-w-[1180px] mx-auto">
-            <div className="mars-reveal text-center mb-3 text-[13px] font-bold tracking-tight text-brand-hover">가장 큰 특징</div>
-            <h2 className="mars-reveal text-center mx-auto max-w-[760px] font-extrabold leading-snug tracking-tight" style={{ fontSize: 'clamp(30px,4vw,50px)' }}>
+        <section ref={featuresRef} className="mars-section px-[6vw] py-20 min-h-screen flex flex-col justify-center">
+          <div className="max-w-[1180px] mx-auto w-full">
+            <div className="mars-reveal mars-eyebrow mb-4">가장 큰 특징</div>
+            <h2 className="mars-reveal mars-display max-w-[820px]" style={{ fontSize: 'clamp(27px,3.2vw,42px)' }}>
               법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 학습합니다.
             </h2>
-            <p className="mars-reveal text-center mx-auto max-w-[620px] mt-4 mb-16 text-[17px] text-text-secondary leading-relaxed">
+            <p className="mars-reveal max-w-[560px] mt-4 mb-10 text-[16px] text-text-secondary leading-[1.7] break-keep">
               MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {FEATURES.map((f) => (
-                <div key={f.title} className="mars-reveal p-8 rounded-2xl bg-white border border-brand-soft/60 shadow-[0_18px_40px_rgba(160,0,40,0.06)]">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center mb-5 text-white">
+                <div key={f.title} className="mars-reveal mars-card p-5">
+                  <div className="w-9 h-9 rounded-lg bg-brand-subtle border border-brand-soft flex items-center justify-center mb-3.5 text-brand">
                     <FeatureIcon type={f.icon} />
                   </div>
-                  <div className="text-xl font-extrabold mb-2">{f.title}</div>
-                  <div className="text-[15px] text-text-secondary leading-relaxed">{f.desc}</div>
+                  <div className="text-[15.5px] font-extrabold mb-1.5 tracking-tight">{f.title}</div>
+                  <div className="text-[13.5px] text-text-secondary leading-[1.65] break-keep">{f.desc}</div>
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* 터미널 데모 — MARS가 근거를 찾아내는 과정 */}
+        <section className="mars-section px-[6vw] py-28 min-h-screen flex flex-col justify-center">
+          <div className="max-w-[1180px] mx-auto w-full flex flex-col lg:flex-row gap-16 items-center">
+            <div className="flex-1 min-w-0">
+              <Reveal className="mars-eyebrow mb-5">동작 방식</Reveal>
+              <Reveal delay={60}>
+                <h2 className="mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
+                  추측하지 않고,<br /><span className="text-brand">찾아서</span> 답합니다.
+                </h2>
+              </Reveal>
+              <Reveal delay={120}>
+                <p className="text-[17px] text-text-secondary leading-relaxed max-w-[420px] break-keep">
+                  질문이 들어오면 MARS는 규정 문서를 직접 검색하고, 원문 조항을 열어 대조한 뒤 근거와 함께 답을 만듭니다. 그 과정을 숨기지 않고 그대로 보여줍니다.
+                </p>
+              </Reveal>
+              <div className="mt-10 flex flex-col gap-5">
+                {[
+                  ['문서 검색', '질문에서 핵심어를 뽑아 관련 규정을 찾습니다.'],
+                  ['원문 대조', '찾은 문서의 실제 조항을 열어 내용을 확인합니다.'],
+                  ['근거 제시', '어떤 문서 몇 조를 참고했는지 함께 답합니다.'],
+                ].map(([t, d], i) => (
+                  <Reveal key={t} delay={180 + i * 80} className="flex gap-4 items-start">
+                    <span className="shrink-0 mt-1 w-6 h-6 rounded-full bg-brand-subtle border border-brand-soft text-brand text-[12px] font-extrabold flex items-center justify-center">{i + 1}</span>
+                    <div>
+                      <div className="text-[16px] font-bold mb-0.5">{t}</div>
+                      <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+            <Reveal delay={100} className="flex-1 min-w-0 w-full">
+              <TerminalDemo />
+            </Reveal>
           </div>
         </section>
 
@@ -232,20 +292,20 @@ const LoginPage = () => {
 
             {/* 왼쪽: 텍스트 + 스텝 */}
             <div className="flex-1 min-w-0">
-              <div className="mars-reveal mb-3 text-[13px] font-bold tracking-tight text-brand-hover">사용 방법</div>
-              <h2 className="mars-reveal font-extrabold leading-snug tracking-tight mb-6" style={{ fontSize: 'clamp(30px,3.8vw,52px)' }}>
+              <div className="mars-reveal mars-eyebrow mb-5">사용 방법</div>
+              <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
                 물어보고 싶은<br />것을 입력하세요.
               </h2>
-              <p className="mars-reveal text-[16px] text-text-secondary leading-relaxed mb-14 max-w-[380px]">
+              <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
                 궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 관련 조항을 찾아 근거와 함께 답합니다.
               </p>
-              <div className="flex flex-col gap-8">
+              <div className="flex flex-col gap-7">
                 {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', 'RAG 검색', 'MARS가 규정 문서에서 관련 조항을 찾습니다.'], ['STEP 03', '근거와 함께 답변', '출처 문서를 명시해 신뢰할 수 있게 답합니다.']].map(([s, t, d]) => (
                   <div key={s} className="mars-reveal flex gap-5 items-start">
-                    <span className="shrink-0 text-[13px] font-extrabold text-brand tracking-wide pt-0.5 w-14">{s}</span>
+                    <span className="shrink-0 text-[12px] font-extrabold text-brand tracking-[0.1em] pt-1 w-14">{s}</span>
                     <div>
-                      <div className="text-[18px] font-extrabold mb-1">{t}</div>
-                      <div className="text-[14px] text-text-secondary leading-relaxed">{d}</div>
+                      <div className="text-[17px] font-extrabold mb-1 tracking-tight">{t}</div>
+                      <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
                     </div>
                   </div>
                 ))}
@@ -257,19 +317,35 @@ const LoginPage = () => {
               <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
                 <div className="p-7 pb-4 flex flex-col gap-5">
                   <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">정기휴가 신청 절차를 단계별로 알려줘</div>
-                  <div className="flex gap-3.5">
-                    <MarsPlanet className="w-8 h-8 shrink-0 mt-0.5" />
-                    <div className="text-[15px] leading-relaxed text-text-primary pt-0.5">
-                      <b className="font-extrabold">정기휴가</b> 신청은 다음 순서로 진행됩니다.
-                      <div className="mt-3 flex flex-col gap-2.5">
-                        {['부대 휴가계획에 따라 희망 기간을 선정합니다.', '휴가원을 작성해 소속 지휘관의 결재를 받습니다.', '승인 후 국방인사정보체계에 등록하면 완료됩니다.'].map((t, i) => (
-                          <div key={i} className="flex gap-3 items-start"><span className="shrink-0 w-6 h-6 rounded-full bg-brand-subtle text-brand text-[13px] font-extrabold flex items-center justify-center mt-0.5">{i + 1}</span><span>{t}</span></div>
-                        ))}
-                      </div>
-                      <div className="mt-5 pt-4 border-t border-brand-soft/50 flex flex-wrap gap-2 items-center">
-                        <span className="text-xs font-bold text-text-muted">근거 문서</span>
-                        {['군인복무기본법 제18조', '군인의 지위 및 복무에 관한 기본법 시행령'].map((s) => (
-                          <span key={s} className="text-xs font-semibold text-brand-hover bg-brand-subtle border border-brand-soft px-3 py-1.5 rounded-full">{s}</span>
+                  {/* 답변 — 아바타 없이 본문만. 아바타를 빼니 실제 답변 화면과 더 가깝다. */}
+                  <div className="text-[15px] leading-relaxed text-text-primary">
+                    <b className="font-extrabold">정기휴가</b> 신청은 다음 순서로 진행됩니다.
+                    <div className="mt-3.5 flex flex-col gap-2.5">
+                      {['부대 휴가계획에 따라 희망 기간을 선정합니다.', '휴가원을 작성해 소속 지휘관의 결재를 받습니다.', '승인 후 국방인사정보체계에 등록하면 완료됩니다.'].map((t, i) => (
+                        <div key={i} className="flex gap-3 items-start">
+                          <span className="shrink-0 w-5 h-5 mt-0.5 rounded-md bg-brand-subtle text-brand text-[11.5px] font-extrabold flex items-center justify-center">{i + 1}</span>
+                          <span>{t}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 근거 문서 — 실제 SourceBadge처럼 문서 아이콘 + 조항이 붙은 카드 형태 */}
+                    <div className="mt-5 pt-4 border-t border-surface-border">
+                      <div className="text-[11.5px] font-bold tracking-wide text-text-muted mb-2.5">근거 문서</div>
+                      <div className="flex flex-col gap-2">
+                        {[['군인복무기본법 제18조', '페이지 42'], ['군인의 지위 및 복무에 관한 기본법 시행령', '페이지 8']].map(([title, page]) => (
+                          <div key={title} className="flex items-center gap-2.5 p-2.5 rounded-xl border border-surface-border bg-surface-subtle">
+                            <span className="shrink-0 w-7 h-7 rounded-lg bg-brand flex items-center justify-center text-white">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <path d="M14 2v6h6" />
+                              </svg>
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-[12.5px] font-semibold text-text-primary truncate">{title}</span>
+                              <span className="block text-[11px] text-text-muted mt-0.5">{page}</span>
+                            </span>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -289,15 +365,16 @@ const LoginPage = () => {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="px-[6vw] mars-section pt-60 pb-32 text-center min-h-screen">
-          <h2 className="mars-reveal m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
-          <p className="mars-reveal mx-auto mb-9 max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
-          <button onClick={openAuth} className="mars-reveal inline-flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[18px] font-extrabold shadow-[0_20px_44px_rgba(220,20,60,0.38)] hover:brightness-105 active:scale-[0.98] transition">
-            MARS 시작하기 <span>→</span>
-          </button>
-          <div className="mt-9 text-[13px] text-text-muted">대한민국 해병대 · MARS v1.0.0 · 본 답변은 참고용이며 공식 규정을 우선합니다.</div>
+        {/* CTA — 버튼은 상단 네비/히어로에 이미 있으므로 문구만 둔다 */}
+        <section className="relative px-[6vw] mars-section min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
+          <div className="mars-glow-bg" style={{ width: 760, height: 760, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
+          <div className="relative z-[1]">
+            <h2 className="mars-reveal mars-display m-0 mb-6" style={{ fontSize: 'clamp(36px,5vw,62px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
+            <p className="mars-reveal mx-auto max-w-[460px] text-[17px] text-text-secondary leading-relaxed break-keep">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
+          </div>
         </section>
+
+        <LandingFooter onStart={openAuth} />
         </div>
       </div>
 
