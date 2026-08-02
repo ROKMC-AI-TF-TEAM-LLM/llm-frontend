@@ -129,7 +129,7 @@ function Step01Mock() {
         <div className="text-[27px] font-extrabold leading-[1.4] text-text-primary">
           해병대님, <span className="text-brand">무엇을</span> 도와드릴까요?
         </div>
-        <div className="mt-2.5 text-sm text-[#a89aa0]">법령·규정·규칙을 학습한 MARS가 근거와 함께 답합니다.</div>
+        <div className="mt-2.5 text-sm text-[#a89aa0]">법령·규정·규칙을 참조해 MARS가 근거와 함께 답합니다.</div>
       </div>
       <div className="w-full max-w-[440px]">
         <div className="rounded-[22px] bg-white border border-[#eee0e2] shadow-[0_8px_24px_rgba(150,0,40,0.05)]">
@@ -408,9 +408,13 @@ export default function GuidePage() {
       `}</style>
 
       {/* 헤더 — 랜딩 상단 네비와 같은 계열. 섹션 바로가기 + 시작하기 */}
-      <div className="sticky top-0 z-20 flex items-center gap-7 px-[6vw] py-4 bg-white/[0.82] backdrop-blur-md border-b border-[#f2e2e6]">
-        <button onClick={() => navigate('/')} className="flex items-center">
-          <span className="text-[19px] font-black text-brand tracking-[-0.03em]">MARS</span>
+      {/* 로고 위치·크기는 로그인(랜딩) 네비(.mars-nav)와 같은 값으로 맞춘다. */}
+      <div
+        style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
+        className="sticky top-0 z-20 flex items-center gap-7 bg-white/[0.82] backdrop-blur-md border-b border-[#f2e2e6]"
+      >
+        <button onClick={() => navigate('/')} className="mars-nav-brand">
+          MARS
         </button>
 
         <button

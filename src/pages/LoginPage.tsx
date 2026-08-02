@@ -59,7 +59,7 @@ const HERO_VERBS = ['물어보세요', '찾아보세요', '확인하세요', '�
 
 // 히어로 하단 기능 카드 — Grok의 제품 메뉴처럼 서비스의 축을 한눈에 보여준다.
 const FEATURES: { icon: IconType; title: string; desc: string }[] = [
-  { icon: 'learn', title: '해병대 특화 학습', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서로 학습해 부대 맥락을 이해합니다.' },
+  { icon: 'learn', title: '해병대 특화', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서를 참조해 부대 맥락에 맞게 답합니다.' },
   { icon: 'source', title: '출처 기반 답변', desc: 'RAG 검색으로 실제 규정 원문을 찾아 근거·조항과 함께 답변해 신뢰할 수 있습니다.' },
   { icon: 'domain', title: '도메인별 검색', desc: '인사·복지, 정보화·보안 등 분야를 좁히면 엉뚱한 문서가 섞이지 않아 정확해집니다.' },
   { icon: 'stream', title: '실시간 스트리밍', desc: '답이 완성될 때까지 기다리지 않고, 찾는 과정과 결과를 즉시 보여줍니다.' },
@@ -230,7 +230,7 @@ const LoginPage = () => {
           <div className="max-w-[1180px] mx-auto w-full">
             <div className="mars-reveal mars-eyebrow mb-4">가장 큰 특징</div>
             <h2 className="mars-reveal mars-display max-w-[820px]" style={{ fontSize: 'clamp(27px,3.2vw,42px)' }}>
-              법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 학습합니다.
+              법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 찾아냅니다.
             </h2>
             <p className="mars-reveal max-w-[560px] mt-4 mb-10 text-[16px] text-text-secondary leading-[1.7] break-keep">
               MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.

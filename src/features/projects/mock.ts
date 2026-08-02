@@ -52,7 +52,7 @@ export const MOCK_PROJECTS: Project[] = [
   {
     id: 'p-inspection',
     name: '함정 정비 검사 지원',
-    description: '정비 주기·검사 항목 규정을 학습해 검사 준비 문서를 만들어주는 전담 AI.',
+    description: '정비 주기·검사 항목 규정을 참조해 검사 준비 문서를 만들어주는 전담 AI.',
     instructions:
       '너는 함정 정비 검사를 담당하는 실무자를 돕는 조력자다.\n\n' +
       '- 항상 근거 규정의 조·항·호를 함께 밝힌다.\n' +
