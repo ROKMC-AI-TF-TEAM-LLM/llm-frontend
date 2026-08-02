@@ -22,6 +22,14 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
     else navigate('/')       // 가이드 등 다른 페이지면 랜딩으로 이동
   }
 
+  // 푸터는 페이지 맨 아래에 있어서, 그냥 이동하면 새 페이지도 아래쪽부터 보인다.
+  // (같은 화면으로 가는 경우엔 리마운트도 안 돼 스크롤이 그대로 남는다)
+  // 그래서 푸터에서 나가는 이동은 항상 맨 위로 올려준다.
+  const goTop = (to: string) => {
+    navigate(to)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
   return (
     <footer className="mars-footer">
       <div className="mars-footer-inner">
@@ -62,11 +70,12 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
             ))}
           </FooterCol>
 
-          {/* 튜토리얼 — 로그인 없이 볼 수 있는 소개 영상들 */}
-          <FooterCol title="튜토리얼">
-            <FooterBtn onClick={() => navigate('/tutorials')}>전체 보기</FooterBtn>
+          {/* 튜토리얼 + 팀 소개 — 로그인 없이 볼 수 있는 안내성 페이지들 */}
+          <FooterCol title="알아보기">
+            <FooterBtn onClick={() => goTop('/team')}>팀 소개</FooterBtn>
+            <FooterBtn onClick={() => goTop('/tutorials')}>튜토리얼 전체</FooterBtn>
             {TUTORIALS.slice(0, 3).map((t) => (
-              <FooterBtn key={t.slug} onClick={() => navigate(`/tutorials/${t.slug}`)}>
+              <FooterBtn key={t.slug} onClick={() => goTop(`/tutorials/${t.slug}`)}>
                 {t.title}
               </FooterBtn>
             ))}

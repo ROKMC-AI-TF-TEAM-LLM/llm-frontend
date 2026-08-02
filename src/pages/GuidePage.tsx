@@ -416,7 +416,7 @@ export default function GuidePage() {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="ml-auto inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-brand text-white text-[14px] font-bold hover:bg-brand-hover transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-[6px] bg-brand px-4 py-2 text-[13.5px] font-medium text-white transition-colors hover:bg-brand-hover"
         >
           시작하기
         </button>
@@ -599,6 +599,10 @@ export default function GuidePage() {
         <Reveal className="relative z-[2]">
           <h2 className="m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
           <p className="mx-auto max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
+          {/* 랜딩 히어로와 같은 알약 CTA — 페이지마다 버튼 모양이 다르면 산만하다. */}
+          <button type="button" onClick={() => navigate('/')} className="mars-pill mars-pill-brand mt-9">
+            MARS 시작하기 <span aria-hidden>→</span>
+          </button>
         </Reveal>
       </section>
 

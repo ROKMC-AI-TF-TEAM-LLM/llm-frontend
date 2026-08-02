@@ -82,7 +82,7 @@ export function Reveal({
 function ThumbPreview({ slug }: { slug: string }) {
   // 공통 : 아래가 잘린 흰 카드(= 화면 일부가 보이는 느낌)
   const shell =
-    'w-full rounded-t-[10px] bg-white/95 px-3 pt-3 shadow-[0_-1px_14px_rgba(60,20,30,0.10)]'
+    'w-full rounded-t-[10px] bg-white/95 px-3.5 pt-3.5 shadow-[0_-2px_18px_rgba(60,20,30,0.12)]'
 
   if (slug === 'domains') {
     // 도메인 : 분야 칩이 늘어선 모습, 하나만 선택됨
@@ -173,14 +173,15 @@ export function TutorialCard({ tutorial, onOpen }: { tutorial: Tutorial; onOpen:
       {/* 썸네일 — 색면 위에 화면 미니어처를 얹는다(클로드 튜토리얼 카드와 같은 방식).
           무슨 내용인지 카드만 봐도 짐작되게 하는 게 목적이라, 장식이 아니라 '미리보기'다. */}
       <span
-        className="tut-thumb relative flex items-end justify-center overflow-hidden px-6 pt-7"
+        className="tut-thumb relative flex items-end justify-center overflow-hidden px-7 pt-5"
         style={{ background: tutorial.tint, aspectRatio: '16 / 9' }}
       >
         <span className="tut-thumb-light absolute inset-0" aria-hidden />
         <ThumbPreview slug={tutorial.slug} />
 
-        {/* 재생 표시 — 미니어처 위에 겹쳐 영상임을 알린다 */}
-        <span className="tut-play absolute flex h-[46px] w-[46px] items-center justify-center rounded-full bg-white/95 shadow-[0_4px_16px_rgba(60,20,30,0.16)]">
+        {/* 재생 표시 — 미니어처 위쪽에 겹쳐 영상임을 알린다.
+            가운데에 두면 미니어처 내용을 가리므로 위로 올려 배치한다. */}
+        <span className="tut-play absolute top-[26%] flex h-[46px] w-[46px] items-center justify-center rounded-full bg-white/95 shadow-[0_4px_16px_rgba(60,20,30,0.16)]">
           <svg className="ml-0.5 h-[18px] w-[18px] text-brand" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8 5.5v13l11-6.5z" />
           </svg>

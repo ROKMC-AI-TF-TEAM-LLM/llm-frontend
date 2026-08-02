@@ -79,6 +79,14 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
     navigate(`/guide#${id}`)
   }
 
+  // '서비스 이용법' 자체를 누른 경우 — 특정 단계가 아니라 가이드 맨 위로 보낸다.
+  // (step-01로 보내면 페이지 중간부터 시작해 앞부분을 놓친다)
+  const goGuideTop = () => {
+    setOpen(false)
+    navigate('/guide')
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
   return (
     <header className={`mars-nav ${scrolled ? 'is-scrolled' : ''}`}>
       <button type="button" onClick={() => navigate('/')} className="mars-nav-brand">
@@ -98,7 +106,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
             className={`mars-nav-trigger ${open ? 'is-open' : ''}`}
             aria-expanded={open}
             aria-haspopup="true"
-            onClick={() => (open ? go('step-01') : setOpen(true))}
+            onClick={() => (open ? goGuideTop() : setOpen(true))}
           >
             서비스 이용법
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mars-nav-caret"><path d="m6 9 6 6 6-6" /></svg>
@@ -131,7 +139,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           튜토리얼
         </button>
 
-        <button type="button" onClick={() => window.open('https://channel.io/ko/team', '_blank')} className="mars-nav-trigger">
+        <button type="button" onClick={() => navigate('/team')} className="mars-nav-trigger">
           팀 소개
         </button>
       </nav>
@@ -181,7 +189,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
                   className="mars-nav-row"
                   onClick={() => {
                     setCtaOpen(false)
-                    go('step-01')
+                    goGuideTop()
                   }}
                 >
                   <span className="mars-nav-rowbody">

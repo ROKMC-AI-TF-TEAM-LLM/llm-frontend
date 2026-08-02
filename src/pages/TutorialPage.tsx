@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import LandingFooter from '../ui/components/landing/LandingFooter'
@@ -16,6 +17,12 @@ export default function TutorialPage() {
   const navigate = useNavigate()
   const tutorial = findTutorial(slug)
   useDocumentTitle(tutorial ? tutorial.title : '튜토리얼')
+
+  // '이어서 볼 만한 튜토리얼'은 같은 화면(TutorialPage)으로 이동하므로 리마운트되지 않는다.
+  // → 스크롤이 그대로 남아 새 튜토리얼의 중간부터 보인다. slug가 바뀌면 맨 위로 올린다.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [slug])
 
   if (!tutorial) {
     return (
@@ -141,13 +148,9 @@ export default function TutorialPage() {
             <p className="mx-auto mt-3 max-w-[420px] text-[13.5px] leading-[1.7] text-text-secondary break-keep">
               지금 MARS에서 방금 본 내용을 그대로 따라 해보세요. 몇 분이면 충분합니다.
             </p>
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              style={{ background: 'var(--color-brand)' }}
-              className="mt-6 rounded-full px-6 py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
-            >
-              MARS 시작하기
+            {/* 랜딩·가이드와 같은 알약 CTA로 통일 */}
+            <button type="button" onClick={() => navigate('/')} className="mars-pill mars-pill-brand mt-6">
+              MARS 시작하기 <span aria-hidden>→</span>
             </button>
           </div>
         </Reveal>
