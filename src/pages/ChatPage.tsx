@@ -7,6 +7,7 @@ import { useChatStore } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { isNetworkError } from '../utils/error';
+import { logError } from '../utils/logError';
 import type { SessionData } from '../types/session';
 
 const SESSION_ERRORS: Record<string, string> = {
@@ -20,6 +21,9 @@ export default function ChatPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sessionError, setSessionError] = useState('');
+  // 다시 시도해서 풀릴 수 있는 오류인지(서버 오류·네트워크 실패) 여부.
+  // 세션이 없거나 권한이 없는 경우는 재시도해도 소용없으므로 false로 둔다.
+  const [canRetry, setCanRetry] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
   const { data: infiniteData } = useInfiniteSessions();
@@ -62,13 +66,33 @@ export default function ChatPage() {
       })
       .catch((error) => {
         if (cancelled) return;
+        // 여기서 로그를 남기지 않으면 화면에 '일시적인 오류'만 뜨고
+        // 콘솔에는 아무 단서도 안 남는다(원인 추적이 불가능해진다).
+        logError('ChatPage.connect', error, { sessionId });
+
         const code = error?.response?.data?.error?.code;
         const status = (error?.response?.status ?? 0) as number;
         const knownMessage = SESSION_ERRORS[code];
         if (knownMessage) {
+          // 세션 없음 / 권한 없음 — 다시 시도해도 결과가 같다.
+          setCanRetry(false);
           setSessionError(knownMessage);
-        } else if (status >= 500 || isNetworkError(error)) {
-          setSessionError('서버에 일시적인 오류가 발생했습니다.');
+        } else if (status >= 500) {
+          // 서버가 보낸 사유(detail)가 있으면 함께 보여준다.
+          // 뭉뚱그린 문구만 띄우면 다른 환경에서 이 화면을 본 사람이
+          // 원인을 전혀 알 수 없어 대응이 불가능하다.
+          const detail = error?.response?.data?.error?.detail;
+          setCanRetry(true);
+          setSessionError(
+            detail
+              ? `서버에 일시적인 오류가 발생했습니다. (${status}: ${detail})`
+              : `서버에 일시적인 오류가 발생했습니다. (${status})`,
+          );
+        } else if (isNetworkError(error)) {
+          // 응답 자체가 없는 경우 = 서버에 닿지 못함.
+          // 500(서버는 살아있지만 처리 실패)과 구분해야 사용자도 원인을 짐작할 수 있다.
+          setCanRetry(true);
+          setSessionError('서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.');
         } else {
           navigate('/chat', { replace: true, state: { toastError: '채팅을 불러오는 중 오류가 발생했습니다.' } });
         }
@@ -78,7 +102,9 @@ export default function ChatPage() {
   }, [sessionId, retryKey]);
 
   if (sessionError) {
-    const isServerError = sessionError === '서버에 일시적인 오류가 발생했습니다.';
+    // 재시도 가능 여부는 문구 비교가 아니라 상태로 판단한다.
+    // (문구를 조금만 바꿔도 버튼이 사라지던 문제가 있었다)
+    const isServerError = canRetry;
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <p className="text-text-secondary">{sessionError}</p>
