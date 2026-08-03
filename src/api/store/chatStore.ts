@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import type { Message, Source, FileAttachment } from '../../types';
-import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream } from '../services/chat';
+import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
@@ -125,7 +125,11 @@ const mapServerMessages = (items: ServerMessage[]): Message[] => {
       status: 'done' as const,
       createdAt: m.created_at,
       ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
-      ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+      // 히스토리로 불러온 출처도 스트리밍과 같은 모양으로 맞춘다
+      // (페이지 번호 필드명이 서버마다 달라 그대로 쓰면 '페이지 N'이 안 뜬다).
+      ...(m.sources && m.sources.length > 0
+        ? { sources: m.sources.map(normalizeSource) }
+        : {}),
       ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
     };
   });
