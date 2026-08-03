@@ -12,7 +12,10 @@ export const getMessages = (
   options?: { signal?: AbortSignal },
 ) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
-    params: { limit: 4, ...params },
+    // 기본 20 — 서버 기본값과 같게 맞춘다.
+    // (예전에 무한 스크롤을 시험하려고 4로 줄여둔 값이 그대로 남아 있었다.
+    //  그 탓에 세션에 들어가면 최근 2쌍만 보이고 나머지는 위로 올려야 나왔다)
+    params: { limit: 20, ...params },
     ...options,
   })
 
