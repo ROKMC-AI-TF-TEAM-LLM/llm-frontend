@@ -7,6 +7,11 @@ export interface SessionData {
    * 목록 API가 아직 안 내려줄 수 있어 optional — undefined면 즐겨찾기 없음으로 취급(하위 호환).
    */
   is_favorite?: boolean
+  /**
+   * 소속 프로젝트 id. 있으면 이 세션은 프로젝트 대화 → 사이드바에서 눌렀을 때
+   * /projects/{project_id}/{session_id} 로 열어야 한다. 없으면(=일반 대화) /chat/{id}.
+   */
+  project_id?: string | null
 }
 
 export interface SessionPageData {

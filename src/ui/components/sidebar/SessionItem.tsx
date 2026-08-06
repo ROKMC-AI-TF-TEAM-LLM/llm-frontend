@@ -31,7 +31,9 @@ interface SessionItemProps {
 // 대화는 아이콘이 없으므로 제목이 왼쪽에 그대로 붙는다(프로젝트 줄에 맞춰 들여쓰지 않는다).
 export default function SessionItem({ chat, onError }: SessionItemProps) {
   const navigate = useNavigate()
-  const { id: currentId } = useParams()
+  // /chat/:id 면 id가 세션, /projects/:id/:chatId 면 chatId가 세션이다. 둘 중 세션 id를 고른다.
+  const { id: routeId, chatId: routeChatId } = useParams()
+  const currentId = routeChatId ?? routeId
   const { mutate: updateSession } = useUpdateSession()
   const { mutate: deleteSession } = useDeleteSession()
   const { mutate: toggleFavorite } = useToggleFavorite()
@@ -87,7 +89,7 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
   return (
     <li className="group relative">
       <button
-        onClick={() => navigate(`/chat/${chat.id}`)}
+        onClick={() => navigate(chat.projectId ? `/projects/${chat.projectId}/${chat.id}` : `/chat/${chat.id}`)}
         style={isActive ? { background: HOVER_BG, color: '#c0002a' } : {}}
         className={`w-full flex items-center px-[8px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors relative ${
           isActive ? 'font-bold' : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'

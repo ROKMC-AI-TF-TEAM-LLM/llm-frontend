@@ -32,6 +32,8 @@ export interface ChatItem {
    *   - 서버 타입 : types/session.ts 의 SessionData.is_favorite
    */
   isFavorite?: boolean;
+  /** 소속 프로젝트 id. 있으면 클릭 시 /projects/{projectId}/{id} 로 연다(프로젝트 대화). */
+  projectId?: string;
 }
 
 export interface User {
