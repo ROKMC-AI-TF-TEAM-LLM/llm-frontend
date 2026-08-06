@@ -87,7 +87,11 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             </button>
 
             {subOpen && (
-              <div className="absolute bottom-0 left-full z-50 ml-1 w-56 animate-fade-in rounded-2xl border border-surface-border bg-white py-2 shadow-[0_16px_40px_rgba(40,30,35,0.16)]">
+              // 본메뉴 ↔ 서브메뉴 사이 틈(예전 ml-1)을 지나며 hover가 끊겨 팝업이 사라지던 문제 수정.
+              // pl-2로 '투명한 다리'를 만들어 마우스가 빈 공간을 지나지 않게 하고, 팝업은 부모(onMouseLeave 영역)
+              // 안에 있으므로 팝업 위로 가도 leave가 발동하지 않는다.
+              <div className="absolute bottom-0 left-full z-50 pl-2 animate-fade-in">
+                <div className="w-56 rounded-2xl border border-surface-border bg-white py-2 shadow-[0_16px_40px_rgba(40,30,35,0.16)]">
                 <SubItem label="서비스 이용법" onClick={() => go('/guide')} />
                 <SubItem label="튜토리얼" onClick={() => go('/tutorials')} />
 
@@ -101,6 +105,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
                 <div className="my-1 mx-3 h-px bg-surface-border" />
 
                 <SubItem label="팀 소개" onClick={() => go('/team')} />
+                </div>
               </div>
             )}
           </div>

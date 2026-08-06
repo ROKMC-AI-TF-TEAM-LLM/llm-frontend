@@ -21,9 +21,11 @@ export default function TeamPage() {
       {/* 상단 — 최소한만. 로고와 나가는 길 하나. */}
       {/* 로고 위치·크기는 로그인(랜딩) 네비(.mars-nav)와 같은 값으로 맞춘다.
           색만 어두운 배경에 맞춰 흰색으로 바꾼다. */}
+      {/* sticky — 스크롤을 내려도 상단에 남는다.
+          배경이 어두우므로 반투명 검정 + blur로 두어 뒤 내용이 비치되 글자는 읽히게 한다. */}
       <header
         style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
-        className="relative z-20 flex items-center"
+        className="sticky top-0 z-30 flex items-center border-b border-white/[0.07] bg-[#0b0709]/80 backdrop-blur-md"
       >
         <button
           onClick={() => navigate('/')}

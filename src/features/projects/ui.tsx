@@ -381,7 +381,8 @@ export function InstructionBody({
   /** 줄 수 제한 (좁은 패널에서). */
   clamp?: number
 }) {
-  if (!text.trim()) {
+  // 방어: 서버가 null/undefined를 줘도 크래시하지 않게 문자열로 취급한다.
+  if (!(text ?? '').trim()) {
     return (
       <button
         type="button"

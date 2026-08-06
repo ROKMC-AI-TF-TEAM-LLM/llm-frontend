@@ -300,47 +300,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
   }
 
-  const cleanupEmptyExchange = async (sessionId: string, question: string) => {
-    try {
-      // 최신 페이지에 마지막 질문/빈 답변이 있으므로 첫 페이지만 보면 된다.
-      const res = await getMessages(sessionId)
-      const server = res.data.data.items
-      const q = question.trim()
-      const toDelete: string[] = []
-      if (server.length > 0) {
-        const last = server[server.length - 1]
-        if (last.role === 'ai' && (last.content ?? '').trim() === '' && last.message_id) {
-          toDelete.push(last.message_id)
-        }
-        for (let i = server.length - 1; i >= 0; i--) {
-          const s = server[i]
-          if (s.role === 'human' && (s.content ?? '').trim() === q && s.message_id) {
-            toDelete.push(s.message_id)
-            break
-          }
-        }
-      }
-      if (toDelete.length > 0) {
-        await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)))
-      }
-      if (server.length - toDelete.length <= 0) {
-        const after = await getMessages(sessionId)
-        if (after.data.data.items.length === 0) {
-          await deleteSession(sessionId).catch((e) => logError('deleteSession', e))
-          if (get().sessionId === sessionId) set({ isDeleted: true })
-        }
-      }
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
-    } catch (e) { logError('cleanupEmptyExchange', e) }
-  }
-
   const executeStream = async (
     sessionId: string,
     assistantId: string,
     question: string,
     isFirstMessage: boolean,
     signal: AbortSignal,
-    removePairOnFail = true,
     domain?: string,
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
@@ -751,7 +716,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, true, domain?.code)
+      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, domain?.code)
     },
 
     retryLastMessage: async () => {
@@ -783,7 +748,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, true, domainCode)
+      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, domainCode)
     },
 
     sendImageMessage: (filename: string, caption?: string) => {
