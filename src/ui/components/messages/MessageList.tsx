@@ -11,9 +11,11 @@ import { MessagesSkeleton } from '../Skeleton';
 interface MessageListProps {
   title: string;
   isLoading?: boolean;
+  /** 상단 ChatHeader를 숨긴다. 프로젝트 화면처럼 바깥에 이미 헤더가 있을 때 중복을 막는다. */
+  hideHeader?: boolean;
 }
 
-export default function MessageList({ title, isLoading }: MessageListProps) {
+export default function MessageList({ title, isLoading, hideHeader = false }: MessageListProps) {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const statusText = useChatStore((s) => s.statusText);
@@ -291,7 +293,7 @@ export default function MessageList({ title, isLoading }: MessageListProps) {
 
   return (
     <div className="flex flex-col h-full bg-surface">
-      <ChatHeader title={title} />
+      {!hideHeader && <ChatHeader title={title} />}
       {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
       <div className="relative flex-1 min-h-0">

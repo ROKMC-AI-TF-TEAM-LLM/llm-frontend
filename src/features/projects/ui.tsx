@@ -19,15 +19,6 @@ import {
   UploadIcon,
 } from './icons'
 
-/* =============================================================================
-   프로젝트 UI 프리미티브
-   -----------------------------------------------------------------------------
-   방향: Grok 풍 — 조용한 회색 바탕, 머리카락 굵기 테두리, 라벨 붙은 블록,
-        넉넉한 여백, 장식 최소.
-   색  : MARS 브랜드 빨강(#DC143C 계열)과 흰색/웜그레이만. 강조는 빨강 하나로만.
-   금지: 이모지, '적용 중' 같은 자기설명 배지, 이유 없는 그라디언트.
-   ========================================================================== */
-
 /** 프로젝트 표식 — 옅은 빨강 바탕 + 레이어 아이콘. */
 export function Mark({ size = 34, active = false }: { size?: number; active?: boolean }) {
   return (
@@ -47,7 +38,6 @@ export function Mark({ size = 34, active = false }: { size?: number; active?: bo
   )
 }
 
-/** 블록 — Grok의 '지시 사항' / '출처' 카드. 제목줄(아이콘+라벨+액션) + 본문. */
 export function Block({
   icon,
   title,
@@ -73,7 +63,7 @@ export function Block({
   )
 }
 
-/** 아이콘 버튼 — 헤더의 ⋮ / 별 / + 처럼 조용히 놓이는 것들. */
+
 export function IconButton({
   label,
   onClick,
@@ -87,7 +77,6 @@ export function IconButton({
   active?: boolean
   children: React.ReactNode
   danger?: boolean
-  /** 애니메이션으로 숨는 동안 탭 순서·클릭에서 빼기 위한 플래그. */
   disabled?: boolean
 }) {
   return (
@@ -123,7 +112,6 @@ export function FavStar({ active, onToggle }: { active: boolean; onToggle: () =>
   )
 }
 
-/** ⋮ 메뉴 — 이름 바꾸기 / 삭제. 동작은 부모가 넘긴다. */
 export function KebabMenu({
   onRename,
   onDelete,
@@ -156,7 +144,7 @@ export function KebabMenu({
       {open && (
         <div
           style={{ boxShadow: '0 16px 40px rgba(60,30,38,0.13)' }}
-          className="absolute right-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-[#f0e6e8] bg-white p-1.5"
+          className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-[#f0e6e8] bg-white p-1.5"
         >
           {/* TODO(API): 이름 변경 저장 연결 지점 */}
           <button
@@ -838,17 +826,21 @@ export function InstructionModal({
   open,
   initial,
   onClose,
+  onSave,
 }: {
   open: boolean
   initial: string
   onClose: () => void
+  /** 저장 시 지침 본문을 넘긴다. 없으면 저장 버튼은 닫기만 한다(하위호환). */
+  onSave?: (instructions: string) => void
 }) {
   if (!open) return null
-  return <ModalBody initial={initial} onClose={onClose} />
+  return <ModalBody initial={initial} onClose={onClose} onSave={onSave} />
 }
 
-function ModalBody({ initial, onClose }: { initial: string; onClose: () => void }) {
+function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () => void; onSave?: (v: string) => void }) {
   const [draft, setDraft] = useState(initial)
+  const save = () => { onSave?.(draft); onClose() }
 
   useEffect(() => {
     document.body.classList.add('modal-open')
@@ -894,7 +886,7 @@ function ModalBody({ initial, onClose }: { initial: string; onClose: () => void 
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={save}
             style={{ background: 'var(--color-brand)' }}
             className="rounded-full px-5 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
           >

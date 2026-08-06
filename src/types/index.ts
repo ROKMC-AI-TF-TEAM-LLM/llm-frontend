@@ -3,6 +3,14 @@ export interface Source {
   page?: string | null;
 }
 
+// SSE 'notice' 이벤트. 예: RAG 근거를 못 찾아 LLM 일반 지식으로 답한 경우 경고.
+// code가 분기 기준(문구 파싱 금지), level은 스타일 힌트, message는 그대로 표시.
+export interface Notice {
+  code: string;
+  level: 'warning' | 'info' | string;
+  message: string;
+}
+
 // SSE 'files' 이벤트(done 직전 1회) 및 대화 이력의 message.attachments로 오는 첨부.
 // 다운로드는 인증이 필요해 <a href> 직접 링크가 아니라 fetch→blob 방식으로 받는다.
 // ev.items = [{ attachment_id, name, size, url }]
@@ -57,6 +65,8 @@ export interface AssistantMessage {
   status?: 'streaming' | 'done' | 'interrupted';
   sources?: Source[];
   attachments?: FileAttachment[];
+  /** 근거 부재 등 답변에 대한 경고/안내(SSE notice 이벤트). 답변 하단 배너로 표시. */
+  notice?: Notice;
   createdAt?: string;
 }
 

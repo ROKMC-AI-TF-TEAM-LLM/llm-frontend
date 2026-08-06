@@ -132,35 +132,23 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         </div>
       )}
 
-      {/* 프로필 버튼 */}
-      <div className="flex items-center gap-1 px-[12px] py-[9px]">
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className={`flex-1 min-w-0 flex items-center gap-2 px-[8px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
-        >
-          {/* 아바타 */}
-          <div
-            style={{
-              width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
+      {/* 프로필 영역 — 접힘/펼침을 별도 마크업으로 분리한다.
+          한 구조에 flex-1·gap·padding을 조건부로 욱여넣으면 전환 시 아바타가 튀고 중앙도 안 맞았다.
+          접힘: 아바타 하나만 컨테이너 중앙(justify-center). 펼침: 아바타+이름+로그아웃 가로 배치. */}
+      {isOpen ? (
+        <div className="flex items-center gap-1 px-[12px] py-[9px]">
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className={`min-w-0 flex-1 flex items-center gap-2 px-[8px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
-            </svg>
-          </div>
-
-          {/* 이름 + 이메일 */}
-          <div className={`flex flex-col items-start min-w-0 overflow-hidden transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100 max-w-[160px]' : 'opacity-0 max-w-0'}`}>
-            <span className="max-w-full truncate text-[12.5px] font-bold text-text-primary">{user.name}</span>
-            {user.email && (
-              <span className="max-w-full truncate text-[11px] text-text-muted">{user.email}</span>
-            )}
-          </div>
-        </button>
-
-        {isOpen && (
+            <Avatar />
+            <div className="flex flex-col items-start min-w-0 overflow-hidden">
+              <span className="max-w-full truncate text-[12.5px] font-bold text-text-primary mt-px">{user.name}</span>
+              {user.email && (
+                <span className="max-w-full truncate text-[11px] text-text-muted">{user.email}</span>
+              )}
+            </div>
+          </button>
           <button
             onClick={logout}
             title="로그아웃"
@@ -171,8 +159,35 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex justify-center py-[9px]">
+          <button
+            onClick={() => setOpen((v) => !v)}
+            aria-label="프로필"
+            className={`p-1.5 rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
+          >
+            <Avatar />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 프로필 아바타(원형). 접힘/펼침 두 곳에서 동일하게 쓴다.
+function Avatar() {
+  return (
+    <div
+      style={{
+        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+      </svg>
     </div>
   );
 }

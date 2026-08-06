@@ -57,6 +57,23 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
       )}
       {!msgStreaming && (
         <>
+          {/* 근거 부재 등 경고(notice) — 답변 본문과 시각적으로 구분되는 노란 경고 배너. */}
+          {msg.notice && (
+            <div
+              role="note"
+              className={`flex items-start gap-2.5 ml-1 mt-1 mb-2 px-3.5 py-2.5 rounded-xl border text-[13px] leading-relaxed ${
+                msg.notice.level === 'info'
+                  ? 'border-sky-200 bg-sky-50 text-sky-900'
+                  : 'border-amber-200 bg-amber-50 text-amber-900'
+              }`}
+            >
+              <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <path d="M12 9v4M12 17h.01" />
+              </svg>
+              <span>{msg.notice.message}</span>
+            </div>
+          )}
           {/* 출처 배지는 답변 바로 아래에 붙인다(액션바보다 위 → 답변과 떨어져 보이지 않게). */}
           <SourceBadge sources={msg.sources} />
           {/* 빈 채로 실패한 답변은 복사/재생성 액션바 대신 아래 배너의 '다시 시도'만 노출한다. */}

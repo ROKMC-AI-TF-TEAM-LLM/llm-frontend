@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useProjectStore } from '../../../features/projects/projectStore'
-import { useInfiniteProjects, useCreateProject } from '../../../hooks/useProject'
+import { useInfiniteProjects, useCreateProject, useUpdateProject, useToggleProjectFavorite } from '../../../hooks/useProject'
 import ProjectItem from './ProjectItem'
 import { CreateProjectModal } from '../../../features/projects/ui'
 
@@ -17,13 +17,19 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const projects = useProjectStore((s) => s.projects)
   const setFromServer = useProjectStore((s) => s.setFromServer)
   const addCreated = useProjectStore((s) => s.addCreated)
-  const toggleFavorite = useProjectStore((s) => s.toggleFavorite)
-  const rename = useProjectStore((s) => s.rename)
   const remove = useProjectStore((s) => s.remove)
 
   // 서버 프로젝트 목록(커서 무한스크롤) → 스토어에 반영. 사이드바가 목록 조회의 주체다.
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteProjects()
   const { mutateAsync: createProjectApi } = useCreateProject()
+  const { mutate: updateProject } = useUpdateProject()
+  const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
+  // 이름 수정·즐겨찾기는 서버 반영(낙관적). 삭제는 아직 API가 없어 로컬 스토어만 바뀐다.
+  const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
+  const toggleFavorite = (id: string) => {
+    const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
+    toggleFavoriteApi({ projectId: id, next: !cur })
+  }
 
   useEffect(() => {
     if (!data) return

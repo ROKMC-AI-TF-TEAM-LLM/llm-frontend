@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
-import { useProject } from '../../hooks/useProject'
+import { useChatStore } from '../../api/store/chatStore'
+import type { ProjectChat } from '../../features/projects/mock'
+import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions } from '../../hooks/useProject'
+import ChatInput from '../../ui/components/chat/ChatInput'
+import MessageList from '../../ui/components/messages/MessageList'
 import {
   Block,
   ChatRow,
-  Composer,
   EmptyFiles,
   FavStar,
   FileRow,
@@ -22,6 +25,14 @@ import {
   SparkIcon,
 } from '../../features/projects/ui'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+
+// ISO(2026-08-06T10:10:26Z) → "오후 7:10" 형태 시간. 파싱 실패 시 빈 문자열.
+const formatTime = (iso?: string | null): string => {
+  if (!iso) return ''
+  const t = Date.parse(iso)
+  if (Number.isNaN(t)) return ''
+  return new Date(t).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })
+}
 
 // 프로젝트 화면 — [좌] 컨텍스트 열(지침·파일·대화) / [우] 대화 영역.
 // 컨텍스트가 늘 왼쪽에 서 있어서 '무엇이 고정되어 있는지'를 항상 볼 수 있다.
@@ -40,10 +51,14 @@ export default function ProjectPage() {
   const navigate = useNavigate()
   // 사이드바와 같은 목록을 본다 → 이름 변경·즐겨찾기가 양쪽에 함께 반영된다.
   const project = useProjectStore((s) => s.projects.find((p) => p.id === id))
-  const toggleFavorite = useProjectStore((s) => s.toggleFavorite)
-  const renameProject = useProjectStore((s) => s.rename)
   const removeProject = useProjectStore((s) => s.remove)
   const upsertDetail = useProjectStore((s) => s.upsertDetail)
+  // 이름 수정·즐겨찾기·지침은 서버 반영(낙관적). 삭제는 아직 API가 없어 로컬만 바뀐다.
+  const { mutate: updateProject } = useUpdateProject()
+  const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
+  const { mutate: setInstructionApi } = useSetProjectInstruction()
+  const renameProject = (pid: string, next: string) => updateProject({ projectId: pid, title: next })
+  const toggleFavorite = (pid: string) => toggleFavoriteApi({ projectId: pid, next: !(project?.isFavorite ?? false) })
 
   // 프로젝트 상세(지침 포함) 조회 → 스토어에 반영. 목록만으로 들어오면 지침이 비어 있으므로 여기서 채운다.
   // URL로 바로 진입(사이드바 목록 미경유)하면 스토어가 비어 있을 수 있어, 로딩/에러 상태로 화면을 나눈다.
@@ -51,6 +66,16 @@ export default function ProjectPage() {
   useEffect(() => {
     if (detailData?.data?.data) upsertDetail(detailData.data.data)
   }, [detailData, upsertDetail])
+
+  // 특정 대화(chatId)를 열면 그 세션을 connect, 아니면(새 대화 입력창) 이전 스트림 상태를 초기화한다.
+  // (초기화하지 않으면 이전 채팅의 isStreaming이 남아 전송이 '정지' 버튼으로 막힌다)
+  const connect = useChatStore((s) => s.connect)
+  const disconnect = useChatStore((s) => s.disconnect)
+  const isConnecting = useChatStore((s) => s.isConnecting)
+  useEffect(() => {
+    if (chatId) connect(chatId)
+    else disconnect()
+  }, [chatId, connect, disconnect])
   useDocumentTitle(project ? project.name : '프로젝트')
   const [modalOpen, setModalOpen] = useState(false)
   const [filesOpen, setFilesOpen] = useState(false)
@@ -63,9 +88,23 @@ export default function ProjectPage() {
   const closeChat = () => navigate(`/projects/${id}`)
   // 컨텍스트 열 접기/펴기 — 대화에 집중하고 싶을 때 접는다.
   const [panelOpen, setPanelOpen] = useState(true)
-  // 대화 목록은 이름 변경·즐겨찾기·삭제로 바뀌므로 화면 상태로 들고 있는다.
-  // TODO(API): 서버 목록으로 교체하고 각 동작을 mutation으로 바꾼다.
-  const [chats, setChats] = useState(project?.chats ?? [])
+
+  // 프로젝트 하위 대화 세션 목록(서버, 커서). 화면 모델(ProjectChat)로 매핑한다.
+  // (개별 대화의 이름변경/즐겨찾기/삭제 API는 아직 없어, 그 조작은 화면 로컬 상태에서만 반영한다)
+  const { data: sessionsData } = useProjectSessions(id)
+  const [chats, setChats] = useState<ProjectChat[]>([])
+  useEffect(() => {
+    if (!sessionsData) return
+    const items = sessionsData.pages.flatMap((p) => p.data.data.items)
+    setChats(items.map((s) => ({
+      id: s.session_id,
+      title: s.title,
+      isFavorite: s.is_favorite,
+      // ISO 원문 대신 시간만 표시(예: 오후 7:10). 파싱 실패 시 빈 값.
+      updatedAt: formatTime(s.updated_at),
+      messageCount: 0, // 서버가 메시지 수를 주지 않아 0으로 둔다(화면에서 미표시)
+    })))
+  }, [sessionsData])
 
   // 인자명은 targetId — URL의 chatId와 헷갈리지 않게 구분한다.
   const renameChat = (targetId: string, next: string) =>
@@ -153,7 +192,6 @@ export default function ProjectPage() {
               {project.name}
             </p>
           )}
-          {/* TODO(API): 프로젝트 즐겨찾기 토글 연결 지점 */}
           <FavStar active={project.isFavorite} onToggle={() => toggleFavorite(project.id)} />
           <KebabMenu
             onRename={() => {
@@ -262,17 +300,38 @@ export default function ProjectPage() {
           </div>
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8">
-          <div className="w-full max-w-[720px] animate-page-in">
-            <p className="mb-6 text-center text-[14px] text-text-muted">
-              MARS는 이 프로젝트에서 대화할 때마다 동일한 지침과 파일을 참조합니다.
-            </p>
-            <Composer />
+        {openChatId ? (
+          /* 기존 대화를 연 상태 : 실제 채팅 화면(메시지 목록 + 입력창).
+             ChatInput에 projectId를 넘기지 않는다 — 이미 세션이 있으므로 새로 만들지 않고 그 세션에 보낸다. */
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex-1 min-h-0">
+              {/* 프로젝트 화면엔 이미 상단 경로 헤더가 있으므로 MessageList 자체 헤더는 숨긴다. */}
+              <MessageList title={project.name} isLoading={isConnecting} hideHeader />
+            </div>
+            <div className="shrink-0 bg-surface px-4 pb-2">
+              {/* 프로젝트 대화는 지침/파일 기반 → 도메인 선택 숨김 */}
+              <ChatInput isConnecting={isConnecting} hideDomain />
+            </div>
           </div>
-        </div>
+        ) : (
+          /* 새 대화 시작 : 안내 + 입력창. 전송하면 이 프로젝트 소속 세션을 만들고 /projects/{id}/{sid}로 이동. */
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8">
+            <div className="w-full max-w-[720px] animate-page-in">
+              <p className="mb-6 text-center text-[14px] text-text-muted">
+                MARS는 이 프로젝트에서 대화할 때마다 동일한 지침과 파일을 참조합니다.
+              </p>
+              <ChatInput projectId={project.id} hideDomain />
+            </div>
+          </div>
+        )}
       </div>
 
-      <InstructionModal open={modalOpen} initial={project.instructions} onClose={() => setModalOpen(false)} />
+      <InstructionModal
+        open={modalOpen}
+        initial={project.instructions}
+        onClose={() => setModalOpen(false)}
+        onSave={(instructions) => setInstructionApi({ projectId: project.id, instructions })}
+      />
       <FilesModal open={filesOpen} files={project.files} onClose={() => setFilesOpen(false)} />
     </div>
   )

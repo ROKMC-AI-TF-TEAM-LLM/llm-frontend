@@ -61,12 +61,18 @@ interface ChatInputProps {
   placeholder?: string;
   notice?: string;
   isConnecting?: boolean;
+  /** 프로젝트 화면에서 쓸 때: 새 대화를 이 프로젝트 소속으로 만들고 /projects/{id}/{sid}로 이동한다. */
+  projectId?: string;
+  /** 도메인 선택 UI를 숨긴다(프로젝트 대화는 지침/파일 기반이라 도메인이 불필요). */
+  hideDomain?: boolean;
 }
 
 export default function ChatInput({
   placeholder = "메시지를 입력하세요...",
   notice,
   isConnecting = false,
+  projectId,
+  hideDomain = false,
 }: ChatInputProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -126,7 +132,9 @@ export default function ChatInput({
     e.target.value = '';
   };
 
-  const isNewChat = location.pathname === '/chat';
+  // '새 대화 시작' 화면 = /chat(일반 새 채팅) 또는 프로젝트 화면의 입력창(projectId가 있으면 아직 세션 없음).
+  // 이 경우 전송 시 세션을 새로 만들고 해당 경로로 이동한다.
+  const isNewChat = location.pathname === '/chat' || !!projectId;
 
   const resetTextarea = () => {
     const el = textareaRef.current;
@@ -156,13 +164,16 @@ export default function ChatInput({
         clearCache(prevSessionId);
       }
       try {
-        const res = await createSession({ title: toSessionTitle(text) });
+        // 프로젝트 화면에서 시작한 대화면 그 프로젝트 소속으로 만든다(project_id 전달).
+        const res = await createSession({ title: toSessionTitle(text), ...(projectId ? { project_id: projectId } : {}) });
         const sessionId = res.data.data.session_id;
         saveInflight(sessionId, text, domain ?? undefined);
         // 새 채팅(__new__)에서 고른 도메인을 방금 만든 세션 키로 넘겨, 채팅 페이지에서도 유지되게 한다.
         if (domain) domainDrafts.set(sessionId, domain);
         domainDrafts.delete(NEW_CHAT_KEY);
-        navigate(`/chat/${sessionId}`, { state: { initialMessage: text } });
+        // 프로젝트 대화는 프로젝트 경로로, 일반 대화는 채팅 경로로 이동한다.
+        const path = projectId ? `/projects/${projectId}/${sessionId}` : `/chat/${sessionId}`;
+        navigate(path, { state: { initialMessage: text } });
       } catch (e: unknown) {
         logError('ChatInput.createSession', e);
         updateValue(text);
@@ -272,7 +283,7 @@ export default function ChatInput({
               </svg>
             </button>
 
-            <DomainPicker value={domain} onChange={setDomain} />
+            {!hideDomain && <DomainPicker value={domain} onChange={setDomain} />}
           </div>
 
           {isStreaming && !isNewChat ? (

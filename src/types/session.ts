@@ -29,6 +29,7 @@ export interface GetSessionsResponse {
 
 export interface CreateSessionRequest {
   title?: string
+  project_id?: string
 }
 export type CreateSessionErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'VALIDATION_ERROR'
 export interface CreateSessionResponse {

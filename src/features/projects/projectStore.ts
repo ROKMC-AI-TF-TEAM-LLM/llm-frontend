@@ -38,7 +38,10 @@ interface ProjectState {
   /** 상세 응답(지침 포함)을 반영한다. */
   upsertDetail: (data: ProjectData) => void
   toggleFavorite: (id: string) => void
+  /** 즐겨찾기 값을 명시적으로 설정한다(서버 응답 반영·낙관적 업데이트용). */
+  setFavorite: (id: string, next: boolean) => void
   rename: (id: string, next: string) => void
+  setInstructions: (id: string, next: string) => void
   remove: (id: string) => void
   /** 생성 API 응답을 목록 맨 앞에 추가하고 그 id를 돌려준다. */
   addCreated: (data: ProjectData) => string
@@ -80,9 +83,19 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       projects: s.projects.map((p) => (p.id === id ? { ...p, isFavorite: !p.isFavorite } : p)),
     })),
 
+  setFavorite: (id, next) =>
+    set((s) => ({
+      projects: s.projects.map((p) => (p.id === id ? { ...p, isFavorite: next } : p)),
+    })),
+
   rename: (id, next) =>
     set((s) => ({
       projects: s.projects.map((p) => (p.id === id ? { ...p, name: next } : p)),
+    })),
+
+  setInstructions: (id, next) =>
+    set((s) => ({
+      projects: s.projects.map((p) => (p.id === id ? { ...p, instructions: next } : p)),
     })),
 
   remove: (id) => set((s) => ({ projects: s.projects.filter((p) => p.id !== id) })),

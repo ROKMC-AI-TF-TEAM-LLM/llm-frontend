@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message, Source, FileAttachment } from '../../types';
+import type { Message, Source, FileAttachment, Notice } from '../../types';
 import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
@@ -292,6 +292,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
           ),
         }))
       },
+      // 'notice' 이벤트(근거 부재 경고 등)를 해당 AI 메시지에 세팅한다(답변 하단 배너로 표시).
+      setNotice: (notice: Notice) => {
+        set((state) => ({
+          messages: state.messages.map((m) =>
+            m.id === assistantId && m.type === 'text' ? { ...m, notice } : m
+          ),
+        }))
+      },
       setStatus: (message: string) => {
         // 다른 세션으로 이동한 상태면 무시(현재 보고 있는 세션의 스트림만 문구 표시).
         if (get().sessionId !== sessionId) return
@@ -319,6 +327,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         writer.setSources,
         writer.setStatus,
         writer.setAttachments,
+        writer.setNotice,
       )
       writer.flushNow()
     } catch (e) {
@@ -428,7 +437,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -856,7 +865,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         error: null,
         messages: state.messages.map((m) =>
           m.id === assistantId && m.type === 'text'
-            ? { ...m, content: '', sources: undefined, status: 'streaming' as const }
+            ? { ...m, content: '', sources: undefined, notice: undefined, status: 'streaming' as const }
             : m
         ),
       }));

@@ -2,7 +2,7 @@ import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import { logError } from '../../utils/logError'
 import type { GetMessagesResponse, GetMessagesParams, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
-import type { Source, FileAttachment } from '../../types'
+import type { Source, FileAttachment, Notice } from '../../types'
 
 // 커서 페이지네이션: cursor 없으면 최신 페이지, 있으면 그 지점부터 과거 방향으로 limit개.
 // 서버 파라미터 이름은 limit (스웨거 기준, 기본 20 / 1~100).
@@ -52,6 +52,7 @@ interface SseHandlers {
   onSources?: (sources: Source[]) => void
   onFiles?: (files: FileAttachment[]) => void
   onStatus?: (message: string) => void
+  onNotice?: (notice: Notice) => void
   signal?: AbortSignal
 }
 
@@ -91,7 +92,7 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
 
 // SSE(text/event-stream) 본문을 읽어 텍스트 토큰/sources/done/error 이벤트를 처리한다.
 // 일반 채팅 스트리밍과 재생성 스트리밍이 동일한 이벤트 형식을 쓰므로 공유한다.
-const readSse = async (response: Response, { onChunk, onSources, onFiles, onStatus, signal }: SseHandlers) => {
+const readSse = async (response: Response, { onChunk, onSources, onFiles, onStatus, onNotice, signal }: SseHandlers) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
 
@@ -143,7 +144,7 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         continue
       }
 
-      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string }
+      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
         // 개발 중에는 서버가 실제로 보낸 출처 원본을 찍어둔다.
         // (페이지 번호가 화면에 안 뜰 때 서버가 안 주는 건지 이름이 다른 건지 바로 확인 가능)
@@ -159,6 +160,10 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
         /* 완료 신호 — 별도 처리 없음(루프 종료는 reader done으로 처리) */
+      } else if (evt.type === 'notice') {
+        // 답변에 대한 경고/안내(예: 근거 부재 → LLM 일반 지식으로 답함). 답변 본문이 아니라 배너로 표시.
+        // code가 분기 기준(문구 파싱 금지), level은 스타일 힌트, message는 그대로 노출.
+        if (evt.message) onNotice?.({ code: evt.code ?? '', level: evt.level ?? 'warning', message: evt.message })
       } else if (evt.type === 'status') {
         // 진행상태 이벤트(예: "관련 문서를 선별하는 중..."). 답변 본문이 아니므로 onChunk가 아닌 onStatus로 전달.
         if (evt.message) onStatus?.(evt.message)
@@ -195,13 +200,14 @@ export const streamMessage = async (
   onSources?: (sources: Source[]) => void,
   onStatus?: (message: string) => void,
   onFiles?: (files: FileAttachment[]) => void,
+  onNotice?: (notice: Notice) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
     data,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onFiles, onStatus, signal })
+  await readSse(response, { onChunk, onSources, onFiles, onStatus, onNotice, signal })
 }
 
 // AI 메시지 재생성: 기존 AI 응답(messageId)을 서버에서 삭제하고 동일 질문으로 재스트리밍한다.
@@ -214,11 +220,12 @@ export const regenerateMessageStream = async (
   onSources?: (sources: Source[]) => void,
   onStatus?: (message: string) => void,
   onFiles?: (files: FileAttachment[]) => void,
+  onNotice?: (notice: Notice) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
     undefined,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onFiles, onStatus, signal })
+  await readSse(response, { onChunk, onSources, onFiles, onStatus, onNotice, signal })
 }

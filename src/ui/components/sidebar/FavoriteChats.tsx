@@ -5,6 +5,7 @@ import SessionItem from './SessionItem'
 import Toast from '../Toast'
 import ProjectItem from './ProjectItem'
 import { useProjectStore } from '../../../features/projects/projectStore'
+import { useUpdateProject, useToggleProjectFavorite } from '../../../hooks/useProject'
 
 interface FavoriteChatsProps {
   isOpen: boolean
@@ -24,9 +25,15 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
   const location = useLocation()
 
   const projects = useProjectStore((s) => s.projects)
-  const toggleFavorite = useProjectStore((s) => s.toggleFavorite)
-  const rename = useProjectStore((s) => s.rename)
   const remove = useProjectStore((s) => s.remove)
+  const { mutate: updateProject } = useUpdateProject()
+  const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
+  // 이름 수정·즐겨찾기는 서버 반영(낙관적). 삭제는 아직 API가 없어 로컬만 바뀐다.
+  const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
+  const toggleFavorite = (id: string) => {
+    const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
+    toggleFavoriteApi({ projectId: id, next: !cur })
+  }
 
   const favProjects = projects.filter((p) => p.isFavorite)
 

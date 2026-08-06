@@ -55,3 +55,62 @@ export interface GetProjectResponse {
   data: ProjectData
   error: { code: GetProjectErrorCode; detail: string } | null
 }
+
+// 프로젝트 관련 뮤테이션은 에러코드가 동일하다(401/403/404/422).
+export type ProjectMutationErrorCode =
+  | 'UNAUTHORIZED'
+  | 'PROJECT_ACCESS_DENIED'
+  | 'PROJECT_NOT_FOUND'
+  | 'VALIDATION_ERROR'
+
+// 뮤테이션 공통 응답(성공 시 갱신된 ProjectData).
+export interface ProjectMutationResponse {
+  success: boolean
+  status_code: number
+  data: ProjectData
+  error: { code: ProjectMutationErrorCode; detail: string } | null
+}
+
+// ── 제목 수정: PATCH /api/v1/projects/{project_id} ──
+// 요청 body는 title만 받는다.
+export interface UpdateProjectRequest {
+  title: string
+}
+export type UpdateProjectErrorCode = ProjectMutationErrorCode
+export type UpdateProjectResponse = ProjectMutationResponse
+
+// ── 즐겨찾기 설정: PATCH /api/v1/projects/{project_id}/favorite ──
+export interface SetProjectFavoriteRequest {
+  is_favorite: boolean
+}
+export type SetProjectFavoriteResponse = ProjectMutationResponse
+
+// ── 지침 설정/수정: PATCH /api/v1/projects/{project_id}/instruction ──
+// null 또는 빈 문자열을 보내면 지침이 삭제된다.
+export interface SetProjectInstructionRequest {
+  instructions: string | null
+}
+export type SetProjectInstructionResponse = ProjectMutationResponse
+
+// ── 하위 대화 세션 목록: GET /api/v1/projects/{project_id}/sessions (커서) ──
+export interface ProjectSessionItem {
+  session_id: string
+  title: string
+  is_favorite: boolean
+  updated_at: string
+}
+export interface ProjectSessionsData {
+  items: ProjectSessionItem[]
+  next_cursor: string | null
+  has_next: boolean
+}
+export interface GetProjectSessionsParams {
+  cursor?: string | null
+  size?: number
+}
+export interface GetProjectSessionsResponse {
+  success: boolean
+  status_code: number
+  data: ProjectSessionsData
+  error: { code: ProjectMutationErrorCode; detail: string } | null
+}

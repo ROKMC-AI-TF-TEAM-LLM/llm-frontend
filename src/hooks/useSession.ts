@@ -29,6 +29,8 @@ export const useCreateSession = () => {
     mutationFn: (data: CreateSessionRequest) => createSession(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      // 프로젝트 소속 대화면 프로젝트의 대화 목록(GET /projects/{id}/sessions)도 갱신한다.
+      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
     },
   })
 }
