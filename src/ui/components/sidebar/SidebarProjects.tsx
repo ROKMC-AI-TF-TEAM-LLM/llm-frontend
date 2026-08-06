@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useProjectStore } from '../../../features/projects/projectStore'
+import { useInfiniteProjects, useCreateProject } from '../../../hooks/useProject'
 import ProjectItem from './ProjectItem'
 import { CreateProjectModal } from '../../../features/projects/ui'
 
@@ -14,16 +15,40 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const [expanded, setExpanded] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
   const projects = useProjectStore((s) => s.projects)
+  const setFromServer = useProjectStore((s) => s.setFromServer)
+  const addCreated = useProjectStore((s) => s.addCreated)
   const toggleFavorite = useProjectStore((s) => s.toggleFavorite)
   const rename = useProjectStore((s) => s.rename)
   const remove = useProjectStore((s) => s.remove)
-  const create = useProjectStore((s) => s.create)
+
+  // 서버 프로젝트 목록(커서 무한스크롤) → 스토어에 반영. 사이드바가 목록 조회의 주체다.
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteProjects()
+  const { mutateAsync: createProjectApi } = useCreateProject()
+
+  useEffect(() => {
+    if (!data) return
+    const serverItems = data.pages.flatMap((p) => p.data.data.items)
+    setFromServer(serverItems)
+  }, [data, setFromServer])
+
+  // 목록 맨 아래 도달 시 다음 페이지 로드
+  const sentinelRef = useRef<HTMLLIElement>(null)
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage()
+    }, { threshold: 0.1 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   const items = projects.filter((p) => !p.isFavorite)
 
   const handleDelete = (id: string) => {
     remove(id)
     // 지금 보고 있던 프로젝트가 사라졌으면 새 채팅으로 물러난다.
+    // (삭제 API는 아직 없음 — 로컬 목록에서만 제거된다)
     if (location.pathname.startsWith(`/projects/${id}`)) navigate('/chat')
   }
 
@@ -89,15 +114,18 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
               onDelete={handleDelete}
             />
           ))}
+          {/* 무한 스크롤 감지 지점 */}
+          {hasNextPage && <li ref={sentinelRef} className="h-1" />}
         </ul>
       )}
 
-      {/* 새 프로젝트 : 이름·지침을 받고 만든 뒤 곧바로 그 프로젝트로 이동한다 */}
+      {/* 새 프로젝트 : 이름·지침을 받아 서버에 만든 뒤 곧바로 그 프로젝트로 이동한다 */}
       <CreateProjectModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onSubmit={(name, instructions) => {
-          const newId = create(name, instructions)
+        onSubmit={async (name, instructions) => {
+          const res = await createProjectApi({ title: name, instructions })
+          const newId = addCreated(res.data.data)
           navigate(`/projects/${newId}`)
         }}
       />

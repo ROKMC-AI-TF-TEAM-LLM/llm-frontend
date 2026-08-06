@@ -59,7 +59,7 @@ const HERO_VERBS = ['물어보세요', '찾아보세요', '확인하세요', '�
 
 // 히어로 하단 기능 카드 — Grok의 제품 메뉴처럼 서비스의 축을 한눈에 보여준다.
 const FEATURES: { icon: IconType; title: string; desc: string }[] = [
-  { icon: 'learn', title: '해병대 특화 학습', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서로 학습해 부대 맥락을 이해합니다.' },
+  { icon: 'learn', title: '해병대 특화', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서를 참조해 부대 맥락에 맞게 답합니다.' },
   { icon: 'source', title: '출처 기반 답변', desc: 'RAG 검색으로 실제 규정 원문을 찾아 근거·조항과 함께 답변해 신뢰할 수 있습니다.' },
   { icon: 'domain', title: '도메인별 검색', desc: '인사·복지, 정보화·보안 등 분야를 좁히면 엉뚱한 문서가 섞이지 않아 정확해집니다.' },
   { icon: 'stream', title: '실시간 스트리밍', desc: '답이 완성될 때까지 기다리지 않고, 찾는 과정과 결과를 즉시 보여줍니다.' },
@@ -230,7 +230,7 @@ const LoginPage = () => {
           <div className="max-w-[1180px] mx-auto w-full">
             <div className="mars-reveal mars-eyebrow mb-4">가장 큰 특징</div>
             <h2 className="mars-reveal mars-display max-w-[820px]" style={{ fontSize: 'clamp(27px,3.2vw,42px)' }}>
-              법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 학습합니다.
+              법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 찾아냅니다.
             </h2>
             <p className="mars-reveal max-w-[560px] mt-4 mb-10 text-[16px] text-text-secondary leading-[1.7] break-keep">
               MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.
@@ -329,21 +329,32 @@ const LoginPage = () => {
                       ))}
                     </div>
 
-                    {/* 근거 문서 — 실제 SourceBadge처럼 문서 아이콘 + 조항이 붙은 카드 형태 */}
-                    <div className="mt-5 pt-4 border-t border-surface-border">
-                      <div className="text-[11.5px] font-bold tracking-wide text-text-muted mb-2.5">근거 문서</div>
-                      <div className="flex flex-col gap-2">
-                        {[['군인복무기본법 제18조', '페이지 42'], ['군인의 지위 및 복무에 관한 기본법 시행령', '페이지 8']].map(([title, page]) => (
-                          <div key={title} className="flex items-center gap-2.5 p-2.5 rounded-xl border border-surface-border bg-surface-subtle">
-                            <span className="shrink-0 w-7 h-7 rounded-lg bg-brand flex items-center justify-center text-white">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    {/* 근거 문서 — 실제 SourceBadge(펼친 상태)와 동일한 디자인:
+                        도메인 색 파일 아이콘 + 큰 제목 + 종류/도메인 뱃지 (페이지 번호는 표시하지 않음) */}
+                    <div className="mt-5">
+                      {/* 접힌 '출처 N개 보기' 뱃지 */}
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-subtle text-brand text-xs font-medium rounded-full border border-brand-soft">
+                        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m6 9 6 6 6-6" /></svg>
+                        출처 2개 닫기
+                      </span>
+                      <div className="mt-2 flex flex-col gap-2">
+                        {[
+                          { title: '군인 휴가 규정', type: '규정', domain: '인사·복지', style: { bar: '#e4002b', bg: '#fdeef1', text: '#c0002a' } },
+                          { title: '군인의 지위 및 복무에 관한 기본법', type: '법률', domain: '훈령', style: { bar: '#3b6fe0', bg: '#eaf0fd', text: '#2a54b8' } },
+                        ].map((s) => (
+                          <div key={s.title} className="flex items-center gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle">
+                            <span className="shrink-0 flex items-center justify-center" style={{ width: 38, height: 38, borderRadius: 10, background: s.style.bg, color: s.style.bar }}>
+                              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                <path d="M14 2v6h6" />
+                                <path d="M14 2v6h6M8 13h8M8 17h5" />
                               </svg>
                             </span>
-                            <span className="min-w-0">
-                              <span className="block text-[12.5px] font-semibold text-text-primary truncate">{title}</span>
-                              <span className="block text-[11px] text-text-muted mt-0.5">{page}</span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2">
+                                <span className="min-w-0 truncate text-[14px] font-bold text-text-primary">{s.title}</span>
+                                <span className="shrink-0 text-[10.5px] font-medium px-1.5 py-0.5 rounded-md bg-surface text-text-secondary border border-surface-border">{s.type}</span>
+                                <span className="shrink-0 text-[10.5px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.style.bg, color: s.style.text }}>{s.domain}</span>
+                              </span>
                             </span>
                           </div>
                         ))}
@@ -351,11 +362,31 @@ const LoginPage = () => {
                     </div>
                   </div>
                 </div>
+                {/* 실제 채팅 입력창(ChatInput)과 동일한 레이아웃의 정적 데모 — 위 입력 + 하단바(첨부·도메인/전송) */}
                 <div className="px-6 py-6">
-                  <div style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }} className="flex items-center gap-3 px-4 py-3 rounded-[30px] bg-white cursor-default select-none">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b09aa0" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11l-8.5 8.5a4 4 0 0 1-5.7-5.7l8.5-8.5a2.5 2.5 0 0 1 3.5 3.5L10 17" /></svg>
-                    <span className="flex-1 text-[15px] text-text-muted">메시지를 입력하세요...</span>
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-brand to-brand-light flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M6 11l6-6 6 6" /></svg></div>
+                  <div style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }} className="bg-white rounded-[30px] overflow-hidden cursor-default select-none">
+                    {/* 입력 영역 */}
+                    <div className="px-5 pt-6 pb-1 text-[15px] text-text-muted">메시지를 입력하세요...</div>
+                    {/* 하단 바 : (좌) 첨부 + 도메인('전체') / (우) 전송 */}
+                    <div className="flex items-center justify-between px-3 pb-3 pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted shrink-0">
+                          <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-[13.5px] font-medium text-text-muted">
+                          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 7h18M3 12h18M3 17h18" />
+                          </svg>
+                          <span>전체</span>
+                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </span>
+                      </div>
+                      <div style={{ background: 'linear-gradient(135deg,#e4002b,#ff2d55)', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }} className="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}><path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" /></svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="text-center pb-5 text-[13px] text-text-muted">MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.</div>

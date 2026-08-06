@@ -30,6 +30,8 @@ export const useDocumentLookup = (enabled: boolean) => {
   if (query.error) logError('useDocumentLookup', query.error)
 
   return {
+    // axios 응답이라 query.data.data 가 곧 서버 응답 본문({ success, data, ... }).
+    // 문서 배열은 그 안의 data 이므로 query.data.data.data 가 맞다.
     documents: query.data ? pickDocuments(query.data.data.data) : [],
     isLoading: query.isLoading,
   }

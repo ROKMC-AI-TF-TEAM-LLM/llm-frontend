@@ -97,10 +97,16 @@ backendApi.interceptors.request.use(async (config) => {
 backendApi.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config
-    const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => originalRequest.url?.includes(path))
+    // error.config 는 없을 수 있다 —
+    // CORS 차단, DNS 실패, 요청 인터셉터 예외 등 '요청이 나가지도 못한' 경우.
+    // 예전엔 여기서 바로 originalRequest.url 을 읽어 TypeError가 났고,
+    // 그 바람에 아래 logError까지 도달하지 못해 콘솔에 아무 로그도 안 남았다.
+    // (원래의 진짜 원인도 TypeError에 가려져 사라졌다)
+    const originalRequest = error?.config
+    const requestUrl: string = originalRequest?.url ?? ''
+    const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => requestUrl.includes(path))
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+    if (error?.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true
       try {
         const newToken = await refreshTokenOnce()
@@ -115,7 +121,27 @@ backendApi.interceptors.response.use(
       }
     }
 
-    logError(`axios.response:${originalRequest?.url ?? '?'}`, error)
+    // 응답이 없는 실패(요청이 나가지도 못한 경우)는 원인을 좁혀 함께 남긴다.
+    // 그냥 "Network Error"만 찍히면 CORS인지 서버가 죽은 건지 구분이 안 된다.
+    if (!error?.response) {
+      const baseUrl = import.meta.env.VITE_SERVER_API_URL ?? '(VITE_SERVER_API_URL 미설정)'
+      logError(
+        `axios.response:${requestUrl || '(요청 전 실패)'}`,
+        error,
+        {
+          진단: !originalRequest
+            ? '요청이 만들어지지 못함 — 요청 인터셉터 예외 가능성'
+            : error?.code === 'ECONNABORTED'
+              ? '타임아웃 — 서버가 응답하지 않음'
+              : 'CORS 차단 · 서버 다운 · 주소 오류 중 하나 (브라우저 Network 탭에서 확인)',
+          요청주소: baseUrl + requestUrl,
+          axios코드: error?.code ?? '(없음)',
+        },
+      )
+      return Promise.reject(error)
+    }
+
+    logError(`axios.response:${requestUrl || '?'}`, error)
     return Promise.reject(error)
   }
 )

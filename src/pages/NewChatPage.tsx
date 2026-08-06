@@ -37,7 +37,7 @@ export default function NewChatPage() {
 
         {/* 부제 */}
         <p className="mt-3.5 mb-8 text-[15px] text-text-secondary text-center">
-          법령·규정·규칙을 학습한 MARS가 근거와 함께 답합니다.
+          법령·규정·규칙을 참조해 MARS가 근거와 함께 답합니다.
         </p>
 
         <ChatInput

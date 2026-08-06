@@ -54,7 +54,7 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
             <FooterBtn onClick={() => goAuth('/rag')}>문서함 열람</FooterBtn>
           </FooterCol>
 
-          <FooterCol title="사용법">
+          <FooterCol title="이용법">
             {GUIDE_SECTIONS.map((s) => (
               <FooterBtn key={s.id} onClick={() => navigate(`/guide#${s.id}`)}>
                 {s.label}

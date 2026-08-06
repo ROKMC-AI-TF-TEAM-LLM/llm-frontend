@@ -57,6 +57,8 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
       )}
       {!msgStreaming && (
         <>
+          {/* 출처 배지는 답변 바로 아래에 붙인다(액션바보다 위 → 답변과 떨어져 보이지 않게). */}
+          <SourceBadge sources={msg.sources} />
           {/* 빈 채로 실패한 답변은 복사/재생성 액션바 대신 아래 배너의 '다시 시도'만 노출한다. */}
           {!hideEmptyBubble && (
             <MessageActions
@@ -83,7 +85,6 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
               </button>
             </div>
           )}
-          <SourceBadge sources={msg.sources} />
           <FileDownload attachments={msg.attachments} />
         </>
       )}

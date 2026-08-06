@@ -928,63 +928,106 @@ body.modal-open {
 }
 
 /* ===================== 팀 소개 =====================
-   첫 화면은 어둡게 눌러 무게를 주고, 그 위에 브랜드 빛만 은은하게 얹는다.
-   사진이 없어도 허전하지 않도록 빛무리 + 옅은 격자로 깊이를 만든다. */
-.team-hero {
-  background:
-    radial-gradient(120% 100% at 50% 0%, #2a1a22 0%, #17111a 55%, #120d15 100%);
+   페이지 전체가 하나의 검은 화면. 판을 나누지 않아 경계선이 생기지 않고,
+   내용만 스크롤에 따라 나타났다 사라진다(ScrollFade).
+   색은 검정 · 흰색 · 브랜드 빨강 세 가지만 쓴다. */
+/* 검은 바탕은 본문 구간(.team-dark)에만. 페이지 전체에 깔면 흰 푸터까지 덮는다. */
+.team-page { color: #fff; }
+.team-dark { position: relative; background: #0b0709; }
+
+/* 배경 — 화면에 고정. 스크롤해도 같은 공간 안에 있는 느낌을 준다. */
+/* 배경은 어두운 본문 구간에만 깔린다.
+   fixed로 두면 흰 푸터 위까지 빛이 비쳐 경계가 지저분해지므로,
+   본문(main)을 감싸는 sticky 레이어로 두어 푸터에 닿기 전에 끝나게 한다. */
+.team-bg {
+  position: sticky; top: 0; left: 0;
+  height: 100vh; margin-bottom: -100vh;
+  z-index: 0; pointer-events: none; overflow: hidden;
 }
 
-/* 브랜드 빛무리 — 화면 위쪽에서 번지듯 */
-.team-hero-glow {
-  position: absolute; left: 50%; top: -18%;
-  width: min(900px, 120vw); height: min(900px, 120vw);
+/* 위쪽에서 번지는 브랜드 빛 */
+.team-bg-glow {
+  position: absolute; left: 50%; top: -30%;
+  width: min(1100px, 140vw); height: min(1100px, 140vw);
   transform: translateX(-50%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(228,0,43,0.30) 0%, rgba(228,0,43,0.10) 40%, transparent 68%);
-  filter: blur(30px);
-  pointer-events: none;
+  background: radial-gradient(circle, rgba(228,0,43,0.22) 0%, rgba(228,0,43,0.07) 42%, transparent 70%);
+  filter: blur(40px);
 }
 
-/* 아주 옅은 격자 — 가까이서만 보이는 정도 */
-.team-hero-grid {
-  position: absolute; inset: 0; pointer-events: none;
+/* 아주 옅은 격자 — 빈 검은 화면이 허전하지 않을 만큼만 */
+.team-bg-grid {
+  position: absolute; inset: 0;
   background-image:
-    linear-gradient(to right, rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.035) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 40%, #000 15%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 40%, #000 15%, transparent 80%);
 }
 
-/* 아래로 내려가라는 신호 — 천천히 위아래로 */
+/* 섹션 하나가 한 화면 — 스크롤할 때마다 장면이 하나씩 바뀐다 */
+.team-sec { position: relative; min-height: 100vh; padding-top: 96px; padding-bottom: 96px; }
+@media (max-height: 720px) {
+  .team-sec { min-height: auto; padding-top: 80px; padding-bottom: 80px; }
+}
+
+/* 섹션 라벨 — 작은 대문자 + 브랜드색 대시 */
+.team-eyebrow {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #ff3d5e;
+}
+.team-eyebrow::before {
+  content: ''; width: 20px; height: 1.5px; border-radius: 999px;
+  background: #ff3d5e; flex: none;
+}
+
+/* 아래로 유도 */
 @keyframes team-scroll-bob {
-  0%, 100% { transform: translate(-50%, 0); opacity: .45; }
-  50%      { transform: translate(-50%, 6px); opacity: 1; }
+  0%, 100% { transform: translate(-50%, 0); opacity: .3; }
+  50%      { transform: translate(-50%, 7px); opacity: .8; }
 }
 .team-scroll { animation: team-scroll-bob 2.2s ease-in-out infinite; }
 
-/* 기능 카드 — 호버에서만 살짝 반응 */
-.team-card {
-  transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease;
+/* 연혁 — 점과 이어지는 선 */
+.team-dot {
+  width: 9px; height: 9px; margin-top: 7px;
+  border-radius: 50%;
+  background: #ff3d5e;
+  box-shadow: 0 0 0 4px rgba(255,61,94,0.14);
 }
-.team-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--color-brand-soft);
-  box-shadow: 0 18px 38px rgba(150,0,40,0.09);
+.team-dot::after {
+  content: '';
+  position: absolute; left: 50%; top: 13px; bottom: -48px;
+  width: 1px; transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.02) 100%);
+}
+.team-ms:last-child .team-dot::after { display: none; }
+
+/* 팀원 프로필 — 어두운 바탕에 맞춘 유리질 원. 호버하면 브랜드색이 스민다. */
+.team-avatar {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: transform .32s cubic-bezier(.34,1.5,.64,1), border-color .3s ease, background-color .3s ease;
+}
+.team-member:hover .team-avatar {
+  transform: scale(1.06);
+  border-color: rgba(255,61,94,0.55);
+  background: rgba(255,61,94,0.10);
 }
 
-/* 팀원 프로필 — 커서를 올리면 살짝 커진다 */
-.team-avatar {
-  box-shadow: 0 8px 22px rgba(60,20,30,0.14);
-  transition: transform .32s cubic-bezier(.34,1.5,.64,1);
+/* 마무리 CTA */
+.team-cta {
+  background: var(--color-brand);
+  transition: background-color .2s ease, transform .18s ease;
 }
-.team-member:hover .team-avatar { transform: scale(1.06); }
+.team-cta:hover { background: #ff2447; }
+.team-cta:active { transform: scale(0.97); }
 
 @media (prefers-reduced-motion: reduce) {
   .team-scroll { animation: none; }
-  .team-card, .team-avatar { transition: none; }
-  .team-card:hover { transform: none; }
+  .team-avatar, .team-cta { transition: none; }
   .team-member:hover .team-avatar { transform: none; }
 }
 

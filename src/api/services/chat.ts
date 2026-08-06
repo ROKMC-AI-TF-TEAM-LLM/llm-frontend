@@ -12,12 +12,40 @@ export const getMessages = (
   options?: { signal?: AbortSignal },
 ) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
-    params: { limit: 4, ...params },
+    // 기본 20 — 서버 기본값과 같게 맞춘다.
+    // (예전에 무한 스크롤을 시험하려고 4로 줄여둔 값이 그대로 남아 있었다.
+    //  그 탓에 세션에 들어가면 최근 2쌍만 보이고 나머지는 위로 올려야 나왔다)
+    params: { limit: 20, ...params },
     ...options,
   })
 
 export const deleteMessage = (sessionId: string, messageId: string) =>
   backendApi.delete<DeleteMessageResponse>(`/api/v1/sessions/${sessionId}/messages/${messageId}`)
+
+/**
+ * 출처 한 건을 화면이 쓰는 { name, page } 모양으로 맞춘다.
+ *
+ * 페이지 번호가 서버/버전에 따라 page · page_no · page_number · pages 등
+ * 다른 이름으로 오는 경우가 있어, 흔한 이름을 모두 받아들인다.
+ * (하나로 확정되면 이 함수를 지우고 그 필드만 쓰면 된다)
+ */
+export const normalizeSource = (raw: unknown): Source => {
+  const s = (raw ?? {}) as Record<string, unknown>
+  const name = String(s.name ?? s.title ?? s.document_name ?? s.file_name ?? '')
+
+  const rawPage =
+    s.page ?? s.page_no ?? s.page_number ?? s.pages ?? s.page_num ?? s.pageNo ?? null
+
+  // 0이나 빈 문자열은 '없음'으로 본다(0쪽은 의미가 없다).
+  const page =
+    rawPage === null || rawPage === undefined || rawPage === '' || rawPage === 0
+      ? null
+      : Array.isArray(rawPage)
+        ? rawPage.join(', ')   // [3, 4] → "3, 4"
+        : String(rawPage)
+
+  return { name, page }
+}
 
 interface SseHandlers {
   onChunk: (chunk: string) => void
@@ -117,7 +145,12 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
 
       const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
-        onSources?.(evt.items as Source[])
+        // 개발 중에는 서버가 실제로 보낸 출처 원본을 찍어둔다.
+        // (페이지 번호가 화면에 안 뜰 때 서버가 안 주는 건지 이름이 다른 건지 바로 확인 가능)
+        if (import.meta.env.DEV) {
+          console.log('[SSE sources] 원본:', JSON.stringify(evt.items))
+        }
+        onSources?.(evt.items.map(normalizeSource))
       } else if (evt.type === 'files' && Array.isArray(evt.items)) {
         // done 직전 1회. 미들웨어가 흡수해 정규화한 첨부 목록. [{ attachment_id, name, size, url }]
         onFiles?.(evt.items as FileAttachment[])

@@ -97,9 +97,10 @@ export default function TutorialPage() {
           화면 끝까지 넓히면 지나치게 커져서 페이지 균형이 무너진다.
           원본이 표시 크기보다 크므로 축소돼도 글자는 또렷하다. */}
       <div className="mx-auto max-w-[1160px] px-[6vw] pb-20 lg:px-8">
-        <Reveal delay={80}>
-          <VideoSlot title={tutorial.title} tint={tutorial.tint} videoUrl={tutorial.videoUrl} />
-        </Reveal>
+        {/* 영상은 등장 애니메이션(Reveal)으로 감싸지 않는다 —
+            transform/opacity가 걸린 부모 안에서는 브라우저가 영상 레이어를
+            매번 다시 합성해 재생이 버벅인다. 바로 자리에 놓는 편이 부드럽다. */}
+        <VideoSlot title={tutorial.title} tint={tutorial.tint} videoUrl={tutorial.videoUrl} />
         {/* 영상 고지 — 화면 톤을 흐리지 않게 작고 옅은 회색으로. */}
         <p className="mt-4 text-[12px] leading-[1.7] text-text-muted">
           본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는 인물·부대·문서·상황은
@@ -207,24 +208,21 @@ function VideoSlot({
 }) {
   if (videoUrl) {
     // 폐쇄망 운용이라 외부 임베드(iframe) 대신 public/ 에 둔 파일을 직접 재생한다.
-    // preload="metadata" : 27MB짜리를 페이지 열자마자 다 내려받지 않게 한다(첫 프레임만).
     //
-    // 비율을 16:9로 고정하지 않는다 — 녹화 영상은 1308x732처럼 어중간한 비율이라
-    // 틀에 억지로 맞추면 그 차이만큼 눌려 깨져 보인다. 폭만 채우면 원래 비율로 그려진다.
+    // ── 끊김을 줄이기 위한 설정들 ──
+    // preload="auto" : 재생 전에 미리 받아둔다(metadata면 재생하며 조금씩 받아 버벅인다).
+    // disablePictureInPicture / controlsList : 쓰지 않는 기능을 꺼서 디코더 부담을 덜어준다.
+    // translateZ(0) : 영상 레이어를 GPU에 올려 스크롤 중에도 프레임이 고르게 나오게 한다.
+    // contain: 'paint' : 영상 밖 요소와 렌더링을 분리해 리페인트 범위를 줄인다.
     //
-    // preload="auto" : 로컬 파일이라 미리 받아둬야 재생 중 끊기지 않는다.
-    // (metadata로 두면 재생하면서 조금씩 받아 30fps가 고르게 안 나온다)
+    // 비율은 16:9로 고정 — 영상이 1920x1080이라 정확히 맞고,
+    // 다 읽기 전에도 자리가 잡혀 화면이 덜컹이지 않는다.
     //
-    // 비율은 16/9로 고정한다 — 영상이 1920x1080이라 정확히 맞고,
-    // 고정해두면 영상을 다 읽기 전에도 자리가 잡혀 화면이 덜컹이지 않는다.
+    // 모서리는 각진 사각으로 둔다. <video>는 GPU에서 별도 레이어로 합성돼
+    // border-radius를 주면 곡선 경계에 계단 모양 부스러기가 남는다.
     //
-    // 모서리는 둥글게 깎지 않는다(각진 사각).
-    // <video>는 브라우저가 GPU에서 별도 레이어로 합성하기 때문에,
-    // border-radius를 주든 부모에 overflow-hidden을 걸든 곡선 경계에
-    // 계단 모양 부스러기가 남는다(안티에일리어싱이 적용되지 않는다).
-    // 배경은 검정이 아니라 영상 바탕색(연회색)으로 둔다 —
-    // 검정으로 두면 영상이 그려지기 전이나 픽셀이 반올림되는 가장자리에서
-    // 검은 테두리가 비쳐 보인다.
+    // 배경은 검정이 아니라 영상 바탕색(연회색) — 검정이면 영상이 그려지기 전이나
+    // 가장자리 픽셀 반올림 지점에서 검은 테두리가 비친다.
     return (
       <video
         src={videoUrl}
@@ -232,8 +230,15 @@ function VideoSlot({
         controls
         playsInline
         preload="auto"
+        disablePictureInPicture
+        controlsList="nodownload noremoteplayback"
         className="block w-full"
-        style={{ aspectRatio: '16 / 9', background: '#ece7e6' }}
+        style={{
+          aspectRatio: '16 / 9',
+          background: '#ece7e6',
+          transform: 'translateZ(0)',
+          contain: 'paint',
+        }}
       />
     )
   }

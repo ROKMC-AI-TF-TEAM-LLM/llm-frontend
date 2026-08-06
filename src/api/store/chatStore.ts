@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import type { Message, Source, FileAttachment } from '../../types';
-import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream } from '../services/chat';
+import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
@@ -125,7 +125,11 @@ const mapServerMessages = (items: ServerMessage[]): Message[] => {
       status: 'done' as const,
       createdAt: m.created_at,
       ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
-      ...(m.sources && m.sources.length > 0 ? { sources: m.sources } : {}),
+      // 히스토리로 불러온 출처도 스트리밍과 같은 모양으로 맞춘다
+      // (페이지 번호 필드명이 서버마다 달라 그대로 쓰면 '페이지 N'이 안 뜬다).
+      ...(m.sources && m.sources.length > 0
+        ? { sources: m.sources.map(normalizeSource) }
+        : {}),
       ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
     };
   });
@@ -296,47 +300,12 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
   }
 
-  const cleanupEmptyExchange = async (sessionId: string, question: string) => {
-    try {
-      // 최신 페이지에 마지막 질문/빈 답변이 있으므로 첫 페이지만 보면 된다.
-      const res = await getMessages(sessionId)
-      const server = res.data.data.items
-      const q = question.trim()
-      const toDelete: string[] = []
-      if (server.length > 0) {
-        const last = server[server.length - 1]
-        if (last.role === 'ai' && (last.content ?? '').trim() === '' && last.message_id) {
-          toDelete.push(last.message_id)
-        }
-        for (let i = server.length - 1; i >= 0; i--) {
-          const s = server[i]
-          if (s.role === 'human' && (s.content ?? '').trim() === q && s.message_id) {
-            toDelete.push(s.message_id)
-            break
-          }
-        }
-      }
-      if (toDelete.length > 0) {
-        await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)))
-      }
-      if (server.length - toDelete.length <= 0) {
-        const after = await getMessages(sessionId)
-        if (after.data.data.items.length === 0) {
-          await deleteSession(sessionId).catch((e) => logError('deleteSession', e))
-          if (get().sessionId === sessionId) set({ isDeleted: true })
-        }
-      }
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
-    } catch (e) { logError('cleanupEmptyExchange', e) }
-  }
-
   const executeStream = async (
     sessionId: string,
     assistantId: string,
     question: string,
     isFirstMessage: boolean,
     signal: AbortSignal,
-    removePairOnFail = true,
     domain?: string,
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
@@ -747,7 +716,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, true, domain?.code)
+      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, domain?.code)
     },
 
     retryLastMessage: async () => {
@@ -779,7 +748,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamRegistry.set(sessionId, get().messages)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, true, domainCode)
+      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, domainCode)
     },
 
     sendImageMessage: (filename: string, caption?: string) => {

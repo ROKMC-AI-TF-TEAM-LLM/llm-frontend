@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
+import { useProject } from '../../hooks/useProject'
 import {
   Block,
   ChatRow,
@@ -42,6 +43,14 @@ export default function ProjectPage() {
   const toggleFavorite = useProjectStore((s) => s.toggleFavorite)
   const renameProject = useProjectStore((s) => s.rename)
   const removeProject = useProjectStore((s) => s.remove)
+  const upsertDetail = useProjectStore((s) => s.upsertDetail)
+
+  // 프로젝트 상세(지침 포함) 조회 → 스토어에 반영. 목록만으로 들어오면 지침이 비어 있으므로 여기서 채운다.
+  // URL로 바로 진입(사이드바 목록 미경유)하면 스토어가 비어 있을 수 있어, 로딩/에러 상태로 화면을 나눈다.
+  const { data: detailData, isLoading: isDetailLoading, isError: isDetailError } = useProject(id)
+  useEffect(() => {
+    if (detailData?.data?.data) upsertDetail(detailData.data.data)
+  }, [detailData, upsertDetail])
   useDocumentTitle(project ? project.name : '프로젝트')
   const [modalOpen, setModalOpen] = useState(false)
   const [filesOpen, setFilesOpen] = useState(false)
@@ -77,9 +86,19 @@ export default function ProjectPage() {
   }
 
   if (!project) {
+    // 스토어에 아직 없음: 상세 로딩 중이면 로딩, 조회 실패(없음/권한)면 안내.
+    if (isDetailLoading) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-surface-border border-t-brand" />
+        </div>
+      )
+    }
     return (
       <div className="flex h-full flex-col items-center justify-center px-6">
-        <p className="text-[15px] font-semibold text-text-primary">프로젝트를 찾을 수 없습니다.</p>
+        <p className="text-[15px] font-semibold text-text-primary">
+          {isDetailError ? '프로젝트에 접근할 수 없습니다.' : '프로젝트를 찾을 수 없습니다.'}
+        </p>
         <p className="mt-1.5 text-[13px] text-text-secondary">
           삭제되었거나 주소가 잘못되었을 수 있습니다.
         </p>

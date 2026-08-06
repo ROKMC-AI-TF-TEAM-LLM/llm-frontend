@@ -9,8 +9,13 @@ import type { Tutorial } from './tutorials'
 export function TutorialHeader() {
   const navigate = useNavigate()
   // 배경이 옅게 깔려 있어 흰 판으로 두면 경계가 진다 → 반투명 + blur로 비치게 한다.
+  // 로고 위치는 로그인(랜딩) 네비(.mars-nav)와 같은 값으로 맞춘다 —
+  // 페이지를 옮겨 다녀도 MARS 글자가 같은 자리에 있어야 흔들리지 않는다.
   return (
-    <header className="sticky top-0 z-30 flex items-center border-b border-[#f4eced] bg-white/70 px-[6vw] py-3.5 backdrop-blur-md">
+    <header
+      style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
+      className="sticky top-0 z-30 flex items-center border-b border-[#f4eced] bg-white/70 backdrop-blur-md"
+    >
       <button onClick={() => navigate('/')} className="mars-nav-brand">
         MARS
       </button>

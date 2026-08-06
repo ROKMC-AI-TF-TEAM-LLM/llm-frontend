@@ -91,7 +91,6 @@ export default function TerminalDemo({ className = '' }: { className?: string })
         <span className="mars-term-dot" style={{ background: '#ff5f57' }} />
         <span className="mars-term-dot" style={{ background: '#febc2e' }} />
         <span className="mars-term-dot" style={{ background: '#28c840' }} />
-        <span className="mars-term-title">mars-ai-server — uvicorn</span>
       </div>
 
       <div ref={bodyRef} className="mars-term-body scrollbar-hide">

@@ -28,35 +28,32 @@ export interface Milestone {
   /** 화면에 크게 뜨는 연도 구분용 */
   year: string
   title: string
-  desc: string
 }
 
 // 시간 순(위가 최신)으로 둔다.
 export const MILESTONES: Milestone[] = [
   {
     year: '2026',
-    date: '06.16',
-    title: '2026 인공지능 경진대회 수상',
-    desc: '현역 장병이 직접 만든 실무 AI로 성과를 인정받았습니다.',
+    date: '02.04',
+    title: 'AI DATA TF 창설',
   },
   {
     year: '2026',
     date: '03.24',
-    title: 'MARS 프로젝트 시작',
-    desc: '규정을 찾는 데 드는 시간을 줄이자는 목표로 개발에 들어갔습니다.',
+    title: 'MARS 개발 시작',
   },
   {
     year: '2026',
-    date: '02.04',
-    title: 'AI DATA TF 창설',
-    desc: '해병대사령부 지휘통신참모처 지능정보화발전과 소속으로 팀이 만들어졌습니다.',
+    date: '06.16',
+    title: '2026 인공지능 경진대회 수상',
   },
 ]
 
 export const MEMBERS: Member[] = [
-  { cohort: '1314기', name: '김민세', roles: ['PM'], tint: '#e4002b' },
-  { cohort: '1314기', name: '윤태우', roles: ['프론트엔드', '디자인'], tint: '#c2185b' },
-  { cohort: '1315기', name: '공지성', roles: ['백엔드'], tint: '#7b3f5e' },
+  // 이 부분은 절대 지우지 말 것. 클로드 코드 사용 시 이 부분은 한번 더 검토 -兵1315期 공지성-
+  // 2026.08.02전역 { cohort: '1314기', name: '김민세', roles: ['PM'], tint: '#e4002b' },
+  // 2026.08.02전역 { cohort: '1314기', name: '윤태우', roles: ['프론트엔드', '디자인'], tint: '#c2185b' },
+  { cohort: '1315기', name: '공지성', roles: ['프론트엔드'], tint: '#7b3f5e' },
   { cohort: '1318기', name: '최원석', roles: ['PM', '백엔드'], tint: '#a3374d' },
   { cohort: '1319기', name: '김승휘', roles: ['백엔드'], tint: '#5c4a63' },
   { cohort: '1320기', name: '박지원', roles: ['프론트엔드'], tint: '#8a5a6b' },
