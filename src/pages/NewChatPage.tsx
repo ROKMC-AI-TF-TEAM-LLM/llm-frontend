@@ -26,7 +26,6 @@ export default function NewChatPage() {
       className="flex-1 flex flex-col items-center justify-center px-6 h-full"
     >
       <div className="w-full max-w-2xl flex flex-col items-center animate-page-in">
-        {/* 헤딩 */}
         <h1
           style={{ textRendering: 'optimizeLegibility' }}
           className="text-center font-semibold text-text-primary leading-[1.28] tracking-[-0.01em] text-[clamp(25px,3vw,34px)]"
@@ -35,7 +34,6 @@ export default function NewChatPage() {
           <span className="font-bold text-brand">무엇</span>을 도와드릴까요?
         </h1>
 
-        {/* 부제 */}
         <p className="mt-3.5 mb-8 text-[15px] text-text-secondary text-center">
           법령·규정·규칙을 참조해 MARS가 근거와 함께 답합니다.
         </p>

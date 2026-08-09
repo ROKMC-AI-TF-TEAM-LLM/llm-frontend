@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 
-/**
- * 스크롤로 화면에 들어오면 아래에서 위로 떠오르며 나타나는 래퍼.
- * 랜딩/가이드 두 페이지가 같은 등장 리듬을 쓰도록 공용으로 뺐다.
- */
 export default function Reveal({
   children,
   delay = 0,

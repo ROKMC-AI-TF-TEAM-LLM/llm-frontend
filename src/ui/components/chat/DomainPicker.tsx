@@ -4,7 +4,7 @@ import type { DomainSelection } from '../../../api/store/chatStore';
 import DomainIcon from './DomainIcon';
 
 interface DomainPickerProps {
-  value: DomainSelection | null;   // null이면 '전체'
+  value: DomainSelection | null;
   onChange: (domain: DomainSelection | null) => void;
 }
 
@@ -13,19 +13,15 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  // 드롭다운은 입력창 컨테이너의 overflow-hidden에 잘리므로, fixed로 뷰포트에 띄우고
-  // 버튼 위치를 측정해 그 '바로 위'에 배치한다.
   const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
 
   const updatePos = () => {
     const btn = wrapRef.current;
     if (!btn) return;
     const r = btn.getBoundingClientRect();
-    // bottom: 버튼 위쪽까지의 거리(뷰포트 하단 기준) + 8px 간격
     setPos({ left: r.left, bottom: window.innerHeight - r.top + 8 });
   };
 
-  // 열릴 때 위치 계산 + 스크롤/리사이즈 시 갱신
   useEffect(() => {
     if (!open) return;
     updatePos();
@@ -37,7 +33,6 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
     };
   }, [open]);
 
-  // 바깥 클릭 시 닫기 (버튼·메뉴 둘 다 바깥일 때만)
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -49,14 +44,12 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
 
-  // 로딩 중엔 스켈레톤으로 자리를 채워, 목록이 나중에 채워질 때 깜빡이지 않게 한다.
   if (isLoading) {
     return (
       <div className="h-10 w-[84px] rounded-full bg-surface-subtle animate-pulse" aria-hidden />
     );
   }
 
-  // 로딩이 끝났는데도 도메인이 하나도 없으면(문서에 존재하는 도메인 없음) 버튼을 숨긴다.
   if (domains.length === 0) return null;
 
   const select = (domain: DomainSelection | null) => {
@@ -105,7 +98,6 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
             );
           })}
 
-          {/* 구분선 + 전체 */}
           <div className="my-1 h-px bg-surface-border mx-1.5" />
           <MenuRow
             active={!value}
@@ -123,7 +115,6 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
   );
 }
 
-// 드롭다운 한 줄: 아이콘 배지 + 라벨 + (선택 시)체크. 활성 항목은 brand-subtle 배경으로 강조.
 function MenuRow({
   active,
   onClick,

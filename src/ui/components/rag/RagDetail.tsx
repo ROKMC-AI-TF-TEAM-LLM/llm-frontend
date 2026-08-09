@@ -8,14 +8,11 @@ interface RagDetailProps {
   onClose: () => void
 }
 
-// 오른쪽 슬라이드 드로어 안에 들어가는 문서 상세.
-// 서버가 주는 필드(name, type, domain, visibility, owning_department, applied_at)만 표시한다.
 const RagDetail = ({ doc, onClose }: RagDetailProps) => {
   const style = getDomainStyle(doc.domain)
   const [downloading, setDownloading] = useState(false)
   const [downloadErr, setDownloadErr] = useState<string | null>(null)
 
-  // 원본 다운로드는 인증이 필요해 fetch→blob 방식(downloadDocumentByName)으로 받는다.
   const handleDownload = async () => {
     if (downloading) return
     setDownloading(true)
@@ -34,7 +31,6 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 상단 바: 닫기 */}
       <div className="flex items-center justify-end h-14 px-5 shrink-0">
         <button
           type="button"
@@ -48,9 +44,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
         </button>
       </div>
 
-      {/* 본문 (넘치면 스크롤) */}
       <div className="flex-1 overflow-y-auto custom-scroll px-8 pb-10">
-        {/* 도메인 뱃지 */}
         {doc.domain && (
           <span
             className="inline-block text-[12px] font-semibold px-3 py-1 rounded-full"
@@ -60,7 +54,6 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           </span>
         )}
 
-        {/* 아이콘 + 제목 */}
         <div className="flex items-center gap-3.5 mt-4">
           <div
             className="shrink-0 flex items-center justify-center"
@@ -74,7 +67,6 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           <h1 className="text-lg font-bold text-text-primary break-all leading-snug">{doc.name}</h1>
         </div>
 
-        {/* 상세 정보 */}
         {rows.length > 0 && (
           <dl className="mt-7 rounded-2xl bg-surface-subtle overflow-hidden divide-y divide-surface-border">
             {rows.map((r) => (
@@ -86,7 +78,6 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           </dl>
         )}
 
-        {/* 원본 다운로드 */}
         <button
           type="button"
           onClick={handleDownload}

@@ -1,12 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-/**
- * 네비 드롭다운 오른쪽에 붙는 미리보기 애니메이션.
- *
- * 왼쪽 목록에서 가리킨 단계에 따라 다른 장면을 재생한다.
- * 실제 화면의 축소판처럼 보이게 만들어야 설득력이 생기므로,
- * 각 장면은 앱에서 쓰는 말풍선·칩·출처 카드의 형태를 그대로 따른다.
- */
 export default function NavPreview({ sectionId }: { sectionId: string }) {
   switch (sectionId) {
     case 'step-02':
@@ -29,13 +22,33 @@ function Frame({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-/** 공통 시계 */
 function useTick(ms: number) {
   const [t, setT] = useState(0)
+  const reduced = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    [],
+  )
   useEffect(() => {
-    const id = setInterval(() => setT((v) => v + 1), ms)
-    return () => clearInterval(id)
-  }, [ms])
+    if (reduced) return
+    let id = 0
+    const start = () => {
+      stop()
+      id = window.setInterval(() => setT((v) => v + 1), ms)
+    }
+    const stop = () => {
+      if (id) window.clearInterval(id)
+      id = 0
+    }
+    const onVis = () => (document.hidden ? stop() : start())
+    start()
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      stop()
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [ms, reduced])
   return t
 }
 
@@ -43,7 +56,6 @@ function useTick(ms: number) {
 const Q = '정기휴가 신청 절차 알려줘'
 function TypingScene() {
   const t = useTick(140)
-  // 타이핑 → 잠시 멈춤 → 처음으로. 한 사이클 = 글자수 + 여유 8틱
   const cycle = Q.length + 8
   const p = t % cycle
   const len = Math.min(p, Q.length)
@@ -107,7 +119,6 @@ function DomainScene() {
 const ANSWER = '군인은 연 21일의 정기휴가를 받으며, 부대 사정에 따라 분할 사용할 수 있습니다.'
 function StreamScene() {
   const t = useTick(90)
-  // 0~8틱: 근거 찾는 중 → 이후 한 글자씩 → 다 쓰면 잠시 머물고 처음으로
   const THINK = 8
   const HOLD = 22
   const cycle = THINK + ANSWER.length + HOLD

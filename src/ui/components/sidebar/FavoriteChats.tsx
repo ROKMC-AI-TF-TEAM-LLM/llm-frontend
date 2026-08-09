@@ -9,15 +9,9 @@ import { useUpdateProject, useToggleProjectFavorite } from '../../../hooks/usePr
 
 interface FavoriteChatsProps {
   isOpen: boolean
-  /** 즐겨찾기된 세션들. 별도 상태가 아니라 세션 목록에서 파생된 값이다. */
   favorites: ChatItem[]
 }
 
-// 사이드바 '즐겨찾기' 섹션.
-// 프로젝트와 대화가 한 칸에 섞이고, 프로젝트만 왼쪽에 레이어 아이콘을 달아 구분한다.
-// 프로젝트를 먼저 쌓고 그 아래에 대화를 둔다.
-//
-// TODO(API): 프로젝트 즐겨찾기 연결 지점. 서버에서 내려오면 MOCK_PROJECTS를 훅으로 교체한다.
 export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps) {
   const [sidebarError, setSidebarError] = useState('')
   const [expanded, setExpanded] = useState(true)
@@ -28,7 +22,6 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
   const remove = useProjectStore((s) => s.remove)
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
-  // 이름 수정·즐겨찾기는 서버 반영(낙관적). 삭제는 아직 API가 없어 로컬만 바뀐다.
   const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
@@ -52,7 +45,6 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
     >
       {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
 
-      {/* 섹션 제목 — 눌러서 접기/펴기 */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -77,7 +69,6 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
 
       {expanded && (
         <ul className="space-y-0">
-          {/* 즐겨찾기된 프로젝트 — 레이어 아이콘으로 대화와 구분 */}
           {favProjects.map((p) => (
             <ProjectItem
               key={p.id}
@@ -88,7 +79,6 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
             />
           ))}
 
-          {/* 즐겨찾기된 대화 — 아이콘이 없으므로 제목을 왼쪽에 그대로 붙인다 */}
           {favorites.map((chat) => (
             <SessionItem key={chat.id} chat={chat} onError={setSidebarError} />
           ))}

@@ -19,7 +19,6 @@ const parseStorageItem = (raw: string | null): string | null => {
 
 const decodeTokenExp = (token: string): number | null => {
   try {
-    // JWT payload는 base64url(-, _) 인코딩 → 표준 base64로 변환 + 패딩 후 디코드
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
     const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
     const payload = JSON.parse(atob(padded))
@@ -97,11 +96,6 @@ backendApi.interceptors.request.use(async (config) => {
 backendApi.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // error.config 는 없을 수 있다 —
-    // CORS 차단, DNS 실패, 요청 인터셉터 예외 등 '요청이 나가지도 못한' 경우.
-    // 예전엔 여기서 바로 originalRequest.url 을 읽어 TypeError가 났고,
-    // 그 바람에 아래 logError까지 도달하지 못해 콘솔에 아무 로그도 안 남았다.
-    // (원래의 진짜 원인도 TypeError에 가려져 사라졌다)
     const originalRequest = error?.config
     const requestUrl: string = originalRequest?.url ?? ''
     const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => requestUrl.includes(path))
@@ -121,8 +115,6 @@ backendApi.interceptors.response.use(
       }
     }
 
-    // 응답이 없는 실패(요청이 나가지도 못한 경우)는 원인을 좁혀 함께 남긴다.
-    // 그냥 "Network Error"만 찍히면 CORS인지 서버가 죽은 건지 구분이 안 된다.
     if (!error?.response) {
       const baseUrl = import.meta.env.VITE_SERVER_API_URL ?? '(VITE_SERVER_API_URL 미설정)'
       logError(

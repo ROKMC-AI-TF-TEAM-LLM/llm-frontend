@@ -8,8 +8,6 @@ interface FilesDrawerProps {
   onClose: () => void;
 }
 
-// 세션의 모든 첨부 파일을 오른쪽 드로어에 모아 보여준다.
-// 항상 마운트하되 open에 따라 CSS로 슬라이드(닫힘 애니메이션용 지연 언마운트 불필요).
 export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -34,19 +32,16 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
 
   return (
     <>
-      {/* 배경 딤 — 닫힘 상태에선 클릭 통과 */}
       <div
         onClick={close}
         className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       />
-      {/* 패널 */}
       <aside
         className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-surface shadow-[-24px_0_60px_rgba(40,30,35,0.14)] transition-transform duration-300 ease-[cubic-bezier(.6,.02,.2,1)] ${open ? 'translate-x-0' : 'translate-x-full'}`}
         role="dialog"
         aria-modal="true"
       >
         <div className="flex flex-col h-full">
-          {/* 상단 바 */}
           <div className="flex items-center justify-between h-14 px-5 shrink-0 border-b border-surface-border">
             <div className="flex items-center gap-2">
               <span className="text-[15px] font-bold text-text-primary">파일</span>
@@ -59,7 +54,6 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
             </button>
           </div>
 
-          {/* 목록 */}
           <div className="flex-1 overflow-y-auto custom-scroll px-5 py-4">
             {files.length === 0 ? (
               <p className="mt-10 text-sm text-center text-text-muted">이 대화에는 첨부된 파일이 없습니다.</p>

@@ -5,10 +5,6 @@ import { useInfiniteProjects, useCreateProject, useUpdateProject, useToggleProje
 import ProjectItem from './ProjectItem'
 import { CreateProjectModal } from '../../../features/projects/ui'
 
-// 사이드바 '프로젝트' 섹션.
-// Grok처럼 섹션 제목을 눌러 접었다 펼 수 있고, 맨 위에 '+ 새 프로젝트' 줄이 있다.
-// 프로젝트 목록 화면은 없다 — 이 섹션이 목록 역할을 하고, 클릭하면 바로 프로젝트로 간다.
-// 즐겨찾기된 프로젝트는 위쪽 '즐겨찾기' 칸에 올라가므로 여기서는 제외한다.
 export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -19,12 +15,10 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const addCreated = useProjectStore((s) => s.addCreated)
   const remove = useProjectStore((s) => s.remove)
 
-  // 서버 프로젝트 목록(커서 무한스크롤) → 스토어에 반영. 사이드바가 목록 조회의 주체다.
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteProjects()
   const { mutateAsync: createProjectApi } = useCreateProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
-  // 이름 수정·즐겨찾기는 서버 반영(낙관적). 삭제는 아직 API가 없어 로컬 스토어만 바뀐다.
   const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
@@ -37,7 +31,6 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
     setFromServer(serverItems)
   }, [data, setFromServer])
 
-  // 목록 맨 아래 도달 시 다음 페이지 로드
   const sentinelRef = useRef<HTMLLIElement>(null)
   useEffect(() => {
     const el = sentinelRef.current
@@ -53,8 +46,6 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
 
   const handleDelete = (id: string) => {
     remove(id)
-    // 지금 보고 있던 프로젝트가 사라졌으면 새 채팅으로 물러난다.
-    // (삭제 API는 아직 없음 — 로컬 목록에서만 제거된다)
     if (location.pathname.startsWith(`/projects/${id}`)) navigate('/chat')
   }
 
@@ -64,7 +55,6 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
-      {/* 섹션 제목 — 눌러서 접기/펴기 */}
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -91,7 +81,6 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
 
       {expanded && (
         <ul className="space-y-0">
-          {/* 새 프로젝트 — 프로젝트 목록보다 연하게(부차적 동작이라 이름들과 경쟁하지 않게) */}
           <li>
             <button
               onClick={() => setCreateOpen(true)}
@@ -120,12 +109,10 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
               onDelete={handleDelete}
             />
           ))}
-          {/* 무한 스크롤 감지 지점 */}
           {hasNextPage && <li ref={sentinelRef} className="h-1" />}
         </ul>
       )}
 
-      {/* 새 프로젝트 : 이름·지침을 받아 서버에 만든 뒤 곧바로 그 프로젝트로 이동한다 */}
       <CreateProjectModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}

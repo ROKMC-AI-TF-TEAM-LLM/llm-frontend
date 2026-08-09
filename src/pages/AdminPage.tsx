@@ -334,7 +334,6 @@ export default function AdminPage() {
 
       <h1 className="text-2xl font-bold text-text-primary mb-6">관리자</h1>
 
-      {/* 상단 탭: 회원 관리 / 문서 관리 */}
       <div className="flex items-center gap-1 border-b border-surface-border mb-8" role="tablist">
         {([
           { key: 'users', label: '회원 관리' },
@@ -415,7 +414,6 @@ export default function AdminPage() {
             ))}
           </div>
           <div className="relative ml-auto group">
-            {/* 입력창 포커스 시 돋보기도 브랜드 레드로 (group-focus-within) */}
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors duration-200 group-focus-within:text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
             </svg>

@@ -1,30 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-/**
- * MARS 백엔드가 질문 하나를 처리하는 동안 찍히는 서버 로그를 그대로 재생하는 데모.
- *
- * 영상 파일 대신 코드로 그린 이유 — 폐쇄망 운용이라 미디어 반입이 번거롭고,
- * DOM으로 그리면 용량 0에 어떤 해상도에서도 선명하며 내용도 언제든 고칠 수 있다.
- * 실제 uvicorn/httpx/ax_rag 로그 형식(시간, 레벨, 로거명)을 따라 적었다.
- */
-
 type Seg =
-  /** 레벨 뱃지 (INFO/DEBUG). 초록·회색으로 구분된다. */
   | { t: 'lv'; v: 'INFO' | 'DEBUG' }
-  /** [09:51:19.060] 형태의 타임스탬프 */
   | { t: 'ts'; v: string }
-  /** ax_rag.query_graph.nodes.router: 같은 로거 이름 */
   | { t: 'log'; v: string }
-  /** 일반 본문 */
   | { t: 'txt'; v: string }
-  /** 강조 본문 (질문·응답 내용 등) */
   | { t: 'hl'; v: string }
-  /** "200 OK" — 초록 굵게 */
   | { t: 'ok'; v: string }
-  /** "GET /documents ..." 같은 요청 경로 */
   | { t: 'req'; v: string }
 
-/** 한 줄 = 세그먼트 배열. delay는 이 줄이 찍히고 다음 줄까지 기다리는 ms. */
 type Row = { segs: Seg[]; delay: number }
 
 const ts = (v: string): Seg => ({ t: 'ts', v: `[${v}]` })
@@ -48,10 +32,8 @@ const SCRIPT: Row[] = [
 ]
 
 const TOTAL = SCRIPT.length
-/** 마지막 줄까지 찍은 뒤 처음으로 되감기 전 머무르는 시간 */
 const HOLD_MS = 2800
 
-/** 모션을 줄이는 설정이면 애니메이션 없이 전체를 한 번에 보여준다. */
 const prefersReduced = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -62,7 +44,6 @@ export default function TerminalDemo({ className = '' }: { className?: string })
   const bodyRef = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(false)
 
-  // 화면에 보일 때만 재생 — 스크롤 저 아래 있는 동안 타이머가 도는 걸 막는다.
   useEffect(() => {
     const el = rootRef.current
     if (!el) return
@@ -78,7 +59,6 @@ export default function TerminalDemo({ className = '' }: { className?: string })
     return () => clearTimeout(id)
   }, [shown, active, reduced])
 
-  // 줄이 늘어나 넘칠 때 항상 최신 줄이 보이도록 아래로 따라 내려간다.
   useEffect(() => {
     const el = bodyRef.current
     if (el) el.scrollTop = el.scrollHeight
@@ -86,7 +66,6 @@ export default function TerminalDemo({ className = '' }: { className?: string })
 
   return (
     <div ref={rootRef} className={`mars-term ${className}`}>
-      {/* 타이틀 바 : 실제 실행 명령을 프롬프트처럼 보여준다 */}
       <div className="mars-term-bar">
         <span className="mars-term-dot" style={{ background: '#ff5f57' }} />
         <span className="mars-term-dot" style={{ background: '#febc2e' }} />
@@ -94,7 +73,6 @@ export default function TerminalDemo({ className = '' }: { className?: string })
       </div>
 
       <div ref={bodyRef} className="mars-term-body scrollbar-hide">
-        {/* 실행 프롬프트 (항상 고정) */}
         <div className="mars-term-line mars-term-prompt">
           <span className="s-venv">(.venv)</span>{' '}
           <span className="s-path">PS C:\Users\User\Desktop\project\mars-ai-server&gt;</span>{' '}
@@ -130,7 +108,6 @@ function segClass(s: Seg) {
   }
 }
 
-// 레벨·타임스탬프·로거명 뒤에는 한 칸 띄어야 실제 로그처럼 보인다.
 function needsSpace(s: Seg) {
   return s.t === 'lv' || s.t === 'ts' || s.t === 'log' || s.t === 'req'
 }

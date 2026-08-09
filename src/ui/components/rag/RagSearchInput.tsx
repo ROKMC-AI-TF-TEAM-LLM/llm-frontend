@@ -4,7 +4,6 @@ interface RagSearchInputProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
-  /** 헤더 우측에 들어가는 작은 검색창(문서 페이지). 기본은 큰 히어로 검색창. */
   compact?: boolean
 }
 
@@ -55,7 +54,6 @@ const RagSearchInput = ({
         <button
           type="button"
           onClick={(e) => {
-            // 부모 div의 onClick(포커스)로 이벤트가 번지지 않게 한 뒤, 지우고 포커스는 유지.
             e.stopPropagation()
             onChange('')
             inputRef.current?.focus()

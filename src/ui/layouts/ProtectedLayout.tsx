@@ -59,15 +59,12 @@ const ProtectedLayout = () => {
     ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
     : { id: '', name: '사용자' };
 
-  // 서버 응답(SessionData) -> 화면 모델(ChatItem) 매핑 지점.
-  // 목록 API가 is_favorite를 안 내려주면 undefined → false(즐겨찾기 없음)로 취급한다.
   const chats = (sessionsInfinite?.pages ?? [])
     .flatMap((page) => page.data.data.items)
     .map((s) => ({
       id: s.session_id,
       title: s.title,
       isFavorite: s.is_favorite ?? false,
-      // 프로젝트 소속이면 클릭 시 프로젝트 경로로 열도록 projectId를 함께 넘긴다.
       ...(s.project_id ? { projectId: s.project_id } : {}),
     }));
 

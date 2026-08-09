@@ -131,7 +131,6 @@ export function SearchPageSkeleton() {
   );
 }
 
-// 문서 리스트 한 행: 색 막대 + 아이콘 + (이름/부서) + 우측 메타
 function RagRowSkeleton() {
   return (
     <div className="w-full flex items-center gap-4 py-3 pl-2 pr-5 border-b border-surface-border">
@@ -146,7 +145,6 @@ function RagRowSkeleton() {
   );
 }
 
-// 리스트 영역만 (데이터 로딩 중 — 헤더/탭은 이미 떠 있음)
 export function RagListSkeleton() {
   return (
     <div className="flex flex-col mt-1">
@@ -155,11 +153,9 @@ export function RagListSkeleton() {
   );
 }
 
-// 페이지 전체 (lazy 청크 로딩 중 — 헤더/탭까지 포함)
 export function RagPageSkeleton() {
   return (
     <div className="max-w-5xl mx-auto px-8 py-12">
-      {/* 헤더: 제목·건수 / 검색 */}
       <div className="flex items-center justify-between gap-6 mb-6">
         <div className="flex items-baseline gap-3">
           <Skeleton className="h-8 w-16" />
@@ -168,7 +164,6 @@ export function RagPageSkeleton() {
         <Skeleton className="h-10 w-full max-w-[300px] rounded-xl" />
       </div>
 
-      {/* 도메인 탭 */}
       <div className="flex items-center gap-1 border-b border-surface-border pb-2.5">
         {[...Array(6)].map((_, i) => (
           <Skeleton key={i} className="h-4 w-14 mx-3 rounded" />

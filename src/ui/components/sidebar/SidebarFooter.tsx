@@ -13,11 +13,9 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  // '자세히 알아보기' 하위 메뉴
   const [subOpen, setSubOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // ESC + 바깥 클릭으로 닫기
   useEffect(() => {
     if (!open) return;
     const closeAll = () => { setOpen(false); setSubOpen(false); };
@@ -33,8 +31,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
     };
   }, [open]);
 
-  // 이동할 때는 팝업·하위 메뉴를 모두 닫고, 새 페이지는 맨 위부터 보이게 한다.
-  // (푸터 메뉴는 화면 아래에 있어 그냥 이동하면 아래쪽부터 보인다)
   const go = (path: string) => {
     setOpen(false);
     setSubOpen(false);
@@ -44,16 +40,12 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
 
   return (
     <div ref={wrapRef} className="relative" style={{ borderTop: '1px solid #f4e6ea' }}>
-      {/* 위로 뜨는 팝업 메뉴 (Claude 스타일).
-          사이드바가 접혔을 땐(56px) left-2/right-2로 폭을 잡으면 팝업이 눌려 글자가 세로로 쪼개진다.
-          그래서 접힌 상태에선 고정 폭(w-64)으로 왼쪽 정렬해 사이드바 밖으로 자연스럽게 걸치게 한다. */}
       {open && (
         <div
           className={`absolute bottom-full mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in ${
             isOpen ? 'left-2 right-2' : 'left-2 w-64'
           }`}
         >
-          {/* 헤더: 이메일 */}
           {user.email && (
             <div className="px-4 pb-2 mb-1 border-b border-surface-border">
               <p className="text-[13px] font-semibold text-text-primary truncate">{user.name}</p>
@@ -61,8 +53,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             </div>
           )}
 
-          {/* 자세히 알아보기 — 안내성 페이지(가이드·튜토리얼)를 하나로 묶는다.
-              메뉴가 길어지지 않도록 하위 메뉴로 접어두고, 호버하면 옆으로 펼쳐진다. */}
           <div
             className="relative"
             onMouseEnter={() => setSubOpen(true)}
@@ -87,9 +77,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             </button>
 
             {subOpen && (
-              // 본메뉴 ↔ 서브메뉴 사이 틈(예전 ml-1)을 지나며 hover가 끊겨 팝업이 사라지던 문제 수정.
-              // pl-2로 '투명한 다리'를 만들어 마우스가 빈 공간을 지나지 않게 하고, 팝업은 부모(onMouseLeave 영역)
-              // 안에 있으므로 팝업 위로 가도 leave가 발동하지 않는다.
               <div className="absolute bottom-0 left-full z-50 pl-2 animate-fade-in">
                 <div className="w-56 rounded-2xl border border-surface-border bg-white py-2 shadow-[0_16px_40px_rgba(40,30,35,0.16)]">
                 <SubItem label="서비스 이용법" onClick={() => go('/guide')} />
@@ -97,7 +84,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
 
                 <div className="my-1 mx-3 h-px bg-surface-border" />
 
-                {/* 개별 튜토리얼 — 바로 그 영상으로 들어간다 */}
                 {TUTORIALS.map((t) => (
                   <SubItem key={t.slug} label={t.title} onClick={() => go(`/tutorials/${t.slug}`)} />
                 ))}
@@ -132,9 +118,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         </div>
       )}
 
-      {/* 프로필 영역 — 접힘/펼침을 별도 마크업으로 분리한다.
-          한 구조에 flex-1·gap·padding을 조건부로 욱여넣으면 전환 시 아바타가 튀고 중앙도 안 맞았다.
-          접힘: 아바타 하나만 컨테이너 중앙(justify-center). 펼침: 아바타+이름+로그아웃 가로 배치. */}
       {isOpen ? (
         <div className="flex items-center gap-1 px-[12px] py-[9px]">
           <button
@@ -175,7 +158,6 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   );
 }
 
-// 프로필 아바타(원형). 접힘/펼침 두 곳에서 동일하게 쓴다.
 function Avatar() {
   return (
     <div
@@ -192,8 +174,6 @@ function Avatar() {
   );
 }
 
-// '자세히 알아보기' 하위 메뉴 한 줄. 아이콘 없이 글자만 둬 목록이 가볍게 읽힌다.
-// external이면 새 창으로 나간다는 표시를 오른쪽에 붙인다.
 function SubItem({
   label,
   onClick,
@@ -218,7 +198,6 @@ function SubItem({
   );
 }
 
-// 팝업 메뉴 한 줄
 function MenuItem({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button

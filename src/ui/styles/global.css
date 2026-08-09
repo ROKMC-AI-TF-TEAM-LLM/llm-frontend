@@ -1102,3 +1102,25 @@ body.modal-open {
 .doc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(40,30,35,0.10) !important; border-color: #e7dde0 !important; }
 .doc-open { opacity: 0; transform: translateX(-6px); transition: opacity .3s cubic-bezier(.2,.7,.2,1), transform .3s cubic-bezier(.2,.7,.2,1); }
 .doc-card:hover .doc-open { opacity: 1 !important; transform: translateX(0) !important; }
+
+/* ===================== 성능 ===================== */
+.mars-planet-float,
+.mars-orbit,
+.team-scroll,
+.mars-glow-bg { will-change: transform; }
+
+video { content-visibility: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mars-planet-float,
+  .mars-orbit,
+  .team-scroll { animation: none !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

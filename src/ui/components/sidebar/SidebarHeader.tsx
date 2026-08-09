@@ -14,10 +14,8 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
   const clearTip = () => {
     if (tipTimer.current) { clearTimeout(tipTimer.current); tipTimer.current = null; }
   };
-  // 마우스를 올리고 잠깐 있어야 툴팁이 뜬다
   const onEnter = () => { clearTip(); tipTimer.current = setTimeout(() => setShowTip(true), 450); };
   const onLeave = () => { clearTip(); setShowTip(false); };
-  // 누르면 즉시 숨김 → 텍스트가 바로 바뀌는 게 안 보이고, 다시 갖다대야 뜬다
   const onClick = () => { clearTip(); setShowTip(false); onToggle(); };
 
   return (
@@ -25,7 +23,6 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
       style={{ height: '60px' }}
       className={`flex-none flex items-center justify-between transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'px-[20px]' : 'px-[13px]'}`}
     >
-      {/* 로고 (텍스트) — 접힐 때 페이드+슬라이드 아웃 */}
       <div
         onClick={() => navigate("/chat")}
         className={`flex items-center cursor-pointer overflow-hidden transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100 max-w-[120px]' : 'opacity-0 max-w-0'}`}
@@ -37,7 +34,6 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         </span>
       </div>
 
-      {/* 토글 버튼 (패널 아이콘 + 커스텀 호버 툴팁) */}
       <button
         onClick={onClick}
         onMouseEnter={onEnter}
@@ -46,7 +42,6 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-[#fdedf2] hover:text-[#c0002a] transition-colors cursor-pointer"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
-        {/* 접기/펴기 방향을 그대로 가리키는 이중 화살표. 펴져 있으면 «(접기), 접혀 있으면 »(펴기) */}
         <svg
           width={18}
           height={18}
@@ -61,7 +56,6 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
           <path d="M17 6l-6 6 6 6" />
           <path d="M11 6l-6 6 6 6" />
         </svg>
-        {/* 오른쪽으로 나오는 툴팁 (사이드바 밖) — 클릭 시 즉시 사라지도록 조건부 렌더 */}
         {showTip && (
           <span
             className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in"

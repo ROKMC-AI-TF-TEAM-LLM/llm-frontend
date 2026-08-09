@@ -12,7 +12,6 @@ interface SourceBadgeProps {
 export default function SourceBadge({ sources }: SourceBadgeProps) {
   const [open, setOpen] = useState(false);
 
-  // 출처를 펼쳤을 때만 문서 목록을 불러온다(상세 매칭용).
   const { documents } = useDocumentLookup(open);
   const { doc: drawerDoc, open: drawerOpen, openDoc, closeDoc } = useDocumentDrawer();
 
@@ -34,9 +33,7 @@ export default function SourceBadge({ sources }: SourceBadgeProps) {
       {open && (
         <div className="mt-2 space-y-2">
           {sources.map((s, i) => {
-            // 문서 목록에서 이름으로 찾는다. 못 찾으면(로딩 중이거나 목록에 없음) 클릭을 막는다.
             const matched = findDocumentByName(documents, s.name);
-            // 문서 목록 디자인(RagListItem)과 통일: 도메인 색 아이콘 + 큰 제목 + 종류/도메인 뱃지 + 소속.
             const style = getDomainStyle(matched?.domain);
             const title = (matched?.name ?? s.name).replace(/\.[^/.]+$/, '');
 
@@ -50,7 +47,6 @@ export default function SourceBadge({ sources }: SourceBadgeProps) {
                   matched ? 'hover:bg-surface hover:border-brand-soft cursor-pointer' : 'cursor-default'
                 }`}
               >
-                {/* 도메인 색 파일 아이콘 */}
                 <div
                   className="shrink-0 flex items-center justify-center"
                   style={{ width: 38, height: 38, borderRadius: 10, background: style.badgeBg, color: style.bar }}

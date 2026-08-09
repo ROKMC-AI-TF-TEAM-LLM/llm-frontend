@@ -4,31 +4,19 @@ import { logError } from '../../utils/logError'
 import type { GetMessagesResponse, GetMessagesParams, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source, FileAttachment, Notice } from '../../types'
 
-// 커서 페이지네이션: cursor 없으면 최신 페이지, 있으면 그 지점부터 과거 방향으로 limit개.
-// 서버 파라미터 이름은 limit (스웨거 기준, 기본 20 / 1~100).
 export const getMessages = (
   sessionId: string,
   params?: GetMessagesParams,
   options?: { signal?: AbortSignal },
 ) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
-    // 기본 20 — 서버 기본값과 같게 맞춘다.
-    // (예전에 무한 스크롤을 시험하려고 4로 줄여둔 값이 그대로 남아 있었다.
-    //  그 탓에 세션에 들어가면 최근 2쌍만 보이고 나머지는 위로 올려야 나왔다)
-    params: { limit: 20, ...params },
+    params: { size: 20, ...params },
     ...options,
   })
 
 export const deleteMessage = (sessionId: string, messageId: string) =>
   backendApi.delete<DeleteMessageResponse>(`/api/v1/sessions/${sessionId}/messages/${messageId}`)
 
-/**
- * 출처 한 건을 화면이 쓰는 { name, page } 모양으로 맞춘다.
- *
- * 페이지 번호가 서버/버전에 따라 page · page_no · page_number · pages 등
- * 다른 이름으로 오는 경우가 있어, 흔한 이름을 모두 받아들인다.
- * (하나로 확정되면 이 함수를 지우고 그 필드만 쓰면 된다)
- */
 export const normalizeSource = (raw: unknown): Source => {
   const s = (raw ?? {}) as Record<string, unknown>
   const name = String(s.name ?? s.title ?? s.document_name ?? s.file_name ?? '')
@@ -36,12 +24,11 @@ export const normalizeSource = (raw: unknown): Source => {
   const rawPage =
     s.page ?? s.page_no ?? s.page_number ?? s.pages ?? s.page_num ?? s.pageNo ?? null
 
-  // 0이나 빈 문자열은 '없음'으로 본다(0쪽은 의미가 없다).
   const page =
     rawPage === null || rawPage === undefined || rawPage === '' || rawPage === 0
       ? null
       : Array.isArray(rawPage)
-        ? rawPage.join(', ')   // [3, 4] → "3, 4"
+        ? rawPage.join(', ')
         : String(rawPage)
 
   return { name, page }
@@ -56,7 +43,6 @@ interface SseHandlers {
   signal?: AbortSignal
 }
 
-// access token을 붙여 SSE(POST)를 요청하고, 401이면 1회 refresh 후 재시도한다.
 const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promise<Response> => {
   const makeRequest = (token: string | null) =>
     fetch(url, {
@@ -90,8 +76,6 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
   return response
 }
 
-// SSE(text/event-stream) 본문을 읽어 텍스트 토큰/sources/done/error 이벤트를 처리한다.
-// 일반 채팅 스트리밍과 재생성 스트리밍이 동일한 이벤트 형식을 쓰므로 공유한다.
 const readSse = async (response: Response, { onChunk, onSources, onFiles, onStatus, onNotice, signal }: SseHandlers) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
@@ -146,26 +130,19 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
 
       const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
-        // 개발 중에는 서버가 실제로 보낸 출처 원본을 찍어둔다.
-        // (페이지 번호가 화면에 안 뜰 때 서버가 안 주는 건지 이름이 다른 건지 바로 확인 가능)
         if (import.meta.env.DEV) {
           console.log('[SSE sources] 원본:', JSON.stringify(evt.items))
         }
         onSources?.(evt.items.map(normalizeSource))
       } else if (evt.type === 'files' && Array.isArray(evt.items)) {
-        // done 직전 1회. 미들웨어가 흡수해 정규화한 첨부 목록. [{ attachment_id, name, size, url }]
         onFiles?.(evt.items as FileAttachment[])
       } else if (evt.type === 'error') {
         logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
-        /* 완료 신호 — 별도 처리 없음(루프 종료는 reader done으로 처리) */
       } else if (evt.type === 'notice') {
-        // 답변에 대한 경고/안내(예: 근거 부재 → LLM 일반 지식으로 답함). 답변 본문이 아니라 배너로 표시.
-        // code가 분기 기준(문구 파싱 금지), level은 스타일 힌트, message는 그대로 노출.
         if (evt.message) onNotice?.({ code: evt.code ?? '', level: evt.level ?? 'warning', message: evt.message })
       } else if (evt.type === 'status') {
-        // 진행상태 이벤트(예: "관련 문서를 선별하는 중..."). 답변 본문이 아니므로 onChunk가 아닌 onStatus로 전달.
         if (evt.message) onStatus?.(evt.message)
       } else if (
         evt.type === 'text' ||
@@ -210,8 +187,6 @@ export const streamMessage = async (
   await readSse(response, { onChunk, onSources, onFiles, onStatus, onNotice, signal })
 }
 
-// AI 메시지 재생성: 기존 AI 응답(messageId)을 서버에서 삭제하고 동일 질문으로 재스트리밍한다.
-// body 없음. messageId는 반드시 role: 'ai' 메시지의 ID여야 한다.
 export const regenerateMessageStream = async (
   sessionId: string,
   messageId: string,

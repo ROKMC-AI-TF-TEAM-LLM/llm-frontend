@@ -11,8 +11,6 @@ import DomainPicker from './DomainPicker';
 const inputDrafts = new Map<string, string>();
 const NEW_CHAT_KEY = '__new__';
 
-// 선택한 도메인을 세션별로 기억한다 — 페이지 전환/리마운트뿐 아니라 새로고침 후에도
-// 유지되도록 sessionStorage에 저장한다. (Map과 같은 get/set/delete 인터페이스 유지)
 const DOMAIN_DRAFT_KEY = 'rokm_domain_drafts';
 const domainDrafts = {
   read(): Record<string, DomainSelection> {
@@ -27,7 +25,6 @@ const domainDrafts = {
     try {
       sessionStorage.setItem(DOMAIN_DRAFT_KEY, JSON.stringify(map));
     } catch {
-      /* 저장 불가 시 무시 */
     }
   },
   get(key: string): DomainSelection | null {
@@ -52,7 +49,6 @@ const toSessionTitle = (text: string): string => {
     .replace(/[#*`>_~]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  // 화면에서의 생략은 CSS(truncate)가 처리한다. 여기서는 비정상적으로 긴 입력만 방어적으로 자른다.
   const MAX = 200;
   return cleaned.length > MAX ? cleaned.slice(0, MAX).trim() + '…' : cleaned || '새 대화';
 };
@@ -61,9 +57,7 @@ interface ChatInputProps {
   placeholder?: string;
   notice?: string;
   isConnecting?: boolean;
-  /** 프로젝트 화면에서 쓸 때: 새 대화를 이 프로젝트 소속으로 만들고 /projects/{id}/{sid}로 이동한다. */
   projectId?: string;
-  /** 도메인 선택 UI를 숨긴다(프로젝트 대화는 지침/파일 기반이라 도메인이 불필요). */
   hideDomain?: boolean;
 }
 
@@ -88,7 +82,6 @@ export default function ChatInput({
   const [domain, setDomainState] = useState<DomainSelection | null>(() => domainDrafts.get(draftKey) ?? null);
   const [inputError, setInputError] = useState('');
 
-  // 도메인 선택을 세션별로 기억한다(초안과 동일 패턴).
   const setDomain = (d: DomainSelection | null) => {
     setDomainState(d);
     if (d) domainDrafts.set(draftKey, d);
@@ -132,8 +125,6 @@ export default function ChatInput({
     e.target.value = '';
   };
 
-  // '새 대화 시작' 화면 = /chat(일반 새 채팅) 또는 프로젝트 화면의 입력창(projectId가 있으면 아직 세션 없음).
-  // 이 경우 전송 시 세션을 새로 만들고 해당 경로로 이동한다.
   const isNewChat = location.pathname === '/chat' || !!projectId;
 
   const resetTextarea = () => {
@@ -164,14 +155,11 @@ export default function ChatInput({
         clearCache(prevSessionId);
       }
       try {
-        // 프로젝트 화면에서 시작한 대화면 그 프로젝트 소속으로 만든다(project_id 전달).
         const res = await createSession({ title: toSessionTitle(text), ...(projectId ? { project_id: projectId } : {}) });
         const sessionId = res.data.data.session_id;
         saveInflight(sessionId, text, domain ?? undefined);
-        // 새 채팅(__new__)에서 고른 도메인을 방금 만든 세션 키로 넘겨, 채팅 페이지에서도 유지되게 한다.
         if (domain) domainDrafts.set(sessionId, domain);
         domainDrafts.delete(NEW_CHAT_KEY);
-        // 프로젝트 대화는 프로젝트 경로로, 일반 대화는 채팅 경로로 이동한다.
         const path = projectId ? `/projects/${projectId}/${sessionId}` : `/chat/${sessionId}`;
         navigate(path, { state: { initialMessage: text } });
       } catch (e: unknown) {

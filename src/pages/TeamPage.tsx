@@ -10,19 +10,12 @@ export default function TeamPage() {
 
   return (
     <div className="team-page relative min-h-screen">
-      {/* 어두운 본문 구간 — 배경은 여기까지만 깔린다(아래 흰 푸터를 덮지 않게). */}
       <div className="team-dark">
-      {/* 배경 : 본문 구간 안에 고정. 스크롤해도 같은 화면 안에 있는 느낌을 준다. */}
       <div className="team-bg" aria-hidden>
         <span className="team-bg-glow" />
         <span className="team-bg-grid" />
       </div>
 
-      {/* 상단 — 최소한만. 로고와 나가는 길 하나. */}
-      {/* 로고 위치·크기는 로그인(랜딩) 네비(.mars-nav)와 같은 값으로 맞춘다.
-          색만 어두운 배경에 맞춰 흰색으로 바꾼다. */}
-      {/* sticky — 스크롤을 내려도 상단에 남는다.
-          배경이 어두우므로 반투명 검정 + blur로 두어 뒤 내용이 비치되 글자는 읽히게 한다. */}
       <header
         style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
         className="sticky top-0 z-30 flex items-center border-b border-white/[0.07] bg-[#0b0709]/80 backdrop-blur-md"
@@ -43,7 +36,6 @@ export default function TeamPage() {
       </header>
 
       <main className="relative z-10">
-        {/* 1. 히어로 */}
         <section className="team-sec flex items-center justify-center px-[6vw] text-center">
           <ScrollFade>
             <p className="team-eyebrow">AI DATA TF</p>
@@ -65,7 +57,6 @@ export default function TeamPage() {
           </span>
         </section>
 
-        {/* 2. 문제 */}
         <section className="team-sec flex items-center px-[6vw]">
           <ScrollFade className="mx-auto w-full max-w-[760px]">
             <p className="team-eyebrow">THE SOLUTION</p>
@@ -82,7 +73,6 @@ export default function TeamPage() {
           </ScrollFade>
         </section>
 
-        {/* 3. 우리가 하는 일 */}
         <section className="team-sec flex items-center px-[6vw]">
           <div className="mx-auto w-full max-w-[900px]">
             <ScrollFade>
@@ -128,7 +118,6 @@ export default function TeamPage() {
           </div>
         </section>
 
-        {/* 4. 숫자 */}
         <section className="team-sec flex items-center px-[6vw]">
           <div className="mx-auto w-full max-w-[900px]">
             <ScrollFade>
@@ -155,7 +144,6 @@ export default function TeamPage() {
           </div>
         </section>
 
-        {/* 5. 연혁 */}
         <section className="team-sec flex items-center px-[6vw]">
           <div className="mx-auto w-full max-w-[760px]">
             <ScrollFade>
@@ -185,7 +173,6 @@ export default function TeamPage() {
           </div>
         </section>
 
-        {/* 6. 팀원 */}
         <section className="team-sec flex items-center px-[6vw]">
           <div className="mx-auto w-full max-w-[1000px]">
             <ScrollFade className="text-center">
@@ -208,7 +195,6 @@ export default function TeamPage() {
           </div>
         </section>
 
-        {/* 7. 마무리 */}
         <section className="team-sec flex items-center justify-center px-[6vw] text-center">
           <ScrollFade>
             <h2 className="text-[clamp(26px,4vw,46px)] font-black leading-[1.35] tracking-[-0.035em] text-white break-keep">
@@ -231,9 +217,6 @@ export default function TeamPage() {
       </main>
       </div>
 
-      {/* 하단 — 다른 페이지와 같은 랜딩 푸터.
-          검정에서 흰색으로 그라디언트를 넣으면 회색 안개처럼 뭉개져 지저분하다.
-          경계는 그냥 딱 끊는 편이 깔끔하다(섹션이 끝났다는 신호로도 읽힌다). */}
       <div className="relative z-10 bg-white">
         <LandingFooter />
       </div>
@@ -241,11 +224,9 @@ export default function TeamPage() {
   )
 }
 
-/** 팀원 한 명. 사진이 없으면 이니셜 원으로 대신한다. */
 function MemberCard({ member }: { member: Member }) {
   return (
     <div className="team-member flex flex-col items-center text-center">
-      {/* 프로필 자리 — 사진이 준비되면 members.ts 의 photo에 경로를 넣는다. */}
       <span
         className="team-avatar relative flex items-center justify-center overflow-hidden rounded-full"
         style={{ width: 92, height: 92 }}

@@ -17,21 +17,15 @@ const getSessionError = (error: unknown): string => {
   return (code ? SESSION_ERRORS[code] : undefined) ?? '오류가 발생했습니다.'
 }
 
-// hover 시 나타나는 액션(별/수정/삭제) 영역의 배경색 = 아이템 hover/active 배경색.
-// 제목이 길 때 이 색으로 페이드아웃시켜 글자가 버튼 밑으로 '잘려 겹치는' 대신 자연스럽게 사라지게 한다.
 const HOVER_BG = '#fdedf2'
 
 interface SessionItemProps {
   chat: ChatItem
-  /** 에러 토스트를 띄울 부모 콜백 (빈 문자열이면 해제) */
   onError: (msg: string) => void
 }
 
-// 사이드바 세션 한 줄. '최근 대화'와 '즐겨찾기' 섹션이 동일한 동작을 갖도록 공용화했다.
-// 대화는 아이콘이 없으므로 제목이 왼쪽에 그대로 붙는다(프로젝트 줄에 맞춰 들여쓰지 않는다).
 export default function SessionItem({ chat, onError }: SessionItemProps) {
   const navigate = useNavigate()
-  // /chat/:id 면 id가 세션, /projects/:id/:chatId 면 chatId가 세션이다. 둘 중 세션 id를 고른다.
   const { id: routeId, chatId: routeChatId } = useParams()
   const currentId = routeChatId ?? routeId
   const { mutate: updateSession } = useUpdateSession()
@@ -95,20 +89,17 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
           isActive ? 'font-bold' : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
         }`}
       >
-        {/* 제목이 없으면 '제목 없음'을 회색으로 (활성 상태에서도 회색을 유지한다) */}
         <span className={`truncate overflow-hidden ${isUntitled ? 'text-text-muted font-normal' : ''}`}>
           {titleText}
         </span>
       </button>
 
-      {/* 페이드: 제목이 액션 버튼과 겹치는 구간을 배경색으로 자연스럽게 가린다(hover 시에만). */}
       <span
         aria-hidden
         className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 rounded-r-[9px] opacity-0 group-hover:opacity-100 transition-opacity duration-150"
         style={{ background: `linear-gradient(to right, rgba(253,237,242,0) 0%, ${HOVER_BG} 35%)` }}
       />
 
-      {/* 액션: 즐겨찾기 / 제목 수정 / 삭제 */}
       <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
         <button
           onClick={(e) => {
@@ -120,7 +111,6 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
           }`}
           aria-label={chat.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
         >
-          {/* 즐겨찾기면 채워진 별, 아니면 빈 별 */}
           <svg
             className="w-3 h-3"
             viewBox="0 0 24 24"

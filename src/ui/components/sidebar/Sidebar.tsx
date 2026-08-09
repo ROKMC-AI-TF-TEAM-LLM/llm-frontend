@@ -20,17 +20,12 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: SidebarProps) {
-  // 즐겨찾기는 별도 상태로 저장하지 않는다 — 세션 목록 하나를 진실로 두고 '파생'시킨다.
-  // (두 곳에 저장하면 삭제/이름변경/토글 때마다 어긋난다)
   const favorites = useMemo(() => chats.filter((c) => c.isFavorite), [chats]);
   const others = useMemo(() => chats.filter((c) => !c.isFavorite), [chats]);
 
   const asideRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // 사이드바 어디에 커서를 두든(헤더·메뉴·푸터 포함) 휠은 세션 목록을 스크롤한다.
-  // 그렇게 하지 않으면 스크롤 대상이 없는 영역의 휠이 부모로 전파돼 뒤의 채팅이 스크롤된다.
-  // React의 onWheel은 passive라 preventDefault가 통하지 않으므로 네이티브 리스너로 등록한다.
   useEffect(() => {
     const aside = asideRef.current;
     if (!aside) return;
@@ -38,7 +33,6 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
     const onWheel = (e: WheelEvent) => {
       const list = listRef.current;
       if (!list) return;
-      // 목록 안에서 시작한 휠은 브라우저 기본 동작에 맡긴다(overscroll-contain이 체이닝을 막아준다).
       if (list.contains(e.target as Node)) return;
       e.preventDefault();
       list.scrollTop += e.deltaY;
@@ -58,9 +52,6 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
     >
       <SidebarHeader isOpen={isOpen} onToggle={onToggle} />
       <SidebarMenu isOpen={isOpen} activeLabel={activeLabel} />
-      {/* 헤더·메뉴·푸터는 고정, 세션 목록만 스크롤한다(스크롤바도 이 영역에서 시작).
-          min-h-0: flex 자식이 내용 높이만큼 늘어나 스크롤이 안 생기는 것을 막는다.
-          overscroll-contain: 목록 끝에 닿아도 스크롤이 뒤(채팅)로 넘어가지 않게 한다. */}
       <div
         ref={listRef}
         className={`flex-1 min-h-0 overflow-y-auto overscroll-contain ${
@@ -69,8 +60,6 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
         }`}
       >
         <FavoriteChats isOpen={isOpen} favorites={favorites} />
-        {/* 프로젝트는 '최근 대화' 위에 둔다 — 최근 대화는 계속 늘어나는 목록이라
-            아래에 붙이면 스크롤을 한참 내려야 프로젝트가 보인다. */}
         <SidebarProjects isOpen={isOpen} />
         <RecentChats
           isOpen={isOpen}

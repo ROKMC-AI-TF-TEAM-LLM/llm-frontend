@@ -6,7 +6,6 @@ interface FileDownloadProps {
   attachments?: FileAttachment[];
 }
 
-// 답변에 첨부된 파일(HWP 내보내기 등)의 다운로드 버튼.
 export default function FileDownload({ attachments }: FileDownloadProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);

@@ -1,14 +1,9 @@
-// 관리자 문서 관리 API 타입.
-// 업로드(POST) / 목록(GET) / 상태(GET) / 삭제(DELETE) 4개 엔드포인트.
 
-// 색인 처리 상태. 서버가 문자열로 주므로 알려진 값 + 그 외를 허용한다.
 export type AdminDocStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | (string & {})
 
-// 공개 범위. ALL = 전체 공개, DEPT_ONLY = 소유 부서만.
 export type DocVisibility = 'ALL' | 'DEPT_ONLY'
 
 // ─── 업로드: POST /api/v1/admin/documents (multipart/form-data) ───
-// file, name, domain은 필수. visibility 미지정 시 서버 기본값. department는 DEPT_ONLY일 때만.
 export interface UploadDocumentFields {
   name: string
   domain: string

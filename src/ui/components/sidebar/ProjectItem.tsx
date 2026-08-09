@@ -3,9 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import type { Project } from '../../../features/projects/mock'
 import { EditIcon, LayersIcon, StarIcon, TrashIcon } from '../../../features/projects/icons'
 
-// 사이드바 프로젝트 한 줄. '즐겨찾기'와 '프로젝트' 두 섹션이 같은 동작을 갖도록 공용화했다.
-// 대화 줄(SessionItem)과 같은 규칙: 호버하면 액션(즐겨찾기/이름변경/삭제)이 뜨고,
-// 제목이 액션 밑으로 잘려 보이지 않게 배경색으로 페이드아웃한다.
 const HOVER_BG = '#fdedf2'
 
 interface ProjectItemProps {
@@ -67,7 +64,6 @@ export default function ProjectItem({
         <span className="truncate overflow-hidden">{p.name}</span>
       </button>
 
-      {/* 제목이 액션과 겹치는 구간을 배경색으로 자연스럽게 가린다(호버 시에만) */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-y-0 right-0 w-28 rounded-r-[9px] opacity-0 transition-opacity duration-150 group-hover:opacity-100"

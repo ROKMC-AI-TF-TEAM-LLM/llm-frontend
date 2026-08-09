@@ -11,7 +11,6 @@ import Toast from '../ui/components/Toast';
 import { getApiError, DEFAULT_STATUS_ERRORS } from '../utils/error';
 import type { AdminDocumentItem, AdminDocStatus } from '../types/adminDocument';
 
-// 상태 필터 탭
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: '전체', value: 'all' },
@@ -20,7 +19,6 @@ const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: '실패', value: 'failed' },
 ];
 
-// 정규화한 상태 → 화면 배지 (normalizeDocStatus로 대소문자·표현 차이 흡수)
 const statusBadge = (status: AdminDocStatus) => {
   switch (normalizeDocStatus(status)) {
     case 'completed':
@@ -37,8 +35,6 @@ const matchesFilter = (status: AdminDocStatus, f: StatusFilter): boolean => {
   return normalizeDocStatus(status) === f;
 };
 
-// 문서 한 행. 목록 status가 '처리 중'이면 전용 status API(/status)로 개별 검증해
-// 그 결과(완료/실패)를 목록 값보다 우선 표시한다. 완료/실패면 개별 호출을 하지 않는다.
 function DocumentRow({
   doc,
   onDelete,
@@ -49,11 +45,9 @@ function DocumentRow({
   deleting: boolean;
 }) {
   const listStatus = normalizeDocStatus(doc.status);
-  // 목록상 처리 중인 문서만 개별 검증(완료/실패면 호출 안 함).
   const isProcessing = listStatus === 'processing';
   const { data: statusRes } = useAdminDocumentStatus(isProcessing ? doc.document_id : undefined);
 
-  // 전용 status 응답이 오면 그 값을, 없으면 목록 값을 쓴다.
   const verifiedStatus = statusRes?.data.data.status ?? doc.status;
   const badge = statusBadge(verifiedStatus);
   const style = getDomainStyle(doc.domain);
@@ -119,7 +113,6 @@ export default function AdminDocuments() {
 
   const documentsData = data?.data?.data?.documents;
 
-  // 클라이언트 필터(상태 탭 + 이름 검색)
   const filtered = useMemo(() => {
     const documents: AdminDocumentItem[] = documentsData ?? [];
     const q = search.trim().toLowerCase();
@@ -153,7 +146,6 @@ export default function AdminDocuments() {
 
       <p className="text-sm text-text-muted mb-6">MARS가 답변 근거로 사용할 문서를 업로드하세요</p>
 
-      {/* 업로드 영역 (드래그앤드롭) */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
@@ -183,7 +175,6 @@ export default function AdminDocuments() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
-          {/* 업로드 도메인 선택 */}
           <div className="relative">
             <button
               type="button"
@@ -224,7 +215,6 @@ export default function AdminDocuments() {
         </div>
       </div>
 
-      {/* 상태 필터 + 검색 */}
       <div className="flex items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-1.5">
           {STATUS_TABS.map((tab) => (
@@ -264,7 +254,6 @@ export default function AdminDocuments() {
         </div>
       </div>
 
-      {/* 목록 테이블 */}
       <div className="rounded-2xl border border-surface-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>

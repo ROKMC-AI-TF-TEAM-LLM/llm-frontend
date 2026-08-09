@@ -1,47 +1,20 @@
-// 튜토리얼(소개 영상) 목록.
-//
 // ── 영상 파일 두는 곳 ─────────────────────────────────────────────
-// public/tutorials/<slug>.mp4 에 넣고 videoUrl에 '/tutorials/<slug>.mp4' 를 적는다.
-// (예: public/tutorials/projects.mp4  →  videoUrl: '/tutorials/projects.mp4')
-//
-// public/ 안의 파일은 빌드하면 dist/ 로 그대로 복사되고, 주소도 그대로 유지된다.
-// 외부 주소(YouTube 등)를 쓰지 않으므로 인터넷이 없는 내부망에서도 재생된다.
-// videoUrl이 없는 항목은 '영상 준비 중' 자리표시가 나온다.
 // ──────────────────────────────────────────────────────────────
-//
-// TODO(API): 튜토리얼을 서버에서 관리하게 되면 이 상수를 조회 훅으로 교체한다.
 
-/**
- * '이 기능이 왜 있는지'를 설명하는 한 항목.
- * 영상이 '쓰는 법'을 보여주므로, 페이지 본문은 겹치지 않게 '있는 이유'를 다룬다.
- */
 export interface TutorialPoint {
   title: string
   desc: string
 }
 
 export interface Tutorial {
-  /** URL에 쓰는 식별자 (/tutorials/projects) */
   slug: string
   title: string
-  /** 제목 아래 한두 줄 소개 */
   summary: string
   category: string
   product: string
-  /**
-   * 카드 썸네일 바탕색.
-   * 클로드 튜토리얼 카드처럼 위쪽에 색면을 깔아 목록이 심심하지 않게 한다.
-   * 브랜드 빨강 계열 안에서 농도만 달리해 톤이 흐트러지지 않게 골랐다.
-   */
   tint: string
-  /** 본문에 쓰는 '이 기능이 있는 이유'. 영상의 사용법 설명과 겹치지 않게 쓴다. */
   points: TutorialPoint[]
-  /** 본문 섹션 제목 (예: '프로젝트가 있는 이유'). */
   pointsTitle: string
-  /**
-   * 영상 주소. 비어 있으면 '영상 준비 중'으로 표시된다.
-   * 폐쇄망 운용이라 외부 임베드(YouTube 등) 대신 public/ 에 둔 파일을 직접 재생한다.
-   */
   videoUrl?: string
 }
 

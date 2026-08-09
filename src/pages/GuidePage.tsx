@@ -4,7 +4,6 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import DomainIcon from '../ui/components/chat/DomainIcon';
 import LandingFooter from '../ui/components/landing/LandingFooter';
 
-// 실제 도메인 목록(GET /capabilities로 오는 값과 동일한 코드·라벨).
 const DOMAINS = [
   { code: 'HR', label: '인사·복지' },
   { code: 'TECH', label: '정보화·보안' },
@@ -15,7 +14,6 @@ const DOMAINS = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// 데이터
 // ─────────────────────────────────────────────────────────────
 const SMARTS = [
   { title: '근거 기반의 정직한 답변', desc: '충분한 근거를 찾지 못한 경우 추측 대신 담당 부서 문의를 안내합니다.' },
@@ -48,7 +46,6 @@ const ANSWER_LINES = [
 ];
 
 // ─────────────────────────────────────────────────────────────
-// 스크롤 진입 시 fade/blur로 나타나는 래퍼 (원본의 [data-reveal])
 // ─────────────────────────────────────────────────────────────
 function Reveal({
   children,
@@ -99,7 +96,6 @@ function Reveal({
 }
 
 // ─────────────────────────────────────────────────────────────
-// STEP 01 목업 — 질문이 타이핑됐다가 지워지는 루프
 // ─────────────────────────────────────────────────────────────
 function useTick(intervalMs = 80) {
   const [t, setT] = useState(0);
@@ -157,14 +153,11 @@ function Step01Mock() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 도메인 선택 목업 — 실제 DomainPicker 드롭다운 디자인 그대로.
-// 선택 항목이 순환하며 하이라이트돼 '고르는 느낌'을 준다.
 // ─────────────────────────────────────────────────────────────
 function DomainStepMock() {
   const t = useTick();
-  // 2초마다 한 항목씩 순회 (전체=인덱스 -1 포함). 목록 + 전체.
   const total = DOMAINS.length + 1;
-  const activeIdx = Math.floor((t / 2000) % total) - 1; // -1이면 '전체'
+  const activeIdx = Math.floor((t / 2000) % total) - 1;
 
   return (
     <div className="h-full flex flex-col items-center justify-center gap-6 p-10">
@@ -173,7 +166,6 @@ function DomainStepMock() {
         <div className="mt-2 text-[13.5px] text-[#a89aa0]">선택한 도메인 안에서만 근거를 찾습니다.</div>
       </div>
 
-      {/* 실제 DomainPicker 드롭다운과 동일한 스타일 */}
       <div className="w-[220px] rounded-2xl border border-surface-border shadow-[0_10px_30px_rgba(40,30,35,0.10)] p-1.5 bg-white">
         {DOMAINS.map((d, i) => (
           <GuideMenuRow key={d.code} active={activeIdx === i} icon={<DomainIcon code={d.code} size={14} />} label={d.label} />
@@ -189,7 +181,6 @@ function DomainStepMock() {
   );
 }
 
-// DomainPicker의 MenuRow와 동일한 디자인의 정적 표시용 행.
 function GuideMenuRow({ active, icon, label }: { active: boolean; icon: React.ReactNode; label: string }) {
   return (
     <div
@@ -209,7 +200,6 @@ function GuideMenuRow({ active, icon, label }: { active: boolean; icon: React.Re
 }
 
 // ─────────────────────────────────────────────────────────────
-// STEP 02 목업 — "생각하는 중" → 답변 줄이 한 줄씩 나타나는 루프
 // ─────────────────────────────────────────────────────────────
 function Step02Mock() {
   const t = useTick();
@@ -258,7 +248,6 @@ function Step02Mock() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// STEP 03 목업 — 출처가 열렸다 닫히는 루프
 // ─────────────────────────────────────────────────────────────
 function Step03Mock() {
   const t = useTick();
@@ -266,7 +255,6 @@ function Step03Mock() {
   const p = t % cycle;
   const open = p >= 2400 && p < 5200;
 
-  // 실제 SourceBadge 디자인 그대로: 알약 토글 버튼 + 카드형 출처 항목.
   return (
     <div className="p-9 text-[14.5px] leading-[1.8] text-[#33333a]">
       <div className="mb-5">국가계약법은 국가가 당사자가 되는 계약의 기본 사항을 규정한 법률입니다. 적용 범위와 계약 원칙 등 주요 내용을 정리했습니다.</div>
@@ -299,7 +287,6 @@ function Step03Mock() {
   );
 }
 
-// 첨부 클립 아이콘(실제 입력창에도 있음 — 배치만 보여주는 정적 표시).
 function PaperclipIcon({ small }: { small?: boolean }) {
   const s = small ? 16 : 17;
   return (
@@ -309,7 +296,6 @@ function PaperclipIcon({ small }: { small?: boolean }) {
   );
 }
 
-// 실제 DomainPicker 트리거 버튼과 동일한 알약 칩. code가 있으면 선택 상태(브랜드 톤).
 function DomainChip({ code, label }: { code?: string; label?: string }) {
   const selected = !!code;
   return (
@@ -330,19 +316,12 @@ function DomainChip({ code, label }: { code?: string; label?: string }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 페이지
 // ─────────────────────────────────────────────────────────────
 export default function GuidePage() {
   useDocumentTitle('MARS 사용법');
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // '아래로 스크롤': 현재 보고 있는 섹션의 '바로 다음' 섹션으로 이동한다.
-  //
-  // 예전엔 "현재 위치 + 뷰포트 절반보다 아래"인 섹션을 찾았는데, 헤드라인 섹션의 높이가
-  // 딱 그 경계(100vh - 헤더)에 걸려 STEP 01을 건너뛰고 STEP 02로 가버렸다.
-  // → 위치로 어림잡지 말고, 현재 섹션의 인덱스를 구해 +1 하는 방식으로 바꿨다.
-  // 헤더 높이만큼 빼고 섹션 상단에 맞춘다(sticky 헤더에 제목이 가리지 않게).
   const HEADER_H = 66;
   const scrollToSection = (id: string, smooth = true) => {
     const el = document.getElementById(id);
@@ -353,18 +332,14 @@ export default function GuidePage() {
     });
   };
 
-  // 랜딩 네비에서 /guide#step-02 형태로 들어오면 해당 섹션으로 이동한다.
-  // 레이아웃이 잡힌 뒤 위치를 재야 하므로 다음 프레임에 실행한다.
   useEffect(() => {
     const id = window.location.hash.slice(1);
     if (!id) return;
     const raf = requestAnimationFrame(() => scrollToSection(id, false));
     return () => cancelAnimationFrame(raf);
-    // 최초 진입 시 한 번만 — 이후 해시 변경은 아래 hashchange가 맡는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 같은 페이지에 머문 채 해시만 바뀌는 경우(네비에서 다른 항목 선택)
   useEffect(() => {
     const onHash = () => {
       const id = window.location.hash.slice(1);
@@ -379,7 +354,6 @@ export default function GuidePage() {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-guide-section]'));
     if (!sections.length) return;
 
-    // 현재 위치(살짝 아래로 보정)가 속한 섹션 = offsetTop이 그보다 작거나 같은 마지막 섹션
     const probe = window.scrollY + 8;
     let curIdx = 0;
     sections.forEach((s, i) => { if (s.offsetTop <= probe) curIdx = i; });
@@ -397,7 +371,6 @@ export default function GuidePage() {
         background: 'linear-gradient(180deg,#ffeef1 0%,#fdf3f5 9%,#ffffff 26%,#ffffff 100%)',
       }}
     >
-      {/* 로컬 keyframes (Tailwind arbitrary animate-[...]가 참조) */}
       <style>{`
         @keyframes marsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
         @keyframes marsSpin { to { transform: rotate(360deg); } }
@@ -407,8 +380,6 @@ export default function GuidePage() {
         @keyframes hintIn { from { opacity:0; } to { opacity:1; } }
       `}</style>
 
-      {/* 헤더 — 랜딩 상단 네비와 같은 계열. 섹션 바로가기 + 시작하기 */}
-      {/* 로고 위치·크기는 로그인(랜딩) 네비(.mars-nav)와 같은 값으로 맞춘다. */}
       <div
         style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
         className="sticky top-0 z-20 flex items-center gap-7 bg-white/[0.82] backdrop-blur-md border-b border-[#f2e2e6]"
@@ -426,7 +397,6 @@ export default function GuidePage() {
         </button>
       </div>
 
-      {/* 헤드라인 */}
       <section data-guide-section className="relative px-[6vw] min-h-[calc(100vh-73px)] flex items-center overflow-hidden">
         <div className="absolute right-[4%] top-[14%] w-[340px] h-[340px] opacity-90 pointer-events-none animate-[marsFloat_8s_ease-in-out_infinite]">
           <div className="absolute -inset-[14%] rounded-full border-[1.5px] border-[rgba(228,0,43,0.16)] animate-[marsSpin_40s_linear_infinite]" style={{ transform: 'rotate(-16deg)' }}>
@@ -443,7 +413,6 @@ export default function GuidePage() {
           </Reveal>
           <Reveal delay={160}><p className="mt-6 mx-auto max-w-[540px] text-[18px] leading-[1.75] text-[#6a6a72]">질문 입력부터 도메인 선택, 근거 확인, 문서 검색까지 — MARS가 실제로 어떻게 동작하는지 보여드립니다.</p></Reveal>
 
-          {/* 핵심 특징 칩 */}
           <Reveal delay={240} className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
             {['근거 기반 답변', '실시간 스트리밍', '출처 함께 제시', '도메인별 검색'].map((f) => (
               <span key={f} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-[#f2dfe3] text-[14px] font-semibold text-text-secondary shadow-[0_4px_14px_rgba(150,0,40,0.04)]">
@@ -454,7 +423,6 @@ export default function GuidePage() {
           </Reveal>
         </div>
 
-        {/* 스크롤 유도 힌트 — 첫 화면 요소라 Reveal(스크롤 진입) 대신 바로 페이드인 */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-9 animate-[hintIn_.8s_ease_.5s_both]">
           <button
             type="button"
@@ -467,7 +435,6 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* STEP 01 */}
       <StepRow
         id="step-01"
         step="STEP 01"
@@ -482,7 +449,6 @@ export default function GuidePage() {
         mockHeight={500}
       />
 
-      {/* STEP 02 — 도메인 선택 (좌우 반전) */}
       <StepRow
         id="step-02"
         reverse
@@ -498,7 +464,6 @@ export default function GuidePage() {
         mockHeight={500}
       />
 
-      {/* STEP 03 — 답변 스트리밍 */}
       <StepRow
         id="step-03"
         step="STEP 03"
@@ -513,7 +478,6 @@ export default function GuidePage() {
         mockHeight={500}
       />
 
-      {/* STEP 04 — 출처 (좌우 반전) */}
       <StepRow
         id="step-04"
         reverse
@@ -529,7 +493,6 @@ export default function GuidePage() {
         mockHeight={500}
       />
 
-      {/* SMART BEHAVIOR */}
       <section id="smart" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[960px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">SMART BEHAVIOR</Reveal>
@@ -546,7 +509,6 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* TIPS */}
       <section id="tips" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[820px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">TIPS</Reveal>
@@ -563,7 +525,6 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section id="faq" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[760px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">FAQ</Reveal>
@@ -598,12 +559,10 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* CTA — 버튼은 상단 헤더에 있으므로 문구만 둔다 */}
       <section data-guide-section className="relative px-[6vw] min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
         <Reveal className="relative z-[2]">
           <h2 className="m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
           <p className="mx-auto max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
-          {/* 랜딩 히어로와 같은 알약 CTA — 페이지마다 버튼 모양이 다르면 산만하다. */}
           <button type="button" onClick={() => navigate('/')} className="mars-pill mars-pill-brand mt-9">
             MARS 시작하기 <span aria-hidden>→</span>
           </button>
@@ -615,7 +574,6 @@ export default function GuidePage() {
   );
 }
 
-// STEP 행: (목업 카드 | 텍스트) 좌우 배치. reverse면 순서 반전.
 function StepRow({
   id,
   step,
@@ -626,7 +584,6 @@ function StepRow({
   mockHeight,
   reverse,
 }: {
-  /** 상단 네비에서 바로가기 대상이 되는 앵커 id */
   id?: string;
   step: string;
   title: React.ReactNode;

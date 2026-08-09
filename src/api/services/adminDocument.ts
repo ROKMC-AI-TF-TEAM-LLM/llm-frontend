@@ -8,8 +8,6 @@ import type {
   DeleteDocumentResponse,
 } from '../../types/adminDocument'
 
-// 업로드: multipart/form-data. file + 메타 필드를 FormData로 싣는다.
-// Content-Type을 undefined로 두면 axios가 boundary 포함한 multipart 헤더를 자동 설정한다.
 export const uploadAdminDocument = (file: File, fields: UploadDocumentFields) => {
   const form = new FormData()
   form.append('file', file)
@@ -20,7 +18,6 @@ export const uploadAdminDocument = (file: File, fields: UploadDocumentFields) =>
 
   return backendApi.post<UploadDocumentResponse>('/api/v1/admin/documents', form, {
     headers: { 'Content-Type': undefined },
-    // 색인은 백그라운드라 즉시 202를 주지만, 업로드 자체(파일 전송)는 오래 걸릴 수 있어 타임아웃을 넉넉히.
     timeout: 120000,
   })
 }

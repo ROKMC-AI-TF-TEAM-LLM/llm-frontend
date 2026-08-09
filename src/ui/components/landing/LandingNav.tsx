@@ -3,23 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, type GuideSection } from './guideSections'
 import NavPreview from './NavPreview'
 
-/**
- * 랜딩 상단 네비게이션.
- *
- * "서비스 이용법"에 마우스를 올리면 가이드 섹션 목록이 부드럽게 펼쳐지고,
- * 항목을 누르면 가이드 페이지의 해당 섹션으로 바로 이동한다(/guide#step-01).
- *
- * 호버로 열되 마우스가 잠깐 메뉴 밖을 스쳐도 닫히지 않도록 닫힘에만 지연을 둔다
- * (트리거와 패널 사이 간격을 지날 때 깜빡이며 닫히는 걸 막는다).
- */
 export default function LandingNav({ onStart }: { onStart: () => void }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  // 오른쪽 미리보기가 따라갈 대상 — 기본은 첫 단계
   const [hovered, setHovered] = useState(GUIDE_SECTIONS[0].id)
   const closeTimer = useRef<number | undefined>(undefined)
   const wrapRef = useRef<HTMLDivElement>(null)
-  // CTA 오른쪽 캐럿으로 여는 짧은 메뉴 (본문 드롭다운과 독립)
   const [ctaOpen, setCtaOpen] = useState(false)
   const ctaTimer = useRef<number | undefined>(undefined)
 
@@ -35,8 +24,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
   }
   useEffect(() => cancelCtaClose, [])
 
-  // 스크롤하면 바에 흰 배경을 덮는다(본문이 바 아래를 지나며 글자가 겹치는 걸 막는다).
-  // 랜딩은 window가 아니라 .mars-intro 안에서 스크롤되므로 그 요소를 관찰한다.
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const scroller = document.querySelector('.mars-intro')
@@ -66,7 +53,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
 
   useEffect(() => cancelClose, [])
 
-  // Esc로 닫기 — 키보드 사용자를 위한 탈출구
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
@@ -79,8 +65,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
     navigate(`/guide#${id}`)
   }
 
-  // '서비스 이용법' 자체를 누른 경우 — 특정 단계가 아니라 가이드 맨 위로 보낸다.
-  // (step-01로 보내면 페이지 중간부터 시작해 앞부분을 놓친다)
   const goGuideTop = () => {
     setOpen(false)
     navigate('/guide')
@@ -94,7 +78,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
       </button>
 
       <nav className="mars-nav-links">
-        {/* 서비스 이용법 : 호버 시 섹션 목록이 펼쳐진다 */}
         <div
           ref={wrapRef}
           className="mars-nav-item"
@@ -127,7 +110,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
                   />
                 ))}
               </div>
-              {/* 오른쪽 : 왼쪽에서 가리킨 단계의 동작을 미리 보여준다 */}
               <div className="mars-nav-preview">
                 <NavPreview key={hovered} sectionId={hovered} />
               </div>
@@ -144,8 +126,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
         </button>
       </nav>
 
-      {/* CTA : 각진 검정 버튼 + 분리된 드롭다운 칸.
-          캐럿을 누르면 가이드/팀 소개로 갈 수 있는 짧은 메뉴가 열린다. */}
       <div className="mars-nav-actions">
         <div
           className="mars-nav-item"
@@ -229,7 +209,6 @@ function MenuRow({
 }: {
   section: GuideSection
   index?: number
-  /** 오른쪽 미리보기가 이 항목을 비추고 있는지 */
   active?: boolean
   onHover?: () => void
   onSelect: (id: string) => void

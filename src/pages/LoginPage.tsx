@@ -41,7 +41,6 @@ const LOGIN_ERRORS: Record<string, string> = {
 }
 const SIGNUP_ERRORS: Record<string, string> = { EMAIL_ALREADY_EXISTS: '이미 사용 중인 이메일입니다.' }
 
-// 통일된 라인 아이콘 (기능 카드용)
 type IconType = 'learn' | 'source' | 'update' | 'domain' | 'stream' | 'doc'
 const FeatureIcon = ({ type }: { type: IconType }) => {
   const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
@@ -53,11 +52,8 @@ const FeatureIcon = ({ type }: { type: IconType }) => {
   return (<svg {...common}><path d="M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5" /></svg>)
 }
 
-// 히어로 문구 끝에서 계속 바뀌는 동사. 마침표는 밑줄 밖에 따로 찍는다
-// (마침표까지 밑줄이 그어지면 지저분해 보인다).
 const HERO_VERBS = ['물어보세요', '찾아보세요', '확인하세요', '정리하세요']
 
-// 히어로 하단 기능 카드 — Grok의 제품 메뉴처럼 서비스의 축을 한눈에 보여준다.
 const FEATURES: { icon: IconType; title: string; desc: string }[] = [
   { icon: 'learn', title: '해병대 특화', desc: '병영생활·인사·복무 규정 등 우리 군 실무 문서를 참조해 부대 맥락에 맞게 답합니다.' },
   { icon: 'source', title: '출처 기반 답변', desc: 'RAG 검색으로 실제 규정 원문을 찾아 근거·조항과 함께 답변해 신뢰할 수 있습니다.' },
@@ -116,7 +112,6 @@ const LoginPage = () => {
 
   const openAuth = () => {
     const el = introRef.current
-    // 이미 상단이면 바로 열고, 아래로 스크롤된 상태면 부드럽게 top까지 올린 뒤 연다(뚝 끊김 방지)
     if (!el || el.scrollTop <= 4) { setView('auth'); return }
     let done = false
     const finish = () => {
@@ -126,17 +121,13 @@ const LoginPage = () => {
       el.removeEventListener('scrollend', finish)
       setView('auth')
     }
-    const t = window.setTimeout(finish, 1000) // scrollend 미지원 브라우저 폴백
+    const t = window.setTimeout(finish, 1000)
     el.addEventListener('scrollend', finish)
     el.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const closeAuth = () => { setView('intro'); requestAnimationFrame(() => introRef.current?.scrollTo({ top: 0, behavior: 'smooth' })) }
   const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
 
-  // 로그인 패널은 항상 마운트된 채 transform으로만 밀려나므로(.mars-auth-panel), 닫아도 입력값이 남는다.
-  // → 패널이 '열릴 때' 폼/에러/모드를 비운다. (닫힐 때 비우면 슬라이드 아웃 도중 글자가 사라지는 게 보이고,
-  //    타이머로 미루면 그 사이에 다시 열었을 때 입력이 남는 경합이 생긴다)
-  // useLayoutEffect: 패널이 그려지기 '전'에 비워야 이전 입력이 한 프레임도 보이지 않는다.
   useLayoutEffect(() => {
     if (view !== 'auth') return
     resetLogin()
@@ -146,7 +137,6 @@ const LoginPage = () => {
     setSignupSuccess(false)
   }, [view, resetLogin, resetSignup])
 
-  // 인트로 등장 애니메이션
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-shown'); io.unobserve(e.target) } })
@@ -163,14 +153,9 @@ const LoginPage = () => {
 
       {/* ===== 인트로 (스크롤) ===== */}
       <div ref={introRef} className="mars-intro ">
-        {/* Hero */}
         <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw] pt-20">
-          {/* 격자 배경(mars-grid-bg)은 쓰지 않는다 — 옅어도 선이 그어져 보여 지저분하다.
-              깊이는 아래 빛무리(mars-glow-bg) 하나로만 준다. */}
           <div className="mars-glow-bg" style={{ width: 620, height: 620, right: '-6%', top: '2%' }} />
           <div className="max-w-[640px] relative z-[1]">
-            {/* 원문 그대로 노출 — 풀네임이라 대문자 변환/넓은 자간은 끈다.
-                자간을 좁혀 워드마크 폭과 어울리게 하고, 크기는 조금 키워 붕 뜨지 않게 한다. */}
             <div className="mars-reveal mars-eyebrow mars-eyebrow-full mb-5">
               Marine Artificial Intelligence Reasoning System
             </div>
@@ -182,10 +167,8 @@ const LoginPage = () => {
             <p className="mars-reveal mt-5 text-[16.5px] leading-[1.7] text-text-secondary max-w-[420px] break-keep">
               법령·규정·규칙을 참조해 장병의 질문에 근거와 함께 답합니다.
             </p>
-            {/* 시작하기 ↔ 팀소개/사용법 : 같은 자리에 겹쳐두고 opacity 크로스페이드(뚝 끊김 방지) */}
             <div className="mars-reveal mt-8 relative h-[52px]">
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'intro' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                {/* 히어로에는 시작하기만 둔다 — '서비스 이용법'은 상단 탭에 이미 있다. */}
                 <button onClick={openAuth} className="mars-pill mars-pill-brand">
                   MARS 시작하기 <span aria-hidden>→</span>
                 </button>
@@ -203,7 +186,6 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* 히어로 행성 : 히어로 안 → 스크롤과 함께 이동. 로그인 시 왼쪽으로 이동 */}
           <div className="mars-hero-planet">
             <div className="mars-hero-planet-inner">
               <div className="mars-planet-float">
@@ -215,7 +197,6 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* 더 알아보기 (중앙 하단) */}
           {view === 'intro' && (
           <button onClick={scrollToFeatures} className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col items-center gap-1.5 text-text-muted hover:text-brand transition-colors">
             <span className="text-[13px] font-semibold tracking-wide">더 알아보기</span>
@@ -225,7 +206,6 @@ const LoginPage = () => {
         </section>
 
         <div className="mars-below">
-        {/* Features */}
         <section ref={featuresRef} className="mars-section px-[6vw] py-20 min-h-screen flex flex-col justify-center">
           <div className="max-w-[1180px] mx-auto w-full">
             <div className="mars-reveal mars-eyebrow mb-4">가장 큰 특징</div>
@@ -249,7 +229,6 @@ const LoginPage = () => {
           </div>
         </section>
 
-        {/* 터미널 데모 — MARS가 근거를 찾아내는 과정 */}
         <section className="mars-section px-[6vw] py-28 min-h-screen flex flex-col justify-center">
           <div className="max-w-[1180px] mx-auto w-full flex flex-col lg:flex-row gap-16 items-center">
             <div className="flex-1 min-w-0">
@@ -286,11 +265,9 @@ const LoginPage = () => {
           </div>
         </section>
 
-        {/* Usage (채팅 소개) — 좌우 스플릿 */}
         <section className="px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20">
           <div className="max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row gap-14 items-center">
 
-            {/* 왼쪽: 텍스트 + 스텝 */}
             <div className="flex-1 min-w-0">
               <div className="mars-reveal mars-eyebrow mb-5">사용 방법</div>
               <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
@@ -312,12 +289,10 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* 오른쪽: 채팅 카드 */}
             <div className="flex-1 min-w-0 w-full">
               <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
                 <div className="p-7 pb-4 flex flex-col gap-5">
                   <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">정기휴가 신청 절차를 단계별로 알려줘</div>
-                  {/* 답변 — 아바타 없이 본문만. 아바타를 빼니 실제 답변 화면과 더 가깝다. */}
                   <div className="text-[15px] leading-relaxed text-text-primary">
                     <b className="font-extrabold">정기휴가</b> 신청은 다음 순서로 진행됩니다.
                     <div className="mt-3.5 flex flex-col gap-2.5">
@@ -329,10 +304,7 @@ const LoginPage = () => {
                       ))}
                     </div>
 
-                    {/* 근거 문서 — 실제 SourceBadge(펼친 상태)와 동일한 디자인:
-                        도메인 색 파일 아이콘 + 큰 제목 + 종류/도메인 뱃지 (페이지 번호는 표시하지 않음) */}
                     <div className="mt-5">
-                      {/* 접힌 '출처 N개 보기' 뱃지 */}
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-subtle text-brand text-xs font-medium rounded-full border border-brand-soft">
                         <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m6 9 6 6 6-6" /></svg>
                         출처 2개 닫기
@@ -362,12 +334,9 @@ const LoginPage = () => {
                     </div>
                   </div>
                 </div>
-                {/* 실제 채팅 입력창(ChatInput)과 동일한 레이아웃의 정적 데모 — 위 입력 + 하단바(첨부·도메인/전송) */}
                 <div className="px-6 py-6">
                   <div style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }} className="bg-white rounded-[30px] overflow-hidden cursor-default select-none">
-                    {/* 입력 영역 */}
                     <div className="px-5 pt-6 pb-1 text-[15px] text-text-muted">메시지를 입력하세요...</div>
-                    {/* 하단 바 : (좌) 첨부 + 도메인('전체') / (우) 전송 */}
                     <div className="flex items-center justify-between px-3 pb-3 pt-1">
                       <div className="flex items-center gap-1.5">
                         <span className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted shrink-0">
@@ -396,7 +365,6 @@ const LoginPage = () => {
           </div>
         </section>
 
-        {/* CTA — 버튼은 상단 네비/히어로에 이미 있으므로 문구만 둔다 */}
         <section className="relative px-[6vw] mars-section min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
           <div className="mars-glow-bg" style={{ width: 760, height: 760, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
           <div className="relative z-[1]">

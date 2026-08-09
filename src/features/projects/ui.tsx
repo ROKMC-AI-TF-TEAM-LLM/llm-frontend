@@ -19,7 +19,6 @@ import {
   UploadIcon,
 } from './icons'
 
-/** 프로젝트 표식 — 옅은 빨강 바탕 + 레이어 아이콘. */
 export function Mark({ size = 34, active = false }: { size?: number; active?: boolean }) {
   return (
     <span
@@ -63,7 +62,6 @@ export function Block({
   )
 }
 
-
 export function IconButton({
   label,
   onClick,
@@ -103,7 +101,6 @@ export function IconButton({
   )
 }
 
-/** 즐겨찾기 별. */
 export function FavStar({ active, onToggle }: { active: boolean; onToggle: () => void }) {
   return (
     <IconButton label={active ? '즐겨찾기 해제' : '즐겨찾기 추가'} onClick={onToggle} active={active}>
@@ -146,7 +143,6 @@ export function KebabMenu({
           style={{ boxShadow: '0 16px 40px rgba(60,30,38,0.13)' }}
           className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-[#f0e6e8] bg-white p-1.5"
         >
-          {/* TODO(API): 이름 변경 저장 연결 지점 */}
           <button
             type="button"
             onClick={() => {
@@ -158,7 +154,6 @@ export function KebabMenu({
             <EditIcon className="h-3.5 w-3.5" />
             이름 바꾸기
           </button>
-          {/* TODO(API): 삭제 연결 지점 */}
           <button
             type="button"
             onClick={() => {
@@ -176,17 +171,11 @@ export function KebabMenu({
   )
 }
 
-/**
- * `프로젝트이름 / 세션이름` 표기.
- * 프로젝트 홈(목록) 화면이 없으므로 클릭되지 않는 '표시 전용' 텍스트다.
- * 세션이 아직 없으면 프로젝트 이름만 보여준다.
- */
 export function ProjectPath({
   projectName,
   sessionTitle,
 }: {
   projectName: string
-  /** 열려 있는 세션 제목. 넘기지 않으면 프로젝트 이름만. 빈 제목은 '제목 없음'(회색). */
   sessionTitle?: string | null
 }) {
   const hasSession = sessionTitle !== undefined
@@ -207,7 +196,6 @@ export function ProjectPath({
   )
 }
 
-/** 파일 한 줄. */
 export function FileRow({ file }: { file: ProjectFile }) {
   return (
     <div className="group flex items-center gap-2.5 rounded-[10px] px-2 py-2 transition-colors hover:bg-[#fdf6f7]">
@@ -221,7 +209,6 @@ export function FileRow({ file }: { file: ProjectFile }) {
           {file.lines ? ` · ${file.lines}` : ''}
         </span>
       </span>
-      {/* TODO(API): 파일 삭제 연결 지점 — DELETE /projects/:id/files/:fileId */}
       <IconButton label="파일 제거" danger>
         <CloseIcon className="h-3.5 w-3.5" />
       </IconButton>
@@ -229,13 +216,6 @@ export function FileRow({ file }: { file: ProjectFile }) {
   )
 }
 
-/**
- * 대화 한 줄 — 제목 + 오른쪽에 시간. 제목이 없으면 '제목 없음'(회색).
- * 호버하면 시간 자리에 액션(즐겨찾기 / 이름 변경 / 삭제)이 나타난다.
- * 사이드바 SessionItem과 같은 규칙: 제목이 액션과 겹치는 구간은 배경색으로 페이드아웃.
- *
- * TODO(API): 이름 변경 / 즐겨찾기 / 삭제 연결 지점.
- */
 export function ChatRow({
   chat,
   active = false,
@@ -303,13 +283,11 @@ export function ChatRow({
         >
           {text}
         </span>
-        {/* 시간 — 호버하면 액션에 자리를 내준다 */}
         <span className="shrink-0 text-[11.5px] text-text-muted transition-opacity group-hover:opacity-0">
           {chat.updatedAt}
         </span>
       </button>
 
-      {/* 제목이 액션 밑으로 잘려 보이지 않게 배경색으로 페이드아웃 */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-y-0 right-0 w-24 rounded-r-[10px] opacity-0 transition-opacity group-hover:opacity-100"
@@ -358,7 +336,6 @@ export function ChatRow({
   )
 }
 
-/** 지침 본문 — 없으면 옅은 안내, 있으면 텍스트. */
 export function InstructionBody({
   text,
   onEdit,
@@ -366,10 +343,8 @@ export function InstructionBody({
 }: {
   text: string
   onEdit: () => void
-  /** 줄 수 제한 (좁은 패널에서). */
   clamp?: number
 }) {
-  // 방어: 서버가 null/undefined를 줘도 크래시하지 않게 문자열로 취급한다.
   if (!(text ?? '').trim()) {
     return (
       <button
@@ -406,7 +381,6 @@ export function InstructionBody({
   )
 }
 
-/** 파일 빈 상태. */
 export function EmptyFiles() {
   return (
     <div className="rounded-[10px] bg-[#faf7f8] px-4 py-6 text-center">
@@ -418,13 +392,6 @@ export function EmptyFiles() {
   )
 }
 
-/**
- * 입력창 — 실제 ChatInput의 테두리·포커스 링을 그대로 따른다.
- * '지침 적용 중' 같은 안내 칩은 두지 않는다(지침은 당연히 적용되는 것).
- *
- * TODO(API): 전송 연결 지점. 세션 생성(project_id 포함) 후
- *            기존 ChatInput/chatStore 흐름에 붙인다.
- */
 export function Composer({
   placeholder = '무엇이든 물어보세요',
   notice,
@@ -461,7 +428,6 @@ export function Composer({
           }}
         />
 
-        {/* 텍스트 입력 (위) */}
         <textarea
           ref={textareaRef}
           rows={1}
@@ -477,14 +443,12 @@ export function Composer({
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()
-              // TODO(API): 전송 연결 지점
             }
           }}
           placeholder={pendingFile ? '메시지를 입력하세요...' : placeholder}
           className="max-h-48 w-full resize-none overflow-y-hidden bg-transparent px-5 pt-6.5 pb-1 text-[15px] leading-normal text-text-primary outline-none placeholder-text-muted"
         />
 
-        {/* 첨부된 파일 칩 (텍스트 아래, 버튼 줄 위) */}
         {pendingFile && (
           <div className="flex items-center gap-2 px-3 pt-2">
             <div className="flex max-w-full items-center gap-2 rounded-xl bg-brand px-3 py-2 text-white">
@@ -512,13 +476,10 @@ export function Composer({
           </div>
         )}
 
-        {/* 하단 바 : (좌) 첨부 / (우) 전송. 도메인 선택은 프로젝트에서 쓰지 않는다.
-            바의 '빈 여백'을 눌러도 텍스트에 포커스가 가게 한다. */}
         <div
           className="flex cursor-text items-center justify-between px-3 pt-1 pb-3"
           onClick={() => textareaRef.current?.focus()}
         >
-          {/* TODO(API): 파일 첨부 업로드 연결 지점 (지금은 파일명만 칩으로 보여준다) */}
           <button
             type="button"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-brand-subtle hover:text-brand"
@@ -543,13 +504,11 @@ export function Composer({
             </svg>
           </button>
 
-          {/* 입력이 없으면 전송 버튼 자체를 그리지 않는다(실제 ChatInput과 동일) */}
           {value.trim() || pendingFile ? (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
-                // TODO(API): 전송 연결 지점
               }}
               style={{
                 background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
@@ -576,12 +535,6 @@ export function Composer({
   )
 }
 
-/**
- * 새 프로젝트 만들기 모달 — 이름 + 지침을 한 번에 받는다.
- * 이름 없이 만들면 '제목 없음'이 쌓이므로, 만들기 전에 물어본다.
- *
- * TODO(API): 생성 연결 지점 — onSubmit에서 서버에 만들고 새 프로젝트로 이동한다.
- */
 export function CreateProjectModal({
   open,
   onClose,
@@ -700,10 +653,6 @@ function CreateProjectBody({
   )
 }
 
-/**
- * 파일 관리 모달 — 검색 + 첨부 + 올려둔 파일 목록.
- * TODO(API): 업로드/삭제 연결 지점. 지금은 목업 목록만 그린다.
- */
 export function FilesModal({
   open,
   files,
@@ -753,7 +702,6 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
           </IconButton>
         </div>
 
-        {/* 검색 + 첨부 */}
         <div className="flex items-center gap-2.5 px-6 pt-4">
           <input
             value={query}
@@ -767,7 +715,6 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
             accept=".pdf,.doc,.docx,.txt,.hwp,.xlsx"
             className="hidden"
             onChange={(e) => {
-              // TODO(API): 업로드 연결 지점
               e.target.value = ''
             }}
           />
@@ -781,7 +728,6 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
           </button>
         </div>
 
-        {/* 목록 */}
         <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-[#f4eced] px-6 py-4">
           {shown.length === 0 ? (
             <p className="py-10 text-center text-[13px] text-text-muted">
@@ -818,10 +764,6 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
   )
 }
 
-/**
- * 지침 편집 모달.
- * TODO(API): 저장 연결 지점 — 지침 수정 요청을 보낸다.
- */
 export function InstructionModal({
   open,
   initial,
@@ -831,7 +773,6 @@ export function InstructionModal({
   open: boolean
   initial: string
   onClose: () => void
-  /** 저장 시 지침 본문을 넘긴다. 없으면 저장 버튼은 닫기만 한다(하위호환). */
   onSave?: (instructions: string) => void
 }) {
   if (!open) return null
@@ -898,5 +839,4 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
   )
 }
 
-// 화면들이 ui 한 곳에서 아이콘까지 함께 가져다 쓸 수 있게 재수출한다.
 export { ChatIcon, FileIcon, LayersIcon, SparkIcon, PlusIcon, ChevronRight, ChevronDown, StarIcon, UploadIcon, CloseIcon, PanelIcon, NewChatIcon }

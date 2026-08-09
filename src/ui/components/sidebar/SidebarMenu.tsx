@@ -33,14 +33,12 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   const isNewChatActive = location.pathname === "/chat";
   const isItemActive = (path: string) => location.pathname === path;
 
-  // 라벨: 접힐 때 페이드+슬라이드 아웃 (폭 애니메이션과 동일 타이밍)
   const labelCls = `overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${
     isOpen ? 'opacity-100 max-w-[140px]' : 'opacity-0 max-w-0'
   }`;
 
   return (
     <nav className="flex-none px-[10px] pt-[14px] pb-[6px] flex flex-col gap-1">
-      {/* 새 채팅 */}
       <button
         onClick={() => navigate("/chat")}
         title="새 채팅"
@@ -59,7 +57,6 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
         <span className={labelCls}>새 채팅</span>
       </button>
 
-      {/* 대화 검색 / 문서 검색 (프로젝트는 아래 전용 섹션에서 다룬다) */}
       {navItems.map((item) => {
         const isActive = isItemActive(item.path);
         return (

@@ -7,7 +7,6 @@ import type { CreateProjectRequest, GetProjectSessionsParams } from '../types/pr
 import { useProjectStore } from '../features/projects/projectStore'
 import { useAuth } from '../context/AuthContext'
 
-// 프로젝트 목록(커서 무한스크롤). is_favorite 필터는 목록을 나눌 때 쓴다(생략 시 전체).
 export const useInfiniteProjects = (isFavorite?: boolean) => {
   const { accessToken } = useAuth()
   return useInfiniteQuery({
@@ -23,7 +22,6 @@ export const useInfiniteProjects = (isFavorite?: boolean) => {
   })
 }
 
-// 프로젝트 상세(지침 포함). 프로젝트 화면 진입 시 사용.
 export const useProject = (projectId: string | undefined) => {
   const { accessToken } = useAuth()
   return useQuery({
@@ -43,7 +41,6 @@ export const useCreateProject = () => {
   })
 }
 
-// 프로젝트 제목 수정. 낙관적 업데이트: 스토어에 즉시 반영하고, 실패하면 이전 이름으로 되돌린다.
 export const useUpdateProject = () => {
   const queryClient = useQueryClient()
   const rename = useProjectStore((s) => s.rename)
@@ -64,7 +61,6 @@ export const useUpdateProject = () => {
   })
 }
 
-// 프로젝트 즐겨찾기 토글. 낙관적 업데이트 후 실패 시 롤백.
 export const useToggleProjectFavorite = () => {
   const queryClient = useQueryClient()
   const setFavorite = useProjectStore((s) => s.setFavorite)
@@ -84,8 +80,6 @@ export const useToggleProjectFavorite = () => {
     },
   })
 }
-
-// 프로젝트 지침 설정/수정. null·빈 문자열이면 서버에서 지침이 삭제된다.
 export const useSetProjectInstruction = () => {
   const queryClient = useQueryClient()
   const setInstructions = useProjectStore((s) => s.setInstructions)
@@ -106,7 +100,6 @@ export const useSetProjectInstruction = () => {
   })
 }
 
-// 프로젝트 하위 대화 세션 목록(커서 무한스크롤).
 export const useProjectSessions = (projectId: string | undefined, params?: GetProjectSessionsParams) => {
   const { accessToken } = useAuth()
   return useInfiniteQuery({

@@ -1,6 +1,3 @@
-// 프로젝트 워크스페이스 API 타입 (스웨거 기준).
-// 서버가 주는 필드는 project_id / title / is_favorite / instructions 4개다.
-// (파일·대화·도메인 등 화면에만 있는 값은 프론트 목업/로컬 상태로 유지한다)
 
 export interface ProjectData {
   project_id: string
@@ -23,7 +20,6 @@ export interface CreateProjectResponse {
 }
 
 // ── 목록: GET /api/v1/projects (커서 페이지네이션) ──
-// 목록 응답의 항목은 instructions 없이 요약만 온다(project_id/title/is_favorite).
 export type ProjectListItem = Omit<ProjectData, 'instructions'>
 export interface ProjectListData {
   items: ProjectListItem[]
@@ -56,14 +52,12 @@ export interface GetProjectResponse {
   error: { code: GetProjectErrorCode; detail: string } | null
 }
 
-// 프로젝트 관련 뮤테이션은 에러코드가 동일하다(401/403/404/422).
 export type ProjectMutationErrorCode =
   | 'UNAUTHORIZED'
   | 'PROJECT_ACCESS_DENIED'
   | 'PROJECT_NOT_FOUND'
   | 'VALIDATION_ERROR'
 
-// 뮤테이션 공통 응답(성공 시 갱신된 ProjectData).
 export interface ProjectMutationResponse {
   success: boolean
   status_code: number
@@ -72,7 +66,6 @@ export interface ProjectMutationResponse {
 }
 
 // ── 제목 수정: PATCH /api/v1/projects/{project_id} ──
-// 요청 body는 title만 받는다.
 export interface UpdateProjectRequest {
   title: string
 }
@@ -86,7 +79,6 @@ export interface SetProjectFavoriteRequest {
 export type SetProjectFavoriteResponse = ProjectMutationResponse
 
 // ── 지침 설정/수정: PATCH /api/v1/projects/{project_id}/instruction ──
-// null 또는 빈 문자열을 보내면 지침이 삭제된다.
 export interface SetProjectInstructionRequest {
   instructions: string | null
 }
