@@ -121,7 +121,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           튜토리얼
         </button>
 
-        <button type="button" onClick={() => navigate('/team')} className="mars-nav-trigger">
+        <button type="button" onClick={() => {}} className="mars-nav-trigger">
           팀 소개
         </button>
       </nav>

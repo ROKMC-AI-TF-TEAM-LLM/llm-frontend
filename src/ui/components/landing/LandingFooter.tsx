@@ -57,7 +57,7 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
           </FooterCol>
 
           <FooterCol title="알아보기">
-            <FooterBtn onClick={() => goTop('/team')}>팀 소개</FooterBtn>
+            <FooterBtn onClick={() => {}}>팀 소개</FooterBtn>
             <FooterBtn onClick={() => goTop('/tutorials')}>튜토리얼 전체</FooterBtn>
             {TUTORIALS.slice(0, 3).map((t) => (
               <FooterBtn key={t.slug} onClick={() => goTop(`/tutorials/${t.slug}`)}>

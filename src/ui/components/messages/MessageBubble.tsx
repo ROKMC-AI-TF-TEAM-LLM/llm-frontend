@@ -97,10 +97,10 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-1`}>
       <div
         className={`
-          max-w-[70%] py-3 leading-relaxed wrap-break-word
+          py-3 leading-relaxed wrap-break-word
           ${isUser
-            ? 'px-5 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] shadow-[0_10px_22px_rgba(220,20,60,0.2)] whitespace-pre-wrap'
-            : 'pl-1 pr-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-[15px]'}
+            ? 'max-w-[70%] px-5 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] shadow-[0_10px_22px_rgba(220,20,60,0.2)] whitespace-pre-wrap'
+            : 'max-w-[78%] pl-1 pr-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-[15px]'}
         `}
       >
         {isUser ? (

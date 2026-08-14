@@ -90,7 +90,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
 
                 <div className="my-1 mx-3 h-px bg-surface-border" />
 
-                <SubItem label="팀 소개" onClick={() => go('/team')} />
+                <SubItem label="팀 소개" onClick={() => {}} />
                 </div>
               </div>
             )}
