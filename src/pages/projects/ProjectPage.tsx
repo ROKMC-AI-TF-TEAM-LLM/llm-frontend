@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus } from '../../hooks/useProject'
+import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useDeleteProject } from '../../hooks/useProject'
+import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
 import MessageList from '../../ui/components/messages/MessageList'
@@ -64,7 +65,7 @@ export default function ProjectPage() {
   const { id, chatId } = useParams()
   const navigate = useNavigate()
   const project = useProjectStore((s) => s.projects.find((p) => p.id === id))
-  const removeProject = useProjectStore((s) => s.remove)
+  const { mutate: deleteProjectApi } = useDeleteProject()
   const upsertDetail = useProjectStore((s) => s.upsertDetail)
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
@@ -123,12 +124,22 @@ export default function ProjectPage() {
     })))
   }, [sessionsData])
 
-  const renameChat = (targetId: string, next: string) =>
+  const { mutate: updateSessionApi } = useUpdateSession()
+  const { mutate: toggleSessionFavoriteApi } = useToggleSessionFavorite()
+  const { mutate: deleteSessionApi } = useDeleteSession()
+
+  const renameChat = (targetId: string, next: string) => {
     setChats((prev) => prev.map((c) => (c.id === targetId ? { ...c, title: next } : c)))
-  const toggleChatFavorite = (targetId: string) =>
+    updateSessionApi({ sessionId: targetId, data: { title: next } })
+  }
+  const toggleChatFavorite = (targetId: string) => {
+    const cur = chats.find((c) => c.id === targetId)
     setChats((prev) => prev.map((c) => (c.id === targetId ? { ...c, isFavorite: !c.isFavorite } : c)))
+    toggleSessionFavoriteApi({ sessionId: targetId, next: !(cur?.isFavorite ?? false) })
+  }
   const deleteChat = (targetId: string) => {
     setChats((prev) => prev.filter((c) => c.id !== targetId))
+    deleteSessionApi(targetId)
     if (openChatId === targetId) closeChat()
   }
 
@@ -206,7 +217,11 @@ export default function ProjectPage() {
               setRenaming(true)
             }}
             onDelete={() => {
-              removeProject(project.id)
+              const ok = window.confirm(
+                `'${project.name}' 프로젝트를 삭제하시겠습니까?\n\n하위 대화와 메시지, 업로드한 참고 파일이 모두 함께 삭제되며 되돌릴 수 없습니다.`,
+              )
+              if (!ok) return
+              deleteProjectApi(project.id)
               navigate('/chat')
             }}
           />
@@ -296,7 +311,7 @@ export default function ProjectPage() {
 
       {/* ── 오른쪽 : 대화 영역 ── */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center border-b border-[#f4eced] px-5 py-3.5">
+        <header className="flex items-center px-5 py-3.5">
           <div
             className={`overflow-hidden transition-[max-width,opacity] duration-[420ms] ease-[cubic-bezier(.32,.72,0,1)] ${
               panelOpen ? 'max-w-0 opacity-0' : 'max-w-[40px] opacity-100'

@@ -51,7 +51,7 @@ export default function ChatHeader({ title }: ChatHeaderProps) {
 
   return (
     <header style={{ height: '60px' }} className="px-6 flex items-center justify-between gap-4">
-      <h1 title={title} className="min-w-0 text-[15px] font-bold text-text-primary truncate">{title}</h1>
+      <h1 title={title} className="min-w-0 text-[14px] font-bold text-text-primary truncate">{title}</h1>
       <div className="flex items-center gap-3 shrink-0">
         {files.length > 0 && (
           <button

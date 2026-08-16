@@ -18,7 +18,7 @@ export interface MessageListData {
 
 export interface GetMessagesParams {
   cursor?: string | null
-  size?: number
+  limit?: number
 }
 
 export type GetMessagesErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED'

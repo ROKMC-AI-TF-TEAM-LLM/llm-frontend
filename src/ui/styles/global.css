@@ -130,6 +130,18 @@ body {
   animation: chase 1.2s ease-in-out infinite;
 }
 
+/* 진행 중인 단계 점: 흰색↔연한 회색을 오가며 깜빡임(파동 없음) */
+@keyframes status-dot-blink {
+  0%, 100% { background-color: var(--color-text-muted); }
+  50%       { background-color: #fff; }
+}
+.status-dot-blink {
+  animation: status-dot-blink 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-dot-blink { animation: none; }
+}
+
 /* 진행상태 문구(예: "관련 문서를 선별하는 중...") : 밝은 하이라이트가 좌우로 흐르는 shimmer */
 @keyframes status-shimmer {
   0%   { background-position: 150% 0; }

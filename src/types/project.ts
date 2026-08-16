@@ -78,7 +78,7 @@ export interface SetProjectFavoriteRequest {
 }
 export type SetProjectFavoriteResponse = ProjectMutationResponse
 
-export type ProjectLlmMutationErrorCode = ProjectMutationErrorCode | 'LLM_SERVER_ERROR'
+export type ProjectLlmMutationErrorCode = ProjectMutationErrorCode | 'CONFLICT' | 'LLM_SERVER_ERROR'
 
 // ── 지침 설정/수정: PATCH /api/v1/projects/{project_id}/instruction ──
 export interface SetProjectInstructionRequest {
@@ -123,7 +123,7 @@ export interface GetProjectSessionsResponse {
   error: { code: ProjectMutationErrorCode; detail: string } | null
 }
 
-export type ProjectDocStatus = 'queued' | 'running' | 'done' | 'error'
+export type ProjectDocStatus = 'not_indexed' | 'queued' | 'running' | 'done' | 'error'
 
 export interface ProjectDocument {
   document_id: string
@@ -141,6 +141,8 @@ export type UploadProjectDocumentErrorCode =
   | 'PROJECT_ACCESS_DENIED'
   | 'PROJECT_NOT_FOUND'
   | 'FILE_TOO_LARGE'
+  | 'CONFLICT'
+  | 'LLM_SERVER_ERROR'
   | 'VALIDATION_ERROR'
 export interface UploadProjectDocumentResponse {
   success: boolean
@@ -180,6 +182,7 @@ export type ProjectDocumentStatusErrorCode =
   | 'PROJECT_ACCESS_DENIED'
   | 'DOCUMENT_NOT_FOUND'
   | 'VALIDATION_ERROR'
+  | 'CONFLICT'
   | 'LLM_SERVER_ERROR'
 export interface GetProjectDocumentStatusResponse {
   success: boolean
@@ -194,6 +197,7 @@ export type DeleteProjectDocumentErrorCode =
   | 'PROJECT_ACCESS_DENIED'
   | 'DOCUMENT_NOT_FOUND'
   | 'VALIDATION_ERROR'
+  | 'CONFLICT'
   | 'LLM_SERVER_ERROR'
 export interface DeleteProjectDocumentResponse {
   success: boolean

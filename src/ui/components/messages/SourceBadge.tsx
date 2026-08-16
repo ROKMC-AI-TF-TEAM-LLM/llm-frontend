@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Source } from '../../../types';
+import type { Source, Notice } from '../../../types';
 import { useDocumentLookup } from '../../../hooks/useDocument';
 import { useDocumentDrawer } from '../../../hooks/useDocumentDrawer';
 import { findDocumentByName, getDomainStyle, getDomainLabel } from '../../../utils/document';
@@ -7,30 +7,40 @@ import DocumentDrawer from '../rag/DocumentDrawer';
 
 interface SourceBadgeProps {
   sources?: Source[];
+  notice?: Notice;
 }
 
-export default function SourceBadge({ sources }: SourceBadgeProps) {
+export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
   const [open, setOpen] = useState(false);
 
   const { documents } = useDocumentLookup(open);
   const { doc: drawerDoc, open: drawerOpen, openDoc, closeDoc } = useDocumentDrawer();
 
-  if (!sources || sources.length === 0) return null;
+  const hasSources = !!sources && sources.length > 0;
+  if (!hasSources && !notice) return null;
 
   return (
     <div className="ml-1 mt-1 mb-1">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-subtle text-brand text-xs font-medium rounded-full border border-brand-soft hover:bg-brand-soft transition-colors"
-      >
-        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-        출처 {sources.length}개 {open ? '닫기' : '보기'}
-      </button>
+      {hasSources && (
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-subtle text-brand text-xs font-medium rounded-full border border-brand-soft hover:bg-brand-soft transition-colors"
+        >
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+          출처 {sources!.length}개 {open ? '닫기' : '보기'}
+        </button>
+      )}
 
-      {open && (
+      {notice && (
+        <p role="note" className={`text-[11.5px] leading-relaxed text-text-muted ${hasSources ? 'mt-1.5' : ''}`}>
+          {notice.message}
+        </p>
+      )}
+
+      {hasSources && open && (
         <div className="mt-2 space-y-2">
           {sources.map((s, i) => {
             const matched = findDocumentByName(documents, s.name);

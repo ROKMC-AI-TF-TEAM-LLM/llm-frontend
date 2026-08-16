@@ -56,12 +56,7 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onC
       )}
       {!msgStreaming && (
         <>
-          {msg.notice && (
-            <p role="note" className="ml-1 mt-1 mb-2 text-[12.5px] leading-relaxed text-text-muted">
-              {msg.notice.message}
-            </p>
-          )}
-          <SourceBadge sources={msg.sources} />
+          <SourceBadge sources={msg.sources} notice={msg.notice} />
           {!hideEmptyBubble && (
             <MessageActions
               role="assistant"

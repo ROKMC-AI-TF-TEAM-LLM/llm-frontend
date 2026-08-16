@@ -9,6 +9,19 @@ export interface Notice {
   message: string;
 }
 
+const NOTICE_MESSAGES: Record<string, string> = {
+  ungrounded_knowledge: '내부 문서 근거 없이 AI 일반 지식으로 작성된 답변입니다. 원문으로 확인하세요.',
+};
+
+export const noticeFromCode = (code?: string | null): Notice | undefined => {
+  if (!code) return undefined;
+  return {
+    code,
+    level: 'warning',
+    message: NOTICE_MESSAGES[code] ?? '검증되지 않은 답변일 수 있습니다. 원문으로 확인하세요.',
+  };
+};
+
 export interface FileAttachment {
   attachment_id: string;
   name: string;

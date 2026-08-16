@@ -48,6 +48,7 @@ export const useUpdateSession = () => {
       updateSession(sessionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
     },
   })
 }
@@ -58,6 +59,7 @@ export const useDeleteSession = () => {
     mutationFn: (sessionId: string) => deleteSession(sessionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
     },
   })
 }
@@ -100,6 +102,7 @@ export const useToggleFavorite = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
     },
   })
 }

@@ -3,6 +3,7 @@ import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import { logError } from '../../utils/logError'
 import type { GetMessagesResponse, GetMessagesParams, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source, FileAttachment, Notice } from '../../types'
+import { noticeFromCode } from '../../types'
 
 export const getMessages = (
   sessionId: string,
@@ -10,7 +11,7 @@ export const getMessages = (
   options?: { signal?: AbortSignal },
 ) =>
   backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
-    params: { size: 20, ...params },
+    params: { limit: 20, ...params },
     ...options,
   })
 
@@ -152,7 +153,9 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
       } else if (evt.type === 'notice') {
-        if (evt.message) onNotice?.({ code: evt.code ?? '', level: evt.level ?? 'warning', message: evt.message })
+        const fromCode = noticeFromCode(evt.code)
+        if (fromCode) onNotice?.(fromCode)
+        else if (evt.message) onNotice?.({ code: evt.code ?? '', level: evt.level ?? 'warning', message: evt.message })
       } else if (evt.type === 'status') {
         if (evt.message) onStatus?.(evt.message)
       } else if (

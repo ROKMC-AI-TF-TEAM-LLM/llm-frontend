@@ -82,12 +82,26 @@ const DEFAULT_STATUS = '생각하는 중...';
 function StatusSteps({ steps, statusText }: { steps?: string[]; statusText?: string | null }) {
   const list = steps && steps.length > 0 ? steps : [statusText || DEFAULT_STATUS];
   return (
-    <ul className="flex flex-col gap-1.5 py-0.5 select-none">
+    <ul className="flex flex-col select-none">
       {list.map((step, i) => {
         const isCurrent = i === list.length - 1;
+        const isLast = i === list.length - 1;
         return (
-          <li key={`${i}-${step}`} className="flex items-start gap-2.5 animate-fade-in">
-            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-text-hint" />
+          <li key={`${i}-${step}`} className="flex items-stretch gap-3 pb-4 last:pb-0 animate-fade-in">
+            {/* 인디케이터 컬럼: 이 li의 텍스트 높이만큼 늘어난다(items-stretch).
+                점은 그 안에서 absolute + top-1/2로 '컬럼의 실제 세로 중앙'에 고정되고,
+                선은 점 중심(top-1/2)부터 컬럼 끝까지 뻗는다. 텍스트 줄 수와 무관하게
+                점·선이 항상 같은 좌표계 안에서 계산되므로 어긋나지 않는다. */}
+            <div className="relative w-3.5 shrink-0">
+              {!isLast && (
+                <span className="absolute left-1/2 top-1/2 h-[calc(100%+16px)] w-px -translate-x-1/2 bg-surface-border" />
+              )}
+              <span
+                className={`absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full ${
+                  isCurrent ? 'bg-text-muted status-dot-blink' : 'bg-brand'
+                }`}
+              />
+            </div>
             <span className={`text-[14px] leading-relaxed ${isCurrent ? 'status-shimmer' : 'text-text-muted'}`}>
               {step}
             </span>

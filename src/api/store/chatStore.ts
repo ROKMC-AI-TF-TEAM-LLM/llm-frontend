@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import type { Message, Source, FileAttachment, Notice } from '../../types';
+import { noticeFromCode } from '../../types';
 import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
 import { deleteSession } from '../services/session';
 import { queryClient } from '../queryClient';
@@ -103,6 +104,7 @@ const messageCache = new Map<string, Message[]>();
 type ServerMessage = {
   message_id?: string; role: 'human' | 'ai'; content: string; created_at?: string;
   domain?: string | null; sources?: Source[]; attachments?: FileAttachment[];
+  notice_code?: string | null;
 };
 const mapServerMessages = (items: ServerMessage[]): Message[] => {
   const mapped: Message[] = items.map((m) => {
@@ -119,6 +121,7 @@ const mapServerMessages = (items: ServerMessage[]): Message[] => {
         ? { sources: m.sources.map(normalizeSource) }
         : {}),
       ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
+      ...(m.role === 'ai' && m.notice_code ? { notice: noticeFromCode(m.notice_code) } : {}),
     };
   });
 
@@ -775,6 +778,17 @@ export const useChatStore = create<ChatStore>((set, get) => {
           await Promise.allSettled(toDelete.map((id) => deleteMessageApi(sessionId, id)));
         }
         const removeIds = new Set<string>([prevUserId, assistantId]);
+        const cur = get().messages;
+        const prevIdx = cur.findIndex((m) => m.id === prevUserId);
+        if (prevIdx !== -1) {
+          for (let i = prevIdx; i < cur.length; i++) {
+            const m = cur[i];
+            const sameQuestion = m.role === 'user' && m.type === 'text' && m.content.trim() === qNorm;
+            const emptyAnswer =
+              m.role === 'assistant' && m.type === 'text' && m.content.trim() === '';
+            if (sameQuestion || emptyAnswer) removeIds.add(m.id);
+          }
+        }
         const remaining = get().messages.filter((m) => !removeIds.has(m.id));
         set({ messages: remaining });
         messageCache.set(sessionId, remaining);
