@@ -18,6 +18,7 @@ export default function MessageList({ title, isLoading, hideHeader = false }: Me
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const statusText = useChatStore((s) => s.statusText);
+  const statusSteps = useChatStore((s) => s.statusSteps);
   const sessionId = useChatStore((s) => s.sessionId);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const hasMore = useChatStore((s) => s.hasMore);
@@ -268,6 +269,7 @@ export default function MessageList({ title, isLoading, hideHeader = false }: Me
             isLast={msg.id === lastAssistantId}
             isStreaming={isStreaming}
             statusText={msg.role === 'assistant' && msg.type === 'text' && msg.status === 'streaming' ? statusText : null}
+            statusSteps={msg.role === 'assistant' && msg.type === 'text' && msg.status === 'streaming' ? statusSteps : undefined}
             onCopy={handleCopy}
             onRegenerate={regenerateMessage}
           />

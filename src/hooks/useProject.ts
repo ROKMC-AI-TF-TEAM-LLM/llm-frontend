@@ -1,7 +1,9 @@
+import { useEffect, useRef } from 'react'
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getProjects, getProject, createProject, updateProject,
-  setProjectFavorite, setProjectInstruction, getProjectSessions,
+  setProjectFavorite, setProjectInstruction, getProjectSessions, deleteProject,
+  uploadProjectDocument, getProjectDocuments, getProjectDocumentStatus, deleteProjectDocument,
 } from '../api/services/project'
 import type { CreateProjectRequest, GetProjectSessionsParams } from '../types/project'
 import { useProjectStore } from '../features/projects/projectStore'
@@ -100,6 +102,25 @@ export const useSetProjectInstruction = () => {
   })
 }
 
+export const useDeleteProject = () => {
+  const queryClient = useQueryClient()
+  const remove = useProjectStore((s) => s.remove)
+  return useMutation({
+    mutationFn: (projectId: string) => deleteProject(projectId),
+    onMutate: (projectId) => {
+      const prev = useProjectStore.getState().projects
+      remove(projectId)
+      return { prev }
+    },
+    onError: (_e, _projectId, ctx) => {
+      if (ctx?.prev) useProjectStore.setState({ projects: ctx.prev })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+}
+
 export const useProjectSessions = (projectId: string | undefined, params?: GetProjectSessionsParams) => {
   const { accessToken } = useAuth()
   return useInfiniteQuery({
@@ -113,4 +134,62 @@ export const useProjectSessions = (projectId: string | undefined, params?: GetPr
     initialPageParam: undefined as string | undefined,
     enabled: !!accessToken && !!projectId,
   })
+}
+
+export const useProjectDocuments = (projectId: string | undefined) => {
+  const { accessToken } = useAuth()
+  return useQuery({
+    queryKey: ['projects', 'documents', projectId],
+    queryFn: () => getProjectDocuments(projectId as string),
+    enabled: !!accessToken && !!projectId,
+  })
+}
+
+export const useUploadProjectDocument = (projectId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => uploadProjectDocument(projectId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
+    },
+  })
+}
+
+export const useDeleteProjectDocument = (projectId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (documentId: string) => deleteProjectDocument(projectId, documentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
+    },
+  })
+}
+
+export const useProjectDocumentStatus = (
+  projectId: string | undefined,
+  documentId: string | undefined,
+  active: boolean,
+) => {
+  const { accessToken } = useAuth()
+  const queryClient = useQueryClient()
+  const settledRef = useRef(false)
+  const query = useQuery({
+    queryKey: ['projects', 'documents', 'status', projectId, documentId],
+    queryFn: () => getProjectDocumentStatus(projectId as string, documentId as string),
+    enabled: !!accessToken && !!projectId && !!documentId && active,
+    refetchInterval: (q) => {
+      const status = q.state.data?.data.data.status
+      return status === 'done' || status === 'error' ? false : 12000
+    },
+  })
+
+  const status = query.data?.data.data.status
+  useEffect(() => {
+    if ((status === 'done' || status === 'error') && !settledRef.current) {
+      settledRef.current = true
+      queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
+    }
+  }, [status, projectId, queryClient])
+
+  return query
 }

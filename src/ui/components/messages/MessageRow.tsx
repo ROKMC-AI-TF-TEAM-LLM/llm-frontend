@@ -12,11 +12,12 @@ interface MessageRowProps {
   isLast: boolean;
   isStreaming: boolean;
   statusText: string | null;
+  statusSteps?: string[];
   onCopy: (text: string) => void;
   onRegenerate: (id: string) => void;
 }
 
-function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegenerate }: MessageRowProps) {
+function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onCopy, onRegenerate }: MessageRowProps) {
   if (msg.type === 'image') {
     return <ImageAttachment filename={msg.filename} caption={msg.caption} />;
   }
@@ -50,6 +51,7 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, onCopy, onRegene
           content={msg.content}
           isStreaming={msgStreaming}
           statusText={msgStreaming ? statusText : undefined}
+          statusSteps={msgStreaming ? statusSteps : undefined}
         />
       )}
       {!msgStreaming && (

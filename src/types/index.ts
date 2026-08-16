@@ -14,6 +14,7 @@ export interface FileAttachment {
   name: string;
   size?: number;
   url?: string;
+  tool?: 'HWP_EXPORT' | 'HWP_DRAFT' | string;
 }
 
 export interface ChatItem {

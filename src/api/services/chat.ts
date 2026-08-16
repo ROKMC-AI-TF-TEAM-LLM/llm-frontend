@@ -34,6 +34,15 @@ export const normalizeSource = (raw: unknown): Source => {
   return { name, page }
 }
 
+export const toAttachment = (raw: Record<string, unknown>): FileAttachment => {
+  const name = String(raw.name ?? '')
+  const url = typeof raw.url === 'string' ? raw.url : undefined
+  const attachment_id = String(raw.attachment_id ?? url ?? name)
+  const tool = typeof raw.tool === 'string' ? raw.tool : undefined
+  const size = typeof raw.size === 'number' ? raw.size : undefined
+  return { attachment_id, name, url, tool, size }
+}
+
 interface SseHandlers {
   onChunk: (chunk: string) => void
   onSources?: (sources: Source[]) => void
@@ -128,14 +137,16 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         continue
       }
 
-      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string }
+      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string; name?: string; url?: string; tool?: string }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
         if (import.meta.env.DEV) {
           console.log('[SSE sources] 원본:', JSON.stringify(evt.items))
         }
         onSources?.(evt.items.map(normalizeSource))
+      } else if (evt.type === 'file') {
+        if (evt.name) onFiles?.([toAttachment(evt)])
       } else if (evt.type === 'files' && Array.isArray(evt.items)) {
-        onFiles?.(evt.items as FileAttachment[])
+        onFiles?.(evt.items.map((it) => toAttachment(it as Record<string, unknown>)))
       } else if (evt.type === 'error') {
         logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')

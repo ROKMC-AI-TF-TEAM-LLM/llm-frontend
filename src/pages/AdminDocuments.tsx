@@ -38,10 +38,12 @@ const matchesFilter = (status: AdminDocStatus, f: StatusFilter): boolean => {
 function DocumentRow({
   doc,
   onDelete,
+  onRetry,
   deleting,
 }: {
   doc: AdminDocumentItem;
   onDelete: (doc: AdminDocumentItem) => void;
+  onRetry: (doc: AdminDocumentItem) => void;
   deleting: boolean;
 }) {
   const listStatus = normalizeDocStatus(doc.status);
@@ -49,11 +51,19 @@ function DocumentRow({
   const { data: statusRes } = useAdminDocumentStatus(isProcessing ? doc.document_id : undefined);
 
   const verifiedStatus = statusRes?.data.data.status ?? doc.status;
+  const state = normalizeDocStatus(verifiedStatus);
   const badge = statusBadge(verifiedStatus);
   const style = getDomainStyle(doc.domain);
 
+  const isFailed = state === 'failed';
+  const isBusy = state === 'processing';
+
   return (
-    <tr className="border-t border-surface-border hover:bg-surface-subtle/50 transition-colors">
+    <tr
+      className={`border-t border-surface-border transition-colors ${
+        isFailed ? 'bg-red-50/60 hover:bg-red-50' : 'hover:bg-surface-subtle/50'
+      } ${isBusy ? 'opacity-60' : ''}`}
+    >
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="shrink-0 w-1 h-8 rounded-full" style={{ background: style.bar }} />
@@ -71,19 +81,32 @@ function DocumentRow({
       </td>
       <td className="px-4 py-3.5 text-text-secondary">해병대</td>
       <td className="px-4 py-3.5">
-        <span className={`inline-block text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>{badge.label}</span>
+        <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>
+          {isBusy && <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />}
+          {badge.label}
+        </span>
       </td>
       <td className="px-4 py-3.5 text-text-muted whitespace-nowrap">
         {doc.created_at ? new Date(doc.created_at).toLocaleDateString('ko-KR') : '-'}
       </td>
       <td className="px-5 py-3.5 text-right">
-        <button
-          onClick={() => onDelete(doc)}
-          disabled={deleting}
-          className="px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
-        >
-          삭제
-        </button>
+        <div className="inline-flex items-center gap-2">
+          {isFailed && (
+            <button
+              onClick={() => onRetry(doc)}
+              className="px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
+            >
+              재시도
+            </button>
+          )}
+          <button
+            onClick={() => onDelete(doc)}
+            disabled={deleting}
+            className="px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
+          >
+            삭제
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -138,6 +161,9 @@ export default function AdminDocuments() {
     deleteMut.mutate(doc.document_id, {
       onError: () => setToast({ msg: '삭제에 실패했습니다.', type: 'error' }),
     });
+  };
+
+  const handleRetry = (_doc: AdminDocumentItem) => {
   };
 
   return (
@@ -288,6 +314,7 @@ export default function AdminDocuments() {
                   key={doc.document_id}
                   doc={doc}
                   onDelete={handleDelete}
+                  onRetry={handleRetry}
                   deleting={deleteMut.isPending}
                 />
               ))

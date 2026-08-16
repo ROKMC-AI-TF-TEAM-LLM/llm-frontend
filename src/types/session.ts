@@ -15,6 +15,7 @@ export interface SessionPageData {
 export interface GetSessionsParams {
   cursor?: string | null
   size?: number
+  is_favorite?: boolean
 }
 export type GetSessionsErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'VALIDATION_ERROR'
 export interface GetSessionsResponse {
@@ -28,7 +29,7 @@ export interface CreateSessionRequest {
   title?: string
   project_id?: string
 }
-export type CreateSessionErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'VALIDATION_ERROR'
+export type CreateSessionErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'PROJECT_ACCESS_DENIED' | 'PROJECT_NOT_FOUND' | 'VALIDATION_ERROR'
 export interface CreateSessionResponse {
   success: boolean
   status_code: number

@@ -74,24 +74,33 @@ interface MessageBubbleProps {
   content: string;
   isStreaming?: boolean;
   statusText?: string | null;
+  statusSteps?: string[];
 }
 
 const DEFAULT_STATUS = '생각하는 중...';
 
-function GeneratingIndicator({ statusText }: { statusText?: string | null }) {
-  const text = statusText || DEFAULT_STATUS;
+function StatusSteps({ steps, statusText }: { steps?: string[]; statusText?: string | null }) {
+  const list = steps && steps.length > 0 ? steps : [statusText || DEFAULT_STATUS];
   return (
-    <span
-      key={text}
-      className="block text-[15px] status-shimmer animate-fade-in py-0.5 select-none"
-    >
-      {text}
-    </span>
+    <ul className="flex flex-col gap-1.5 py-0.5 select-none">
+      {list.map((step, i) => {
+        const isCurrent = i === list.length - 1;
+        return (
+          <li key={`${i}-${step}`} className="flex items-start gap-2.5 animate-fade-in">
+            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-text-hint" />
+            <span className={`text-[14px] leading-relaxed ${isCurrent ? 'status-shimmer' : 'text-text-muted'}`}>
+              {step}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-export default function MessageBubble({ role = 'assistant', content, isStreaming = false, statusText }: MessageBubbleProps) {
+export default function MessageBubble({ role = 'assistant', content, isStreaming = false, statusText, statusSteps }: MessageBubbleProps) {
   const isUser = role === 'user';
+  const showSteps = !isUser && isStreaming && ((statusSteps?.length ?? 0) > 0 || !content);
 
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-1`}>
@@ -105,20 +114,27 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
       >
         {isUser ? (
           content
-        ) : isStreaming && !content ? (
-          <GeneratingIndicator statusText={statusText} />
         ) : (
-          <Streamdown
-            mode={isStreaming ? 'streaming' : 'static'}
-            parseIncompleteMarkdown={isStreaming}
-            animated={{ animation: 'fadeIn', sep: 'word', duration: 220, stagger: 25 }}
-            isAnimating={isStreaming}
-            controls={false}
-            className="space-y-0"
-            components={mdComponents}
-          >
-            {isStreaming ? streamMarkdown(content) : normalizeMarkdown(content)}
-          </Streamdown>
+          <>
+            {showSteps && (
+              <div className={content ? 'mb-3' : undefined}>
+                <StatusSteps steps={statusSteps} statusText={statusText} />
+              </div>
+            )}
+            {content && (
+              <Streamdown
+                mode={isStreaming ? 'streaming' : 'static'}
+                parseIncompleteMarkdown={isStreaming}
+                animated={{ animation: 'fadeIn', sep: 'word', duration: 220, stagger: 25 }}
+                isAnimating={isStreaming}
+                controls={false}
+                className="space-y-0"
+                components={mdComponents}
+              >
+                {isStreaming ? streamMarkdown(content) : normalizeMarkdown(content)}
+              </Streamdown>
+            )}
+          </>
         )}
       </div>
     </div>

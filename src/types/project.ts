@@ -78,15 +78,31 @@ export interface SetProjectFavoriteRequest {
 }
 export type SetProjectFavoriteResponse = ProjectMutationResponse
 
+export type ProjectLlmMutationErrorCode = ProjectMutationErrorCode | 'LLM_SERVER_ERROR'
+
 // ── 지침 설정/수정: PATCH /api/v1/projects/{project_id}/instruction ──
 export interface SetProjectInstructionRequest {
   instructions: string | null
 }
-export type SetProjectInstructionResponse = ProjectMutationResponse
+export interface SetProjectInstructionResponse {
+  success: boolean
+  status_code: number
+  data: ProjectData
+  error: { code: ProjectLlmMutationErrorCode; detail: string } | null
+}
+
+// ── 삭제: DELETE /api/v1/projects/{project_id} ──
+export interface DeleteProjectResponse {
+  success: boolean
+  status_code: number
+  data: null
+  error: { code: ProjectLlmMutationErrorCode; detail: string } | null
+}
 
 // ── 하위 대화 세션 목록: GET /api/v1/projects/{project_id}/sessions (커서) ──
 export interface ProjectSessionItem {
   session_id: string
+  project_id: string
   title: string
   is_favorite: boolean
   updated_at: string
@@ -105,4 +121,83 @@ export interface GetProjectSessionsResponse {
   status_code: number
   data: ProjectSessionsData
   error: { code: ProjectMutationErrorCode; detail: string } | null
+}
+
+export type ProjectDocStatus = 'queued' | 'running' | 'done' | 'error'
+
+export interface ProjectDocument {
+  document_id: string
+  name: string
+  content_type: string
+  size: number
+  status: ProjectDocStatus | string
+  created_at: string
+}
+
+// ── 참고 파일 업로드: POST /api/v1/projects/{project_id}/documents (multipart, 202) ──
+export type UploadProjectDocumentErrorCode =
+  | 'BAD_REQUEST'
+  | 'UNAUTHORIZED'
+  | 'PROJECT_ACCESS_DENIED'
+  | 'PROJECT_NOT_FOUND'
+  | 'FILE_TOO_LARGE'
+  | 'VALIDATION_ERROR'
+export interface UploadProjectDocumentResponse {
+  success: boolean
+  status_code: number
+  data: ProjectDocument
+  error: { code: UploadProjectDocumentErrorCode; detail: string } | null
+}
+
+// ── 참고 파일 목록: GET /api/v1/projects/{project_id}/documents (offset 기반) ──
+export interface GetProjectDocumentsParams {
+  offset?: number
+  limit?: number
+}
+export interface ProjectDocumentsData {
+  documents: ProjectDocument[]
+  total: number
+  offset: number
+  limit: number
+  has_more: boolean
+}
+export interface GetProjectDocumentsResponse {
+  success: boolean
+  status_code: number
+  data: ProjectDocumentsData
+  error: { code: ProjectMutationErrorCode; detail: string } | null
+}
+
+// ── 색인 상태 조회: GET /api/v1/projects/{project_id}/documents/{document_id}/status ──
+export interface ProjectDocumentStatus {
+  document_id: string
+  status: ProjectDocStatus | string
+  chunks_indexed: number
+  error: string | null
+}
+export type ProjectDocumentStatusErrorCode =
+  | 'UNAUTHORIZED'
+  | 'PROJECT_ACCESS_DENIED'
+  | 'DOCUMENT_NOT_FOUND'
+  | 'VALIDATION_ERROR'
+  | 'LLM_SERVER_ERROR'
+export interface GetProjectDocumentStatusResponse {
+  success: boolean
+  status_code: number
+  data: ProjectDocumentStatus
+  error: { code: ProjectDocumentStatusErrorCode; detail: string } | null
+}
+
+// ── 참고 파일 삭제: DELETE /api/v1/projects/{project_id}/documents/{document_id} ──
+export type DeleteProjectDocumentErrorCode =
+  | 'UNAUTHORIZED'
+  | 'PROJECT_ACCESS_DENIED'
+  | 'DOCUMENT_NOT_FOUND'
+  | 'VALIDATION_ERROR'
+  | 'LLM_SERVER_ERROR'
+export interface DeleteProjectDocumentResponse {
+  success: boolean
+  status_code: number
+  data: null
+  error: { code: DeleteProjectDocumentErrorCode; detail: string } | null
 }

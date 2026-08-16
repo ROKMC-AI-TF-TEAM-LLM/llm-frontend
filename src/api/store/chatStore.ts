@@ -19,6 +19,7 @@ interface ChatStore {
   isStreaming: boolean;
   isConnecting: boolean;
   statusText: string | null;
+  statusSteps: string[];
   error: string | null;
   isDeleted: boolean;
   abortController: AbortController | null;
@@ -229,7 +230,6 @@ export const useChatStore = create<ChatStore>((set, get) => {
         return
       }
       set((state) => ({
-        ...(get().statusText ? { statusText: null } : {}),
         messages: state.messages.map((m) =>
           m.id === assistantId && m.type === 'text' ? { ...m, content: m.content + chunk } : m
         ),
@@ -280,7 +280,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
       },
       setStatus: (message: string) => {
         if (get().sessionId !== sessionId) return
-        set({ statusText: message })
+        set((state) => {
+          const last = state.statusSteps[state.statusSteps.length - 1]
+          return {
+            statusText: message,
+            statusSteps: last === message ? state.statusSteps : [...state.statusSteps, message],
+          }
+        })
       },
     }
   }
@@ -448,6 +454,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     isStreaming: false,
     isConnecting: false,
     statusText: null,
+    statusSteps: [],
     error: null,
     isDeleted: false,
     abortController: null,
@@ -459,7 +466,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     resetDeleted: () => set({ isDeleted: false }),
 
     abortStream: () => {
-      set({ statusText: null })
+      set({ statusText: null, statusSteps: [] })
       get().abortController?.abort()
       set((state) => ({
         abortController: null,
@@ -607,7 +614,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
 
     disconnect: () => {
-      set({ sessionId: '', messages: [], isStreaming: false, isConnecting: false, statusText: null, abortController: null, isDeleted: false, nextCursor: null, hasMore: false, isLoadingMore: false });
+      set({ sessionId: '', messages: [], isStreaming: false, isConnecting: false, statusText: null, statusSteps: [], abortController: null, isDeleted: false, nextCursor: null, hasMore: false, isLoadingMore: false });
     },
 
     loadMoreMessages: async () => {
@@ -646,6 +653,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => ({
         isStreaming: true,
         statusText: null,
+        statusSteps: [],
         error: null,
         abortController: controller,
         messages: [
@@ -678,6 +686,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => ({
         isStreaming: true,
         statusText: null,
+        statusSteps: [],
         error: null,
         abortController: controller,
         messages: [
@@ -778,6 +787,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => ({
         isStreaming: true,
         statusText: null,
+        statusSteps: [],
         abortController: controller,
         error: null,
         messages: state.messages.map((m) =>

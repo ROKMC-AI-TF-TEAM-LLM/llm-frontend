@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions } from '../../hooks/useProject'
+import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus } from '../../hooks/useProject'
+import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
 import MessageList from '../../ui/components/messages/MessageList'
 import {
@@ -11,7 +12,6 @@ import {
   ChatRow,
   EmptyFiles,
   FavStar,
-  FileRow,
   FilesModal,
   IconButton,
   InstructionBody,
@@ -21,10 +21,37 @@ import {
   NewChatIcon,
   PanelIcon,
   PlusIcon,
+  ProjectDocRow,
   ProjectPath,
   SparkIcon,
 } from '../../features/projects/ui'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+
+function PollingDocRow({
+  projectId,
+  doc,
+  onRetry,
+  onDelete,
+  deleting,
+}: {
+  projectId: string
+  doc: ProjectDocumentType
+  onRetry: () => void
+  onDelete: () => void
+  deleting: boolean
+}) {
+  const pending = doc.status === 'queued' || doc.status === 'running'
+  const { data } = useProjectDocumentStatus(projectId, doc.document_id, pending)
+  const liveStatus = data?.data?.data?.status ?? doc.status
+  return (
+    <ProjectDocRow
+      doc={{ ...doc, status: liveStatus }}
+      onRetry={onRetry}
+      onDelete={onDelete}
+      deleting={deleting}
+    />
+  )
+}
 
 const formatTime = (iso?: string | null): string => {
   if (!iso) return ''
@@ -66,6 +93,21 @@ export default function ProjectPage() {
   const openProjectChat = (nextId: string) => navigate(`/projects/${id}/${nextId}`)
   const closeChat = () => navigate(`/projects/${id}`)
   const [panelOpen, setPanelOpen] = useState(true)
+
+  const { data: docsData } = useProjectDocuments(id)
+  const documents = docsData?.data?.data?.documents ?? []
+  const { mutate: uploadDoc } = useUploadProjectDocument(id ?? '')
+  const { mutate: deleteDoc, isPending: isDeletingDoc } = useDeleteProjectDocument(id ?? '')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handlePickFile = () => fileInputRef.current?.click()
+  const handleUploadFiles = (files: FileList | null) => {
+    const file = files?.[0]
+    if (!file || !id) return
+    uploadDoc(file)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+  const handleRetryDoc = () => {}
 
   const { data: sessionsData } = useProjectSessions(id)
   const [chats, setChats] = useState<ProjectChat[]>([])
@@ -189,21 +231,35 @@ export default function ProjectPage() {
           </Block>
 
           <Block
-            title={`파일 ${project.files.length}`}
+            title={`파일 ${documents.length}`}
             action={
-              <IconButton label="파일 관리" onClick={() => setFilesOpen(true)}>
+              <IconButton label="파일 업로드" onClick={handlePickFile}>
                 <PlusIcon className="h-4 w-4" />
               </IconButton>
             }
           >
-            {project.files.length === 0 ? (
-              <button type="button" onClick={() => setFilesOpen(true)} className="w-full text-left">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.txt,.pdf"
+              className="hidden"
+              onChange={(e) => handleUploadFiles(e.target.files)}
+            />
+            {documents.length === 0 ? (
+              <button type="button" onClick={handlePickFile} className="w-full text-left">
                 <EmptyFiles />
               </button>
             ) : (
               <div className="-mx-2">
-                {project.files.map((f) => (
-                  <FileRow key={f.id} file={f} />
+                {documents.map((d) => (
+                  <PollingDocRow
+                    key={d.document_id}
+                    projectId={id ?? ''}
+                    doc={d}
+                    onRetry={handleRetryDoc}
+                    onDelete={() => deleteDoc(d.document_id)}
+                    deleting={isDeletingDoc}
+                  />
                 ))}
               </div>
             )}
@@ -286,7 +342,15 @@ export default function ProjectPage() {
         onClose={() => setModalOpen(false)}
         onSave={(instructions) => setInstructionApi({ projectId: project.id, instructions })}
       />
-      <FilesModal open={filesOpen} files={project.files} onClose={() => setFilesOpen(false)} />
+      <FilesModal
+        open={filesOpen}
+        documents={documents}
+        onClose={() => setFilesOpen(false)}
+        onUpload={(file) => id && uploadDoc(file)}
+        onDelete={(docId) => deleteDoc(docId)}
+        onRetry={handleRetryDoc}
+        deleting={isDeletingDoc}
+      />
     </div>
   )
 }

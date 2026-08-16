@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ProjectChat, ProjectFile } from './mock'
+import type { ProjectDocument } from '../../types/project'
 import { displaySessionTitle } from '../../utils/sessionTitle'
+import { formatFileSize } from '../../utils/downloadAttachment'
+import { normalizeDocStatus } from '../../utils/document'
 import {
   ChatIcon,
   ChevronDown,
@@ -212,6 +215,65 @@ export function FileRow({ file }: { file: ProjectFile }) {
       <IconButton label="파일 제거" danger>
         <CloseIcon className="h-3.5 w-3.5" />
       </IconButton>
+    </div>
+  )
+}
+
+export function ProjectDocRow({
+  doc,
+  onRetry,
+  onDelete,
+  deleting = false,
+}: {
+  doc: ProjectDocument
+  onRetry?: () => void
+  onDelete?: () => void
+  deleting?: boolean
+}) {
+  const state = normalizeDocStatus(doc.status)
+  const isBusy = state === 'processing'
+  const isFailed = state === 'failed'
+  const dot = doc.name.lastIndexOf('.')
+  const ext = dot > 0 ? doc.name.slice(dot + 1).toUpperCase() : '문서'
+  const size = formatFileSize(doc.size)
+
+  return (
+    <div
+      className={`group flex items-center gap-2.5 rounded-[10px] px-2 py-2 transition-colors ${
+        isFailed ? 'bg-red-50/70' : 'hover:bg-[#fdf6f7]'
+      } ${isBusy ? 'opacity-60' : ''}`}
+    >
+      <span
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] ${
+          isFailed ? 'bg-red-100 text-red-500' : 'bg-brand-subtle text-brand'
+        }`}
+      >
+        {isBusy ? (
+          <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+        ) : (
+          <FileIcon className="h-3.5 w-3.5" />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] font-medium text-text-primary">{doc.name}</span>
+        <span className="mt-0.5 block text-[11px] text-text-muted">
+          {isBusy ? '색인 중...' : isFailed ? '색인 실패' : `${ext}${size ? ` · ${size}` : ''}`}
+        </span>
+      </span>
+      {isFailed && onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="shrink-0 rounded-md border border-brand-soft px-2 py-1 text-[11px] font-semibold text-brand transition-colors hover:bg-brand-subtle"
+        >
+          재시도
+        </button>
+      )}
+      {onDelete && (
+        <IconButton label="파일 제거" danger onClick={onDelete} disabled={deleting}>
+          <CloseIcon className="h-3.5 w-3.5" />
+        </IconButton>
+      )}
     </div>
   )
 }
@@ -655,18 +717,49 @@ function CreateProjectBody({
 
 export function FilesModal({
   open,
-  files,
+  documents,
   onClose,
+  onUpload,
+  onDelete,
+  onRetry,
+  deleting = false,
 }: {
   open: boolean
-  files: ProjectFile[]
+  documents: ProjectDocument[]
   onClose: () => void
+  onUpload?: (file: File) => void
+  onDelete?: (documentId: string) => void
+  onRetry?: (documentId: string) => void
+  deleting?: boolean
 }) {
   if (!open) return null
-  return <FilesModalBody files={files} onClose={onClose} />
+  return (
+    <FilesModalBody
+      documents={documents}
+      onClose={onClose}
+      onUpload={onUpload}
+      onDelete={onDelete}
+      onRetry={onRetry}
+      deleting={deleting}
+    />
+  )
 }
 
-function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () => void }) {
+function FilesModalBody({
+  documents,
+  onClose,
+  onUpload,
+  onDelete,
+  onRetry,
+  deleting,
+}: {
+  documents: ProjectDocument[]
+  onClose: () => void
+  onUpload?: (file: File) => void
+  onDelete?: (documentId: string) => void
+  onRetry?: (documentId: string) => void
+  deleting?: boolean
+}) {
   const [query, setQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -681,7 +774,7 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
   }, [onClose])
 
   const q = query.trim().toLowerCase()
-  const shown = q ? files.filter((f) => f.name.toLowerCase().includes(q)) : files
+  const shown = q ? documents.filter((d) => d.name.toLowerCase().includes(q)) : documents
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
@@ -712,9 +805,11 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,.doc,.docx,.txt,.hwp,.xlsx"
+            accept=".md,.txt,.pdf"
             className="hidden"
             onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) onUpload?.(file)
               e.target.value = ''
             }}
           />
@@ -735,8 +830,14 @@ function FilesModalBody({ files, onClose }: { files: ProjectFile[]; onClose: () 
             </p>
           ) : (
             <div className="-mx-2">
-              {shown.map((f) => (
-                <FileRow key={f.id} file={f} />
+              {shown.map((d) => (
+                <ProjectDocRow
+                  key={d.document_id}
+                  doc={d}
+                  onRetry={onRetry ? () => onRetry(d.document_id) : undefined}
+                  onDelete={onDelete ? () => onDelete(d.document_id) : undefined}
+                  deleting={deleting}
+                />
               ))}
             </div>
           )}
@@ -810,11 +911,15 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-1">
           <textarea
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => setDraft(e.target.value.slice(0, 1000))}
             spellCheck={false}
+            maxLength={1000}
             placeholder="MARS가 채택하기를 원하는 어조, 형식, 인용 규칙에 대한 지침을 추가하세요."
             className="min-h-[240px] w-full resize-none rounded-[12px] border border-[#f0e6e8] bg-white px-4 py-3.5 text-[13.5px] leading-[1.75] text-text-primary outline-none transition-colors placeholder:text-[#b8a7ac] focus:border-brand"
           />
+          <div className={`mt-1.5 text-right text-[12px] tabular-nums ${draft.length >= 1000 ? 'text-brand' : 'text-text-muted'}`}>
+            {draft.length} / 1000
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 px-6 py-4">

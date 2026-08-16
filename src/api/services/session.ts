@@ -8,8 +8,10 @@ import type {
   DeleteSessionResponse,
 } from '../../types/session'
 
-export const getSessions = (cursor?: string | null, size = 20) =>
-  backendApi.get<GetSessionsResponse>('/api/v1/sessions', { params: { cursor, size } })
+export const getSessions = (cursor?: string | null, size = 20, isFavorite?: boolean) =>
+  backendApi.get<GetSessionsResponse>('/api/v1/sessions', {
+    params: { cursor, size, ...(isFavorite ? { is_favorite: true } : {}) },
+  })
 
 export const createSession = (data: CreateSessionRequest) =>
   backendApi.post<CreateSessionResponse>('/api/v1/sessions', data)

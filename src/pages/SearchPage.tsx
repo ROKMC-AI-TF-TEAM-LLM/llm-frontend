@@ -31,9 +31,14 @@ const SearchPage = () => {
 
   const recentSessions = (sessionsData?.pages ?? []).flatMap((p) => p.data.data.items)
 
+  const goToSession = (id: string, projectId?: string | null) => {
+    navigate(projectId ? `/projects/${projectId}/${id}` : `/chat/${id}`)
+  }
+
   const handleSelect = (id: string) => {
     setSelectedId(id)
-    navigate(`/chat/${id}`)
+    const found = (searchData?.data?.data ?? []).find((s) => s.session_id === id)
+    goToSession(id, found?.project_id)
   }
 
   const [errorDismissed, setErrorDismissed] = useState(false)
@@ -75,7 +80,7 @@ const SearchPage = () => {
                   {recentSessions.map((session) => (
                     <button
                       key={session.session_id}
-                      onClick={() => navigate(`/chat/${session.session_id}`)}
+                      onClick={() => goToSession(session.session_id, session.project_id)}
                       style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 10px 24px rgba(40,30,35,0.05)' }}
                       className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer"
                     >
