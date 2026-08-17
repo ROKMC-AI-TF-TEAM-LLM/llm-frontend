@@ -14,7 +14,6 @@ import type { AdminDocumentItem, AdminDocStatus } from '../types/adminDocument';
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: '전체', value: 'all' },
-  { label: '처리 중', value: 'processing' },
   { label: '완료', value: 'completed' },
   { label: '실패', value: 'failed' },
 ];
@@ -81,28 +80,27 @@ function DocumentRow({
       </td>
       <td className="px-4 py-3.5 text-text-secondary">해병대</td>
       <td className="px-4 py-3.5">
-        <span className={`inline-flex items-center gap-1.5 text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>
-          {isBusy && <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />}
+        <span className={`inline-flex items-center whitespace-nowrap text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>
           {badge.label}
         </span>
       </td>
       <td className="px-4 py-3.5 text-text-muted whitespace-nowrap">
         {doc.created_at ? new Date(doc.created_at).toLocaleDateString('ko-KR') : '-'}
       </td>
-      <td className="px-5 py-3.5 text-right">
+      <td className="px-5 py-3.5 text-right whitespace-nowrap">
         <div className="inline-flex items-center gap-2">
           {isFailed && (
             <button
               onClick={() => onRetry(doc)}
-              className="px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
+              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
             >
               재시도
             </button>
           )}
           <button
             onClick={() => onDelete(doc)}
-            disabled={deleting}
-            className="px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
+            disabled={deleting || isBusy}
+            className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary disabled:hover:border-surface-border"
           >
             삭제
           </button>

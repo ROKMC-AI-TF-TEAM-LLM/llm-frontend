@@ -173,10 +173,6 @@ export default function ProjectPage() {
 
   return (
     <div className="flex h-full w-full bg-white">
-      {/* ── 왼쪽 : 컨텍스트 열 ──
-          접을 때 폭만 줄이면 내용이 좁아지며 글자가 다시 줄바꿈돼(리플로우) 뭉개져 보인다.
-          그래서 바깥(aside)의 폭만 애니메이션하고, 안쪽은 336px 고정 폭을 유지한 채
-          통째로 왼쪽으로 밀어낸다 → 글자는 그대로, 패널만 스르륵 사라진다. */}
       <aside
         style={{
           borderRightColor: panelOpen ? '#f4eced' : 'transparent',
