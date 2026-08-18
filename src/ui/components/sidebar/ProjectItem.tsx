@@ -57,7 +57,7 @@ export default function ProjectItem({
         title={p.name}
         style={isActive ? { background: HOVER_BG, color: '#c0002a' } : {}}
         className={`flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-[13px] transition-colors ${
-          isActive ? 'font-bold' : 'font-medium text-[#5a5560] hover:bg-[#fdedf2] hover:text-[#c0002a]'
+          isActive ? 'font-bold' : 'font-medium text-[#1a1917] hover:bg-[#fdedf2] hover:text-[#c0002a]'
         }`}
       >
         <LayersIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />

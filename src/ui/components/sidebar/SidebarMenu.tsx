@@ -24,6 +24,16 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    label: "번역",
+    path: "/translate",
+    icon: (
+      <svg className="sb-icon sb-icon-translate" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 5h7M7.5 5v2c0 3-2 6-4.5 7M6 9c0 2 2.5 4 5 4.5" />
+        <path d="M14 20l3.5-9 3.5 9M15 17h5" />
+      </svg>
+    ),
+  },
 ];
 
 export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
@@ -45,7 +55,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
         style={
           isNewChatActive
             ? { background: '#fdedf2', color: '#c0002a' }
-            : { color: '#5a5560' }
+            : { color: '#1a1917' }
         }
         className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
       >
@@ -67,7 +77,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             style={
               isActive
                 ? { background: '#fdedf2', color: '#c0002a' }
-                : { color: '#5a5560' }
+                : { color: '#1a1917' }
             }
             className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
           >

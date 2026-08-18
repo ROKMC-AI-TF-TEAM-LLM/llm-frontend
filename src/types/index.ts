@@ -9,6 +9,22 @@ export interface Notice {
   message: string;
 }
 
+export interface StatusUpdate {
+  message: string;
+  thought?: string;
+  step?: number;
+}
+
+export interface StatusStep {
+  message: string;
+  thought?: string;
+}
+
+export interface Reasoning {
+  steps: StatusStep[];
+  seconds?: number;
+}
+
 const NOTICE_MESSAGES: Record<string, string> = {
   ungrounded_knowledge: '내부 문서 근거 없이 AI 일반 지식으로 작성된 답변입니다. 원문으로 확인하세요.',
 };

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message, Source, FileAttachment, Notice } from '../../types';
+import type { Message, Source, FileAttachment, Notice, StatusStep } from '../../types';
 import { noticeFromCode } from '../../types';
 import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
 import { deleteSession } from '../services/session';
@@ -20,7 +20,7 @@ interface ChatStore {
   isStreaming: boolean;
   isConnecting: boolean;
   statusText: string | null;
-  statusSteps: string[];
+  statusSteps: StatusStep[];
   error: string | null;
   isDeleted: boolean;
   abortController: AbortController | null;
@@ -287,8 +287,18 @@ export const useChatStore = create<ChatStore>((set, get) => {
           const last = state.statusSteps[state.statusSteps.length - 1]
           return {
             statusText: message,
-            statusSteps: last === message ? state.statusSteps : [...state.statusSteps, message],
+            statusSteps: last?.message === message ? state.statusSteps : [...state.statusSteps, { message }],
           }
+        })
+      },
+      setThought: (thought: string) => {
+        if (get().sessionId !== sessionId) return
+        set((state) => {
+          const steps = state.statusSteps
+          if (steps.length === 0) return { statusSteps: [{ message: '생각하는 중', thought }] }
+          const next = steps.slice()
+          next[next.length - 1] = { ...next[next.length - 1], thought }
+          return { statusSteps: next }
         })
       },
     }
@@ -314,6 +324,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         writer.setStatus,
         writer.setAttachments,
         writer.setNotice,
+        writer.setThought,
       )
       writer.flushNow()
     } catch (e) {
@@ -410,7 +421,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice, writer.setThought)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)

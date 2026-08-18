@@ -86,7 +86,7 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
         onClick={() => navigate(chat.projectId ? `/projects/${chat.projectId}/${chat.id}` : `/chat/${chat.id}`)}
         style={isActive ? { background: HOVER_BG, color: '#c0002a' } : {}}
         className={`w-full flex items-center px-[8px] py-[7px] rounded-[9px] text-[13px] text-left transition-colors relative ${
-          isActive ? 'font-bold' : 'text-[#5a5560] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
+          isActive ? 'font-bold' : 'text-[#1a1917] font-medium hover:bg-[#fdedf2] hover:text-[#c0002a]'
         }`}
       >
         <span className={`truncate overflow-hidden ${isUntitled ? 'text-text-muted font-normal' : ''}`}>

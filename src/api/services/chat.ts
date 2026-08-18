@@ -49,6 +49,7 @@ interface SseHandlers {
   onSources?: (sources: Source[]) => void
   onFiles?: (files: FileAttachment[]) => void
   onStatus?: (message: string) => void
+  onThought?: (thought: string, step?: number) => void
   onNotice?: (notice: Notice) => void
   signal?: AbortSignal
 }
@@ -86,7 +87,7 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
   return response
 }
 
-const readSse = async (response: Response, { onChunk, onSources, onFiles, onStatus, onNotice, signal }: SseHandlers) => {
+const readSse = async (response: Response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal }: SseHandlers) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
 
@@ -138,7 +139,7 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         continue
       }
 
-      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string; name?: string; url?: string; tool?: string }
+      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string; name?: string; url?: string; tool?: string; thought?: string; step?: number }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
         if (import.meta.env.DEV) {
           console.log('[SSE sources] 원본:', JSON.stringify(evt.items))
@@ -158,6 +159,7 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         else if (evt.message) onNotice?.({ code: evt.code ?? '', level: evt.level ?? 'warning', message: evt.message })
       } else if (evt.type === 'status') {
         if (evt.message) onStatus?.(evt.message)
+        if (evt.thought) onThought?.(evt.thought, evt.step)
       } else if (
         evt.type === 'text' ||
         evt.type === 'token' ||
@@ -192,13 +194,14 @@ export const streamMessage = async (
   onStatus?: (message: string) => void,
   onFiles?: (files: FileAttachment[]) => void,
   onNotice?: (notice: Notice) => void,
+  onThought?: (thought: string, step?: number) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
     data,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onFiles, onStatus, onNotice, signal })
+  await readSse(response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal })
 }
 
 export const regenerateMessageStream = async (
@@ -210,11 +213,12 @@ export const regenerateMessageStream = async (
   onStatus?: (message: string) => void,
   onFiles?: (files: FileAttachment[]) => void,
   onNotice?: (notice: Notice) => void,
+  onThought?: (thought: string, step?: number) => void,
 ) => {
   const response = await postSse(
     `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
     undefined,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onFiles, onStatus, onNotice, signal })
+  await readSse(response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal })
 }

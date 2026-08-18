@@ -22,7 +22,7 @@ export default function ProjectChatItem({ chat }: { chat: ProjectChatEntry }) {
       >
         <span
           className={`w-full truncate text-[13px] ${
-            isUntitled ? 'font-normal text-text-muted' : 'font-medium text-[#5a5560]'
+            isUntitled ? 'font-normal text-text-muted' : 'font-medium text-[#1a1917]'
           }`}
         >
           {text}

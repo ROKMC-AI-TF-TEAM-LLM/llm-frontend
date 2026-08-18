@@ -12,7 +12,7 @@ interface MessageRowProps {
   isLast: boolean;
   isStreaming: boolean;
   statusText: string | null;
-  statusSteps?: string[];
+  statusSteps?: import('../../../types').StatusStep[];
   onCopy: (text: string) => void;
   onRegenerate: (id: string) => void;
 }

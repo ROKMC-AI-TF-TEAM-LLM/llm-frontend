@@ -18,6 +18,7 @@ const SearchPage = lazy(() => import('./pages/SearchPage'));
 const RAGPage = lazy(() => import('./pages/RagPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const GuidePage = lazy(() => import('./pages/GuidePage'));
+const TranslatePage = lazy(() => import('./pages/TranslatePage'));
 const TutorialsPage = lazy(() => import('./pages/TutorialsPage'));
 const TutorialPage = lazy(() => import('./pages/TutorialPage'));
 const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'));
@@ -90,6 +91,14 @@ const protectedRoutes: RouteObject[] = [
         element: (
           <Suspense fallback={<RagPageSkeleton />}>
             <RAGPage />
+          </Suspense>
+        )
+      },
+      {
+        path: '/translate',
+        element: (
+          <Suspense fallback={null}>
+            <TranslatePage />
           </Suspense>
         )
       },

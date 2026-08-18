@@ -74,7 +74,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
   return (
     <header className={`mars-nav ${scrolled ? 'is-scrolled' : ''}`}>
       <button type="button" onClick={() => navigate('/')} className="mars-nav-brand">
-        MARS
+        <span className="mars-brand-serif mars-nav-brand-text">MARS</span>
       </button>
 
       <nav className="mars-nav-links">

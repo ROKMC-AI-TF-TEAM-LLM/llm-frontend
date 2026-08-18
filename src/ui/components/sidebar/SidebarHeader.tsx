@@ -28,7 +28,8 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         className={`flex items-center cursor-pointer overflow-hidden transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100 max-w-[120px]' : 'opacity-0 max-w-0'}`}
       >
         <span
-          style={{ fontSize: 18, fontWeight: 900, letterSpacing: '0.06em', color: '#e4002b', whiteSpace: 'nowrap' }}
+          className="mars-brand-serif"
+          style={{ fontSize: 22, color: '#e4002b', whiteSpace: 'nowrap' }}
         >
           MARS
         </span>

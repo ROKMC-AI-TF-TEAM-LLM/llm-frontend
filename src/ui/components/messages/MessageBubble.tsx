@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Streamdown } from 'streamdown';
 import type { Components } from 'streamdown';
-import type { MessageRole } from '../../../types';
+import type { MessageRole, StatusStep } from '../../../types';
 
 const fixBold = (content: string): string =>
   content
@@ -30,7 +31,13 @@ const mdComponents: Components = {
   h3: ({ children }) => <h3 className="text-base font-semibold mb-1 mt-2 first:mt-0">{children}</h3>,
   ul: ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>,
   ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-0.5">{children}</ol>,
-  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  li: ({ children }) => {
+    const isEmpty =
+      children == null ||
+      (Array.isArray(children) && children.every((c) => c == null || c === '' || (typeof c === 'string' && c.trim() === '')));
+    if (isEmpty) return null;
+    return <li className="leading-relaxed">{children}</li>;
+  },
   code: ({ children, className }) => {
     const isBlock = className?.startsWith('language-');
     return isBlock ? (
@@ -74,33 +81,35 @@ interface MessageBubbleProps {
   content: string;
   isStreaming?: boolean;
   statusText?: string | null;
-  statusSteps?: string[];
+  statusSteps?: StatusStep[];
 }
 
 const DEFAULT_STATUS = '생각하는 중';
 
-function StatusSteps({ steps, statusText }: { steps?: string[]; statusText?: string | null }) {
-  const list = steps && steps.length > 0 ? steps : [statusText || DEFAULT_STATUS];
+function ReasoningTimeline({ steps, live = false }: { steps: StatusStep[]; live?: boolean }) {
   return (
-    <ul className="flex flex-col select-none">
-      {list.map((step, i) => {
-        const isCurrent = i === list.length - 1;
-        const isLast = i === list.length - 1;
+    <ul className="mt-2.5 flex flex-col">
+      {steps.map((s, i) => {
+        const isLast = i === steps.length - 1;
+        const isCurrent = live && isLast;
         return (
-          <li key={`${i}-${step}`} className="flex items-stretch gap-3 pb-4 last:pb-0 animate-fade-in">
-            <div className="relative w-3.5 shrink-0">
-              {!isLast && (
-                <span className="absolute left-1/2 top-1/2 h-[calc(100%+16px)] w-px -translate-x-1/2 bg-surface-border" />
+          <li key={`${i}-${s.message}`} className="relative flex gap-3 pb-3.5 last:pb-0">
+            {!isLast && (
+              <span className="absolute left-[5px] top-[9px] bottom-[-5px] w-px -translate-x-1/2 bg-surface-border" />
+            )}
+            <span
+              className={`relative mt-[6px] h-2.5 w-2.5 shrink-0 rounded-full ${
+                isCurrent ? 'bg-text-muted status-dot-blink' : 'bg-brand'
+              }`}
+            />
+            <div className="min-w-0">
+              <p className={`text-[13px] leading-[1.5] font-medium ${isCurrent ? 'text-text-muted' : 'text-text-secondary'}`}>
+                {s.message}
+              </p>
+              {s.thought && (
+                <p className="mt-1 text-[12.5px] leading-relaxed text-text-muted">{s.thought}</p>
               )}
-              <span
-                className={`absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full ${
-                  isCurrent ? 'bg-text-muted status-dot-blink' : 'bg-brand'
-                }`}
-              />
             </div>
-            <span className={`text-[14px] leading-relaxed ${isCurrent ? 'status-shimmer' : 'text-text-muted'}`}>
-              {step}
-            </span>
           </li>
         );
       })}
@@ -108,9 +117,74 @@ function StatusSteps({ steps, statusText }: { steps?: string[]; statusText?: str
   );
 }
 
+function ReasoningBlock({
+  steps,
+  statusText,
+  done = false,
+  seconds,
+}: {
+  steps?: StatusStep[];
+  statusText?: string | null;
+  done?: boolean;
+  seconds?: number;
+}) {
+  const list = steps && steps.length > 0 ? steps : [{ message: statusText || DEFAULT_STATUS }];
+  const current = list[list.length - 1];
+  const [open, setOpen] = useState(false);
+  const hasDetail = list.length > 1 || list.some((s) => s.thought);
+
+  const headerLabel = done
+    ? seconds != null
+      ? `${seconds}초 동안 생각함`
+      : '추론 과정'
+    : current.message;
+
+  return (
+    <div className="animate-fade-in select-none">
+      <button
+        type="button"
+        onClick={() => hasDetail && setOpen((v) => !v)}
+        className={`flex items-center gap-2 text-[13.5px] ${hasDetail ? 'cursor-pointer' : 'cursor-default'}`}
+      >
+        {!done && (
+          <span className="h-3.5 w-3.5 shrink-0 rounded-full border-[1.5px] border-brand border-t-transparent animate-spin" />
+        )}
+        <span className={done ? 'font-medium text-text-muted' : 'font-semibold status-blink'}>
+          {headerLabel}
+        </span>
+        {hasDetail && (
+          <svg
+            width={13}
+            height={13}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        )}
+      </button>
+      {hasDetail && (
+        <div
+          className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(.32,.72,0,1)]"
+          style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+        >
+          <div className="overflow-hidden">
+            <ReasoningTimeline steps={list} live={!done} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MessageBubble({ role = 'assistant', content, isStreaming = false, statusText, statusSteps }: MessageBubbleProps) {
   const isUser = role === 'user';
-  const showSteps = !isUser && isStreaming && ((statusSteps?.length ?? 0) > 0 || !content);
+  const showSteps = !isUser && isStreaming && !content;
 
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-1`}>
@@ -128,14 +202,14 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
           <>
             {showSteps && (
               <div className={content ? 'mb-3' : undefined}>
-                <StatusSteps steps={statusSteps} statusText={statusText} />
+                <ReasoningBlock steps={statusSteps} statusText={statusText} />
               </div>
             )}
             {content && (
               <Streamdown
                 mode={isStreaming ? 'streaming' : 'static'}
                 parseIncompleteMarkdown={isStreaming}
-                animated={{ animation: 'fadeIn', sep: 'word', duration: 220, stagger: 25 }}
+                animated={isStreaming ? { animation: 'fadeIn', sep: 'char', duration: 120, stagger: 8 } : undefined}
                 isAnimating={isStreaming}
                 controls={false}
                 className="space-y-0"
