@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { signup } from '../api/services/auth'
 import MarsPlanet from '../ui/components/MarsPlanet'
 import Toast from '../ui/components/Toast'
-import TerminalDemo from '../ui/components/landing/TerminalDemo'
+import AnswerFlowDemo from '../ui/components/landing/AnswerFlowDemo'
 import Reveal from '../ui/components/landing/Reveal'
 import RotatingWord from '../ui/components/landing/RotatingWord'
 import LandingNav from '../ui/components/landing/LandingNav'
@@ -260,7 +260,7 @@ const LoginPage = () => {
               </div>
             </div>
             <Reveal delay={100} className="flex-1 min-w-0 w-full">
-              <TerminalDemo />
+              <AnswerFlowDemo />
             </Reveal>
           </div>
         </section>

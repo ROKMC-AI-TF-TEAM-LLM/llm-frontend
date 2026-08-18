@@ -131,7 +131,7 @@ function StreamScene() {
     <Frame label="찾는 즉시 실시간으로 답합니다">
       <div className="mars-navprev-fill">
         <div className="mars-navprev-chat">
-          <div className="mars-navprev-bubble">정기휴가 며칠인가요?</div>
+          <div className="mars-navprev-bubble">정기휴가는 며칠인가요?</div>
           <div className="mars-navprev-answer">
             {thinking ? (
               <span className="mars-navprev-thinking">근거를 찾는 중...</span>
@@ -166,16 +166,19 @@ function SourceScene() {
           </svg>
           출처 1개 {open ? '닫기' : '보기'}
         </span>
-        <div className="mars-navprev-srccard" style={{ maxHeight: open ? 52 : 0, opacity: open ? 1 : 0 }}>
+        <div className="mars-navprev-srccard" style={{ maxHeight: open ? 60 : 0, opacity: open ? 1 : 0 }}>
           <span className="mars-navprev-srcicon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6" />
+              <path d="M14 2v6h6M8 13h8M8 17h5" />
             </svg>
           </span>
           <span className="mars-navprev-srcbody">
-            <span className="mars-navprev-srctitle">군인복무기본법 제18조</span>
-            <span className="mars-navprev-srcpage">페이지 42</span>
+            <span className="mars-navprev-srchead">
+              <span className="mars-navprev-srctitle">군인복무기본법 제18조</span>
+              <span className="mars-navprev-srcdomain">인사·복지</span>
+            </span>
+            <span className="mars-navprev-srcpage">국방부 · 인사복지실</span>
           </span>
         </div>
       </div>

@@ -616,7 +616,7 @@ body.modal-open {
 }
 .mars-nav-panel-inner {
   display: flex; gap: 8px;
-  padding: 12px;
+  padding: 10px 12px 12px;
   border-radius: 16px;
   background: #fff;
   border: 1px solid var(--color-surface-border);
@@ -784,20 +784,30 @@ body.modal-open {
   border: 1px solid var(--color-brand-soft);
 }
 .mars-navprev-srccard {
-  width: 100%; overflow: hidden; border-radius: 9px;
-  background: #fff; border: 1px solid var(--color-surface-border);
+  width: 100%; overflow: hidden; border-radius: 10px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-surface-border);
   display: flex; align-items: center; gap: 9px;
-  padding: 0 10px;
+  padding: 0 9px;
   transition: max-height .45s cubic-bezier(.2,.7,.2,1), opacity .35s ease;
 }
 .mars-navprev-srcicon {
   display: flex; align-items: center; justify-content: center; flex: none;
-  width: 24px; height: 24px; border-radius: 6px;
-  background: var(--color-brand); color: #fff;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: #fdeef1; color: #e4002b;
 }
 .mars-navprev-srcbody { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.mars-navprev-srctitle { font-size: 11.5px; font-weight: 600; color: var(--color-text-primary); }
-.mars-navprev-srcpage { font-size: 10.5px; color: var(--color-text-muted); }
+.mars-navprev-srchead { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.mars-navprev-srctitle {
+  font-size: 11.5px; font-weight: 700; color: var(--color-text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mars-navprev-srcdomain {
+  flex: none;
+  font-size: 9.5px; font-weight: 600; padding: 1px 6px; border-radius: 999px;
+  background: #fdeef1; color: #c0002a;
+}
+.mars-navprev-srcpage { font-size: 10px; color: var(--color-text-muted); margin-top: 1px; }
 
 @media (max-width: 1100px) {
   .mars-nav-preview { display: none; }
@@ -1186,4 +1196,146 @@ video { content-visibility: auto; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ===================== 동작 방식 : 답변 흐름 데모(터미널 대체) ===================== */
+.mars-flow {
+  position: relative;
+  width: 100%;
+  border-radius: 22px;
+  border: 1px solid #f2e3e7;
+  background: #fff;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 30px 70px -20px rgba(120,20,50,0.22),
+    0 8px 24px -12px rgba(120,20,50,0.14);
+  overflow: hidden;
+}
+/* 카드 우상단에 은은한 브랜드 빛무리 */
+.mars-flow::before {
+  content: '';
+  position: absolute; top: -60px; right: -50px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(220,20,60,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.mars-flow-head {
+  position: relative;
+  display: flex; align-items: center; gap: 7px;
+  padding: 13px 18px;
+  border-bottom: 1px solid #f6ebee;
+  background: linear-gradient(180deg,#fdf6f8 0%,#ffffff 100%);
+}
+.mars-flow-head-dot { width: 11px; height: 11px; border-radius: 50%; }
+.mars-flow-head-title {
+  margin-left: 8px;
+  font-family: var(--font-serif);
+  font-weight: 700; font-size: 14px; letter-spacing: 0.01em;
+  color: var(--color-brand);
+}
+
+.mars-flow-body {
+  position: relative;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.mars-flow-q {
+  align-self: flex-end;
+  max-width: 88%;
+  padding: 12px 18px;
+  border-radius: 18px 18px 6px 18px;
+  background: linear-gradient(135deg,var(--color-brand),var(--color-brand-light));
+  color: #fff; font-size: 14.5px; font-weight: 600; line-height: 1.5;
+  box-shadow: 0 12px 24px -8px rgba(220,20,60,0.45);
+}
+
+.mars-flow-step { display: flex; align-items: center; gap: 9px; padding-left: 2px; }
+.mars-flow-badge {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.02em;
+  padding: 3.5px 10px; border-radius: 999px;
+  background: var(--color-brand-subtle); color: var(--color-brand);
+  border: 1px solid var(--color-brand-soft);
+}
+.mars-flow-step-text { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.mars-flow-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--color-brand);
+  box-shadow: 0 0 0 4px rgba(220,20,60,0.12);
+  animation: status-blink 1.3s ease-in-out infinite;
+}
+
+.mars-flow-docs { display: flex; flex-direction: column; gap: 9px; }
+.mars-flow-doc {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 13px;
+  border: 1px solid #f1e7e9; background: #fff;
+  transition: border-color .3s ease, box-shadow .3s ease, transform .3s ease;
+}
+.mars-flow-doc.is-on {
+  border-color: var(--color-brand-soft);
+  background: linear-gradient(180deg,#fffafb 0%,#ffffff 100%);
+  box-shadow: 0 10px 22px -12px rgba(220,20,60,0.28);
+}
+.mars-flow-doc-ic {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+  background: linear-gradient(135deg,#fff0f3,#fde3e8);
+  border: 1px solid #f7d7de;
+  color: var(--color-brand);
+}
+.mars-flow-doc-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.mars-flow-doc-title {
+  font-size: 13.5px; font-weight: 700; color: var(--color-text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mars-flow-doc-meta { font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px; }
+.mars-flow-doc-check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 21px; height: 21px; border-radius: 50%; flex-shrink: 0;
+  background: var(--color-brand); color: #fff;
+  box-shadow: 0 4px 10px -3px rgba(220,20,60,0.5);
+}
+
+.mars-flow-answer {
+  position: relative;
+  border-radius: 15px; padding: 16px 18px 16px 20px;
+  border: 1px solid #f4dde3;
+  background: linear-gradient(160deg,#fdf2f5 0%,#fffdfd 60%);
+}
+/* 답변 카드 왼쪽 브랜드 강조바 */
+.mars-flow-answer::before {
+  content: '';
+  position: absolute; left: 0; top: 14px; bottom: 14px;
+  width: 3px; border-radius: 999px;
+  background: linear-gradient(180deg,var(--color-brand),var(--color-brand-light));
+}
+.mars-flow-answer-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.03em;
+  color: var(--color-brand); margin-bottom: 9px;
+}
+.mars-flow-answer-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(220,20,60,0.14);
+}
+.mars-flow-answer-text {
+  font-size: 14px; line-height: 1.75; color: var(--color-text-primary);
+  word-break: keep-all;
+}
+.mars-flow-answer-text b { color: var(--color-brand); font-weight: 700; }
+.mars-flow-cite {
+  display: flex; align-items: center; gap: 8px; margin-top: 13px;
+  padding-top: 12px; border-top: 1px dashed #f1dce1;
+  flex-wrap: wrap;
+}
+.mars-flow-cite-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3.5px 10px; border-radius: 999px;
+  background: var(--color-brand); color: #fff;
+  box-shadow: 0 4px 10px -4px rgba(220,20,60,0.5);
+}
+.mars-flow-cite-name {
+  font-size: 11.5px; color: var(--color-text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
 }

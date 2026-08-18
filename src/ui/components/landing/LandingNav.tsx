@@ -98,7 +98,6 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           <div className={`mars-nav-panel ${open ? 'is-open' : ''}`} role="menu">
             <div className="mars-nav-panel-inner">
               <div className="mars-nav-col">
-                <div className="mars-nav-colhead">단계별 사용법</div>
                 {GUIDE_SECTIONS.map((s, i) => (
                   <MenuRow
                     key={s.id}
