@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useDeleteProject } from '../../hooks/useProject'
+import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useDeleteProject, useRetryProjectDocument } from '../../hooks/useProject'
 import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
@@ -41,8 +41,8 @@ function PollingDocRow({
   onDelete: () => void
   deleting: boolean
 }) {
-  const pending = doc.status === 'queued' || doc.status === 'running'
-  const { data } = useProjectDocumentStatus(projectId, doc.document_id, pending)
+  const inProgress = doc.status === 'pending' || doc.status === 'queued' || doc.status === 'running'
+  const { data } = useProjectDocumentStatus(projectId, doc.document_id, inProgress)
   const liveStatus = data?.data?.data?.status ?? doc.status
   return (
     <ProjectDocRow
@@ -99,16 +99,34 @@ export default function ProjectPage() {
   const documents = docsData?.data?.data?.documents ?? []
   const { mutate: uploadDoc } = useUploadProjectDocument(id ?? '')
   const { mutate: deleteDoc, isPending: isDeletingDoc } = useDeleteProjectDocument(id ?? '')
+  const { mutate: retryDoc } = useRetryProjectDocument(id ?? '')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const MAX_UPLOAD = 50 * 1024 * 1024
+  const tryUpload = (file: File): boolean => {
+    if (!id) return false
+    if (file.size > MAX_UPLOAD) {
+      window.alert(`'${file.name}'은(는) 50MB를 초과하여 업로드할 수 없습니다.`)
+      return false
+    }
+    uploadDoc(file)
+    return true
+  }
   const handlePickFile = () => fileInputRef.current?.click()
   const handleUploadFiles = (files: FileList | null) => {
     const file = files?.[0]
-    if (!file || !id) return
-    uploadDoc(file)
+    if (file) tryUpload(file)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
-  const handleRetryDoc = () => {}
+  const handleRetryDoc = (documentId: string) => {
+    retryDoc(documentId, {
+      onError: (e) => {
+        const err = e as { response?: { data?: { error?: { detail?: string } } } }
+        const detail = err?.response?.data?.error?.detail
+        window.alert(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+      },
+    })
+  }
 
   const { data: sessionsData } = useProjectSessions(id)
   const [chats, setChats] = useState<ProjectChat[]>([])
@@ -193,7 +211,8 @@ export default function ProjectPage() {
               autoFocus
               spellCheck={false}
               value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
+              maxLength={255}
+              onChange={(e) => setNameDraft(e.target.value.slice(0, 255))}
               onBlur={submitRename}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') submitRename()
@@ -267,7 +286,7 @@ export default function ProjectPage() {
                     key={d.document_id}
                     projectId={id ?? ''}
                     doc={d}
-                    onRetry={handleRetryDoc}
+                    onRetry={() => handleRetryDoc(d.document_id)}
                     onDelete={() => deleteDoc(d.document_id)}
                     deleting={isDeletingDoc}
                   />
@@ -357,7 +376,7 @@ export default function ProjectPage() {
         open={filesOpen}
         documents={documents}
         onClose={() => setFilesOpen(false)}
-        onUpload={(file) => id && uploadDoc(file)}
+        onUpload={(file) => tryUpload(file)}
         onDelete={(docId) => deleteDoc(docId)}
         onRetry={handleRetryDoc}
         deleting={isDeletingDoc}

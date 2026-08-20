@@ -664,7 +664,8 @@ function CreateProjectBody({
             id="project-name"
             autoFocus
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            maxLength={255}
+            onChange={(e) => setName(e.target.value.slice(0, 255))}
             onKeyDown={(e) => {
               if (e.key === 'Enter') submit()
             }}
@@ -683,7 +684,8 @@ function CreateProjectBody({
           <textarea
             id="project-instructions"
             value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
+            maxLength={1000}
+            onChange={(e) => setInstructions(e.target.value.slice(0, 1000))}
             spellCheck={false}
             placeholder="MARS가 채택하기를 원하는 어조, 형식, 인용 규칙에 대한 지침을 추가하세요."
             className="min-h-[150px] w-full resize-none rounded-[10px] border border-[#f0e6e8] px-3.5 py-3 text-[13.5px] leading-[1.75] text-text-primary outline-none transition-colors placeholder:text-[#b8a7ac] focus:border-brand"

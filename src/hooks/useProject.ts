@@ -3,7 +3,7 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tansta
 import {
   getProjects, getProject, createProject, updateProject,
   setProjectFavorite, setProjectInstruction, getProjectSessions, deleteProject,
-  uploadProjectDocument, getProjectDocuments, getProjectDocumentStatus, deleteProjectDocument,
+  uploadProjectDocument, getProjectDocuments, getProjectDocumentStatus, deleteProjectDocument, retryProjectDocument,
 } from '../api/services/project'
 import type { CreateProjectRequest, GetProjectSessionsParams } from '../types/project'
 import { useProjectStore } from '../features/projects/projectStore'
@@ -159,6 +159,16 @@ export const useDeleteProjectDocument = (projectId: string) => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (documentId: string) => deleteProjectDocument(projectId, documentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
+    },
+  })
+}
+
+export const useRetryProjectDocument = (projectId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (documentId: string) => retryProjectDocument(projectId, documentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
     },

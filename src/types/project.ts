@@ -123,7 +123,7 @@ export interface GetProjectSessionsResponse {
   error: { code: ProjectMutationErrorCode; detail: string } | null
 }
 
-export type ProjectDocStatus = 'not_indexed' | 'queued' | 'running' | 'done' | 'error'
+export type ProjectDocStatus = 'not_indexed' | 'pending' | 'queued' | 'running' | 'done' | 'error'
 
 export interface ProjectDocument {
   document_id: string
@@ -189,6 +189,23 @@ export interface GetProjectDocumentStatusResponse {
   status_code: number
   data: ProjectDocumentStatus
   error: { code: ProjectDocumentStatusErrorCode; detail: string } | null
+}
+
+// ── 색인 재시도: POST /api/v1/projects/{project_id}/documents/{document_id}/retry ──
+export type RetryProjectDocumentErrorCode =
+  | 'BAD_REQUEST'
+  | 'UNAUTHORIZED'
+  | 'PROJECT_ACCESS_DENIED'
+  | 'DOCUMENT_NOT_FOUND'
+  | 'CONFLICT'
+  | 'FILE_TOO_LARGE'
+  | 'VALIDATION_ERROR'
+  | 'LLM_SERVER_ERROR'
+export interface RetryProjectDocumentResponse {
+  success: boolean
+  status_code: number
+  data: ProjectDocumentStatus
+  error: { code: RetryProjectDocumentErrorCode; detail: string } | null
 }
 
 // ── 참고 파일 삭제: DELETE /api/v1/projects/{project_id}/documents/{document_id} ──

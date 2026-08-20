@@ -11,6 +11,7 @@ import type {
   UploadProjectDocumentResponse,
   GetProjectDocumentsParams, GetProjectDocumentsResponse,
   GetProjectDocumentStatusResponse,
+  RetryProjectDocumentResponse,
   DeleteProjectDocumentResponse,
 } from '../../types/project'
 
@@ -60,6 +61,11 @@ export const getProjectDocuments = (projectId: string, params?: GetProjectDocume
 export const getProjectDocumentStatus = (projectId: string, documentId: string) =>
   backendApi.get<GetProjectDocumentStatusResponse>(
     `/api/v1/projects/${projectId}/documents/${documentId}/status`,
+  )
+
+export const retryProjectDocument = (projectId: string, documentId: string) =>
+  backendApi.post<RetryProjectDocumentResponse>(
+    `/api/v1/projects/${projectId}/documents/${documentId}/retry`,
   )
 
 export const deleteProjectDocument = (projectId: string, documentId: string) =>

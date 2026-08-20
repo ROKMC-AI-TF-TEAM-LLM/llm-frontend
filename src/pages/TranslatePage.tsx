@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
-const LANGS = ['한국어', '영어', '일본어', '중국어', '베트남어'] as const
+const LANGS = ['한국어', '영어'] as const
 type Lang = (typeof LANGS)[number]
 
 const MAX = 5000
@@ -44,13 +44,20 @@ function LangSelect({ value, onChange }: { value: Lang; onChange: (l: Lang) => v
 export default function TranslatePage() {
   useDocumentTitle('번역')
   const [source, setSource] = useState<Lang>('한국어')
-  const [target, setTarget] = useState<Lang>('일본어')
+  const [target, setTarget] = useState<Lang>('영어')
   const [input, setInput] = useState('')
-  const [result] = useState('')
+  const [result, setResult] = useState('')
 
   const swap = () => {
     setSource(target)
     setTarget(source)
+    setResult('')
+  }
+
+  const canTranslate = input.trim().length > 0
+  const handleTranslate = () => {
+    if (!canTranslate) return
+    // TODO: 번역 API 연결
   }
 
   const copyResult = () => {
@@ -62,7 +69,7 @@ export default function TranslatePage() {
       <div className="mx-auto flex max-w-[1120px] flex-col">
         <h1 className="text-[20px] font-bold text-text-primary">번역</h1>
 
-        <div className="mt-6 flex items-center">
+        <div className="mt-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <LangSelect value={source} onChange={setSource} />
             <button
@@ -77,6 +84,22 @@ export default function TranslatePage() {
             </button>
             <LangSelect value={target} onChange={setTarget} />
           </div>
+
+          <button
+            type="button"
+            onClick={handleTranslate}
+            disabled={!canTranslate}
+            style={canTranslate ? { background: 'var(--color-brand)' } : undefined}
+            className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-[14px] font-semibold transition-colors ${
+              canTranslate ? 'text-white hover:bg-[var(--color-brand-hover)]' : 'bg-[#f4eced] text-[#cbbcc0] cursor-not-allowed'
+            }`}
+          >
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 8h9M9 4v4M4 8c0 4 2.5 7 6 8M12 8c0 4-2.5 7-6 8" />
+              <path d="M14 20l3.5-9 3.5 9M15.2 17h4.6" />
+            </svg>
+            번역
+          </button>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">

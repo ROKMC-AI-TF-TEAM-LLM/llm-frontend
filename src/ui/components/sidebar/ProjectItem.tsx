@@ -38,7 +38,8 @@ export default function ProjectItem({
           autoFocus
           spellCheck={false}
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          maxLength={255}
+          onChange={(e) => setDraft(e.target.value.slice(0, 255))}
           onBlur={submit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') submit()
