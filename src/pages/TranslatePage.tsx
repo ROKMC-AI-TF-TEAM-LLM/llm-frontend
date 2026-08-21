@@ -168,9 +168,10 @@ export default function TranslatePage() {
           <div className="flex min-h-[460px] flex-col rounded-[18px] border border-[#f0e6e8] bg-[#fdfbfb]">
             <div className="flex-1 px-6 pt-6 leading-[1.7]" style={{ fontSize }}>
               {isPending ? (
-                <span className="inline-flex items-center gap-2 text-text-muted">
-                  <span className="h-4 w-4 rounded-full border-2 border-brand border-t-transparent animate-spin" />
-                  번역 중...
+                <span className="inline-flex items-center gap-1.5 py-1">
+                  <span className="dot-chase" style={{ animationDelay: '0ms' }} />
+                  <span className="dot-chase" style={{ animationDelay: '160ms' }} />
+                  <span className="dot-chase" style={{ animationDelay: '320ms' }} />
                 </span>
               ) : errorMsg ? (
                 <p className="text-status-error">{errorMsg}</p>
