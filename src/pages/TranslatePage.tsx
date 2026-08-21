@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useTranslate } from '../hooks/useTranslate'
+import Toast from '../ui/components/Toast'
 
 const LANGS = ['한국어', '영어'] as const
 type Lang = (typeof LANGS)[number]
@@ -41,31 +43,61 @@ function LangSelect({ value, onChange }: { value: Lang; onChange: (l: Lang) => v
   )
 }
 
+const LANG_CODE: Record<Lang, 'ko' | 'en'> = { 한국어: 'ko', 영어: 'en' }
+
 export default function TranslatePage() {
   useDocumentTitle('번역')
   const [source, setSource] = useState<Lang>('한국어')
   const [target, setTarget] = useState<Lang>('영어')
   const [input, setInput] = useState('')
   const [result, setResult] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+  const [toast, setToast] = useState('')
+  const [fontSize, setFontSize] = useState(15)
+  const { mutate: translateApi, isPending } = useTranslate()
 
   const swap = () => {
     setSource(target)
     setTarget(source)
-    setResult('')
   }
 
-  const canTranslate = input.trim().length > 0
-  const handleTranslate = () => {
-    if (!canTranslate) return
-    // TODO: 번역 API 연결
-  }
+  useEffect(() => {
+    const text = input.trim()
+    if (!text) {
+      setResult('')
+      setErrorMsg('')
+      return
+    }
+    const timer = window.setTimeout(() => {
+      setErrorMsg('')
+      translateApi(
+        { text: input, source: LANG_CODE[source], target: LANG_CODE[target] },
+        {
+          onSuccess: (res) => setResult(res.data.data.translation),
+          onError: (e) => {
+            const err = e as { response?: { data?: { error?: { code?: string; detail?: string } } } }
+            const code = err?.response?.data?.error?.code
+            const detail = err?.response?.data?.error?.detail
+            if (code === 'TRANSLATE_SERVER_ERROR') {
+              setToast(detail ?? '번역 서버에 연결할 수 없습니다.')
+            } else {
+              setErrorMsg(detail ?? '번역에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+            }
+          },
+        },
+      )
+    }, 1000)
+    return () => window.clearTimeout(timer)
+  }, [input, source, target, translateApi])
 
   const copyResult = () => {
     if (result) navigator.clipboard?.writeText(result).catch(() => {})
   }
 
   return (
-    <div className="h-full overflow-y-auto custom-scroll px-8 pt-8 pb-6">
+    <>
+      {toast && <Toast message={toast} type="error" onClose={() => setToast('')} />}
+      <div className="h-full overflow-y-auto custom-scroll px-8 pt-8 pb-6">
       <div className="mx-auto flex max-w-[1120px] flex-col">
         <h1 className="text-[20px] font-bold text-text-primary">번역</h1>
 
@@ -85,21 +117,27 @@ export default function TranslatePage() {
             <LangSelect value={target} onChange={setTarget} />
           </div>
 
-          <button
-            type="button"
-            onClick={handleTranslate}
-            disabled={!canTranslate}
-            style={canTranslate ? { background: 'var(--color-brand)' } : undefined}
-            className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-[14px] font-semibold transition-colors ${
-              canTranslate ? 'text-white hover:bg-[var(--color-brand-hover)]' : 'bg-[#f4eced] text-[#cbbcc0] cursor-not-allowed'
-            }`}
-          >
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 8h9M9 4v4M4 8c0 4 2.5 7 6 8M12 8c0 4-2.5 7-6 8" />
-              <path d="M14 20l3.5-9 3.5 9M15.2 17h4.6" />
-            </svg>
-            번역
-          </button>
+          <div className="flex items-center gap-1 rounded-full border border-[#f0e6e8] bg-white px-1.5 py-1">
+            <button
+              type="button"
+              onClick={() => setFontSize((s) => Math.max(12, s - 1))}
+              disabled={fontSize <= 12}
+              aria-label="글자 작게"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-bold text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              A−
+            </button>
+            <span className="w-9 text-center text-[12.5px] tabular-nums text-text-muted">{fontSize}px</span>
+            <button
+              type="button"
+              onClick={() => setFontSize((s) => Math.min(24, s + 1))}
+              disabled={fontSize >= 24}
+              aria-label="글자 크게"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[15px] font-bold text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              A+
+            </button>
+          </div>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -109,7 +147,8 @@ export default function TranslatePage() {
               onChange={(e) => setInput(e.target.value.slice(0, MAX))}
               placeholder="번역할 내용을 입력하세요"
               spellCheck={false}
-              className="flex-1 resize-none rounded-t-[18px] bg-transparent px-6 pt-6 text-[15px] leading-[1.7] text-text-primary outline-none placeholder:text-text-muted"
+              style={{ fontSize }}
+              className="flex-1 resize-none rounded-t-[18px] bg-transparent px-6 pt-6 leading-[1.7] text-text-primary outline-none placeholder:text-text-muted"
             />
             <div className="flex items-center justify-between px-5 py-3.5">
               <button
@@ -127,8 +166,15 @@ export default function TranslatePage() {
           </div>
 
           <div className="flex min-h-[460px] flex-col rounded-[18px] border border-[#f0e6e8] bg-[#fdfbfb]">
-            <div className="flex-1 px-6 pt-6 text-[15px] leading-[1.7]">
-              {result ? (
+            <div className="flex-1 px-6 pt-6 leading-[1.7]" style={{ fontSize }}>
+              {isPending ? (
+                <span className="inline-flex items-center gap-2 text-text-muted">
+                  <span className="h-4 w-4 rounded-full border-2 border-brand border-t-transparent animate-spin" />
+                  번역 중...
+                </span>
+              ) : errorMsg ? (
+                <p className="text-status-error">{errorMsg}</p>
+              ) : result ? (
                 <p className="whitespace-pre-wrap text-text-primary">{result}</p>
               ) : (
                 <p className="text-text-muted">번역</p>
@@ -150,6 +196,7 @@ export default function TranslatePage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

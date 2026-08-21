@@ -131,7 +131,7 @@ function ReasoningBlock({
   const list = steps && steps.length > 0 ? steps : [{ message: statusText || DEFAULT_STATUS }];
   const current = list[list.length - 1];
   const [open, setOpen] = useState(false);
-  const hasDetail = list.length > 1 || list.some((s) => s.thought);
+  const hasDetail = !done || list.length > 1 || list.some((s) => s.thought);
 
   const headerLabel = done
     ? seconds != null
