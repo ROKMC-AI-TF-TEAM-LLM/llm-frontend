@@ -52,7 +52,6 @@ function useTick(ms: number) {
   return t
 }
 
-/* ── STEP 01 : 질문이 타이핑되고 전송 버튼이 살아난다 ── */
 const Q = '정기휴가 신청 절차 알려줘'
 function TypingScene() {
   const t = useTick(140)
@@ -89,7 +88,6 @@ function TypingScene() {
   )
 }
 
-/* ── STEP 02 : 도메인 목록에서 선택이 옮겨 다닌다 ── */
 const DOMS = ['전체', '인사·복지', '정보화·보안', '재무·법무']
 function DomainScene() {
   const t = useTick(820)
@@ -115,7 +113,6 @@ function DomainScene() {
   )
 }
 
-/* ── STEP 03 : 질문을 보내면 답변이 실제로 한 글자씩 흘러나온다 ── */
 const ANSWER = '군인은 연 21일의 정기휴가를 받으며, 부대 사정에 따라 분할 사용할 수 있습니다.'
 function StreamScene() {
   const t = useTick(90)
@@ -148,7 +145,6 @@ function StreamScene() {
   )
 }
 
-/* ── STEP 04 : 출처 배지를 누르면 원문 카드가 펼쳐진다 ── */
 function SourceScene() {
   const t = useTick(1100)
   const open = t % 4 >= 1

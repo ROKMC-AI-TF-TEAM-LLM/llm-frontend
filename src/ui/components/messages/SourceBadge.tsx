@@ -13,10 +13,10 @@ interface SourceBadgeProps {
 export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
   const [open, setOpen] = useState(false);
 
-  const { documents } = useDocumentLookup(open);
+  const hasSources = !!sources && sources.length > 0;
+  const { documents, isLoading } = useDocumentLookup(hasSources);
   const { doc: drawerDoc, open: drawerOpen, openDoc, closeDoc } = useDocumentDrawer();
 
-  const hasSources = !!sources && sources.length > 0;
   if (!hasSources && !notice) return null;
 
   return (
@@ -53,8 +53,8 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
                 type="button"
                 disabled={!matched}
                 onClick={() => matched && openDoc(matched)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle text-left transition-colors ${
-                  matched ? 'hover:bg-surface hover:border-brand-soft cursor-pointer' : 'cursor-default'
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border border-[#f0e6e8] bg-white text-left transition-colors ${
+                  matched ? 'hover:bg-surface-subtle hover:border-brand-soft cursor-pointer' : 'cursor-default'
                 }`}
               >
                 <div
@@ -67,25 +67,19 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
                   </svg>
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="min-w-0 truncate text-[14px] font-bold text-text-primary">{title}</span>
-                    {matched?.type && (
-                      <span className="shrink-0 text-[10.5px] font-medium px-1.5 py-0.5 rounded-md bg-surface text-text-secondary border border-surface-border">
-                        {matched.type}
-                      </span>
-                    )}
-                    {matched?.domain && (
-                      <span
-                        className="shrink-0 text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: style.badgeBg, color: style.badgeText }}
-                      >
-                        {getDomainLabel(matched.domain)}
-                      </span>
-                    )}
-                  </div>
-                  {matched?.owning_department && (
-                    <p className="mt-0.5 text-[12px] text-text-muted truncate">{matched.owning_department}</p>
+                <div className="min-w-0 flex-1 flex items-center gap-2">
+                  <span className="min-w-0 truncate text-[14px] font-bold text-text-primary">{title}</span>
+                  {isLoading && !matched ? (
+                    <span className="h-3 w-24 shrink-0 rounded-full bg-surface-subtle animate-pulse" />
+                  ) : (
+                    <span className="min-w-0 truncate flex items-center gap-1.5 text-[12px] text-text-muted">
+                      {matched?.type && <span>{matched.type}</span>}
+                      {matched?.type && matched?.domain && <span aria-hidden>·</span>}
+                      {matched?.domain && <span style={{ color: style.badgeText }}>{getDomainLabel(matched.domain)}</span>}
+                      {matched?.domain && matched?.owning_department && <span aria-hidden>·</span>}
+                      {matched?.owning_department && <span>{matched.owning_department}</span>}
+                      {!matched && s.page && <span>p.{s.page}</span>}
+                    </span>
                   )}
                 </div>
               </button>

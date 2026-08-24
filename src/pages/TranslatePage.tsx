@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useTranslate } from '../hooks/useTranslate'
 import Toast from '../ui/components/Toast'
+import { copyText } from '../utils/clipboard'
 
 const LANGS = ['한국어', '영어'] as const
 type Lang = (typeof LANGS)[number]
@@ -45,6 +46,11 @@ function LangSelect({ value, onChange }: { value: Lang; onChange: (l: Lang) => v
 
 const LANG_CODE: Record<Lang, 'ko' | 'en'> = { 한국어: 'ko', 영어: 'en' }
 
+const STYLES = [
+  { label: '평시문체', value: 'plain_report' },
+  { label: '높임말체', value: 'honorific' },
+] as const
+
 export default function TranslatePage() {
   useDocumentTitle('번역')
   const [source, setSource] = useState<Lang>('한국어')
@@ -53,6 +59,7 @@ export default function TranslatePage() {
   const [result, setResult] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [toast, setToast] = useState('')
+  const [style, setStyle] = useState<string>('plain_report')
   const [fontSize, setFontSize] = useState(15)
   const { mutate: translateApi, isPending } = useTranslate()
 
@@ -61,37 +68,39 @@ export default function TranslatePage() {
     setTarget(source)
   }
 
+  const runTranslate = useCallback(() => {
+    if (!input.trim()) return
+    setErrorMsg('')
+    translateApi(
+      { text: input, source: LANG_CODE[source], target: LANG_CODE[target], style },
+      {
+        onSuccess: (res) => setResult(res.data.data.translation),
+        onError: (e) => {
+          const err = e as { response?: { data?: { error?: { code?: string; detail?: string } } } }
+          const code = err?.response?.data?.error?.code
+          const detail = err?.response?.data?.error?.detail
+          if (code === 'TRANSLATE_SERVER_ERROR') {
+            setToast(detail ?? '번역 서버에 연결할 수 없습니다.')
+          } else {
+            setErrorMsg(detail ?? '번역에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+          }
+        },
+      },
+    )
+  }, [input, source, target, style, translateApi])
+
   useEffect(() => {
-    const text = input.trim()
-    if (!text) {
+    if (!input.trim()) {
       setResult('')
       setErrorMsg('')
-      return
     }
-    const timer = window.setTimeout(() => {
-      setErrorMsg('')
-      translateApi(
-        { text: input, source: LANG_CODE[source], target: LANG_CODE[target] },
-        {
-          onSuccess: (res) => setResult(res.data.data.translation),
-          onError: (e) => {
-            const err = e as { response?: { data?: { error?: { code?: string; detail?: string } } } }
-            const code = err?.response?.data?.error?.code
-            const detail = err?.response?.data?.error?.detail
-            if (code === 'TRANSLATE_SERVER_ERROR') {
-              setToast(detail ?? '번역 서버에 연결할 수 없습니다.')
-            } else {
-              setErrorMsg(detail ?? '번역에 실패했습니다. 잠시 후 다시 시도해 주세요.')
-            }
-          },
-        },
-      )
-    }, 1000)
-    return () => window.clearTimeout(timer)
-  }, [input, source, target, translateApi])
+    // 입력 멈추고 1초 뒤 자동 번역(디바운스). 지금은 번역 버튼만 쓰므로 비활성화.
+    // const timer = window.setTimeout(runTranslate, 1000)
+    // return () => window.clearTimeout(timer)
+  }, [input, source, target, runTranslate])
 
   const copyResult = () => {
-    if (result) navigator.clipboard?.writeText(result).catch(() => {})
+    if (result) copyText(result).catch(() => {})
   }
 
   return (
@@ -115,6 +124,21 @@ export default function TranslatePage() {
               </svg>
             </button>
             <LangSelect value={target} onChange={setTarget} />
+
+            <div className="ml-1 flex items-center rounded-full border border-[#f0e6e8] bg-white p-1">
+              {STYLES.map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => setStyle(s.value)}
+                  className={`h-9 rounded-full px-4 text-[13px] font-semibold transition-colors ${
+                    style === s.value ? 'bg-brand text-white' : 'text-text-secondary hover:bg-brand-subtle hover:text-brand'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center gap-1 rounded-full border border-[#f0e6e8] bg-white px-1.5 py-1">
@@ -151,17 +175,18 @@ export default function TranslatePage() {
               className="flex-1 resize-none rounded-t-[18px] bg-transparent px-6 pt-6 leading-[1.7] text-text-primary outline-none placeholder:text-text-muted"
             />
             <div className="flex items-center justify-between px-5 py-3.5">
+              <span className="text-[12.5px] tabular-nums text-text-muted">{input.length} / {MAX}</span>
               <button
                 type="button"
-                aria-label="음성 입력"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-brand-subtle hover:text-brand"
+                onClick={runTranslate}
+                disabled={!input.trim() || isPending}
+                style={input.trim() && !isPending ? { background: 'var(--color-brand)' } : undefined}
+                className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors ${
+                  input.trim() && !isPending ? 'text-white hover:bg-[var(--color-brand-hover)]' : 'bg-[#f4eced] text-[#cbbcc0] cursor-not-allowed'
+                }`}
               >
-                <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="9" y="3" width="6" height="11" rx="3" />
-                  <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-                </svg>
+                번역
               </button>
-              <span className="text-[12.5px] tabular-nums text-text-muted">{input.length} / {MAX}</span>
             </div>
           </div>
 

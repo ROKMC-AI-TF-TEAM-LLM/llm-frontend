@@ -1,4 +1,3 @@
-
 export interface ProjectData {
   project_id: string
   title: string
@@ -6,7 +5,6 @@ export interface ProjectData {
   instructions: string
 }
 
-// ── 생성: POST /api/v1/projects ──
 export interface CreateProjectRequest {
   title: string
   instructions: string
@@ -18,8 +16,6 @@ export interface CreateProjectResponse {
   data: ProjectData
   error: { code: CreateProjectErrorCode; detail: string } | null
 }
-
-// ── 목록: GET /api/v1/projects (커서 페이지네이션) ──
 export type ProjectListItem = Omit<ProjectData, 'instructions'>
 export interface ProjectListData {
   items: ProjectListItem[]
@@ -39,7 +35,6 @@ export interface GetProjectsResponse {
   error: { code: GetProjectsErrorCode; detail: string } | null
 }
 
-// ── 상세: GET /api/v1/projects/{project_id} ──
 export type GetProjectErrorCode =
   | 'UNAUTHORIZED'
   | 'PROJECT_ACCESS_DENIED'
@@ -65,14 +60,12 @@ export interface ProjectMutationResponse {
   error: { code: ProjectMutationErrorCode; detail: string } | null
 }
 
-// ── 제목 수정: PATCH /api/v1/projects/{project_id} ──
 export interface UpdateProjectRequest {
   title: string
 }
 export type UpdateProjectErrorCode = ProjectMutationErrorCode
 export type UpdateProjectResponse = ProjectMutationResponse
 
-// ── 즐겨찾기 설정: PATCH /api/v1/projects/{project_id}/favorite ──
 export interface SetProjectFavoriteRequest {
   is_favorite: boolean
 }
@@ -80,7 +73,6 @@ export type SetProjectFavoriteResponse = ProjectMutationResponse
 
 export type ProjectLlmMutationErrorCode = ProjectMutationErrorCode | 'CONFLICT' | 'LLM_SERVER_ERROR'
 
-// ── 지침 설정/수정: PATCH /api/v1/projects/{project_id}/instruction ──
 export interface SetProjectInstructionRequest {
   instructions: string | null
 }
@@ -91,7 +83,6 @@ export interface SetProjectInstructionResponse {
   error: { code: ProjectLlmMutationErrorCode; detail: string } | null
 }
 
-// ── 삭제: DELETE /api/v1/projects/{project_id} ──
 export interface DeleteProjectResponse {
   success: boolean
   status_code: number
@@ -99,7 +90,6 @@ export interface DeleteProjectResponse {
   error: { code: ProjectLlmMutationErrorCode; detail: string } | null
 }
 
-// ── 하위 대화 세션 목록: GET /api/v1/projects/{project_id}/sessions (커서) ──
 export interface ProjectSessionItem {
   session_id: string
   project_id: string
@@ -134,7 +124,6 @@ export interface ProjectDocument {
   created_at: string
 }
 
-// ── 참고 파일 업로드: POST /api/v1/projects/{project_id}/documents (multipart, 202) ──
 export type UploadProjectDocumentErrorCode =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
@@ -151,7 +140,6 @@ export interface UploadProjectDocumentResponse {
   error: { code: UploadProjectDocumentErrorCode; detail: string } | null
 }
 
-// ── 참고 파일 목록: GET /api/v1/projects/{project_id}/documents (offset 기반) ──
 export interface GetProjectDocumentsParams {
   offset?: number
   limit?: number
@@ -170,7 +158,6 @@ export interface GetProjectDocumentsResponse {
   error: { code: ProjectMutationErrorCode; detail: string } | null
 }
 
-// ── 색인 상태 조회: GET /api/v1/projects/{project_id}/documents/{document_id}/status ──
 export interface ProjectDocumentStatus {
   document_id: string
   status: ProjectDocStatus | string
@@ -191,7 +178,6 @@ export interface GetProjectDocumentStatusResponse {
   error: { code: ProjectDocumentStatusErrorCode; detail: string } | null
 }
 
-// ── 색인 재시도: POST /api/v1/projects/{project_id}/documents/{document_id}/retry ──
 export type RetryProjectDocumentErrorCode =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
@@ -208,7 +194,6 @@ export interface RetryProjectDocumentResponse {
   error: { code: RetryProjectDocumentErrorCode; detail: string } | null
 }
 
-// ── 참고 파일 삭제: DELETE /api/v1/projects/{project_id}/documents/{document_id} ──
 export type DeleteProjectDocumentErrorCode =
   | 'UNAUTHORIZED'
   | 'PROJECT_ACCESS_DENIED'

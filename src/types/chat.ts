@@ -22,6 +22,7 @@ export interface GetMessagesParams {
 }
 
 export type GetMessagesErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED'
+
 export interface GetMessagesResponse {
   success: boolean
   status_code: number
@@ -36,6 +37,7 @@ export interface StreamMessageRequest {
 export type StreamMessageErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'SESSION_NOT_FOUND' | 'SESSION_ACCESS_DENIED' | 'VALIDATION_ERROR'
 
 export type DeleteMessageErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'MESSAGE_NOT_FOUND' | 'SESSION_ACCESS_DENIED'
+
 export interface DeleteMessageResponse {
   success: boolean
   status_code: number

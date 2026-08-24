@@ -12,6 +12,7 @@ import Reveal from '../ui/components/landing/Reveal'
 import RotatingWord from '../ui/components/landing/RotatingWord'
 import LandingNav from '../ui/components/landing/LandingNav'
 import LandingFooter from '../ui/components/landing/LandingFooter'
+import { showDevToast } from '../ui/components/DevToast'
 import { getApiError, isNetworkError, DEFAULT_STATUS_ERRORS } from '../utils/error'
 import { logError } from '../utils/logError'
 
@@ -118,11 +119,12 @@ const LoginPage = () => {
       if (done) return
       done = true
       clearTimeout(t)
-      el.removeEventListener('scrollend', finish)
+      el.removeEventListener('scroll', onScroll)
       setView('auth')
     }
+    const onScroll = () => { if (el.scrollTop <= 4) finish() }
     const t = window.setTimeout(finish, 1000)
-    el.addEventListener('scrollend', finish)
+    el.addEventListener('scroll', onScroll, { passive: true })
     el.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const closeAuth = () => { setView('intro'); requestAnimationFrame(() => introRef.current?.scrollTo({ top: 0, behavior: 'smooth' })) }
@@ -150,8 +152,6 @@ const LoginPage = () => {
   return (
     <div className="mars-root" data-view={view}>
       <LandingNav onStart={openAuth} />
-
-      {/* ===== 인트로 (스크롤) ===== */}
       <div ref={introRef} className="mars-intro ">
         <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw] pt-20">
           <div className="mars-glow-bg" style={{ width: 620, height: 620, right: '-6%', top: '2%' }} />
@@ -174,7 +174,7 @@ const LoginPage = () => {
                 </button>
               </div>
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'auth' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <button type="button" onClick={() => {}} className="mars-pill mars-pill-ghost text-[14px]">
+                <button type="button" onClick={() => showDevToast('개발 중인 페이지입니다.')} className="mars-pill mars-pill-ghost text-[14px]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                   팀 소개
                 </button>
@@ -292,11 +292,11 @@ const LoginPage = () => {
             <div className="flex-1 min-w-0 w-full">
               <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
                 <div className="p-7 pb-4 flex flex-col gap-5">
-                  <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">정기휴가 신청 절차를 단계별로 알려줘</div>
+                  <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">야간근무 수당은 어떻게 지급되나요?</div>
                   <div className="text-[15px] leading-relaxed text-text-primary">
-                    <b className="font-extrabold">정기휴가</b> 신청은 다음 순서로 진행됩니다.
+                    <b className="font-extrabold">야간근무 수당</b>은 다음 기준으로 지급됩니다.
                     <div className="mt-3.5 flex flex-col gap-2.5">
-                      {['부대 휴가계획에 따라 희망 기간을 선정합니다.', '휴가원을 작성해 소속 지휘관의 결재를 받습니다.', '승인 후 국방인사정보체계에 등록하면 완료됩니다.'].map((t, i) => (
+                      {['22시부터 익일 06시 사이 근무가 대상입니다.', '시간당 통상임금의 50%를 가산해 지급합니다.', '근무 기록은 부대 인사담당이 월 단위로 정산합니다.'].map((t, i) => (
                         <div key={i} className="flex gap-3 items-start">
                           <span className="shrink-0 w-5 h-5 mt-0.5 rounded-md bg-brand-subtle text-brand text-[11.5px] font-extrabold flex items-center justify-center">{i + 1}</span>
                           <span>{t}</span>
@@ -311,8 +311,8 @@ const LoginPage = () => {
                       </span>
                       <div className="mt-2 flex flex-col gap-2">
                         {[
-                          { title: '군인 휴가 규정', type: '규정', domain: '인사·복지', style: { bar: '#e4002b', bg: '#fdeef1', text: '#c0002a' } },
-                          { title: '군인의 지위 및 복무에 관한 기본법', type: '법률', domain: '훈령', style: { bar: '#3b6fe0', bg: '#eaf0fd', text: '#2a54b8' } },
+                          { title: '군인 보수 규정', type: '규정', domain: '재무·법무', dept: '국방부 · 재정관리실', style: { bar: '#e0952b', bg: '#fbf1e2', text: '#b3720f' } },
+                          { title: '공무원 수당 등에 관한 규정', type: '법률', domain: '인사·복지', dept: '인사혁신처', style: { bar: '#e4002b', bg: '#fdeef1', text: '#c0002a' } },
                         ].map((s) => (
                           <div key={s.title} className="flex items-center gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle">
                             <span className="shrink-0 flex items-center justify-center" style={{ width: 38, height: 38, borderRadius: 10, background: s.style.bg, color: s.style.bar }}>
@@ -321,11 +321,14 @@ const LoginPage = () => {
                                 <path d="M14 2v6h6M8 13h8M8 17h5" />
                               </svg>
                             </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="flex items-center gap-2">
-                                <span className="min-w-0 truncate text-[14px] font-bold text-text-primary">{s.title}</span>
-                                <span className="shrink-0 text-[10.5px] font-medium px-1.5 py-0.5 rounded-md bg-surface text-text-secondary border border-surface-border">{s.type}</span>
-                                <span className="shrink-0 text-[10.5px] font-semibold px-2 py-0.5 rounded-full" style={{ background: s.style.bg, color: s.style.text }}>{s.domain}</span>
+                            <span className="min-w-0 flex-1 flex items-center gap-2">
+                              <span className="shrink-0 text-[14px] font-bold text-text-primary">{s.title}</span>
+                              <span className="min-w-0 truncate flex items-center gap-1.5 text-[12px] text-text-muted">
+                                <span>{s.type}</span>
+                                <span aria-hidden>·</span>
+                                <span style={{ color: s.style.text }}>{s.domain}</span>
+                                <span aria-hidden>·</span>
+                                <span>{s.dept}</span>
                               </span>
                             </span>
                           </div>
@@ -377,7 +380,6 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* ===== 오른쪽 40% 로그인 패널 (옆에서 슬라이드 인) ===== */}
       <div className="mars-auth-panel">
         <button onClick={closeAuth} aria-label="소개로 돌아가기" className="absolute top-6 right-7 w-11 h-11 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>

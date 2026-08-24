@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, type GuideSection } from './guideSections'
 import NavPreview from './NavPreview'
+import { showDevToast } from '../DevToast'
 
 export default function LandingNav({ onStart }: { onStart: () => void }) {
   const navigate = useNavigate()
@@ -120,7 +121,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           튜토리얼
         </button>
 
-        <button type="button" onClick={() => {}} className="mars-nav-trigger">
+        <button type="button" onClick={() => showDevToast('개발 중인 페이지입니다.')} className="mars-nav-trigger">
           팀 소개
         </button>
       </nav>

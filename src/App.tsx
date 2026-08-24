@@ -10,6 +10,7 @@ import AuthLayout from './ui/layouts/AuthLayout';
 import NewChatPage from './pages/NewChatPage';
 import ErrorPage from './pages/ErrorPage';
 import { AuthProvider } from './context/AuthContext';
+import DevToast from './ui/components/DevToast';
 import ProtectedLayout from './ui/layouts/ProtectedLayout';
 import AdminLayout from './ui/layouts/AdminLayout';
 import { SearchPageSkeleton, RagPageSkeleton, AdminPageSkeleton } from './ui/components/Skeleton';
@@ -141,6 +142,7 @@ const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path:
 const App = () => (
   <AuthProvider>
     <RouterProvider router={router} />
+    <DevToast />
   </AuthProvider>
 );
 

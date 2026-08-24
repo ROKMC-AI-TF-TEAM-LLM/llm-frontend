@@ -1,25 +1,18 @@
 @import "tailwindcss";
 
-/* streamdown(스트리밍 마크다운) 내부 컴포넌트의 Tailwind 클래스 생성 */
 @source "../../../node_modules/streamdown/dist/index.js";
 
 @theme {
-  /* 폐쇄망(내부망) 운용 : 외부 폰트 CDN이 차단되고 폰트 파일 반입도 번거로우므로,
-     추가 파일 없이 'OS에 이미 깔린' 폰트만 스택으로 지정한다.
-     - Windows  : 라틴 Segoe UI + 한글 Malgun Gothic(맑은 고딕)
-     - macOS/iOS: -apple-system(SF) + Apple SD Gothic Neo
-     - 안드로이드: Roboto + Noto Sans KR
-     맨 앞 시스템 UI 폰트가 라틴(MARS 등)을, 그 뒤 한글 폰트가 한글을 담당한다. */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  /* 브랜드 워드마크(MARS)용 : OS 기본 세리프만으로 딱딱함을 덜고 부드럽게.
-     외부 폰트 반입 없이 시스템에 이미 있는 세리프만 스택으로 쓴다. */
   --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
     'Times New Roman', 'Nanum Myeongjo', 'Apple SD Gothic Neo', serif;
 
   --color-brand: #DC143C;
   --color-brand-hover: #C41230;
+  --color-brand-accent: #D9785C;
+  --color-cream: #FBF7F1;
   --color-brand-dark: #8b0000;
   --color-brand-light: #FF4560;
   --color-brand-soft: #FCDCE3;
@@ -91,7 +84,6 @@ body {
     0 0 20px rgba(232, 23, 74, 0.10);
 }
 
-/* 브랜드 워드마크(MARS) : 세리프체로 부드럽게. 두께는 700까지만 올려 우아하게. */
 .mars-brand-serif {
   font-family: var(--font-serif);
   font-weight: 700;
@@ -117,7 +109,6 @@ body {
   .animate-fade-in { animation: none; }
 }
 
-/* 페이지 전환 : 아래에서 위로 부드럽게 올라오며 페이드 인 */
 @keyframes page-in {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: none; }
@@ -141,7 +132,6 @@ body {
   animation: chase 1.2s ease-in-out infinite;
 }
 
-/* 진행 중인 단계 점: 흰색↔연한 회색을 오가며 깜빡임(파동 없음) */
 @keyframes status-dot-blink {
   0%, 100% { background-color: var(--color-text-muted); }
   50%       { background-color: #fff; }
@@ -153,7 +143,6 @@ body {
   .status-dot-blink { animation: none; }
 }
 
-/* 진행상태 문구(예: "관련 문서를 선별하는 중...") : 밝은 하이라이트가 좌우로 흐르는 shimmer */
 @keyframes status-shimmer {
   0%   { background-position: 150% 0; }
   100% { background-position: -50% 0; }
@@ -181,7 +170,6 @@ body {
   }
 }
 
-/* 진행상태 문구 : 좌우 흐름 없이 회색으로 은은하게 깜빡인다 */
 @keyframes status-blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.4; }
@@ -205,7 +193,6 @@ body.modal-open {
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* 사이드바 전용 스크롤바 — 평소엔 은은하게, 호버하면 또렷하게. */
 .sidebar-scroll {
   scrollbar-width: thin;
   scrollbar-color: #e2ccd3 transparent;
@@ -259,7 +246,6 @@ body.modal-open {
   background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-subtle) 100%);
 }
 
-/* ===================== MARS 랜딩 / 로그인 전환 ===================== */
 @keyframes marsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
 @keyframes marsSpin  { to { transform: rotate(360deg); } }
 @keyframes marsBob   { 0%,100% { transform: translateY(0); opacity:.55; } 50% { transform: translateY(6px); opacity:1; } }
@@ -271,24 +257,18 @@ body.modal-open {
   background: linear-gradient(160deg,#fff7f9 0%,#ffffff 55%,#fff8fa 100%);
 }
 
-/* ── 전환 타이밍 통일 : 행성 이동·패널 슬라이드 모두 동일(.7s, 동일 이징) ── */
-
-/* 인트로(스크롤) : 히어로가 곧 브랜딩. auth일 땐 스크롤만 잠금(히어로는 그대로 왼쪽 브랜딩으로 유지 → 잔상 없음) */
 .mars-intro { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; z-index:10; }
 .mars-root[data-view="auth"] .mars-intro { overflow:hidden; }
 
-/* 히어로 아래 섹션들 : 불투명 배경 */
 .mars-below { position: relative; z-index:2; background: linear-gradient(180deg,#fdf8fa 0%,#ffffff 50%,#fdf8fa 100%); }
-/* 워드마크 — 화면 폭에 따라 유연하게. 자간을 좁혀 로고처럼 단단하게 보이게 한다. */
+
 .mars-wordmark { font-size: clamp(62px, 7vw, 88px); line-height: 0.92; letter-spacing: -0.035em; }
 
 .mars-focus { opacity:0; transform: translateY(40px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
 .mars-focus.in-view { opacity:1; transform:none; }
 
-/* 섹션은 최소 한 화면을 채우되, 내용이 많으면 그만큼 늘어나야 한다.
-   (height를 고정하면 카드가 늘어난 섹션에서 위아래가 잘린다) */
 .mars-section { min-height: 100vh; height: auto; }
-/* ===== 히어로 행성 : 히어로 섹션 안(스크롤과 함께 이동). 로그인 시 왼쪽으로 이동 ===== */
+
 .mars-hero-planet {
   position:absolute; right:0; top:0; bottom:0; z-index:0; pointer-events:none;
   display:flex; align-items:center; justify-content:flex-end; padding-right:5vw;
@@ -296,25 +276,23 @@ body.modal-open {
 }
 .mars-hero-planet-inner {
   width: clamp(300px, 34vw, 460px); height: clamp(300px, 34vw, 460px);
-  transform-origin: right center;   /* 스케일 기준점 = 우측 경계 → 커질 때 왼쪽(중간)으로만 확장, 우측 여백 유지 */
+  transform-origin: right center;
   transition: transform .7s cubic-bezier(.6,.02,.2,1);
   will-change: transform;
 }
-/* 인트로 행성 크기 : 우측 경계 고정 상태로 키워 중간 여백을 채움(숫자 ↑ = 더 크게) */
+
 .mars-root[data-view="intro"] .mars-hero-planet-inner { transform: scale(1.17); }
-/* 로그인 상태 행성 : 위치(컨테이너)와 크기(inner)를 분리 → 서로 영향 없이 따로 조절 */
-.mars-root[data-view="auth"] .mars-hero-planet       { transform: translate(-10vw, 0); }  /* 위치 : 가로(-왼쪽), 세로(+아래) */
-.mars-root[data-view="auth"] .mars-hero-planet-inner { transform: scale(1.5); }           /* 크기 : 숫자 ↑ = 크게 */
+
+.mars-root[data-view="auth"] .mars-hero-planet       { transform: translate(-10vw, 0); }
+.mars-root[data-view="auth"] .mars-hero-planet-inner { transform: scale(1.5); }
 .mars-planet-body { position:relative; width:100%; height:100%; }
 .mars-planet-float { width:100%; height:100%; animation: marsFloat 7s ease-in-out infinite; }
 
-/* 궤도 링 + 위성 : 행성의 자식이라 함께 이동. 각 궤도마다 위성(도트) 하나씩, 속도·방향 다르게 */
 .mars-orbit { position:absolute; border-radius:50%; border:1.5px solid rgba(228,0,43,0.14); animation: marsSpin linear infinite; }
 .mars-orbit::after { content:''; position:absolute; border-radius:50%; background:#e4002b; }
 .mars-orbit.o1 { inset:-13%; animation-duration:32s; border-color:rgba(228,0,43,0.16); }
 .mars-orbit.o1::after { left:-5px; top:48%; width:10px; height:10px; box-shadow:0 0 12px 3px rgba(228,0,43,0.55); }
 
-/* ===== 오른쪽 40% 로그인 패널 (옆에서 슬라이드 인) ===== */
 .mars-auth-panel {
   position: fixed; right:0; top:0; width:40%; height:100%; z-index:30;
   display:flex; flex-direction:column; justify-content:center;
@@ -326,7 +304,6 @@ body.modal-open {
 .mars-root[data-view="auth"] .mars-auth-panel { transform: translateX(0); }
 .mars-panel-inner { width:100%; max-width:380px; margin:0 auto; }
 
-/* 등장 애니메이션 (인트로) */
 .mars-reveal { opacity:0; }
 .mars-reveal.is-shown { animation: marsReveal .8s cubic-bezier(.2,.7,.2,1) forwards; }
 
@@ -340,8 +317,6 @@ body.modal-open {
   .mars-planet-float, .mars-orbit { animation: none; }
 }
 
-/* ===================== 터미널 데모 (다크 카드) =====================
-   흰 배경 랜딩 위에 얹는 유일한 다크 블록. 대비가 세니 주변 여백을 넉넉히 준다. */
 .mars-term {
   --term-bg: #0f0f10;
   --term-line: rgba(255,255,255,0.07);
@@ -369,14 +344,11 @@ body.modal-open {
   padding: 12px 14px 16px;
   height: 360px;
   overflow-y: auto;
-  /* 실제 콘솔에 가깝게 — 작고 촘촘하게 */
   font-size: 11px;
   line-height: 1.45;
   letter-spacing: -0.1px;
 }
 
-/* 로그 한 줄. 줄이 길어 접힐 때는 실제 터미널처럼 들여쓰기해서
-   이어지는 줄임을 알 수 있게 한다(hanging indent). */
 .mars-term-line {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -389,17 +361,15 @@ body.modal-open {
   to   { opacity: 1; transform: none; }
 }
 
-/* 실행 프롬프트 : 항상 맨 위에 남는 한 줄 */
 .mars-term-prompt { margin-bottom: 8px; animation: none; }
 .mars-term-prompt .s-venv { color: #d8d2d3; }
 .mars-term-prompt .s-path { color: #7fd4f0; }
 .mars-term-prompt .s-cmd  { color: #f0e9ea; }
 
-/* 로그 레벨/토큰 배색 — 실제 uvicorn + httpx 콘솔 출력을 따랐다 */
 .s-info   { color: #2fbe58; font-weight: 700; }
 .s-debug  { color: #6b6b6b; }
 .s-ts     { color: #6b6b6b; }
-.s-logger { color: #4fc7c7; }   /* 로거명은 청록 */
+.s-logger { color: #4fc7c7; }
 .s-hl     { color: #e5c07b; }
 .s-ok     { color: #2fbe58; font-weight: 700; }
 .s-req    { color: #d8d8d8; }
@@ -419,9 +389,6 @@ body.modal-open {
   .mars-term-caret { animation: none; }
 }
 
-/* ===================== 랜딩 : Grok 풍 공통 프리미티브 ===================== */
-
-/* 섹션 상단의 작은 라벨 (GUIDE, FEATURES …) */
 .mars-eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
@@ -432,8 +399,6 @@ body.modal-open {
   background: var(--color-brand); flex: none;
 }
 
-/* 풀네임(Marine Artificial…)처럼 긴 라벨 전용 —
-   기본 아이브로우의 넓은 자간을 그대로 쓰면 폭이 과하게 벌어져 워드마크와 따로 논다. */
 .mars-eyebrow-full {
   font-size: 12.5px;
   letter-spacing: 0.02em;
@@ -441,24 +406,18 @@ body.modal-open {
   font-weight: 700;
 }
 
-/* 큰 제목 — 자간을 좁혀 Grok 특유의 조밀한 헤드라인 느낌 */
 .mars-display {
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1.06;
 }
 
-/* 히어로 뒤에 은은하게 깔리는 화성 빛무리 */
 .mars-glow-bg {
   position: absolute; pointer-events: none; border-radius: 50%;
   background: radial-gradient(circle, rgba(220,20,60,0.16) 0%, rgba(220,20,60,0.05) 45%, transparent 70%);
   filter: blur(20px);
 }
 
-/* (격자 배경 .mars-grid-bg 는 제거했다 — 옅게 깔아도 선이 그어져 보여 지저분했다.
-    히어로의 깊이는 위 빛무리(.mars-glow-bg)만으로 낸다) */
-
-/* 기능 카드 : 호버 시 살짝 떠오르고 테두리에 브랜드색이 스민다 */
 .mars-card {
   position: relative;
   border-radius: 18px;
@@ -472,7 +431,6 @@ body.modal-open {
   box-shadow: 0 22px 48px rgba(150,0,40,0.10);
 }
 
-/* 알약 버튼 (Grok의 CTA 스타일) */
 .mars-pill {
   display: inline-flex; align-items: center; gap: 9px;
   padding: 13px 26px; border-radius: 999px;
@@ -497,15 +455,6 @@ body.modal-open {
 .mars-pill-ghost:hover { border-color: var(--color-brand-soft); background: var(--color-brand-subtle); }
 .mars-pill:active { transform: scale(0.975); }
 
-/* ===================== 랜딩 상단 네비게이션 =====================
-   Anthropic 사이트의 상단 바 결을 따랐다 :
-   - 알약 버튼 대신 '밑줄 있는 텍스트 링크'
-   - CTA는 각진 검정 사각 버튼 + 오른쪽에 분리된 드롭다운 칸
-   워드마크와 CTA만 색을 쓰고 나머지는 먹색으로 눌러 정돈된 느낌을 준다.
-
-   맨 위에서는 배경·테두리 없이 히어로 배경이 그대로 이어지게 두고(띠가 안 생김),
-   스크롤해서 본문이 바 아래로 지나가기 시작하면 흰 배경을 덮어 글자가 겹치지 않게 한다.
-   (is-scrolled 는 LandingNav가 스크롤 위치를 보고 붙인다) */
 .mars-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 40;
   display: flex; align-items: center; gap: 28px;
@@ -522,10 +471,9 @@ body.modal-open {
   border-bottom-color: rgba(26,25,23,0.07);
   box-shadow: 0 2px 14px rgba(60,30,38,0.05);
 }
-/* 로그인 패널이 열리면 네비는 비켜준다 */
+
 .mars-root[data-view="auth"] .mars-nav { opacity: 0; pointer-events: none; transform: translateY(-8px); }
 
-/* 워드마크 — 앞에 도는 아이콘 + 세리프 MARS. 색은 브랜드 빨강. */
 .mars-nav-brand {
   display: inline-flex; align-items: center; gap: 9px;
   color: var(--color-brand); background: none; border: 0; cursor: pointer; padding: 0;
@@ -552,15 +500,11 @@ body.modal-open {
   .mars-nav-brand-mark { animation: none; }
 }
 
-/* 링크 묶음을 오른쪽으로 몬다 — 워드마크만 왼쪽에 남고 나머지는 CTA 옆에 붙는다. */
 .mars-nav-links { margin-left: auto; display: flex; align-items: center; gap: 26px; }
 .mars-nav-actions { display: flex; align-items: center; gap: 10px; }
 
 .mars-nav-item { position: relative; }
 
-/* 텍스트 링크 — 밑줄 없이 색만 바뀐다(배경색도 쓰지 않는다).
-   히어로의 분홍빛 배경 위에서 회색은 묻혀 보이므로 기본을 먹색으로 두고,
-   호버에서 브랜드 빨강으로 바뀌게 해 눌리는 지점을 분명히 한다. */
 .mars-nav-trigger {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 0; border: 0; background: none; cursor: pointer;
@@ -572,8 +516,6 @@ body.modal-open {
   color: var(--color-brand);
 }
 
-/* CTA — 각진 브랜드 빨강 버튼. 오른쪽 칸은 세로선으로 분리된 드롭다운.
-   상단 바에서 혼자 튀지 않게 크기·굵기를 눌렀다(글씨 600→500, 높이·좌우 여백 축소). */
 .mars-nav-cta-group {
   display: inline-flex; align-items: stretch;
   border-radius: 6px; overflow: hidden;
@@ -596,9 +538,6 @@ body.modal-open {
 .mars-nav-caret { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
 .mars-nav-trigger.is-open .mars-nav-caret { transform: rotate(180deg); }
 
-/* 드롭다운 패널 : 살짝 떠오르며 나타나고, 닫힐 땐 더 빠르게 사라진다.
-   링크가 오른쪽에 몰려 있으므로 오른쪽 끝을 기준으로 펼친다
-   (왼쪽 기준이면 넓은 패널이 화면 밖으로 잘려 나간다). */
 .mars-nav-panel {
   position: absolute; top: calc(100% + 10px); right: 0;
   opacity: 0; visibility: hidden;
@@ -610,7 +549,7 @@ body.modal-open {
   opacity: 1; visibility: visible; transform: none;
   transition: opacity .3s ease, transform .34s cubic-bezier(.2,.7,.2,1);
 }
-/* 트리거와 패널 사이의 빈 틈 — 마우스가 지나가도 닫히지 않게 판정 영역을 잇는다 */
+
 .mars-nav-panel::before {
   content: ''; position: absolute; left: 0; right: 0; top: -12px; height: 12px;
 }
@@ -624,7 +563,6 @@ body.modal-open {
 }
 .mars-nav-col { width: 268px; display: flex; flex-direction: column; gap: 1px; }
 
-/* CTA 캐럿으로 여는 짧은 메뉴 — 항목이 둘뿐이라 좁게 */
 .mars-nav-col-sm { width: 232px; }
 .mars-nav-colhead {
   padding: 6px 12px 8px; font-size: 11.5px; font-weight: 700;
@@ -655,15 +593,13 @@ body.modal-open {
 .mars-nav-row.is-active .mars-nav-rowarrow { opacity: 1; transform: none; }
 .mars-nav-row.is-active { background: var(--color-brand-subtle); }
 
-/* ── 드롭다운 오른쪽 미리보기 ── */
 .mars-nav-preview {
   width: 320px; flex: none;
   border-left: 1px solid var(--color-surface-border);
   padding-left: 12px;
   display: flex;
 }
-/* 미리보기는 판 위에 카드를 얹지 않고, 패널 자체를 화면처럼 쓴다.
-   (회색 판 한가운데 작은 카드가 떠 있으면 비어 보이고 조잡해진다) */
+
 .mars-navprev {
   flex: 1; display: flex; flex-direction: column;
   animation: navprev-in .32s cubic-bezier(.2,.7,.2,1) both;
@@ -683,13 +619,11 @@ body.modal-open {
   word-break: keep-all;
 }
 
-/* 장면 공통 : 무대의 폭·높이를 꽉 채운다(가운데 작은 카드가 떠 있으면 휑하다) */
 .mars-navprev-fill {
   width: 100%; height: 100%;
   display: flex; flex-direction: column; justify-content: center;
 }
 
-/* STEP 01 : 실제 입력창 축소판. 위에 안내 문구를 얹어 실제 첫 화면처럼 보이게 한다. */
 .mars-navprev-composer {
   width: 100%; align-self: flex-end; border-radius: 12px;
   background: #fff; border: 1px solid var(--color-surface-border);
@@ -732,7 +666,6 @@ body.modal-open {
   animation: cursor-blink .9s step-end infinite;
 }
 
-/* STEP 02 : 도메인 드롭다운 축소판 */
 .mars-navprev-menu {
   width: 100%; padding: 5px; border-radius: 11px;
   background: #fff; border: 1px solid var(--color-surface-border);
@@ -756,7 +689,6 @@ body.modal-open {
 .mars-navprev-menulabel { flex: 1; }
 .mars-navprev-menucheck { flex: none; }
 
-/* STEP 03 : 질문 말풍선 + 답변 줄 */
 .mars-navprev-chat { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 .mars-navprev-bubble {
   align-self: flex-end; max-width: 78%;
@@ -765,7 +697,7 @@ body.modal-open {
   font-size: 11.5px; line-height: 1.45;
 }
 .mars-navprev-answer { display: flex; flex-direction: column; min-height: 58px; }
-/* 답변 본문 — 회색 막대 대신 실제 글자가 흘러나온다 */
+
 .mars-navprev-answertext {
   font-size: 11.5px; line-height: 1.65; color: var(--color-text-primary);
   word-break: keep-all;
@@ -775,7 +707,6 @@ body.modal-open {
   animation: cursor-blink 1.4s ease-in-out infinite;
 }
 
-/* STEP 04 : 출처 배지 + 원문 카드 */
 .mars-navprev-src { width: 100%; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .mars-navprev-badge {
   display: inline-flex; align-items: center; gap: 5px;
@@ -825,7 +756,6 @@ body.modal-open {
   .mars-nav-caret, .mars-nav-rowarrow { transition: none; }
 }
 
-/* ===================== 하단 푸터 ===================== */
 .mars-footer {
   position: relative; z-index: 3;
   background: #fff;
@@ -891,15 +821,11 @@ body.modal-open {
   .mars-footer-cols { grid-template-columns: 1fr; }
 }
 
-/* ===================== 헤드라인 단어 회전 =====================
-   가장 긴 단어를 숨겨 깔아 폭을 고정하고(ghost), 그 위에 실제 단어를 겹쳐 그린다.
-   → 단어가 바뀌어도 밑줄과 레이아웃이 흔들리지 않는다. */
 .mars-rotword {
   position: relative;
-  display: inline-grid;   /* ghost와 live를 같은 칸에 겹쳐 놓는다 */
+  display: inline-grid;
   vertical-align: baseline;
   color: var(--color-brand);
-  /* 밑줄이 받침 아래 놓이도록 아래쪽 여유를 준다 */
   padding-bottom: 0.1em;
 }
 .mars-rotword-ghost,
@@ -921,8 +847,6 @@ body.modal-open {
   to   { opacity: 0; transform: translateY(-0.36em); filter: blur(5px); }
 }
 
-/* 단어 아래 밑줄 — 폭이 고정돼 있어 흔들리지 않는다.
-   받침과 겹치지 않게 충분히 내리고, 굵기·농도를 낮춰 글자를 방해하지 않게 한다. */
 .mars-rotword-underline {
   position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
   border-radius: 999px;
@@ -935,25 +859,12 @@ body.modal-open {
   .mars-rotword-live.is-leaving { animation: none; opacity: 1; filter: none; transform: none; }
 }
 
-/* ===================== 사이드바 메뉴 아이콘 : 호버 시 생동감 =====================
-   메뉴 줄(.sb-item)에 마우스를 올리면 아이콘만 살짝 움직인다.
-   글자는 가만히 두고 아이콘만 반응해야 '들썩'이지 않고 깔끔하다.
-   각 아이콘의 성격에 맞는 동작을 준다 (+ 회전 / 돋보기 확대 / 폴더 들썩 / 레이어 분리). */
-
 .sb-icon {
   display: inline-flex;
   transform-origin: center;
   transition: transform 0.24s cubic-bezier(.2,.7,.2,1);
 }
 
-/* 호버하는 순간 '톡' 한 번만 튄다(무한 반복 금지 — 계속 흔들리면 눈이 피로하고 정신없다).
-   되돌아올 때 살짝 지나쳐서 제자리를 찾는 오버슈트 이징으로 잔망스러운 느낌만 준다.
-   animation-iteration-count: 1 이라 0.4초 뒤엔 가만히 있는다. */
-
-/* 아이콘마다 성격에 맞는 동작을 하나씩. 모두 1회만 재생(both)해서
-   호버 중엔 끝 자세로 가만히 머문다 — 계속 흔들리면 정신없다. */
-
-/* 새 채팅(+) : 90도 돌아 X처럼 되려다 말고 제자리로 — 장난스럽게 한 바퀴 */
 @keyframes sb-plus-spin {
   0%   { transform: rotate(0deg) scale(1); }
   60%  { transform: rotate(115deg) scale(1.2); }
@@ -961,7 +872,6 @@ body.modal-open {
 }
 .sb-item:hover .sb-icon-plus { animation: sb-plus-spin 0.5s cubic-bezier(.34,1.5,.64,1) 1 both; }
 
-/* 대화 검색(돋보기) : 왼쪽을 한 번 훑고 와서 자리 잡는다 */
 @keyframes sb-search-sweep {
   0%   { transform: translateX(0) rotate(0deg) scale(1); }
   35%  { transform: translateX(-2.5px) rotate(-18deg) scale(1.12); }
@@ -970,7 +880,6 @@ body.modal-open {
 }
 .sb-item:hover .sb-icon-search { animation: sb-search-sweep 0.54s ease-out 1 both; }
 
-/* 문서 검색(폴더) : 한 번 통 튀어올랐다 착지 (뚜껑 열리는 느낌) */
 @keyframes sb-folder-hop {
   0%   { transform: translateY(0) scale(1); }
   40%  { transform: translateY(-4px) scale(1.1); }
@@ -979,15 +888,11 @@ body.modal-open {
 }
 .sb-item:hover .sb-icon-folder { animation: sb-folder-hop 0.5s cubic-bezier(.34,1.5,.64,1) 1 both; }
 
-/* 번역 : Y축으로 한 바퀴 돌아 '다른 언어로 뒤집히는' 느낌 */
 @keyframes sb-translate-flip {
   0%   { transform: rotateY(0deg); }
   100% { transform: rotateY(360deg); }
 }
 .sb-item:hover .sb-icon-translate { animation: sb-translate-flip 0.6s ease-in-out 1 both; }
-
-/* 즐겨찾기·프로젝트 목록의 레이어 아이콘은 움직이지 않는다.
-   목록은 줄이 여러 개라 하나하나 움직이면 산만하다 — 상단 메뉴 3개만 반응한다. */
 
 @media (prefers-reduced-motion: reduce) {
   .sb-icon { transition: none; }
@@ -1000,25 +905,15 @@ body.modal-open {
   }
 }
 
-/* ===================== 팀 소개 =====================
-   페이지 전체가 하나의 검은 화면. 판을 나누지 않아 경계선이 생기지 않고,
-   내용만 스크롤에 따라 나타났다 사라진다(ScrollFade).
-   색은 검정 · 흰색 · 브랜드 빨강 세 가지만 쓴다. */
-/* 검은 바탕은 본문 구간(.team-dark)에만. 페이지 전체에 깔면 흰 푸터까지 덮는다. */
 .team-page { color: #fff; }
 .team-dark { position: relative; background: #0b0709; }
 
-/* 배경 — 화면에 고정. 스크롤해도 같은 공간 안에 있는 느낌을 준다. */
-/* 배경은 어두운 본문 구간에만 깔린다.
-   fixed로 두면 흰 푸터 위까지 빛이 비쳐 경계가 지저분해지므로,
-   본문(main)을 감싸는 sticky 레이어로 두어 푸터에 닿기 전에 끝나게 한다. */
 .team-bg {
   position: sticky; top: 0; left: 0;
   height: 100vh; margin-bottom: -100vh;
   z-index: 0; pointer-events: none; overflow: hidden;
 }
 
-/* 위쪽에서 번지는 브랜드 빛 */
 .team-bg-glow {
   position: absolute; left: 50%; top: -30%;
   width: min(1100px, 140vw); height: min(1100px, 140vw);
@@ -1028,7 +923,6 @@ body.modal-open {
   filter: blur(40px);
 }
 
-/* 아주 옅은 격자 — 빈 검은 화면이 허전하지 않을 만큼만 */
 .team-bg-grid {
   position: absolute; inset: 0;
   background-image:
@@ -1039,13 +933,11 @@ body.modal-open {
   -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 40%, #000 15%, transparent 80%);
 }
 
-/* 섹션 하나가 한 화면 — 스크롤할 때마다 장면이 하나씩 바뀐다 */
 .team-sec { position: relative; min-height: 100vh; padding-top: 96px; padding-bottom: 96px; }
 @media (max-height: 720px) {
   .team-sec { min-height: auto; padding-top: 80px; padding-bottom: 80px; }
 }
 
-/* 섹션 라벨 — 작은 대문자 + 브랜드색 대시 */
 .team-eyebrow {
   display: inline-flex; align-items: center; gap: 9px;
   font-size: 12px; font-weight: 800; letter-spacing: 0.16em;
@@ -1056,14 +948,12 @@ body.modal-open {
   background: #ff3d5e; flex: none;
 }
 
-/* 아래로 유도 */
 @keyframes team-scroll-bob {
   0%, 100% { transform: translate(-50%, 0); opacity: .3; }
   50%      { transform: translate(-50%, 7px); opacity: .8; }
 }
 .team-scroll { animation: team-scroll-bob 2.2s ease-in-out infinite; }
 
-/* 연혁 — 점과 이어지는 선 */
 .team-dot {
   width: 9px; height: 9px; margin-top: 7px;
   border-radius: 50%;
@@ -1078,7 +968,6 @@ body.modal-open {
 }
 .team-ms:last-child .team-dot::after { display: none; }
 
-/* 팀원 프로필 — 어두운 바탕에 맞춘 유리질 원. 호버하면 브랜드색이 스민다. */
 .team-avatar {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
@@ -1090,7 +979,6 @@ body.modal-open {
   background: rgba(255,61,94,0.10);
 }
 
-/* 마무리 CTA */
 .team-cta {
   background: var(--color-brand);
   transition: background-color .2s ease, transform .18s ease;
@@ -1104,9 +992,6 @@ body.modal-open {
   .team-member:hover .team-avatar { transform: none; }
 }
 
-/* ===================== 튜토리얼 카드 =====================
-   세로형 카드(색면 썸네일 + 본문). 색면이 단색 판으로 보이지 않게
-   아주 옅은 사선 결과 빛무리를 얹었다 — 가까이서만 보이는 정도의 세기. */
 .tut-card {
   transition: transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease, border-color .32s ease;
 }
@@ -1116,7 +1001,6 @@ body.modal-open {
   box-shadow: 0 18px 38px rgba(150,0,40,0.09);
 }
 
-/* 썸네일 속 사선 결 — 색면에 질감을 준다 */
 .tut-thumb-grain {
   background-image: repeating-linear-gradient(
     135deg,
@@ -1129,7 +1013,6 @@ body.modal-open {
   pointer-events: none;
 }
 
-/* 왼쪽 위에서 비스듬히 드는 빛 + 아래쪽으로 살짝 지는 그늘 */
 .tut-thumb-light {
   background:
     radial-gradient(120% 90% at 18% 8%, rgba(255,255,255,0.75) 0%, transparent 55%),
@@ -1137,7 +1020,6 @@ body.modal-open {
   pointer-events: none;
 }
 
-/* 호버하면 썸네일이 아주 살짝 확대된다(카드가 살아 있는 느낌) */
 .tut-thumb > * { transition: transform .45s cubic-bezier(.2,.7,.2,1); }
 .tut-card:hover .tut-thumb-grain,
 .tut-card:hover .tut-thumb-light { transform: scale(1.04); }
@@ -1149,14 +1031,12 @@ body.modal-open {
   box-shadow: 0 8px 22px rgba(60,20,30,0.16);
 }
 
-/* 화살표 — 오른쪽으로 살짝 밀리며 브랜드색으로 */
 .tut-arrow { transition: transform .3s cubic-bezier(.2,.7,.2,1), color .25s ease; }
 .tut-card:hover .tut-arrow {
   transform: translateX(3px);
   color: var(--color-brand);
 }
 
-/* 영상 자리 — 커서를 올리면 아주 살짝 밝아진다(누를 수 있다는 신호) */
 .tut-slot { transition: filter .3s ease; }
 .tut-slot:hover { filter: brightness(1.02); }
 
@@ -1170,13 +1050,11 @@ body.modal-open {
   .tut-card:hover .tut-thumb-light { transform: none; }
 }
 
-/* ===================== RAG 문서 카드 ===================== */
 .doc-card { transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease; }
 .doc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(40,30,35,0.10) !important; border-color: #e7dde0 !important; }
 .doc-open { opacity: 0; transform: translateX(-6px); transition: opacity .3s cubic-bezier(.2,.7,.2,1), transform .3s cubic-bezier(.2,.7,.2,1); }
 .doc-card:hover .doc-open { opacity: 1 !important; transform: translateX(0) !important; }
 
-/* ===================== 성능 ===================== */
 .mars-planet-float,
 .mars-orbit,
 .team-scroll,
@@ -1198,7 +1076,6 @@ video { content-visibility: auto; }
   }
 }
 
-/* ===================== 동작 방식 : 답변 흐름 데모(터미널 대체) ===================== */
 .mars-flow {
   position: relative;
   width: 100%;
@@ -1211,7 +1088,7 @@ video { content-visibility: auto; }
     0 8px 24px -12px rgba(120,20,50,0.14);
   overflow: hidden;
 }
-/* 카드 우상단에 은은한 브랜드 빛무리 */
+
 .mars-flow::before {
   content: '';
   position: absolute; top: -60px; right: -50px;
@@ -1303,7 +1180,7 @@ video { content-visibility: auto; }
   border: 1px solid #f4dde3;
   background: linear-gradient(160deg,#fdf2f5 0%,#fffdfd 60%);
 }
-/* 답변 카드 왼쪽 브랜드 강조바 */
+
 .mars-flow-answer::before {
   content: '';
   position: absolute; left: 0; top: 14px; bottom: 14px;
@@ -1339,3 +1216,218 @@ video { content-visibility: auto; }
   font-size: 11.5px; color: var(--color-text-muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
 }
+
+.mars-newhero {
+  background:
+    radial-gradient(1200px 820px at 80% 36%, #fff2ef 0%, transparent 56%),
+    #ffffff;
+  font-family: var(--font-sans);
+}
+
+.mars-nebula { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.mars-nebula .neb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0; }
+.mars-nebula .n1 {
+  width: 780px; height: 640px; top: -14%; right: 2%;
+  background:
+    radial-gradient(circle at 42% 38%, rgba(255,90,120,0.72) 0%, rgba(220,20,60,0.38) 42%, rgba(180,20,70,0.14) 66%, transparent 78%);
+  animation: neb-in 2.4s ease .2s forwards, neb-a 42s ease-in-out infinite;
+}
+.mars-nebula .n2 {
+  width: 560px; height: 560px; bottom: -14%; left: -6%;
+  background:
+    radial-gradient(circle at 45% 45%, rgba(255,150,175,0.6) 0%, rgba(235,80,120,0.26) 52%, transparent 76%);
+  animation: neb-in 2.4s ease .5s forwards, neb-b 52s ease-in-out infinite;
+}
+.mars-nebula .n3 {
+  width: 520px; height: 440px; top: 34%; left: 40%;
+  background:
+    radial-gradient(circle at 40% 40%, rgba(255,200,180,0.5) 0%, rgba(255,120,140,0.24) 48%, transparent 72%);
+  animation: neb-in 2.4s ease .8s forwards, neb-a 46s ease-in-out infinite reverse;
+}
+.mars-nebula .n1, .mars-nebula .n2, .mars-nebula .n3 { mix-blend-mode: multiply; }
+@keyframes neb-in { to { opacity: 1; } }
+@keyframes neb-a { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(-30px,26px) scale(1.08);} }
+@keyframes neb-b { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(34px,-22px) scale(1.06);} }
+
+.mars-sky {
+  position: absolute; inset: -4%; width: 108%; height: 108%; z-index: 0; pointer-events: none;
+  animation: sky-float 46s ease-in-out infinite;
+}
+@keyframes sky-float { 0%,100%{ transform: translate(0,0);} 50%{ transform: translate(-12px,-16px);} }
+
+.mars-sky .sky-dust {
+  opacity: 0.7;
+  filter: drop-shadow(0 0 1px rgba(255,255,255,0.8));
+}
+
+.mars-sky .sky-reddust {
+  opacity: 0.6;
+  filter: drop-shadow(0 0 1.5px rgba(232,74,104,0.7));
+}
+
+.mars-sky .sky-star {
+  opacity: 0.85;
+  filter: drop-shadow(0 0 1.5px rgba(255,150,160,0.55));
+}
+.mars-sky .sky-tw { animation: star-tw 4.5s ease-in-out infinite; }
+@keyframes star-tw { 0%,100%{ opacity:.4; } 50%{ opacity:.95; } }
+
+.mars-sky .sky-cluster-glow {
+  fill: rgba(255,150,170,0.10);
+  filter: blur(24px);
+}
+.mars-sky .sky-clusterstar {
+  opacity: 0.7;
+  filter: drop-shadow(0 0 1px rgba(255,150,160,0.5));
+  animation: star-tw 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mars-nebula .neb, .mars-sky, .sky-tw, .sky-clusterstar { animation: none; opacity: 1; }
+  .mars-nebula .neb { opacity: 1; }
+}
+
+.mars-hn-copy { position: relative; z-index: 2; max-width: 560px; }
+.mars-hn-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--color-brand);
+  margin-bottom: 18px; padding-left: 34px; position: relative;
+  opacity: 0; animation: hn-up .7s ease .2s forwards;
+}
+.mars-hn-eyebrow::before { content:''; position:absolute; left:0; top:50%; width:24px; height:2px; background:var(--color-brand); }
+.mars-hn-word {
+  margin: 0; font-size: clamp(60px, 8vw, 96px); font-weight: 800; letter-spacing: 0.01em;
+  line-height: 0.95; color: #1A1A1A;
+  opacity: 0; animation: hn-up .8s ease .34s forwards;
+}
+.mars-hn-title {
+  margin-top: 20px; font-size: clamp(24px, 3vw, 36px); font-weight: 700; line-height: 1.3;
+  color: #221d1c; letter-spacing: -0.01em; word-break: keep-all;
+  opacity: 0; animation: hn-up .8s ease .48s forwards;
+}
+.mars-hn-accent { color: var(--color-brand); position: relative; white-space: nowrap; }
+.mars-hn-accent::after {
+  content:''; position:absolute; left:0; right:0; bottom:-2px; height:3px; border-radius:2px;
+  background:var(--color-brand); transform: scaleX(0); transform-origin: left;
+  animation: hn-underline .6s cubic-bezier(.65,0,.35,1) 1.1s forwards;
+}
+.mars-hn-sub {
+  margin-top: 18px; max-width: 400px; font-size: 16px; line-height: 1.75; color: #7d716c;
+  word-break: keep-all; opacity: 0; animation: hn-up .8s ease .62s forwards;
+}
+.mars-hn-actions { margin-top: 32px; opacity: 0; animation: hn-up .8s ease .76s forwards; }
+.mars-hn-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 12px; border: 0; cursor: pointer;
+  background: var(--color-brand); color: #fff; font-size: 15px; font-weight: 700;
+  box-shadow: 0 16px 32px -14px rgba(220,20,60,0.55);
+  transition: background .2s ease, transform .15s ease, box-shadow .2s ease;
+}
+.mars-hn-cta:hover { background: var(--color-brand-hover); transform: translateY(-1px); }
+.mars-hn-ghost {
+  padding: 11px 20px; border-radius: 12px; cursor: pointer;
+  background: rgba(255,255,255,0.7); border: 1px solid #f2d9d6; color: #4a3f3c; font-size: 14px; font-weight: 600;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.mars-hn-ghost:hover { background: #fff; border-color: var(--color-brand-soft); color: var(--color-brand); }
+
+@keyframes hn-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes hn-underline { to { transform: scaleX(1); } }
+
+.mars-hn-art {
+  position: absolute; right: 4vw; top: 50%; transform: translateY(-50%);
+  width: min(44vw, 520px); aspect-ratio: 1; z-index: 1; pointer-events: none;
+}
+.mars-planetwrap { position: relative; width: 100%; height: 100%; }
+
+.mars-orbit-ring {
+  position: absolute; inset: 0; margin: auto; border-radius: 50%;
+  border: 1.5px solid rgba(220,20,60,0.18);
+  opacity: 0; animation: ring-in 1.2s ease .3s forwards;
+}
+.mars-orbit-ring.r1 { width: 100%; height: 62%; transform: rotate(-24deg); animation: ring-in 1.2s ease .3s forwards, ring-spin 40s linear infinite; }
+.mars-orbit-ring.r2 { width: 82%; height: 100%; transform: rotate(16deg); animation: ring-in 1.2s ease .55s forwards, ring-spin 54s linear infinite reverse; }
+@keyframes ring-in { to { opacity: 1; } }
+@keyframes ring-spin { to { transform: rotate(336deg); } }
+
+.mars-planet3d {
+  position: absolute; inset: 0; margin: auto; width: 46%; height: 46%; border-radius: 50%;
+  background:
+    radial-gradient(40% 22% at 62% 40%, rgba(255,190,200,0.35) 0%, transparent 60%),
+    radial-gradient(48% 26% at 40% 66%, rgba(120,0,30,0.4) 0%, transparent 62%),
+    radial-gradient(30% 16% at 30% 46%, rgba(255,210,215,0.3) 0%, transparent 70%),
+    radial-gradient(circle at 34% 30%, #ffa9b4 0%, #ff6b7f 22%, #ec3552 46%, var(--color-brand) 68%, #8f0e28 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,160,175,0.35),
+    0 40px 100px -34px rgba(220,20,60,0.7),
+    inset -22px -26px 52px rgba(110,0,25,0.55),
+    inset 16px 18px 40px rgba(255,190,200,0.45),
+    inset 0 0 0 2px rgba(255,200,210,0.12);
+  opacity: 0; transform: scale(.6);
+  animation: planet-in 1s cubic-bezier(.34,1.4,.6,1) .5s forwards, planet-float 9s ease-in-out 1.5s infinite;
+}
+.mars-planet3d::after {
+  content: ''; position: absolute; inset: -6%; border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 0 30px 4px rgba(255,120,150,0.35), inset 0 0 20px rgba(255,150,175,0.25);
+  border: 1px solid rgba(255,170,190,0.4);
+}
+.mars-planet3d-glow {
+  position: absolute; inset: -30%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,90,120,0.3) 0%, rgba(220,20,60,0.14) 42%, transparent 66%);
+  animation: planet-pulse 6s ease-in-out infinite;
+}
+@keyframes planet-pulse { 0%,100%{ transform: scale(1); opacity: .85; } 50%{ transform: scale(1.08); opacity: 1; } }
+@keyframes planet-in { to { opacity: 1; transform: scale(1); } }
+@keyframes planet-float { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-14px);} }
+
+.mars-orbit-dot { position: absolute; inset: 0; margin: auto; width: 100%; height: 62%; opacity: 0; animation: ring-in .6s ease 1.6s forwards; }
+.mars-orbit-dot.d1 { transform: rotate(-24deg); animation: ring-in .6s ease 1.6s forwards, ring-spin 40s linear infinite; }
+.mars-orbit-dot.d2 { width: 82%; height: 100%; transform: rotate(16deg); animation: ring-in .6s ease 1.8s forwards, ring-spin 54s linear infinite reverse; }
+.mars-orbit-dot span {
+  position: absolute; top: -7px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%;
+  background: var(--color-brand); box-shadow: 0 0 10px 2px rgba(220,20,60,0.5);
+}
+.mars-orbit-dot.d2 span { width: 10px; height: 10px; margin-left: -5px; background: #ff6b7a; }
+
+@media (max-width: 900px) { .mars-hn-art { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .mars-hn-eyebrow, .mars-hn-word, .mars-hn-title, .mars-hn-sub, .mars-hn-actions { animation: none; opacity: 1; transform: none; }
+  .mars-hn-accent::after { animation: none; transform: scaleX(1); }
+  .mars-orbit-ring, .mars-orbit-dot { animation: none; opacity: 1; }
+  .mars-planet3d { animation: none; opacity: 1; transform: none; }
+}
+
+.mars-shooting { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.mars-shooting .shoot {
+  position: absolute; width: 140px; height: 1.5px;
+  background: linear-gradient(90deg, transparent, #fff 40%, #ff9db0 70%, transparent);
+  border-radius: 999px; opacity: 0;
+  filter: drop-shadow(0 0 4px rgba(255,120,150,0.8));
+  transform: rotate(22deg);
+}
+.mars-shooting .s1 { top: 18%; left: 40%; animation: shoot-move 7s ease-in 2s infinite; }
+.mars-shooting .s2 { top: 54%; left: 62%; width: 100px; animation: shoot-move 9s ease-in 5.5s infinite; }
+.mars-shooting .s3 { top: 34%; left: 20%; width: 120px; animation: shoot-move 11s ease-in 8s infinite; }
+@keyframes shoot-move {
+  0%   { opacity: 0; transform: translate(-40px,-16px) rotate(22deg); }
+  4%   { opacity: 1; }
+  12%  { opacity: 0; transform: translate(240px,96px) rotate(22deg); }
+  100% { opacity: 0; transform: translate(240px,96px) rotate(22deg); }
+}
+@media (prefers-reduced-motion: reduce) { .mars-shooting .shoot { animation: none; opacity: 0; } }
+
+.mars-hn-eyebrow {
+  display: inline-flex; align-items: center; padding: 0; margin-bottom: 20px;
+}
+.mars-hn-eyebrow::before { top: auto; }
+.mars-hn-eyebrow > span {
+  display: inline-block; padding: 6px 14px 6px 40px; border-radius: 999px;
+  background: rgba(255,255,255,0.6); border: 1px solid rgba(220,20,60,0.14);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.mars-hn-em {
+  background: linear-gradient(180deg, transparent 62%, rgba(220,20,60,0.16) 62%);
+  padding: 0 2px;
+}
+.hn-br { display: none; }
+@media (min-width: 640px) { .hn-br { display: inline; } }

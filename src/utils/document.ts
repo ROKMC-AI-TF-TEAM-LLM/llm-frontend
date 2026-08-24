@@ -1,7 +1,5 @@
 import type { DocumentItem } from '../types/document'
 
-// ─── 도메인 색상 ──────────────────────────────────────────────
-
 export interface DomainStyle {
   bar: string
   badgeBg: string
@@ -35,7 +33,6 @@ export const getDomainStyle = (domain?: string | null): DomainStyle => {
   return DOMAIN_PALETTE[hashString(domain) % DOMAIN_PALETTE.length]
 }
 
-// ─── 도메인 목록 & 라벨 ───────────────────────────────────────
 export type DocIndexStatus = 'completed' | 'failed' | 'processing'
 export const normalizeDocStatus = (status: string | null | undefined): DocIndexStatus => {
   const s = String(status ?? '').toLowerCase()
@@ -66,7 +63,6 @@ export const extractDomains = (docs: DocumentItem[]): string[] => {
   return [...known, ...extra]
 }
 
-// ─── 이름 매칭 ───────────────────────────────────────────────
 const normalizeDocName = (name: string): string =>
   name
     .replace(/\.[^/.]+$/, '')
@@ -89,7 +85,6 @@ export const findDocumentByName = (
   return matches.reduce((latest, d) => (appliedTime(d) > appliedTime(latest) ? d : latest))
 }
 
-// ─── 날짜 ────────────────────────────────────────────────────
 export const formatAppliedAt = (iso?: string | null): string => {
   if (!iso) return ''
   const t = Date.parse(iso)

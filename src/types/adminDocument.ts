@@ -1,9 +1,7 @@
-
 export type AdminDocStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | (string & {})
 
 export type DocVisibility = 'ALL' | 'DEPT_ONLY'
 
-// ─── 업로드: POST /api/v1/admin/documents (multipart/form-data) ───
 export interface UploadDocumentFields {
   name: string
   domain: string
@@ -30,7 +28,6 @@ export interface UploadDocumentResponse {
   error: { code: UploadDocumentErrorCode; detail: string } | null
 }
 
-// ─── 목록: GET /api/v1/admin/documents ───
 export interface AdminDocumentItem {
   document_id: string
   name: string
@@ -67,7 +64,6 @@ export interface GetAdminDocumentsResponse {
   error: { code: GetAdminDocumentsErrorCode; detail: string } | null
 }
 
-// ─── 상태: GET /api/v1/admin/documents/{id}/status ───
 export interface DocumentStatusData {
   document_id: string
   status: AdminDocStatus
@@ -85,7 +81,6 @@ export interface GetDocumentStatusResponse {
   error: { code: GetDocumentStatusErrorCode; detail: string } | null
 }
 
-// ─── 삭제: DELETE /api/v1/admin/documents/{id} ───
 export interface DeleteDocumentData {
   document_id: string
   deleted_chunks: number

@@ -209,7 +209,6 @@ export default function ChatInput({
           onChange={handleFileChange}
         />
 
-        {/* 텍스트 입력 (위) */}
         <textarea
           ref={textareaRef}
           rows={1}
@@ -227,7 +226,6 @@ export default function ChatInput({
           className="w-full px-5 pt-6.5 pb-1 bg-transparent outline-none text-[15px] text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal"
         />
 
-        {/* 첨부된 파일 칩 (텍스트 아래, 버튼 줄 위) */}
         {pendingFile && (
           <div className="flex items-center gap-2 px-3 pt-2">
             <div className="flex items-center gap-2 bg-brand text-white rounded-xl px-3 py-2 max-w-full">
@@ -254,21 +252,16 @@ export default function ChatInput({
           </div>
         )}
 
-        {/* 하단 바: (좌) 첨부 + 도메인 / (우) 전송·중단 — 버튼 높이 40px, 아이콘 20px로 통일 */}
-        {/* 바의 '빈 여백'을 눌러도 텍스트에 포커스가 가게 한다(버튼은 각자 동작). */}
         <div
           className="flex items-center justify-between px-3 pb-3 pt-1 cursor-text"
           onClick={() => textareaRef.current?.focus()}
         >
           <div className="flex items-center gap-1.5">
             <button
-              className="w-10 h-10 flex items-center justify-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
+              className="h-10 flex items-center rounded-full text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors shrink-0"
               aria-label="첨부"
               onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
             >
-              <svg className="w-[22px] h-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-              </svg>
             </button>
 
             {!hideDomain && <DomainPicker value={domain} onChange={setDomain} />}

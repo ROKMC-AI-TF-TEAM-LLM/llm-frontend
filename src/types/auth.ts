@@ -10,6 +10,7 @@ export interface SignupRequest {
   password: string
 }
 export type SignupErrorCode = 'EMAIL_ALREADY_EXISTS' | 'VALIDATION_ERROR'
+
 export interface SignupResponse {
   success: boolean
   status_code: number
@@ -22,6 +23,7 @@ export interface LoginRequest {
   password: string
 }
 export type LoginErrorCode = 'INVALID_CREDENTIALS' | 'APPROVAL_PENDING' | 'APPROVAL_REJECTED' | 'VALIDATION_ERROR'
+
 export interface LoginResponse {
   success: boolean
   status_code: number
@@ -33,6 +35,7 @@ export interface RefreshRequest {
   refresh_token: string
 }
 export type RefreshErrorCode = 'TOKEN_INVALID' | 'VALIDATION_ERROR'
+
 export interface RefreshResponse {
   success: boolean
   status_code: number
@@ -44,6 +47,7 @@ export interface LogoutRequest {
   refresh_token: string
 }
 export type LogoutErrorCode = 'TOKEN_INVALID' | 'VALIDATION_ERROR'
+
 export interface LogoutResponse {
   success: boolean
   status_code: number

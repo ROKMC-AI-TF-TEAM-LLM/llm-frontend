@@ -13,8 +13,6 @@ const DOMAINS = [
   { code: 'DIRECTIVE', label: '훈령' },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 const SMARTS = [
   { title: '근거 기반의 정직한 답변', desc: '충분한 근거를 찾지 못한 경우 추측 대신 담당 부서 문의를 안내합니다.' },
   { title: '참고자료 구분 안내', desc: '규정과 직접 관련이 없는 자료는 참고용으로 별도 구분해 안내합니다.' },
@@ -45,8 +43,6 @@ const ANSWER_LINES = [
   '창설 직후의 해병대는...',
 ];
 
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 function Reveal({
   children,
   delay = 0,
@@ -95,8 +91,6 @@ function Reveal({
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 function useTick(intervalMs = 80) {
   const [t, setT] = useState(0);
   useEffect(() => {
@@ -152,8 +146,6 @@ function Step01Mock() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 function DomainStepMock() {
   const t = useTick();
   const total = DOMAINS.length + 1;
@@ -199,8 +191,6 @@ function GuideMenuRow({ active, icon, label }: { active: boolean; icon: React.Re
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 function Step02Mock() {
   const t = useTick();
   const perLine = 850;
@@ -246,9 +236,6 @@ function Step02Mock() {
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 function Step03Mock() {
   const t = useTick();
   const cycle = 6200;
@@ -314,9 +301,6 @@ function DomainChip({ code, label }: { code?: string; label?: string }) {
     </span>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 export default function GuidePage() {
   useDocumentTitle('MARS 사용법');
   const navigate = useNavigate();
@@ -337,7 +321,6 @@ export default function GuidePage() {
     if (!id) return;
     const raf = requestAnimationFrame(() => scrollToSection(id, false));
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -347,7 +330,6 @@ export default function GuidePage() {
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const scrollToNextSection = () => {

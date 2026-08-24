@@ -32,6 +32,8 @@ export const MILESTONES: Milestone[] = [
 ]
 
 export const MEMBERS: Member[] = [
+  // {cohort: '1314기', name: '김민세', roles: [''], tint: '#7b3f5e' },
+  // {cohort: '1314기', name: '윤태우', roles: ['프론트엔드'], tint: '#7b3f5e' },
   {cohort: '1315기', name: '공지성', roles: ['프론트엔드'], tint: '#7b3f5e' },
   { cohort: '1318기', name: '최원석', roles: ['PM', '백엔드'], tint: '#a3374d' },
   { cohort: '1319기', name: '김승휘', roles: ['백엔드'], tint: '#5c4a63' },

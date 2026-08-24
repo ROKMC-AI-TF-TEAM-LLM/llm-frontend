@@ -1,5 +1,3 @@
-// GET /api/v1/documents — offset 기반 무한 스크롤 + domain 필터 지원.
-
 export interface DocumentItem {
   name: string
   type?: string | null
@@ -25,6 +23,7 @@ export interface GetDocumentsParams {
 }
 
 export type GetDocumentsErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'LLM_SERVER_ERROR'
+
 export interface GetDocumentsResponse {
   success: boolean
   status_code: number

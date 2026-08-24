@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { User } from '../../../types';
 import { useAuth } from '../../../context/AuthContext';
 import { TUTORIALS } from '../../../features/tutorials/tutorials';
+import { showDevToast } from '../DevToast';
 
 interface SidebarFooterProps {
   isOpen: boolean;
@@ -90,7 +91,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
 
                 <div className="my-1 mx-3 h-px bg-surface-border" />
 
-                <SubItem label="팀 소개" onClick={() => {}} />
+                <SubItem label="팀 소개" onClick={() => showDevToast('개발 중인 페이지입니다.')} />
                 </div>
               </div>
             )}
