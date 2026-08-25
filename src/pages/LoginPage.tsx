@@ -6,13 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../context/AuthContext'
 import { signup } from '../api/services/auth'
 import MarsPlanet from '../ui/components/MarsPlanet'
-import Toast from '../ui/components/Toast'
-import AnswerFlowDemo from '../ui/components/landing/AnswerFlowDemo'
-import Reveal from '../ui/components/landing/Reveal'
+import { showToast } from '../api/store/toastStore'
 import RotatingWord from '../ui/components/landing/RotatingWord'
 import LandingNav from '../ui/components/landing/LandingNav'
 import LandingFooter from '../ui/components/landing/LandingFooter'
-import { showDevToast } from '../ui/components/DevToast'
 import { getApiError, isNetworkError, DEFAULT_STATUS_ERRORS } from '../utils/error'
 import { logError } from '../utils/logError'
 
@@ -68,15 +65,10 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const [view, setView] = useState<'intro' | 'auth'>('intro')
   const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [toastSeq, setToastSeq] = useState(0)
-  const [toastError, setToastError] = useState('')
-  const [signupSuccess, setSignupSuccess] = useState(false)
   const { login } = useAuth()
 
   const introRef = useRef<HTMLDivElement>(null)
   const featuresRef = useRef<HTMLDivElement>(null)
-
-  const bumpToast = (msg: string) => { setToastError(msg); setToastSeq((s) => s + 1) }
 
   const {
     register: registerLogin, handleSubmit: handleLoginSubmit, reset: resetLogin, watch: watchLogin,
@@ -96,18 +88,18 @@ const LoginPage = () => {
     try { await login(data) }
     catch (error) {
       logError('login', error)
-      if (isNetworkError(error)) { bumpToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'); return }
-      bumpToast(getApiError(error, LOGIN_ERRORS, DEFAULT_STATUS_ERRORS, '로그인 중 오류가 발생했습니다.'))
+      if (isNetworkError(error)) { showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'); return }
+      showToast(getApiError(error, LOGIN_ERRORS, DEFAULT_STATUS_ERRORS, '로그인 중 오류가 발생했습니다.'))
     }
   }
   const handleSignup: SubmitHandler<SignupFields> = async (data) => {
     const { passwordCheck: _pw, ...rest } = data
     void _pw
-    try { await signup(rest); setSignupSuccess(true); setMode('login') }
+    try { await signup(rest); showToast('회원가입이 완료되었습니다.', 'success'); setMode('login') }
     catch (error) {
       logError('signup', error)
-      if (isNetworkError(error)) { bumpToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'); return }
-      bumpToast(getApiError(error, SIGNUP_ERRORS, {}, '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.'))
+      if (isNetworkError(error)) { showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'); return }
+      showToast(getApiError(error, SIGNUP_ERRORS, {}, '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.'))
     }
   }
 
@@ -135,8 +127,6 @@ const LoginPage = () => {
     resetLogin()
     resetSignup()
     setMode('login')
-    setToastError('')
-    setSignupSuccess(false)
   }, [view, resetLogin, resetSignup])
 
   useEffect(() => {
@@ -174,7 +164,7 @@ const LoginPage = () => {
                 </button>
               </div>
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'auth' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <button type="button" onClick={() => showDevToast('개발 중인 페이지입니다.')} className="mars-pill mars-pill-ghost text-[14px]">
+                <button type="button" onClick={() => showToast('개발 중인 페이지입니다.')} className="mars-pill mars-pill-ghost text-[14px]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                   팀 소개
                 </button>
@@ -229,55 +219,19 @@ const LoginPage = () => {
           </div>
         </section>
 
-        <section className="mars-section px-[6vw] py-28 min-h-screen flex flex-col justify-center">
-          <div className="max-w-[1180px] mx-auto w-full flex flex-col lg:flex-row gap-16 items-center">
-            <div className="flex-1 min-w-0">
-              <Reveal className="mars-eyebrow mb-5">동작 방식</Reveal>
-              <Reveal delay={60}>
-                <h2 className="mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
-                  추측하지 않고,<br /><span className="text-brand">찾아서</span> 답합니다.
-                </h2>
-              </Reveal>
-              <Reveal delay={120}>
-                <p className="text-[17px] text-text-secondary leading-relaxed max-w-[420px] break-keep">
-                  질문이 들어오면 MARS는 규정 문서를 직접 검색하고, 원문 조항을 열어 대조한 뒤 근거와 함께 답을 만듭니다. 그 과정을 숨기지 않고 그대로 보여줍니다.
-                </p>
-              </Reveal>
-              <div className="mt-10 flex flex-col gap-5">
-                {[
-                  ['문서 검색', '질문에서 핵심어를 뽑아 관련 규정을 찾습니다.'],
-                  ['원문 대조', '찾은 문서의 실제 조항을 열어 내용을 확인합니다.'],
-                  ['근거 제시', '어떤 문서 몇 조를 참고했는지 함께 답합니다.'],
-                ].map(([t, d], i) => (
-                  <Reveal key={t} delay={180 + i * 80} className="flex gap-4 items-start">
-                    <span className="shrink-0 mt-1 w-6 h-6 rounded-full bg-brand-subtle border border-brand-soft text-brand text-[12px] font-extrabold flex items-center justify-center">{i + 1}</span>
-                    <div>
-                      <div className="text-[16px] font-bold mb-0.5">{t}</div>
-                      <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
-                    </div>
-                  </Reveal>
-                ))}
-              </div>
-            </div>
-            <Reveal delay={100} className="flex-1 min-w-0 w-full">
-              <AnswerFlowDemo />
-            </Reveal>
-          </div>
-        </section>
-
         <section className="px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20">
           <div className="max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row gap-14 items-center">
 
             <div className="flex-1 min-w-0">
-              <div className="mars-reveal mars-eyebrow mb-5">사용 방법</div>
+              <div className="mars-reveal mars-eyebrow mb-5">동작 방식</div>
               <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
-                물어보고 싶은<br />것을 입력하세요.
+                추측하지 않고,<br /><span className="text-brand">찾아서</span> 답합니다.
               </h2>
               <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
-                궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 관련 조항을 찾아 근거와 함께 답합니다.
+                궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 원문 조항을 찾아 대조한 뒤 근거와 함께 답합니다.
               </p>
               <div className="flex flex-col gap-7">
-                {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', 'RAG 검색', 'MARS가 규정 문서에서 관련 조항을 찾습니다.'], ['STEP 03', '근거와 함께 답변', '출처 문서를 명시해 신뢰할 수 있게 답합니다.']].map(([s, t, d]) => (
+                {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', '문서 검색·대조', 'MARS가 관련 규정 문서를 찾아 원문 조항을 대조합니다.'], ['STEP 03', '근거와 함께 답변', '어떤 문서 몇 조를 참고했는지 출처와 함께 답합니다.']].map(([s, t, d]) => (
                   <div key={s} className="mars-reveal flex gap-5 items-start">
                     <span className="shrink-0 text-[12px] font-extrabold text-brand tracking-[0.1em] pt-1 w-14">{s}</span>
                     <div>
@@ -314,7 +268,7 @@ const LoginPage = () => {
                           { title: '군인 보수 규정', type: '규정', domain: '재무·법무', dept: '국방부 · 재정관리실', style: { bar: '#e0952b', bg: '#fbf1e2', text: '#b3720f' } },
                           { title: '공무원 수당 등에 관한 규정', type: '법률', domain: '인사·복지', dept: '인사혁신처', style: { bar: '#e4002b', bg: '#fdeef1', text: '#c0002a' } },
                         ].map((s) => (
-                          <div key={s.title} className="flex items-center gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle">
+                          <div key={s.title} className="flex items-center gap-3 p-3 rounded-xl border border-[#f0e6e8] bg-white">
                             <span className="shrink-0 flex items-center justify-center" style={{ width: 38, height: 38, borderRadius: 10, background: s.style.bg, color: s.style.bar }}>
                               <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -368,6 +322,65 @@ const LoginPage = () => {
           </div>
         </section>
 
+        <section className="px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20">
+          <div className="max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row-reverse gap-14 items-center">
+
+            <div className="flex-1 min-w-0">
+              <div className="mars-reveal mars-eyebrow mb-5">문서로도 받기</div>
+              <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
+                대화만이 아니라,<br />결과물로 남깁니다.
+              </h2>
+              <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
+                정리가 필요한 내용은 요청 한 번으로 한글(HWP) 문서로 만들어 바로 내려받을 수 있습니다.
+              </p>
+              <div className="flex flex-col gap-7">
+                {[
+                  ['정리 요청', '"~~를 정리한 한글 문서를 만들어줘"처럼 대화하듯 요청합니다.'],
+                  ['문서 생성', 'MARS가 답변 내용을 바탕으로 HWP 문서를 작성합니다.'],
+                  ['바로 다운로드', '채팅 안에서 완성된 문서를 바로 내려받아 활용합니다.'],
+                ].map(([t, d], i) => (
+                  <div key={t} className="mars-reveal flex gap-5 items-start">
+                    <span className="shrink-0 mt-1 w-6 h-6 rounded-full bg-brand-subtle border border-brand-soft text-brand text-[12px] font-extrabold flex items-center justify-center">{i + 1}</span>
+                    <div>
+                      <div className="text-[16px] font-bold mb-0.5">{t}</div>
+                      <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0 w-full">
+              <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
+                <div className="p-7 flex flex-col gap-5">
+                  <div className="self-end max-w-[85%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">
+                    해병대 창설 배경을 정리한 한글 문서로 만들어줘
+                  </div>
+                  <div className="text-[15px] leading-relaxed text-text-primary">
+                    네, 해병대 창설 배경을 정리한 문서를 만들었습니다. 아래에서 바로 내려받으실 수 있습니다.
+                  </div>
+                  <div className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-brand-soft bg-brand-subtle">
+                    <div className="shrink-0 w-9 h-9 rounded-lg bg-brand flex items-center justify-center">
+                      <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] font-semibold text-text-primary truncate">해병대_창설_배경.hwp</p>
+                      <p className="text-[11.5px] text-brand-hover font-medium mt-0.5">HWP · 128KB · 다운로드</p>
+                    </div>
+                    <svg className="shrink-0 w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         <section className="relative px-[6vw] mars-section min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
           <div className="mars-glow-bg" style={{ width: 760, height: 760, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
           <div className="relative z-[1]">
@@ -398,7 +411,7 @@ const LoginPage = () => {
                 {isLoginSubmitting ? '로그인 중...' : '시작하기'}
               </button>
               <div className="flex justify-end mt-1">
-                <button type="button" onClick={() => { resetLogin(); resetSignup(); setToastError(''); setMode('signup') }} className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors">회원가입</button>
+                <button type="button" onClick={() => { resetLogin(); resetSignup(); setMode('signup') }} className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors">회원가입</button>
               </div>
             </form>
           ) : (
@@ -415,7 +428,7 @@ const LoginPage = () => {
                 {isSignupSubmitting ? '가입 중...' : '회원가입'}
               </button>
               <div className="flex justify-end mt-1">
-                <button type="button" onClick={() => { resetSignup(); setToastError(''); setMode('login') }} className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors">로그인</button>
+                <button type="button" onClick={() => { resetSignup(); setMode('login') }} className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors">로그인</button>
               </div>
             </form>
           )}
@@ -428,8 +441,6 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {toastError && <Toast key={toastSeq} message={toastError} onClose={() => setToastError('')} />}
-      {signupSuccess && <Toast key="signup-success" message="회원가입이 완료되었습니다." type="success" onClose={() => setSignupSuccess(false)} />}
     </div>
   )
 }

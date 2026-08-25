@@ -73,6 +73,30 @@ export const TUTORIALS: Tutorial[] = [
     ],
   },
   {
+    slug: 'translate',
+    title: '번역 기능 사용하기',
+    summary: '한국어와 영어를 오가며, 문체까지 골라 번역할 수 있습니다.',
+    category: '기본',
+    product: 'MARS 번역',
+    tint: '#dfe9f2',
+    videoUrl: '/tutorials/translate.mp4',
+    pointsTitle: '번역이 필요한 이유',
+    points: [
+      {
+        title: '방향은 버튼 하나로 전환',
+        desc: '한국어→영어, 영어→한국어를 가운데 버튼 하나로 바로 바꿀 수 있습니다.',
+      },
+      {
+        title: '문체를 상황에 맞게 고른다',
+        desc: '평시문체와 높임말체 중 골라 번역하면, 보고서나 공문 등 용도에 맞는 어투로 바로 받습니다.',
+      },
+      {
+        title: '결과는 바로 복사해서 쓴다',
+        desc: '번역이 끝나면 복사 버튼으로 바로 가져가 문서나 메시지에 붙여 넣을 수 있습니다.',
+      },
+    ],
+  },
+  {
     slug: 'projects',
     title: '프로젝트 시작하기',
     summary:

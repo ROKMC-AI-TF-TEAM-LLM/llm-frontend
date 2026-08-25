@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { ChatItem } from '../../../types'
 import SessionItem from './SessionItem'
 import { SessionItemSkeleton } from '../Skeleton'
-import Toast from '../Toast'
+import { showToast } from '../../../api/store/toastStore'
 import ProjectChatItem from './ProjectChatItem'
 import { useProjectStore } from '../../../features/projects/projectStore'
 
@@ -16,7 +16,6 @@ interface RecentChatsProps {
 }
 
 export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: RecentChatsProps) {
-  const [sidebarError, setSidebarError] = useState('')
   const [expanded, setExpanded] = useState(true)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -46,8 +45,6 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
 
   return (
     <div className={`px-[12px] pt-[12px] overflow-hidden transition-opacity duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-      {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
-
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -83,7 +80,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
               ))}
 
               {chats.map((chat) => (
-                <SessionItem key={chat.id} chat={chat} onError={setSidebarError} />
+                <SessionItem key={chat.id} chat={chat} onError={showToast} />
               ))}
 
               {isLoadingMore && (

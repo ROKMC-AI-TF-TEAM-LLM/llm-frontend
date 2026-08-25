@@ -5,7 +5,7 @@ import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../
 import type { DomainSelection } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import { useCreateSession } from '../../../hooks/useSession';
-import Toast from '../Toast';
+import { showToast } from '../../../api/store/toastStore';
 import DomainPicker from './DomainPicker';
 
 const inputDrafts = new Map<string, string>();
@@ -80,7 +80,6 @@ export default function ChatInput({
   const [value, setValue] = useState(() => inputDrafts.get(draftKey) ?? '');
   const [pendingFile, setPendingFile] = useState<string | null>(null);
   const [domain, setDomainState] = useState<DomainSelection | null>(() => domainDrafts.get(draftKey) ?? null);
-  const [inputError, setInputError] = useState('');
 
   const setDomain = (d: DomainSelection | null) => {
     setDomainState(d);
@@ -168,11 +167,11 @@ export default function ChatInput({
         const apiErr = e as ApiError;
         const code = apiErr?.response?.data?.error?.code;
         if (code === 'UNAUTHORIZED') {
-          setInputError('인증이 만료되었습니다. 다시 로그인해주세요.');
+          showToast('인증이 만료되었습니다. 다시 로그인해주세요.');
         } else if (!apiErr?.response) {
-          setInputError('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+          showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
         } else {
-          setInputError('채팅 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+          showToast('채팅 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
       }
     } else {
@@ -195,7 +194,6 @@ export default function ChatInput({
 
   return (
     <div className="w-full max-w-210 mx-auto">
-      {inputError && <Toast message={inputError} onClose={() => setInputError('')} />}
       <div
         style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }}
         className="bg-surface rounded-[30px] focus-within:border-[#e4002b] focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)] transition-all duration-200 overflow-hidden cursor-text"

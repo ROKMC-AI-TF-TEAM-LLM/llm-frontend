@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../ui/components/messages/MessageList';
 import ChatInput from '../ui/components/chat/ChatInput';
-import Toast from '../ui/components/Toast';
+import { showToast } from '../api/store/toastStore';
 import { useChatStore } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -43,6 +43,11 @@ export default function ChatPage() {
       resetDeleted();
       clearError();
       navigate('/chat', { replace: true, state: { toastError: msg } });
+      return;
+    }
+    if (error) {
+      showToast(error);
+      clearError();
     }
   }, [isDeleted, error, resetDeleted, clearError, navigate]);
 
@@ -121,7 +126,6 @@ export default function ChatPage() {
           MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
         </p>
       </div>
-      {error && <Toast message={error} onClose={clearError} />}
     </div>
   );
 }

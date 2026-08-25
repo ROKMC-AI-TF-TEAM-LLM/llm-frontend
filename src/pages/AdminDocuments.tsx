@@ -7,7 +7,7 @@ import {
 } from '../hooks/useAdminDocument';
 import { DOMAINS, getDomainLabel, getDomainStyle, normalizeDocStatus } from '../utils/document';
 import DomainIcon from '../ui/components/chat/DomainIcon';
-import Toast from '../ui/components/Toast';
+import { showToast } from '../api/store/toastStore';
 import { getApiError, DEFAULT_STATUS_ERRORS } from '../utils/error';
 import type { AdminDocumentItem, AdminDocStatus } from '../types/adminDocument';
 
@@ -125,7 +125,6 @@ export default function AdminDocuments() {
   const [uploadDomain, setUploadDomain] = useState(DOMAINS[0]);
   const [domainMenuOpen, setDomainMenuOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type?: 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, isError, error } = useAdminDocuments();
@@ -148,8 +147,8 @@ export default function AdminDocuments() {
     uploadMut.mutate(
       { file, fields: { name: file.name, domain: uploadDomain.code } },
       {
-        onSuccess: () => setToast({ msg: `'${file.name}' 업로드가 시작되었습니다.` }),
-        onError: () => setToast({ msg: '업로드에 실패했습니다. 잠시 후 다시 시도해주세요.', type: 'error' }),
+        onSuccess: () => showToast(`'${file.name}' 업로드가 시작되었습니다.`, 'success'),
+        onError: () => showToast('업로드에 실패했습니다. 잠시 후 다시 시도해주세요.'),
       },
     );
   };
@@ -157,7 +156,7 @@ export default function AdminDocuments() {
   const handleDelete = (doc: AdminDocumentItem) => {
     if (!window.confirm(`'${doc.name}' 문서를 삭제하시겠습니까?`)) return;
     deleteMut.mutate(doc.document_id, {
-      onError: () => setToast({ msg: '삭제에 실패했습니다.', type: 'error' }),
+      onError: () => showToast('삭제에 실패했습니다.'),
     });
   };
 
@@ -166,8 +165,6 @@ export default function AdminDocuments() {
 
   return (
     <div>
-      {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
-
       <p className="text-sm text-text-muted mb-6">MARS가 답변 근거로 사용할 문서를 업로드하세요</p>
 
       <div

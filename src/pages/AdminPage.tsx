@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser, useInquiryUsers } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
-import Toast from '../ui/components/Toast';
+import { showToast } from '../api/store/toastStore';
 import { getApiError } from '../utils/error';
 import { logError } from '../utils/logError';
 import { copyText } from '../utils/clipboard';
@@ -269,14 +269,11 @@ export default function AdminPage() {
   const [adminPage, setAdminPage] = useState(1);
   const [userPage, setUserPage] = useState(1);
   const [userStatusTab, setUserStatusTab] = useState<UserStatusTab>('all');
-  const [copiedKey, setCopiedKey] = useState(0);
-  const [mutationError, setMutationError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [errorDismissed, setErrorDismissed] = useState(false);
 
   const { data, isLoading, isError } = useGetUsers({ size: 100 });
-  useEffect(() => { if (!isError) setErrorDismissed(false); }, [isError]);
+  useEffect(() => { if (isError) showToast('데이터를 불러오지 못했습니다.'); }, [isError]);
   const { data: meData } = useGetMe();
   const myEmail = meData?.data?.data?.email;
   const { mutate: approve, isPending: isApproving } = useApproveUser();
@@ -304,32 +301,23 @@ export default function AdminPage() {
   const myId = allAdmins.find((u) => u.email === myEmail)?.user_id;
 
   const handleApprove = (userId: string) =>
-    approve(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
+    approve(userId, { onError: (e) => showToast(getAdminMutationError(e)) });
 
   const handleReject = (userId: string) =>
-    rejectUser(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
+    rejectUser(userId, { onError: (e) => showToast(getAdminMutationError(e)) });
 
   const handleDelete = (userId: string) =>
-    deleteUser(userId, { onError: (e) => setMutationError(getAdminMutationError(e)) });
+    deleteUser(userId, { onError: (e) => showToast(getAdminMutationError(e)) });
 
   const handleCopyId = (userId: string) =>
     copyText(userId)
-      .then(() => setCopiedKey((k) => k + 1))
-      .catch((e) => { logError('AdminPage.copy', e); setMutationError('복사에 실패했습니다.'); });
+      .then(() => showToast('ID가 복사되었습니다.', 'success'))
+      .catch((e) => { logError('AdminPage.copy', e); showToast('복사에 실패했습니다.'); });
 
   return (
     <div className="h-full overflow-y-auto custom-scroll bg-white p-8">
       {selectedUserId && (
         <UserDetailModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
-      )}
-      {copiedKey > 0 && (
-        <Toast key={copiedKey} message="ID가 복사되었습니다." type="success" onClose={() => setCopiedKey(0)} />
-      )}
-      {mutationError && (
-        <Toast message={mutationError} type="error" onClose={() => setMutationError('')} />
-      )}
-      {isError && !errorDismissed && (
-        <Toast message="데이터를 불러오지 못했습니다." onClose={() => setErrorDismissed(true)} />
       )}
 
       <h1 className="text-2xl font-bold text-text-primary mb-6">관리자</h1>

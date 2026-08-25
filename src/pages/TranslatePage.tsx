@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useTranslate } from '../hooks/useTranslate'
-import Toast from '../ui/components/Toast'
+import { showToast } from '../api/store/toastStore'
 import { copyText } from '../utils/clipboard'
 
 const LANGS = ['한국어', '영어'] as const
@@ -58,7 +58,6 @@ export default function TranslatePage() {
   const [input, setInput] = useState('')
   const [result, setResult] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const [toast, setToast] = useState('')
   const [style, setStyle] = useState<string>('plain_report')
   const [fontSize, setFontSize] = useState(15)
   const { mutate: translateApi, isPending } = useTranslate()
@@ -80,7 +79,7 @@ export default function TranslatePage() {
           const code = err?.response?.data?.error?.code
           const detail = err?.response?.data?.error?.detail
           if (code === 'TRANSLATE_SERVER_ERROR') {
-            setToast(detail ?? '번역 서버에 연결할 수 없습니다.')
+            showToast(detail ?? '번역 서버에 연결할 수 없습니다.')
           } else {
             setErrorMsg(detail ?? '번역에 실패했습니다. 잠시 후 다시 시도해 주세요.')
           }
@@ -94,9 +93,6 @@ export default function TranslatePage() {
       setResult('')
       setErrorMsg('')
     }
-    // 입력 멈추고 1초 뒤 자동 번역(디바운스). 지금은 번역 버튼만 쓰므로 비활성화.
-    // const timer = window.setTimeout(runTranslate, 1000)
-    // return () => window.clearTimeout(timer)
   }, [input, source, target, runTranslate])
 
   const copyResult = () => {
@@ -105,7 +101,6 @@ export default function TranslatePage() {
 
   return (
     <>
-      {toast && <Toast message={toast} type="error" onClose={() => setToast('')} />}
       <div className="h-full overflow-y-auto custom-scroll px-8 pt-8 pb-6">
       <div className="mx-auto flex max-w-[1120px] flex-col">
         <h1 className="text-[20px] font-bold text-text-primary">번역</h1>

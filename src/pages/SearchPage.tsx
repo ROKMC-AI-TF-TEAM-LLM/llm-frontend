@@ -6,7 +6,7 @@ import type { SearchResult } from '../ui/components/search/SearchResultItem'
 import { useSearchSessions, useInfiniteSessions } from '../hooks/useSession'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { SearchSessionCardSkeleton } from '../ui/components/Skeleton'
-import Toast from '../ui/components/Toast'
+import { showToast } from '../api/store/toastStore'
 
 const SearchPage = () => {
   const navigate = useNavigate()
@@ -41,12 +41,12 @@ const SearchPage = () => {
     goToSession(id, found?.project_id)
   }
 
-  const [errorDismissed, setErrorDismissed] = useState(false)
-  const showError = (isSearchError || isSessionsError) && !errorDismissed
+  useEffect(() => {
+    if (isSearchError || isSessionsError) showToast('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+  }, [isSearchError, isSessionsError])
 
   return (
     <div className="h-full overflow-y-auto custom-scroll px-6 pt-16 pb-6">
-      {showError && <Toast message="데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요." onClose={() => setErrorDismissed(true)} />}
       <div className="max-w-3xl w-full mx-auto flex flex-col animate-page-in">
 
         <h1 className="text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">

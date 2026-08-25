@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import ChatInput from "../ui/components/chat/ChatInput"
-import Toast from "../ui/components/Toast"
+import { showToast } from "../api/store/toastStore"
 import { useGetMe } from "../hooks/useUser"
 import { useDocumentTitle } from "../hooks/useDocumentTitle"
 
@@ -9,13 +9,12 @@ export default function NewChatPage() {
   const { data: meData } = useGetMe()
   const name = meData?.data?.data?.name
   const location = useLocation()
-  const [toastError, setToastError] = useState('')
   useDocumentTitle('New chat')
 
   useEffect(() => {
     const msg = location.state?.toastError
     if (msg) {
-      setToastError(msg)
+      showToast(msg)
       window.history.replaceState({}, '')
     }
   }, [location.state])
@@ -42,7 +41,6 @@ export default function NewChatPage() {
           notice="MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오."
         />
       </div>
-      {toastError && <Toast message={toastError} onClose={() => setToastError('')} />}
     </main>
   )
 }

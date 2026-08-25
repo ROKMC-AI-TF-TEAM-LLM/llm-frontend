@@ -43,7 +43,7 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
     if (next && next !== chat.title) {
       updateSession(
         { sessionId: chat.id, data: { title: next } },
-        { onSuccess: () => onError(''), onError: (e) => onError(getSessionError(e)) },
+        { onError: (e) => onError(getSessionError(e)) },
       )
     }
     setIsEditing(false)
@@ -53,7 +53,6 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
     e.stopPropagation()
     deleteSession(chat.id, {
       onSuccess: () => {
-        onError('')
         clearCache(chat.id)
         if (chat.id === currentId) navigate('/chat')
       },

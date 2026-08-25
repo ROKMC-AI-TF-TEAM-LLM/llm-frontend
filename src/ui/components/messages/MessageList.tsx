@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { useChatStore } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import { copyText } from '../../../utils/clipboard';
-import Toast from '../Toast';
+import { showToast } from '../../../api/store/toastStore';
 import type { Message } from '../../../types';
 import ChatHeader from './ChatHeader';
 import MessageRow from './MessageRow';
@@ -35,7 +35,6 @@ export default function MessageList({ title, isLoading, hideHeader = false }: Me
   const spacerHRef = useRef(0);
   const spacerRef = useRef<HTMLDivElement>(null);
   const scrollAnimRef = useRef(0);
-  const [copyFailed, setCopyFailed] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
 
   const setSpacer = (h: number) => {
@@ -236,7 +235,7 @@ export default function MessageList({ title, isLoading, hideHeader = false }: Me
   }, [messages, isStreaming]);
 
   const handleCopy = useCallback((text: string) => {
-    copyText(text).catch((e) => { logError('MessageList.copy', e); setCopyFailed(true); });
+    copyText(text).catch((e) => { logError('MessageList.copy', e); showToast('복사에 실패했습니다.'); });
   }, []);
 
   let lastAssistantId: string | null = null;
@@ -247,7 +246,6 @@ export default function MessageList({ title, isLoading, hideHeader = false }: Me
   return (
     <div className="flex flex-col h-full bg-surface">
       {!hideHeader && <ChatHeader title={title} />}
-      {copyFailed && <Toast message="복사에 실패했습니다." onClose={() => setCopyFailed(false)} />}
 
       <div className="relative flex-1 min-h-0">
       <div

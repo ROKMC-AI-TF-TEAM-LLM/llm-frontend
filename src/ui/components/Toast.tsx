@@ -4,6 +4,7 @@ interface ToastProps {
   message: string;
   onClose: () => void;
   type?: 'error' | 'success';
+  stackIndex?: number;
 }
 
 const STYLES = {
@@ -22,7 +23,7 @@ const STYLES = {
 const TOTAL_MS = 5000;
 const FADE_MS = 400;
 
-export default function Toast({ message, onClose, type = 'error' }: ToastProps) {
+export default function Toast({ message, onClose, type = 'error', stackIndex = 0 }: ToastProps) {
   const [visible, setVisible] = useState(false);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; });
@@ -45,8 +46,8 @@ export default function Toast({ message, onClose, type = 'error' }: ToastProps) 
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
-      style={{ left: 'calc(var(--sidebar-width, 0px) + (100vw - var(--sidebar-width, 0px)) / 2)' }}
-      className={`fixed bottom-28 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap transition-opacity duration-[400ms] ${visible ? 'opacity-100' : 'opacity-0'} ${style.container}`}
+      style={{ bottom: `calc(7rem + ${stackIndex} * 3.25rem)` }}
+      className={`fixed left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap transition-opacity duration-[400ms] ${visible ? 'opacity-100' : 'opacity-0'} ${style.container}`}
     >
       <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d={style.path} />

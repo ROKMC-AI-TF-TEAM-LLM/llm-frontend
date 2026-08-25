@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { ChatItem } from '../../../types'
 import SessionItem from './SessionItem'
-import Toast from '../Toast'
+import { showToast } from '../../../api/store/toastStore'
 import ProjectItem from './ProjectItem'
 import { useProjectStore } from '../../../features/projects/projectStore'
 import { useUpdateProject, useToggleProjectFavorite } from '../../../hooks/useProject'
@@ -13,7 +13,6 @@ interface FavoriteChatsProps {
 }
 
 export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps) {
-  const [sidebarError, setSidebarError] = useState('')
   const [expanded, setExpanded] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
@@ -43,8 +42,6 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
-      {sidebarError && <Toast message={sidebarError} onClose={() => setSidebarError('')} />}
-
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -80,7 +77,7 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
           ))}
 
           {favorites.map((chat) => (
-            <SessionItem key={chat.id} chat={chat} onError={setSidebarError} />
+            <SessionItem key={chat.id} chat={chat} onError={showToast} />
           ))}
         </ul>
       )}

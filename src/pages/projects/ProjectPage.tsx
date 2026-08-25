@@ -8,7 +8,7 @@ import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDel
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
 import MessageList from '../../ui/components/messages/MessageList'
-import Toast from '../../ui/components/Toast'
+import { showToast } from '../../api/store/toastStore'
 import {
   Block,
   ChatRow,
@@ -95,7 +95,6 @@ export default function ProjectPage() {
   const openProjectChat = (nextId: string) => navigate(`/projects/${id}/${nextId}`)
   const closeChat = () => navigate(`/projects/${id}`)
   const [panelOpen, setPanelOpen] = useState(true)
-  const [devToast, setDevToast] = useState('')
 
   const { data: docsData } = useProjectDocuments(id)
   const documents = docsData?.data?.data?.documents ?? []
@@ -114,7 +113,7 @@ export default function ProjectPage() {
     uploadDoc(file)
     return true
   }
-  const handlePickFile = () => setDevToast('개발 중인 기능입니다.')
+  const handlePickFile = () => showToast('개발 중인 기능입니다.')
   const handleUploadFiles = (files: FileList | null) => {
     const file = files?.[0]
     if (file) tryUpload(file)
@@ -193,7 +192,6 @@ export default function ProjectPage() {
 
   return (
     <div className="flex h-full w-full bg-white">
-      {devToast && <Toast message={devToast} onClose={() => setDevToast('')} />}
       <aside
         style={{
           borderRightColor: panelOpen ? '#f4eced' : 'transparent',
