@@ -39,7 +39,7 @@ export default function TeamPage() {
         <section className="team-sec flex items-center justify-center px-[6vw] text-center">
           <ScrollFade>
             <p className="team-eyebrow">AI DATA TF</p>
-            <h1 className="mt-7 text-[clamp(30px,5vw,58px)] font-black leading-[1.28] tracking-[-0.035em] text-white break-keep">
+            <h1 className="mars-display mt-7 text-[clamp(30px,5vw,58px)] font-black leading-[1.28] tracking-[-0.035em] text-white break-keep">
               해병대의 규정을
               <br />
               <span className="text-[#ff3d5e]">해병대가 직접 다룹니다</span>
@@ -60,7 +60,7 @@ export default function TeamPage() {
         <section className="team-sec flex items-center px-[6vw]">
           <ScrollFade className="mx-auto w-full max-w-[760px]">
             <p className="team-eyebrow">THE SOLUTION</p>
-            <h2 className="mt-7 text-[clamp(24px,3.6vw,42px)] font-black leading-[1.4] tracking-[-0.035em] text-white break-keep">
+            <h2 className="mars-display mt-7 text-[clamp(24px,3.6vw,42px)] font-black leading-[1.4] tracking-[-0.035em] text-white break-keep">
               수백 쪽짜리 규정집
               <br />
               <span className="text-white/40">찾지 말고 질문하세요.</span>
@@ -77,7 +77,7 @@ export default function TeamPage() {
           <div className="mx-auto w-full max-w-[900px]">
             <ScrollFade>
               <p className="team-eyebrow">What We Do</p>
-              <h2 className="mt-7 text-[clamp(24px,3.6vw,42px)] font-black leading-[1.35] tracking-[-0.035em] text-white break-keep">
+              <h2 className="mars-display mt-7 text-[clamp(24px,3.6vw,42px)] font-black leading-[1.35] tracking-[-0.035em] text-white break-keep">
                 우리가 하는 일
               </h2>
             </ScrollFade>
@@ -148,7 +148,7 @@ export default function TeamPage() {
           <div className="mx-auto w-full max-w-[760px]">
             <ScrollFade>
               <p className="team-eyebrow">History</p>
-              <h2 className="mt-7 text-[clamp(24px,3.6vw,42px)] font-black tracking-[-0.035em] text-white break-keep">
+              <h2 className="mars-display mt-7 text-[clamp(24px,3.6vw,42px)] font-black tracking-[-0.035em] text-white break-keep">
                 연혁
               </h2>
             </ScrollFade>
@@ -177,7 +177,7 @@ export default function TeamPage() {
           <div className="mx-auto w-full max-w-[1000px]">
             <ScrollFade className="text-center">
               <p className="team-eyebrow justify-center">Members</p>
-              <h2 className="mt-7 text-[clamp(24px,3.6vw,42px)] font-black tracking-[-0.035em] text-white break-keep">
+              <h2 className="mars-display mt-7 text-[clamp(24px,3.6vw,42px)] font-black tracking-[-0.035em] text-white break-keep">
                 AI DATA TF
               </h2>
               <p className="mt-5 text-[13.5px] leading-[1.8] text-white/45 break-keep">
@@ -197,7 +197,7 @@ export default function TeamPage() {
 
         <section className="team-sec flex items-center justify-center px-[6vw] text-center">
           <ScrollFade>
-            <h2 className="text-[clamp(26px,4vw,46px)] font-black leading-[1.35] tracking-[-0.035em] text-white break-keep">
+            <h2 className="mars-display text-[clamp(26px,4vw,46px)] font-black leading-[1.35] tracking-[-0.035em] text-white break-keep">
               직접 써보시는 게
               <br />
               가장 빠릅니다

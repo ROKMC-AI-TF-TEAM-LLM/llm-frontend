@@ -103,7 +103,7 @@ export default function TranslatePage() {
     <>
       <div className="h-full overflow-y-auto custom-scroll px-8 pt-8 pb-6">
       <div className="mx-auto flex max-w-[1120px] flex-col">
-        <h1 className="text-[20px] font-bold text-text-primary">번역</h1>
+        <h1 className="mars-display text-[20px] font-bold text-text-primary">번역</h1>
 
         <div className="mt-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">

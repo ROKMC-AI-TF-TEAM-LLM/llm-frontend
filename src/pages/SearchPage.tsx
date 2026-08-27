@@ -49,7 +49,7 @@ const SearchPage = () => {
     <div className="h-full overflow-y-auto custom-scroll px-6 pt-16 pb-6">
       <div className="max-w-3xl w-full mx-auto flex flex-col animate-page-in">
 
-        <h1 className="text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
+        <h1 className="mars-display text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
           대화 검색
         </h1>
 

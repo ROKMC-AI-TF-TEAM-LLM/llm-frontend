@@ -24,7 +24,7 @@ export default function ComingSoonPage({ title = '준비 중입니다' }: { titl
       </div>
 
       <p className="mars-eyebrow justify-center">COMING SOON</p>
-      <h1 className="mt-4 text-[clamp(28px,4vw,40px)] font-bold tracking-[-0.02em] text-text-primary break-keep">
+      <h1 className="mars-display mt-4 text-[clamp(28px,4vw,40px)] font-bold tracking-[-0.02em] text-text-primary break-keep">
         {title}
       </h1>
       <p className="mx-auto mt-5 max-w-[420px] text-[14px] leading-[1.75] text-text-secondary break-keep">

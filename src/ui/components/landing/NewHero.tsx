@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { showDevToast } from '../DevToast'
 
-/* 별 : 실제 우주처럼 촘촘한 파스텔 점 별. 의사난수로 생성. */
 const STAR_COLORS = ['#ffffff', '#ffe1e6', '#ffd0d8', '#ffc2cd', '#e9d5ff', '#d6e4ff', '#fff0d6']
 const rand = (seed: number) => {
   const x = Math.sin(seed * 12.9898) * 43758.5453
@@ -23,7 +22,6 @@ const STARS = Array.from({ length: 150 }, (_, i) => {
   }
 })
 
-/* 미세한 흰 점 : 아주 작고 촘촘하게, 은은히 빛난다. */
 const DUST = Array.from({ length: 260 }, (_, i) => {
   const rt = rand(i + 811)
   return {
@@ -35,7 +33,6 @@ const DUST = Array.from({ length: 260 }, (_, i) => {
   }
 })
 
-/* 미세한 빨간 점 : 흰 점 사이에 섞여 파스텔 우주감을 낸다. */
 const RED_DUST = Array.from({ length: 200 }, (_, i) => {
   const rt = rand(i + 1211)
   return {
@@ -47,14 +44,13 @@ const RED_DUST = Array.from({ length: 200 }, (_, i) => {
   }
 })
 
-/* 성단 : 별이 모여 멀리서 뿌옇게 보이는 무리. 중심 좌표·반경. */
 const CLUSTERS: [number, number, number][] = [
   [820, 150, 90], [180, 470, 76], [560, 600, 64],
 ]
 const CLUSTER_STARS = CLUSTERS.flatMap(([cx, cy, rad], ci) =>
   Array.from({ length: 26 }, (_, j) => {
     const a = rand(ci * 100 + j + 7) * Math.PI * 2
-    const dist = Math.pow(rand(ci * 100 + j + 57), 1.6) * rad  // 중심에 밀집
+    const dist = Math.pow(rand(ci * 100 + j + 57), 1.6) * rad
     return {
       x: cx + Math.cos(a) * dist,
       y: cy + Math.sin(a) * dist,
@@ -75,7 +71,6 @@ export default function NewHero({
 
   return (
     <section className="mars-newhero mars-section relative flex min-h-screen items-center overflow-hidden px-[7vw]">
-      {/* 배경 : 빨간 파스텔 성운 + 촘촘한 파스텔 별 + 성단 */}
       <div className="mars-nebula" aria-hidden>
         <span className="neb n1" />
         <span className="neb n2" />
@@ -83,14 +78,12 @@ export default function NewHero({
       </div>
 
       <svg className="mars-sky" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden xmlns="http://www.w3.org/2000/svg">
-        {/* 성단 : 별이 모여 멀리서 뿌옇게 빛나는 무리 */}
         {CLUSTERS.map(([cx, cy, rad], i) => (
           <circle key={`cg${i}`} cx={cx} cy={cy} r={rad} className="sky-cluster-glow" />
         ))}
         {CLUSTER_STARS.map((s, i) => (
           <circle key={`c${i}`} cx={s.x} cy={s.y} r={s.r} fill={s.color} className="sky-clusterstar" />
         ))}
-        {/* 미세한 흰 점 : 촘촘하게 빛난다 */}
         {DUST.map((s, i) => (
           <circle
             key={`u${i}`}
@@ -99,7 +92,6 @@ export default function NewHero({
             style={s.twinkle ? { animationDelay: `${s.delay}s` } : undefined}
           />
         ))}
-        {/* 미세한 빨간 점 */}
         {RED_DUST.map((s, i) => (
           <circle
             key={`r${i}`}
@@ -108,7 +100,6 @@ export default function NewHero({
             style={s.twinkle ? { animationDelay: `${s.delay}s` } : undefined}
           />
         ))}
-        {/* 흩뿌린 별 : 일부만 은은하게 반짝 */}
         {STARS.map((s, i) => (
           <circle
             key={`s${i}`}
@@ -119,14 +110,12 @@ export default function NewHero({
         ))}
       </svg>
 
-      {/* 유성 : 가끔 사선으로 스친다 */}
       <div className="mars-shooting" aria-hidden>
         <span className="shoot s1" />
         <span className="shoot s2" />
         <span className="shoot s3" />
       </div>
 
-      {/* 왼쪽 텍스트 */}
       <div className="mars-hn-copy">
         <p className="mars-eyebrow"><span>Marine Artificial Intelligence Reasoning System</span></p>
         <h1 className="mars-hn-word">MARS</h1>
@@ -150,7 +139,6 @@ export default function NewHero({
         </div>
       </div>
 
-      {/* 오른쪽 : 정제된 빨간 행성 + 궤도 */}
       <div className="mars-hn-art" aria-hidden>
         <div className="mars-planetwrap">
           <div className="mars-orbit-ring r1" />

@@ -389,7 +389,7 @@ export default function GuidePage() {
         <div className="relative w-full max-w-[760px] mx-auto text-center">
           <Reveal className="text-[13px] font-bold tracking-[0.14em] text-[#c0002a] mb-[14px]">GUIDE</Reveal>
           <Reveal delay={70}>
-            <h1 className="m-0 font-black leading-[1.18] tracking-tight" style={{ fontSize: 'clamp(38px,5.2vw,60px)' }}>
+            <h1 className="mars-display m-0 font-black leading-[1.18] tracking-tight" style={{ fontSize: 'clamp(38px,5.2vw,60px)' }}>
               <span className="text-brand">MARS</span> 이용법
             </h1>
           </Reveal>
@@ -478,8 +478,8 @@ export default function GuidePage() {
       <section id="smart" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[960px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">SMART BEHAVIOR</Reveal>
-          <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>이런 점이 다릅니다</h2></Reveal>
-          <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">단순히 그럴듯한 답을 내놓는 대신, 규정에 근거해 정직하게 답하도록 설계했습니다.</p></Reveal>
+          <Reveal delay={60}><h2 className="mars-display text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>이런 점이 다릅니다</h2></Reveal>
+          <Reveal delay={120}><p className="text-center mx-auto mb-13 max-w-[600px] text-[17px] leading-[1.7] text-[#6a6a72]">단순히 그럴듯한 답을 내놓는 대신, 규정에 근거해 정직하게 답하도록 설계했습니다.</p></Reveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {SMARTS.map((s, i) => (
               <Reveal key={s.title} delay={i * 70} className="p-7 rounded-2xl bg-white border border-[#f2dfe3] shadow-[0_10px_30px_rgba(150,0,40,0.04)]">
@@ -494,7 +494,7 @@ export default function GuidePage() {
       <section id="tips" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[820px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">TIPS</Reveal>
-          <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>더 정확하게 쓰는 법</h2></Reveal>
+          <Reveal delay={60}><h2 className="mars-display text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.6vw,44px)' }}>더 정확하게 쓰는 법</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">같은 질문도 조금만 다듬으면 훨씬 정확한 근거를 찾을 수 있습니다.</p></Reveal>
           <div className="flex flex-col gap-4">
             {TIPS.map((tip, i) => (
@@ -510,7 +510,7 @@ export default function GuidePage() {
       <section id="faq" data-guide-section className="px-[6vw] min-h-screen flex items-center py-16 scroll-mt-[66px]">
         <div className="w-full max-w-[760px] mx-auto">
           <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-[#c0002a]">FAQ</Reveal>
-          <Reveal delay={60}><h2 className="text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}>자주 묻는 질문</h2></Reveal>
+          <Reveal delay={60}><h2 className="mars-display text-center mx-auto mb-2 font-extrabold tracking-tight" style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}>자주 묻는 질문</h2></Reveal>
           <Reveal delay={120}><p className="text-center mx-auto mb-12 max-w-[560px] text-[17px] leading-[1.7] text-[#6a6a72]">MARS를 쓰기 전 궁금해할 만한 것들을 모았습니다.</p></Reveal>
           <div className="flex flex-col gap-3">
             {FAQ.map((item, i) => {
@@ -543,7 +543,7 @@ export default function GuidePage() {
 
       <section data-guide-section className="relative px-[6vw] min-h-screen flex flex-col items-center justify-center text-center overflow-hidden">
         <Reveal className="relative z-[2]">
-          <h2 className="m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
+          <h2 className="mars-display m-0 mb-5 font-black tracking-tight" style={{ fontSize: 'clamp(36px,5vw,60px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
           <p className="mx-auto max-w-[460px] text-[17px] text-text-secondary leading-relaxed">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
           <button type="button" onClick={() => navigate('/')} className="mars-pill mars-pill-brand mt-9">
             MARS 시작하기 <span aria-hidden>→</span>
@@ -585,7 +585,7 @@ function StepRow({
   const text = (
     <Reveal className="flex-1 min-w-[300px]" delay={reverse ? 0 : 100}>
       <div className="text-[14px] font-extrabold text-brand tracking-[0.12em] mb-4">{step}</div>
-      <div className="text-[32px] md:text-[38px] font-extrabold mb-5 leading-[1.3] tracking-tight">{title}</div>
+      <div className="mars-display text-[32px] md:text-[38px] font-extrabold mb-5 leading-[1.3] tracking-tight">{title}</div>
       <p className="m-0 text-[17px] md:text-[18px] leading-[1.85] text-[#6a6a72]">{desc}</p>
       {bullets && (
         <ul className="mt-7 flex flex-col gap-3.5">

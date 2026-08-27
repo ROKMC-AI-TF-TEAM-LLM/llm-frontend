@@ -89,7 +89,7 @@ export default function TutorialPage() {
       <div className="mx-auto max-w-[760px] px-[6vw] pb-24 lg:px-8">
         <Reveal>
           <p className="mars-eyebrow">WHY</p>
-          <h2 className="mt-4 text-[26px] font-bold tracking-[-0.02em] text-text-primary">
+          <h2 className="mars-display mt-4 text-[26px] font-bold tracking-[-0.02em] text-text-primary">
             {tutorial.pointsTitle}
           </h2>
         </Reveal>
@@ -133,7 +133,7 @@ export default function TutorialPage() {
       {related.length > 0 && (
         <div className="border-t border-[#f4eced] bg-[#fdfbfb] px-[6vw] py-20">
           <Reveal>
-            <h2 className="text-center text-[clamp(26px,3.6vw,38px)] font-bold tracking-[-0.03em] text-text-primary">
+            <h2 className="mars-display text-center text-[clamp(26px,3.6vw,38px)] font-bold tracking-[-0.03em] text-text-primary">
               이어서 볼 만한 튜토리얼
             </h2>
           </Reveal>

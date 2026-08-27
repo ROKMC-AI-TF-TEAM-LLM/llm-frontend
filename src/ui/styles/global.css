@@ -2,11 +2,40 @@
 
 @source "../../../node_modules/streamdown/dist/index.js";
 
+@font-face {
+  font-family: 'MujeokHaebyeong';
+  src: url('/fonts/MujeokHaebyeong-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'MujeokHaebyeong';
+  src: url('/fonts/MujeokHaebyeong-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+  --font-serif: 'Pretendard', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
     'Times New Roman', 'Nanum Myeongjo', 'Apple SD Gothic Neo', serif;
 
   --color-brand: #DC143C;
@@ -85,7 +114,7 @@ body {
 }
 
 .mars-brand-serif {
-  font-family: var(--font-serif);
+  font-family: 'MujeokHaebyeong', var(--font-serif);
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -407,6 +436,7 @@ body.modal-open {
 }
 
 .mars-display {
+  font-family: 'MujeokHaebyeong', var(--font-sans);
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1.06;
@@ -478,7 +508,7 @@ body.modal-open {
   display: inline-flex; align-items: center; gap: 9px;
   color: var(--color-brand); background: none; border: 0; cursor: pointer; padding: 0;
   transition: color .2s ease;
-  font-family: var(--font-serif);
+  font-family: 'MujeokHaebyeong', var(--font-serif);
   font-weight: 700;
   font-size: 27px;
   letter-spacing: 0;

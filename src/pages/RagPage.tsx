@@ -70,7 +70,7 @@ const RagPage = () => {
       <div className="max-w-5xl mx-auto px-8 py-12 animate-page-in">
         <div className="flex items-center justify-between gap-6 mb-6">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-semibold text-text-primary">문서</h1>
+            <h1 className="mars-display text-2xl font-semibold text-text-primary">문서</h1>
             {!isLoading && !isError && (
               <span className="text-sm font-medium text-text-muted">{filtered.length}건</span>
             )}

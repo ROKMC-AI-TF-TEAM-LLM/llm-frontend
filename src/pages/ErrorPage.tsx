@@ -5,7 +5,7 @@ const ErrorPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-10">
-      <h1 className="text-3xl font-semibold text-text-primary">페이지를 찾을 수 없습니다.</h1>
+      <h1 className="mars-display text-3xl font-semibold text-text-primary">페이지를 찾을 수 없습니다.</h1>
       <div className="flex gap-8">
         <button
           onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')}

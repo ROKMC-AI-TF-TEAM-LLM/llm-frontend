@@ -320,7 +320,7 @@ export default function AdminPage() {
         <UserDetailModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
       )}
 
-      <h1 className="text-2xl font-bold text-text-primary mb-6">관리자</h1>
+      <h1 className="mars-display text-2xl font-bold text-text-primary mb-6">관리자</h1>
 
       <div className="flex items-center gap-1 border-b border-surface-border mb-8" role="tablist">
         {([

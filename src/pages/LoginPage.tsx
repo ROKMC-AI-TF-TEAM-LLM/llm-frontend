@@ -149,8 +149,8 @@ const LoginPage = () => {
             <div className="mars-reveal mars-eyebrow mars-eyebrow-full mb-5">
               Marine Artificial Intelligence Reasoning System
             </div>
-            <h1 className="mars-reveal mars-wordmark mars-display -ml-1 m-0 text-brand text-glow-brand">MARS</h1>
-            <p className="mars-reveal mars-display mt-5 text-text-primary" style={{ fontSize: 'clamp(26px,3vw,38px)' }}>
+            <h1 className="mars-reveal mars-wordmark mars-display mars-brand-serif -ml-1 m-0 text-brand text-glow-brand">MARS</h1>
+            <p className="mars-reveal mars-display mt-1 text-text-primary" style={{ fontSize: 'clamp(26px,3vw,38px)' }}>
               해병대의 모든 규정을,<br />
               한 번에 <RotatingWord words={HERO_VERBS} />
             </p>
