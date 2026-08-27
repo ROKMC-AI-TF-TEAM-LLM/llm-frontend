@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { showDevToast } from '../DevToast'
+// import { showDevToast } from '../DevToast'
 
 const STAR_COLORS = ['#ffffff', '#ffe1e6', '#ffd0d8', '#ffc2cd', '#e9d5ff', '#d6e4ff', '#fff0d6']
 const rand = (seed: number) => {
@@ -132,7 +132,7 @@ export default function NewHero({
             </button>
           ) : (
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => showDevToast('개발 중인 페이지입니다.')} className="mars-hn-ghost">팀 소개</button>
+              <button type="button" onClick={() => navigate('/team')} className="mars-hn-ghost">팀 소개</button>
               <button type="button" onClick={() => navigate('/guide')} className="mars-hn-ghost">서비스 이용법</button>
             </div>
           )}

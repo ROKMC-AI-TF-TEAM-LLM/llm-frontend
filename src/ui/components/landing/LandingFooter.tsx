@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, GUIDE_EXTRAS } from './guideSections'
 import { setPostLoginRedirect } from '../../../utils/postLoginRedirect'
 import { TUTORIALS } from '../../../features/tutorials/tutorials'
-import { showDevToast } from '../DevToast'
+// import { showDevToast } from '../DevToast'
 
 export default function LandingFooter({ onStart }: { onStart?: () => void }) {
   const navigate = useNavigate()
@@ -58,7 +58,7 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
           </FooterCol>
 
           <FooterCol title="알아보기">
-            <FooterBtn onClick={() => showDevToast('개발 중인 페이지입니다.')}>팀 소개</FooterBtn>
+            <FooterBtn onClick={() => goTop('/team')}>팀 소개</FooterBtn>
             <FooterBtn onClick={() => goTop('/tutorials')}>튜토리얼 전체</FooterBtn>
             {TUTORIALS.slice(0, 3).map((t) => (
               <FooterBtn key={t.slug} onClick={() => goTop(`/tutorials/${t.slug}`)}>

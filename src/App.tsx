@@ -22,7 +22,7 @@ const GuidePage = lazy(() => import('./pages/GuidePage'));
 const TranslatePage = lazy(() => import('./pages/TranslatePage'));
 const TutorialsPage = lazy(() => import('./pages/TutorialsPage'));
 const TutorialPage = lazy(() => import('./pages/TutorialPage'));
-const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
 
@@ -66,7 +66,7 @@ const publicRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
     element: (
       <Suspense fallback={null}>
-        <ComingSoonPage title="팀 소개" />
+        <TeamPage />
       </Suspense>
     ),
   },
