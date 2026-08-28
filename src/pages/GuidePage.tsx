@@ -483,7 +483,7 @@ export default function GuidePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {SMARTS.map((s, i) => (
               <Reveal key={s.title} delay={i * 70} className="p-7 rounded-2xl bg-white border border-[#f2dfe3] shadow-[0_10px_30px_rgba(150,0,40,0.04)]">
-                <div className="text-[18px] font-extrabold mb-2">{s.title}</div>
+                <div className="text-[18px] font-extrabold mars-brand-serif mb-2">{s.title}</div>
                 <div className="text-[15px] text-[#6a6a72] leading-[1.7]">{s.desc}</div>
               </Reveal>
             ))}
@@ -521,7 +521,7 @@ export default function GuidePage() {
                     onClick={() => setOpenFaq(isOpen ? null : i)}
                     className="w-full flex items-center justify-between gap-4 px-7 py-6 text-left"
                   >
-                    <span className="text-[17.5px] font-bold text-text-primary">{item.q}</span>
+                    <span className="text-[17.5px] font-bold text-text-primary mars-brand-serif">{item.q}</span>
                     <span
                       className="flex-none w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300"
                       style={{ background: isOpen ? '#fdeef1' : '#f6f2f3', transform: isOpen ? 'rotate(180deg)' : 'none' }}

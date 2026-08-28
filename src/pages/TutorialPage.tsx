@@ -117,7 +117,7 @@ export default function TutorialPage() {
             style={{ background: 'linear-gradient(160deg,#fdf3f5 0%,#fffdfd 100%)' }}
             className="mt-14 rounded-[18px] border border-[#f2e2e6] px-8 py-9 text-center"
           >
-            <p className="text-[19px] font-bold tracking-[-0.01em] text-text-primary break-keep">
+            <p className="text-[19px] font-bold tracking-[-0.01em] mars-brand-serif text-text-primary break-keep">
               직접 해보는 게 가장 빠릅니다
             </p>
             <p className="mx-auto mt-3 max-w-[420px] text-[13.5px] leading-[1.7] text-text-secondary break-keep">
