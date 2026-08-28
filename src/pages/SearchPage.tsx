@@ -66,14 +66,14 @@ const SearchPage = () => {
           />
         ) : (
           <div className="mt-8">
-            <h2 className="text-sm font-medium text-text-muted mb-4 shrink-0">최근 대화</h2>
+            <h2 className="text-sm font-medium text-text-muted mb-4 mars-brand-serif shrink-0">최근 대화</h2>
 
             {isSessionsLoading ? (
               <div className="grid grid-cols-2 gap-3">
                 {[...Array(6)].map((_, i) => <SearchSessionCardSkeleton key={i} />)}
               </div>
             ) : recentSessions.length === 0 ? (
-              <p className="text-sm text-text-muted text-center py-8">대화 내역이 없습니다.</p>
+              <p className="text-sm text-text-muted mars-brand-serif text-center py-8">대화 내역이 없습니다.</p>
             ) : (
               <div>
                 <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">

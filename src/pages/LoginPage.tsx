@@ -164,11 +164,11 @@ const LoginPage = () => {
                 </button>
               </div>
               <div className={`absolute inset-0 flex items-center gap-3 transition-opacity duration-500 ${view === 'auth' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <button type="button" onClick={() => navigate('/team')} className="mars-pill mars-pill-ghost text-[14px]">
+                <button type="button" onClick={() => navigate('/team')} className="mars-pill mars-pill-ghost mars-brand-serif text-[14px]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                   팀 소개
                 </button>
-                <button type="button" onClick={() => navigate('/guide')} className="mars-pill mars-pill-ghost text-[14px]">
+                <button type="button" onClick={() => navigate('/guide')} className="mars-pill mars-pill-ghost mars-brand-serif text-[14px]">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></svg>
                   서비스 이용법
                 </button>
@@ -230,7 +230,7 @@ const LoginPage = () => {
               <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
                 궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 원문 조항을 찾아 대조한 뒤 근거와 함께 답합니다.
               </p>
-              <div className="flex flex-col gap-7">
+              <div className="flex mars-brand-serif flex-col gap-7">
                 {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', '문서 검색·대조', 'MARS가 관련 규정 문서를 찾아 원문 조항을 대조합니다.'], ['STEP 03', '근거와 함께 답변', '어떤 문서 몇 조를 참고했는지 출처와 함께 답합니다.']].map(([s, t, d]) => (
                   <div key={s} className="mars-reveal flex gap-5 items-start">
                     <span className="shrink-0 text-[12px] font-extrabold text-brand tracking-[0.1em] pt-1 w-14">{s}</span>
@@ -398,7 +398,7 @@ const LoginPage = () => {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
         <div className="mars-panel-inner">
-          <div className="text-[28px] font-extrabold text-text-primary leading-tight">{mode === 'login' ? '로그인' : '회원가입'}</div>
+          <div className="text-[28px] font-extrabold text-text-primary mars-brand-serif leading-tight">{mode === 'login' ? '로그인' : '회원가입'}</div>
           <p className="mt-2 text-[14px] text-text-secondary">{mode === 'login' ? '계정으로 로그인하고 MARS를 시작하세요.' : '관리자 승인 후 서비스 이용이 가능합니다.'}</p>
 
           {mode === 'login' ? (
@@ -407,7 +407,7 @@ const LoginPage = () => {
               {loginErrors.email && <p className="text-xs text-brand -mt-1 pl-2">{loginErrors.email.message}</p>}
               <input type="password" placeholder="비밀번호" className={fieldCls} {...registerLogin('password')} />
               {loginErrors.password && <p className="text-xs text-brand -mt-1 pl-2">{loginErrors.password.message}</p>}
-              <button type="submit" disabled={isLoginDisabled} className="mt-1.5 w-full py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[16px] font-extrabold shadow-[0_14px_30px_rgba(220,20,60,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 transition">
+              <button type="submit" disabled={isLoginDisabled} className="mt-1.5 w-full py-4 rounded-full mars-brand-serif bg-gradient-to-r from-brand to-brand-light text-white text-[16px] font-extrabold shadow-[0_14px_30px_rgba(220,20,60,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 transition">
                 {isLoginSubmitting ? '로그인 중...' : '시작하기'}
               </button>
               <div className="flex justify-end mt-1">
@@ -433,10 +433,10 @@ const LoginPage = () => {
             </form>
           )}
           <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center">
-            <p className="text-[13px] text-text-secondary leading-relaxed">
+            <p className="text-[13px] text-text-secondary mars-brand-serif leading-relaxed">
               해병대사 지휘통신참모처 지능정보화발전과 AI DATA TF
             </p>
-            <p className="mt-2 text-[11px] tracking-wide text-text-muted">MARS v1.0.0</p>
+            <p className="mt-2 text-[11px] tracking-wide mars-brand-serif text-text-muted">MARS v1.0.0</p>
           </div>
         </div>
       </div>
