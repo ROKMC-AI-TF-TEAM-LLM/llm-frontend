@@ -342,7 +342,7 @@ const LoginPage = () => {
                   <div key={t} className="mars-reveal flex gap-5 items-start">
                     <span className="shrink-0 mt-1 w-6 h-6 rounded-full bg-brand-subtle border border-brand-soft text-brand text-[12px] font-extrabold flex items-center justify-center">{i + 1}</span>
                     <div>
-                      <div className="text-[16px] font-bold mb-0.5">{t}</div>
+                      <div className="text-[16px] mars-brand-serif font-bold mb-0.5">{t}</div>
                       <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
                     </div>
                   </div>

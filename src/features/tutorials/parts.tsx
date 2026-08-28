@@ -88,7 +88,7 @@ export function TutorialCard({ tutorial, onOpen }: { tutorial: Tutorial; onOpen:
       </span>
 
       <span className="flex flex-1 flex-col p-5">
-        <span className="text-[16.5px] font-bold leading-[1.35] tracking-[-0.01em] text-text-primary break-keep">
+        <span className="text-[16.5px] font-bold leading-[1.35] tracking-[-0.01em] text-text-primary mars-brand-serif break-keep">
           {tutorial.title}
         </span>
         <span className="mt-2.5 line-clamp-2 text-[13px] leading-[1.7] text-text-secondary break-keep">
