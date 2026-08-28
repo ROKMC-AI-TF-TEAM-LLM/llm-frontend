@@ -230,12 +230,12 @@ const LoginPage = () => {
               <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
                 궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 원문 조항을 찾아 대조한 뒤 근거와 함께 답합니다.
               </p>
-              <div className="flex mars-brand-serif flex-col gap-7">
+              <div className="flex flex-col gap-7">
                 {[['STEP 01', '질문 입력', '궁금한 규정·절차를 평소 말하듯 입력합니다.'], ['STEP 02', '문서 검색·대조', 'MARS가 관련 규정 문서를 찾아 원문 조항을 대조합니다.'], ['STEP 03', '근거와 함께 답변', '어떤 문서 몇 조를 참고했는지 출처와 함께 답합니다.']].map(([s, t, d]) => (
                   <div key={s} className="mars-reveal flex gap-5 items-start">
                     <span className="shrink-0 text-[12px] font-extrabold text-brand tracking-[0.1em] pt-1 w-14">{s}</span>
                     <div>
-                      <div className="text-[17px] font-extrabold mb-1 tracking-tight">{t}</div>
+                      <div className="text-[17px] font-extrabold mb-1 mars-brand-serif tracking-tight">{t}</div>
                       <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
                     </div>
                   </div>
