@@ -48,7 +48,7 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
         aria-expanded={expanded}
         className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-[#fdedf2]"
       >
-        <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
+        <span className="text-[10.5px] font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
           즐겨찾기
         </span>
         <svg

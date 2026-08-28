@@ -44,7 +44,7 @@ export default function TutorialPage() {
         <button
           type="button"
           onClick={() => navigate('/tutorials')}
-          className="font-semibold text-text-primary transition-colors hover:text-brand"
+          className="font-semibold text-text-primary mars-brand-serif transition-colors hover:text-brand"
         >
           튜토리얼
         </button>

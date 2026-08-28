@@ -63,7 +63,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               onClick={() => setSubOpen((v) => !v)}
               aria-expanded={subOpen}
               aria-haspopup="true"
-              className={`flex w-full items-center gap-3 px-4 py-2 text-[13.5px] transition-colors ${
+              className={`flex w-full mars-brand-serif items-center gap-3 px-4 py-2 text-[13.5px] transition-colors ${
                 subOpen ? 'bg-surface-subtle text-text-primary' : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
               }`}
             >
@@ -109,7 +109,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
 
           <button
             onClick={() => { setOpen(false); logout(); }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-[13.5px] text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full font-semibold flex items-center gap-3 px-4 py-2 text-[13.5px] text-red-500 hover:bg-red-50 transition-colors"
           >
             <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -119,42 +119,41 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         </div>
       )}
 
-      {isOpen ? (
-        <div className="flex items-center gap-1 px-[12px] py-[9px]">
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className={`min-w-0 flex-1 flex items-center gap-2 px-[8px] py-[7px] rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
+      <div className="flex items-center gap-1 px-[10px] py-[9px]">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-label="프로필"
+          className={`min-w-0 flex-1 flex items-center gap-2 p-1.5 rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
+        >
+          <Avatar />
+          <div
+            className="flex flex-col items-start min-w-0 overflow-hidden transition-[opacity,width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)]"
+            style={{ width: isOpen ? '100%' : 0, opacity: isOpen ? 1 : 0 }}
           >
-            <Avatar />
-            <div className="flex flex-col items-start min-w-0 overflow-hidden">
-              <span className="max-w-full truncate text-[12.5px] font-bold text-text-primary mt-px">{user.name}</span>
-              {user.email && (
-                <span className="max-w-full truncate text-[11px] text-text-muted">{user.email}</span>
-              )}
-            </div>
-          </button>
-          <button
-            onClick={logout}
-            title="로그아웃"
-            aria-label="로그아웃"
-            className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
-      ) : (
-        <div className="flex justify-center py-[9px]">
-          <button
-            onClick={() => setOpen((v) => !v)}
-            aria-label="프로필"
-            className={`p-1.5 rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
-          >
-            <Avatar />
-          </button>
-        </div>
-      )}
+            <span className="max-w-full truncate whitespace-nowrap text-[12.5px] font-bold text-text-primary mt-px">{user.name}</span>
+            {user.email && (
+              <span className="max-w-full truncate whitespace-nowrap text-[11px] text-text-muted">{user.email}</span>
+            )}
+          </div>
+        </button>
+        <button
+          onClick={logout}
+          title="로그아웃"
+          aria-label="로그아웃"
+          tabIndex={isOpen ? 0 : -1}
+          className="shrink-0 overflow-hidden rounded-lg text-text-muted hover:bg-red-50 hover:text-red-500 transition-[opacity,width,padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] cursor-pointer"
+          style={{
+            width: isOpen ? 28 : 0,
+            padding: isOpen ? 6 : 0,
+            opacity: isOpen ? 1 : 0,
+            pointerEvents: isOpen ? 'auto' : 'none',
+          }}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
@@ -203,7 +202,7 @@ function MenuItem({ icon, label, onClick }: { icon: React.ReactNode; label: stri
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-2 text-[13.5px] text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
+      className="w-full mars-brand-serif flex items-center gap-3 px-4 py-2 text-[13.5px] text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
     >
       <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
         {icon}

@@ -55,7 +55,6 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
       <div
         ref={listRef}
         className={`flex-1 min-h-0 overflow-y-auto overscroll-contain ${
-          // 접힌 상태에선 스크롤바가 좁은 폭을 잠식하지 않도록 숨긴다.
           isOpen ? 'sidebar-scroll' : 'scrollbar-hide'
         }`}
       >

@@ -51,7 +51,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
         aria-expanded={expanded}
         className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-[#fdedf2]"
       >
-        <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
+        <span className="text-[10.5px] mars-brand-serif font-extrabold uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
           최근 대화
         </span>
         <svg

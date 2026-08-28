@@ -132,7 +132,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           onMouseEnter={cancelCtaClose}
           onMouseLeave={closeCtaSoon}
         >
-          <div className="mars-nav-cta-group">
+          <div className="mars-nav-cta-group mars-brand-serif">
             <button type="button" onClick={onStart} className="mars-nav-cta-main">
               시작하기
             </button>
