@@ -10,9 +10,9 @@ export default function TeamHero() {
 
       <AnchorMark
         size={560}
-        angle={-12}
+        angle={0}
         opacity={0.045}
-        className="pointer-events-none absolute -right-20 bottom-[-8%]"
+        className="pointer-events-none absolute -right-20 bottom-[0%]"
       />
 
       <div className="relative z-[1] mx-auto grid w-full max-w-[1180px] items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
@@ -24,7 +24,7 @@ export default function TeamHero() {
 
           <h1
             className="mars-display mars-reveal mt-8 font-black leading-[1.16] tracking-tight text-text-primary break-keep"
-            style={{ fontSize: 'clamp(34px,5vw,58px)' }}
+            style={{ fontSize: 'clamp(55px,10vw,118px)' }}
           >
             <Placeholder value={HERO.headline} />
           </h1>
@@ -32,8 +32,11 @@ export default function TeamHero() {
           <p className="mars-reveal mt-7 max-w-[720px] text-[clamp(30px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
             <Placeholder value={HERO.sub} />
           </p>
-          <p className="mars-reveal mt-5 max-w-[520px] text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
-            <Placeholder value={HERO.sub2} />
+          <p className="flex flex-row mars-reveal mt-5 max-w-[400px] text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
+            <Placeholder value={HERO.sub2} /> 
+          </p>
+          <p className="mars-reveal max-w-[520px] text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
+            <Placeholder value={HERO.sub3} />
           </p>
         </div>
 

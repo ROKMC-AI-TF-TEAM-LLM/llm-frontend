@@ -181,6 +181,7 @@ const LoginPage = () => {
               <div className="mars-planet-float">
                 <div className="mars-planet-body">
                   <div className="mars-orbit o1" />
+                  <div className="mars-orbit o2" />
                   <MarsPlanet glow className="w-full h-full" />
                 </div>
               </div>

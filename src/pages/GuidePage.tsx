@@ -367,7 +367,10 @@ export default function GuidePage() {
 
       <section data-guide-section className="relative px-[6vw] min-h-[calc(100vh-73px)] flex items-center overflow-hidden">
         <div className="absolute right-[4%] top-[14%] w-[340px] h-[340px] opacity-90 pointer-events-none animate-[marsFloat_8s_ease-in-out_infinite]">
-          <div className="absolute -inset-[14%] rounded-full border-[1.5px] border-[rgba(228,0,43,0.16)] animate-[marsSpin_40s_linear_infinite]" style={{ transform: 'rotate(-16deg)' }}>
+          <div className="absolute -inset-[14%] rounded-full border-[1.5px] border-[rgba(228,0,43,0.16)] animate-[marsSpin_28s_linear_infinite]" style={{ transform: 'rotate(-16deg)' }}>
+            <div className="absolute -left-1 top-[48%] w-[9px] h-[9px] rounded-full bg-brand shadow-[0_0_12px_3px_rgba(228,0,43,0.5)]" />
+          </div>
+          <div className="absolute -inset-[24%] rounded-full border-[1.5px] border-[rgba(228,0,43,0.16)] animate-[marsSpin_40s_linear_infinite]" style={{ transform: 'rotate(-16deg)' }}>
             <div className="absolute -left-1 top-[48%] w-[9px] h-[9px] rounded-full bg-brand shadow-[0_0_12px_3px_rgba(228,0,43,0.5)]" />
           </div>
           <div className="absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle at 34% 30%, #ff6a5a 0%, #ef2740 34%, #d5001f 62%, #9c0016 100%)', boxShadow: '0 0 90px 24px rgba(228,0,43,0.2), inset -24px -20px 60px rgba(90,0,15,0.7)' }} />

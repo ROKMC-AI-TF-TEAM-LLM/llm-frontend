@@ -9,7 +9,7 @@ export default function TeamVoices() {
     <section className="relative flex min-h-screen items-center overflow-hidden bg-surface-card1 px-[6vw] py-20">
       <AnchorMark
         size={460}
-        angle={-20}
+        angle={0}
         opacity={0.045}
         className="pointer-events-none absolute -right-24 top-10"
       />
@@ -21,11 +21,11 @@ export default function TeamVoices() {
             className="mars-display mx-auto mt-5 font-extrabold tracking-tight text-text-primary break-keep"
             style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}
           >
-            만드는 사람들의 이야기
+            AI-DATA TF TEAM
           </h2>
         </ScrollFade>
 
-        <div className="mt-16 grid gap-5 sm:grid-cols-2">
+        <div className="mt-16 grid gap-5 sm:grid-cols-4">
           {VOICES.map((v, i) => (
             <ScrollFade key={i}>
               <figure className="flex h-full flex-col rounded-3xl border border-surface-border bg-white p-8 transition-shadow duration-300 hover:shadow-[0_18px_44px_rgba(26,25,23,0.08)]">
@@ -34,19 +34,19 @@ export default function TeamVoices() {
                 </svg>
 
                 <blockquote className="mt-5 flex-1 text-[15.5px] leading-[1.95] text-text-primary break-keep">
-                  <Placeholder value={v.quote} />
+                  <Placeholder value={v.role} />
                 </blockquote>
 
                 <figcaption className="mt-7 flex items-center gap-3 border-t border-surface-border pt-5">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand to-brand-light text-[14px] font-black text-white">
                     {isBlank(v.name) ? '·' : v.name.charAt(0)}
                   </span>
+                  <span className="mt-0.5 block truncate text-[12.5px] text-text-muted">
+                    <Placeholder value={v.quote} />
+                  </span>
                   <span className="min-w-0">
                     <span className="block truncate text-[14px] font-bold text-text-primary">
                       <Placeholder value={v.name} />
-                    </span>
-                    <span className="mt-0.5 block truncate text-[12.5px] text-text-muted">
-                      <Placeholder value={v.role} />
                     </span>
                   </span>
                 </figcaption>

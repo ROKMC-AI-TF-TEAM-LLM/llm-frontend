@@ -11,7 +11,7 @@ export default function TeamValues() {
     >
       <AnchorMark
         size={520}
-        angle={16}
+        angle={0}
         opacity={0.04}
         className="pointer-events-none absolute -left-32 bottom-0"
       />

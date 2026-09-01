@@ -5,7 +5,6 @@ import TeamHero from '../features/team/sections/TeamHero'
 import TeamValues from '../features/team/sections/TeamValues'
 import TeamDomains from '../features/team/sections/TeamDomains'
 import TeamVoices from '../features/team/sections/TeamVoices'
-import TeamMetrics from '../features/team/sections/TeamMetrics'
 import TeamCta from '../features/team/sections/TeamCta'
 import PageNav from '../ui/components/landing/PageNav'
 
@@ -37,7 +36,6 @@ export default function TeamPage() {
         <TeamValues />
         <TeamDomains />
         <TeamVoices />
-        <TeamMetrics />
         <TeamCta />
       </main>
 
