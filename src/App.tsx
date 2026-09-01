@@ -2,8 +2,10 @@ import { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
   RouterProvider,
+  useLocation,
   type RouteObject
 } from 'react-router-dom';
+import { isMetricPath } from './utils/telemetry';
 import LoginPage from './pages/LoginPage';
 import ChatPage from './pages/ChatPage';
 import AuthLayout from './ui/layouts/AuthLayout';
@@ -23,6 +25,7 @@ const TranslatePage = lazy(() => import('./pages/TranslatePage'));
 const TutorialsPage = lazy(() => import('./pages/TutorialsPage'));
 const TutorialPage = lazy(() => import('./pages/TutorialPage'));
 const TeamPage = lazy(() => import('./pages/TeamPage'));
+const SystemDiagnostics = lazy(() => import('./pages/SystemDiagnostics'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
 
@@ -137,7 +140,19 @@ const protectedRoutes: RouteObject[] = [
   }
 ];
 
-const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path: '*', element: <ErrorPage /> }]);
+const NotFoundBoundary = () => {
+  const { pathname } = useLocation();
+  if (isMetricPath(pathname)) {
+    return (
+      <Suspense fallback={null}>
+        <SystemDiagnostics />
+      </Suspense>
+    );
+  }
+  return <ErrorPage />;
+};
+
+const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path: '*', element: <NotFoundBoundary /> }]);
 
 const App = () => (
   <AuthProvider>

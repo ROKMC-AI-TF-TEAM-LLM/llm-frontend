@@ -1,27 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import type { Tutorial } from './tutorials'
+import PageNav from '../../ui/components/landing/PageNav'
 
 export function TutorialHeader() {
-  const navigate = useNavigate()
-  return (
-    <header
-      style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
-      className="sticky top-0 z-30 flex items-center border-b border-[#f4eced] bg-white/70 backdrop-blur-md"
-    >
-      <button onClick={() => navigate('/')} className="mars-nav-brand">
-        MARS
-      </button>
-      <button
-        type="button"
-        onClick={() => navigate('/')}
-        style={{ background: 'var(--color-brand)' }}
-        className="ml-auto rounded-[6px] px-4 py-2 text-[13.5px] font-medium text-white transition-colors hover:bg-[var(--color-brand-hover)]"
-      >
-        시작하기
-      </button>
-    </header>
-  )
+  return <PageNav current="tutorials" />
 }
 
 export function Reveal({

@@ -558,13 +558,18 @@ body.modal-open {
 }
 .mars-nav-cta-main {
   padding: 7px 15px; font-size: 13.5px; font-weight: 500; letter-spacing: -0.01em;
+  background: var(--color-brand); border-radius: 6px;
 }
+/* 드롭다운 그룹 안에서는 그룹이 배경을 담당 */
+.mars-nav-cta-group .mars-nav-cta-main { background: none; border-radius: 0; }
 .mars-nav-cta-caret {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px;
   border-left: 1px solid rgba(255,255,255,0.22);
 }
-.mars-nav-cta-main:hover, .mars-nav-cta-caret:hover { background: rgba(0,0,0,0.10); }
+.mars-nav-cta-main:hover { background: var(--color-brand-hover); }
+.mars-nav-cta-group .mars-nav-cta-main:hover,
+.mars-nav-cta-caret:hover { background: rgba(0,0,0,0.10); }
 .mars-nav-caret { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
 .mars-nav-trigger.is-open .mars-nav-caret { transform: rotate(180deg); }
 
@@ -1461,3 +1466,57 @@ video { content-visibility: auto; }
 }
 .hn-br { display: none; }
 @media (min-width: 640px) { .hn-br { display: inline; } }
+
+/* 팀 소개 히어로 아트: 마커로 그린 듯한 라인 엠블럼 */
+@keyframes ea-stroke {
+  from { stroke-dashoffset: 1200; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes ea-flap-l {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(6deg); }
+}
+@keyframes ea-flap-r {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-6deg); }
+}
+@keyframes ea-star-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+@keyframes ea-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(1.4deg); }
+}
+
+/* 각 획이 순서대로 그려짐 */
+.ea-draw path {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: ea-stroke .5s cubic-bezier(.5,.05,.3,1) forwards;
+}
+.ea-draw .s1  { animation-delay: .10s; }
+.ea-draw .s2  { animation-delay: .35s; }
+.ea-draw .s3  { animation-delay: .70s; }
+.ea-draw .s4  { animation-delay: .95s; }
+.ea-draw .s5  { animation-delay: 1.20s; }
+.ea-draw .s6  { animation-delay: 1.50s; }
+.ea-draw .s7  { animation-delay: 1.70s; }
+.ea-draw .s8  { animation-delay: 1.90s; }
+.ea-draw .s9  { animation-delay: 1.60s; }
+.ea-draw .s10 { animation-delay: 1.80s; }
+.ea-draw .s11 { animation-delay: 2.00s; }
+.ea-draw .s12 { animation-delay: 2.35s; animation-duration: .7s; }
+.ea-draw .s13 { animation-delay: 2.85s; }
+.ea-draw .s14 { animation-delay: 3.15s; }
+
+/* 그리기가 끝난 뒤 움직임 시작 */
+.ea-wing-l { animation: ea-flap-l 3.2s ease-in-out 3.7s infinite; }
+.ea-wing-r { animation: ea-flap-r 3.2s ease-in-out 3.7s infinite; }
+.ea-star   { animation: ea-star-pulse 4s ease-in-out 3.9s infinite; }
+.ea-anchor { animation: ea-sway 5.5s ease-in-out 3.9s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ea-draw path { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+  .ea-wing-l, .ea-wing-r, .ea-star, .ea-anchor { animation: none; }
+}

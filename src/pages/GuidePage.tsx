@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import DomainIcon from '../ui/components/chat/DomainIcon';
 import LandingFooter from '../ui/components/landing/LandingFooter';
+import PageNav from '../ui/components/landing/PageNav'
 
 const DOMAINS = [
   { code: 'HR', label: '인사·복지' },
@@ -362,22 +363,7 @@ export default function GuidePage() {
         @keyframes hintIn { from { opacity:0; } to { opacity:1; } }
       `}</style>
 
-      <div
-        style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
-        className="sticky top-0 z-20 flex items-center gap-7 bg-white/[0.82] backdrop-blur-md border-b border-[#f2e2e6]"
-      >
-        <button onClick={() => navigate('/')} className="mars-nav-brand">
-          MARS
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-[6px] bg-brand px-4 py-2 text-[13.5px] font-medium text-white transition-colors hover:bg-brand-hover"
-        >
-          시작하기
-        </button>
-      </div>
+      <PageNav current="guide" />
 
       <section data-guide-section className="relative px-[6vw] min-h-[calc(100vh-73px)] flex items-center overflow-hidden">
         <div className="absolute right-[4%] top-[14%] w-[340px] h-[340px] opacity-90 pointer-events-none animate-[marsFloat_8s_ease-in-out_infinite]">

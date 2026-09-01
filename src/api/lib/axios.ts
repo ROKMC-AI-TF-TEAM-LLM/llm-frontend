@@ -10,6 +10,8 @@ export const backendApi = axios.create({
   },
 })
 
+export const CLIENT_CHANNEL = 'PZkZh'
+
 let pendingRefresh: Promise<string> | null = null
 
 const parseStorageItem = (raw: string | null): string | null => {

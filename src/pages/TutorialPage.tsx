@@ -81,7 +81,7 @@ export default function TutorialPage() {
       <div className="mx-auto max-w-[1160px] px-[6vw] pb-20 lg:px-8">
         <VideoSlot title={tutorial.title} tint={tutorial.tint} videoUrl={tutorial.videoUrl} />
         <p className="mt-4 text-[12px] leading-[1.7] text-text-muted">
-          본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는 인물·부대·문서·상황은
+          본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는 부대·문서·상황은
           실제와 무관하며, 예시로 나오는 규정 내용은 실제 규정을 대신할 수 없습니다.
         </p>
       </div>

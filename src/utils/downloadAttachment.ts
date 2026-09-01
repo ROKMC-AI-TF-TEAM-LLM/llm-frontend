@@ -33,7 +33,6 @@ export const downloadFileWithAuth = async (url: string, filename: string): Promi
 export const downloadAttachment = (att: FileAttachment): Promise<string | null> =>
   downloadFileWithAuth(resolveAttachmentUrl(att), att.name);
 
-// GET /api/v1/documents/{name}/download
 export const downloadDocumentByName = (name: string): Promise<string | null> => {
   const base = import.meta.env.VITE_SERVER_API_URL ?? '';
   return downloadFileWithAuth(`${base}/api/v1/documents/${encodeURIComponent(name)}/download`, name);

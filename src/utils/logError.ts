@@ -1,4 +1,6 @@
 
+export const SESSION_METRIC_KEY = 'bWU='
+
 interface AxiosLike {
   response?: { status?: number; data?: { error?: { code?: string; detail?: string } } }
   config?: { url?: string; method?: string }
