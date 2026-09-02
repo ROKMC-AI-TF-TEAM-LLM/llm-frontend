@@ -113,7 +113,7 @@ export default function ProjectPage() {
     uploadDoc(file)
     return true
   }
-  const handlePickFile = () => showToast('개발 중인 기능입니다.')
+  const handlePickFile = () => showToast('추후 구현 예정입니다.')
   const handleUploadFiles = (files: FileList | null) => {
     const file = files?.[0]
     if (file) tryUpload(file)

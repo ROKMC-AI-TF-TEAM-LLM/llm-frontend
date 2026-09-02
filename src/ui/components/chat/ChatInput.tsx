@@ -8,6 +8,9 @@ import { useCreateSession } from '../../../hooks/useSession';
 import { showToast } from '../../../api/store/toastStore';
 import DomainPicker from './DomainPicker';
 
+const MAX_LEN = 1000;
+const MAX_LIMIT_TOAST = 5;
+
 const inputDrafts = new Map<string, string>();
 const NEW_CHAT_KEY = '__new__';
 
@@ -88,6 +91,7 @@ export default function ChatInput({
   };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const limitToastRef = useRef(0);
 
   const resizeTextarea = () => {
     const el = textareaRef.current;
@@ -210,10 +214,20 @@ export default function ChatInput({
         <textarea
           ref={textareaRef}
           rows={1}
+          maxLength={MAX_LEN}
           value={value}
           onChange={(e) => {
             const el = e.target;
-            updateValue(el.value);
+            const next = el.value.slice(0, MAX_LEN);
+            if (el.value.length >= MAX_LEN) {
+              if (limitToastRef.current < MAX_LIMIT_TOAST) {
+                limitToastRef.current += 1;
+                showToast(`${MAX_LEN}자를 넘어가면 더 이상 입력할 수 없습니다.`);
+              }
+            } else {
+              limitToastRef.current = 0;
+            }
+            updateValue(next);
             el.style.overflowY = 'hidden';
             el.style.height = 'auto';
             el.style.height = `${el.scrollHeight}px`;

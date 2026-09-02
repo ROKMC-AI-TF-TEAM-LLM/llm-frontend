@@ -7,7 +7,7 @@ import { copyText } from '../utils/clipboard'
 const LANGS = ['한국어', '영어'] as const
 type Lang = (typeof LANGS)[number]
 
-const MAX = 5000
+const MAX = 200
 
 function LangSelect({ value, onChange }: { value: Lang; onChange: (l: Lang) => void }) {
   const [open, setOpen] = useState(false)
@@ -57,7 +57,6 @@ export default function TranslatePage() {
   const [target, setTarget] = useState<Lang>('영어')
   const [input, setInput] = useState('')
   const [result, setResult] = useState('')
-  const [errorMsg, setErrorMsg] = useState('')
   const [style, setStyle] = useState<string>('plain_report')
   const [fontSize, setFontSize] = useState(15)
   const { mutate: translateApi, isPending } = useTranslate()
@@ -69,20 +68,12 @@ export default function TranslatePage() {
 
   const runTranslate = useCallback(() => {
     if (!input.trim()) return
-    setErrorMsg('')
     translateApi(
       { text: input, source: LANG_CODE[source], target: LANG_CODE[target], style },
       {
         onSuccess: (res) => setResult(res.data.data.translation),
-        onError: (e) => {
-          const err = e as { response?: { data?: { error?: { code?: string; detail?: string } } } }
-          const code = err?.response?.data?.error?.code
-          const detail = err?.response?.data?.error?.detail
-          if (code === 'TRANSLATE_SERVER_ERROR') {
-            showToast(detail ?? '번역 서버에 연결할 수 없습니다.')
-          } else {
-            setErrorMsg(detail ?? '번역에 실패했습니다. 잠시 후 다시 시도해 주세요.')
-          }
+        onError: () => {
+          showToast('서버 오류입니다. 잠시 후 다시 시도해 주세요.')
         },
       },
     )
@@ -91,8 +82,7 @@ export default function TranslatePage() {
   useEffect(() => {
     if (!input.trim()) {
       setResult('')
-      setErrorMsg('')
-    }
+      }
   }, [input, source, target, runTranslate])
 
   const copyResult = () => {
@@ -193,8 +183,6 @@ export default function TranslatePage() {
                   <span className="dot-chase" style={{ animationDelay: '160ms' }} />
                   <span className="dot-chase" style={{ animationDelay: '320ms' }} />
                 </span>
-              ) : errorMsg ? (
-                <p className="text-status-error">{errorMsg}</p>
               ) : result ? (
                 <p className="whitespace-pre-wrap text-text-primary">{result}</p>
               ) : (
