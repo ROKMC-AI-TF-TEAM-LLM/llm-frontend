@@ -329,7 +329,8 @@ const LoginPage = () => {
             <div className="flex-1 min-w-0">
               <div className="mars-reveal mars-eyebrow mb-5">문서로도 받기</div>
               <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
-                대화만이 아니라,<br />결과물로 남깁니다.
+                대화만이 아니라,<br />
+              <span className="text-brand">결과물</span>로 남깁니다.
               </h2>
               <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
                 정리가 필요한 내용은 요청 한 번으로 한글(HWP) 문서로 만들어 바로 내려받을 수 있습니다.

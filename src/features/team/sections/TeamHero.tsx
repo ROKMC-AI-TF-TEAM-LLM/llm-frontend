@@ -1,5 +1,4 @@
 import AnchorMark from '../AnchorMark'
-import EmblemLines from '../EmblemLines'
 import { HERO } from '../teamContent'
 import Placeholder from './Placeholder'
 
@@ -11,7 +10,7 @@ export default function TeamHero() {
       <AnchorMark
         size={560}
         angle={0}
-        opacity={0.045}
+        opacity={0.08}
         className="pointer-events-none absolute -right-20 bottom-[0%]"
       />
 
@@ -24,14 +23,16 @@ export default function TeamHero() {
 
           <h1
             className="mars-display mars-reveal mt-8 font-black leading-[1.16] tracking-tight text-text-primary break-keep"
-            style={{ fontSize: 'clamp(55px,10vw,118px)' }}
+            style={{ fontSize: 'clamp(55px,10vw,100px)' }}
           >
             <Placeholder value={HERO.headline} />
           </h1>
 
-          <p className="mars-reveal mt-7 max-w-[720px] text-[clamp(30px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
-            <Placeholder value={HERO.sub} />
-          </p>
+          {HERO.sub && (
+            <p className="mars-reveal mt-7 max-w-[720px] text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
+              <Placeholder value={HERO.sub} />
+            </p>
+          )}
           <p className="flex flex-row mars-reveal mt-5 max-w-[400px] text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
             <Placeholder value={HERO.sub2} /> 
           </p>
@@ -40,8 +41,13 @@ export default function TeamHero() {
           </p>
         </div>
 
-        <div className="mars-reveal hidden lg:block">
-          <EmblemLines />
+        <div className="mars-reveal hidden lg:flex items-center justify-center">
+          <img
+            src="/rokmc-anchor.svg"
+            alt="해병대 마크"
+            className="w-full max-w-[460px] select-none"
+            draggable={false}
+          />
         </div>
       </div>
     </section>

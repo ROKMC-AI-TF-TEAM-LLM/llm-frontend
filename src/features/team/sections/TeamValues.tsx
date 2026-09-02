@@ -12,18 +12,18 @@ export default function TeamValues() {
       <AnchorMark
         size={520}
         angle={0}
-        opacity={0.04}
+        opacity={0.09}
         className="pointer-events-none absolute -left-32 bottom-0"
       />
 
       <div className="relative z-[1] mx-auto w-full max-w-[1100px]">
         <ScrollFade className="text-center">
-          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">HOW WE WORK</p>
+          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">GOALS</p>
           <h2
             className="mars-display mx-auto mt-5 font-extrabold tracking-tight text-text-primary break-keep"
             style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}
           >
-            우리가 일하는 세 가지 방식
+            목표
           </h2>
         </ScrollFade>
 
