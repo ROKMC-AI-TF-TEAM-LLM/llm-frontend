@@ -61,6 +61,18 @@ export default function TranslatePage() {
   const [fontSize, setFontSize] = useState(15)
   const { mutate: translateApi, isPending } = useTranslate()
 
+  const other = (l: Lang): Lang => (l === '한국어' ? '영어' : '한국어')
+
+  // 한쪽을 고르면 반대쪽은 자동으로 다른 언어가 되도록
+  const pickSource = (l: Lang) => {
+    setSource(l)
+    setTarget(other(l))
+  }
+  const pickTarget = (l: Lang) => {
+    setTarget(l)
+    setSource(other(l))
+  }
+
   const swap = () => {
     setSource(target)
     setTarget(source)
@@ -97,7 +109,7 @@ export default function TranslatePage() {
 
         <div className="mt-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <LangSelect value={source} onChange={setSource} />
+            <LangSelect value={source} onChange={pickSource} />
             <button
               type="button"
               onClick={swap}
@@ -108,7 +120,7 @@ export default function TranslatePage() {
                 <path d="M7 4 3 8l4 4M3 8h13M17 20l4-4-4-4M21 16H8" />
               </svg>
             </button>
-            <LangSelect value={target} onChange={setTarget} />
+            <LangSelect value={target} onChange={pickTarget} />
 
             <div className="ml-1 flex items-center rounded-full border border-[#f0e6e8] bg-white p-1">
               {STYLES.map((s) => (
