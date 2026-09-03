@@ -31,6 +31,12 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
             <br />
             지능정보화발전과 AI DATA TF
           </p>
+          <div className="mars-footer-contact">
+            <div className="mars-footer-coltitle">문의하기</div>
+            <span className="mars-footer-tel">031-8012-2424</span>
+            <span className="mars-footer-telsub">AI-DATA TF 사무실</span>
+          </div>
+
           <p className="mars-footer-copy">© {year} Republic of Korea Marine Corps</p>
         </div>
 
