@@ -385,7 +385,7 @@ export default function GuidePage() {
               <span className="text-brand">MARS</span> 이용법
             </h1>
           </Reveal>
-          <Reveal delay={160}><p className="mt-6 mx-auto max-w-[540px] text-[18px] leading-[1.75] font-semibold text-[#6a6a72]">질문 입력부터 도메인 선택, 근거 확인, 문서 검색까지 — MARS가 실제로 어떻게 동작하는지 보여드립니다.</p></Reveal>
+          <Reveal delay={160}><p className="mt-6 mx-auto max-w-[540px] text-[18px] leading-[1.75] font-semibold text-[#6a6a72]">질문 입력부터 도메인 선택, 근거 확인, 문서 검색까지. MARS가 실제로 어떻게 동작하는지 보여드립니다.</p></Reveal>
 
           <Reveal delay={240} className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
             {['근거 기반 답변', '실시간 스트리밍', '출처 함께 제시', '도메인별 검색'].map((f) => (
@@ -578,7 +578,7 @@ function StepRow({
     <Reveal className="flex-1 min-w-[300px]" delay={reverse ? 0 : 100}>
       <div className="text-[14px] font-extrabold text-brand tracking-[0.12em] mb-4">{step}</div>
       <div className="mars-display text-[32px] md:text-[38px] font-extrabold mb-5 leading-[1.3] tracking-tight">{title}</div>
-      <p className="m-0 text-[17px] md:text-[18px] leading-[1.85] text-[#6a6a72]">{desc}</p>
+      <p className="m-0 text-[17px] md:text-[18px] font-semibold leading-[1.85] text-[#6a6a72]">{desc}</p>
       {bullets && (
         <ul className="mt-7 flex flex-col gap-3.5">
           {bullets.map((b) => (

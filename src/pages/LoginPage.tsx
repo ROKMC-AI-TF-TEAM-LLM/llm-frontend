@@ -12,6 +12,14 @@ import LandingNav from '../ui/components/landing/LandingNav'
 import LandingFooter from '../ui/components/landing/LandingFooter'
 import { getApiError, isNetworkError, DEFAULT_STATUS_ERRORS } from '../utils/error'
 import { logError } from '../utils/logError'
+import KeywordConstellation from '../features/team/KeywordConstellation'
+import { DOMAIN_ROWS } from '../features/team/teamContent'
+
+const DOMAIN_ICONS = [
+  <path key="0" d="M12 3l7 3v5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-3z M9 12l2 2 4-4" />,
+  <path key="1" d="M4 19V9m5 10V5m5 14v-7m5 7V8" />,
+  <path key="2" d="M3 7l9-4 9 4-9 4-9-4z M3 12l9 4 9-4 M3 17l9 4 9-4" />,
+]
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i
 
@@ -323,61 +331,89 @@ const LoginPage = () => {
           </div>
         </section>
 
-        <section className="px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20">
-          <div className="max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row-reverse gap-14 items-center">
+        <section className="px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20 overflow-hidden">
+          <div className="max-w-[1280px] mx-auto w-full grid items-center gap-14 lg:grid-cols-[.85fr_1.15fr]">
 
-            <div className="flex-1 min-w-0">
-              <div className="mars-reveal mars-eyebrow mb-5">문서로도 받기</div>
-              <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
-                대화만이 아니라,<br />
-              <span className="text-brand">결과물</span>로 남깁니다.
+            <div className="min-w-0">
+              <div className="mars-reveal mars-eyebrow mb-5">WHAT WE COVER</div>
+              <h2 className="mars-reveal mars-display mb-12 leading-[1.25]" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
+                흩어진 규정을<br />
+                <span className="text-brand">하나의 답</span>으로
               </h2>
-              <p className="mars-reveal text-[17px] font-semibold text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
-                정리가 필요한 내용은 요청 한 번으로 한글(HWP) 문서로 만들어 바로 내려받을 수 있습니다.
-              </p>
-              <div className="flex flex-col gap-7">
-                {[
-                  ['정리 요청', '"~~를 정리한 한글 문서를 만들어줘"처럼 대화하듯 요청합니다.'],
-                  ['문서 생성', 'MARS가 답변 내용을 바탕으로 HWP 문서를 작성합니다.'],
-                  ['바로 다운로드', '채팅 안에서 완성된 문서를 바로 내려받아 활용합니다.'],
-                ].map(([t, d], i) => (
-                  <div key={t} className="mars-reveal flex gap-5 items-start">
-                    <span className="shrink-0 mt-1 w-6 h-6 rounded-full bg-brand-subtle border border-brand-soft text-brand text-[12px] font-extrabold flex items-center justify-center">{i + 1}</span>
-                    <div>
-                      <div className="text-[16px] mars-brand-serif font-bold mb-0.5">{t}</div>
-                      <div className="text-[14px] text-text-secondary leading-relaxed break-keep">{d}</div>
+
+              <div className="flex flex-col">
+                {DOMAIN_ROWS.map((r, i) => (
+                  <div key={r.title} className="mars-reveal border-t border-surface-border py-7">
+                    <div className="flex items-center gap-3">
+                      <svg
+                        className="h-[19px] w-[19px] shrink-0 text-brand"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.9}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        {DOMAIN_ICONS[i % DOMAIN_ICONS.length]}
+                      </svg>
+                      <h3 className="mars-brand-serif text-[18.5px] font-bold tracking-tight text-text-primary break-keep">{r.title}</h3>
                     </div>
+                    <p className="mt-3.5 text-[14.5px] leading-[1.9] text-text-secondary break-keep">{r.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex-1 min-w-0 w-full">
-              <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
-                <div className="p-7 flex flex-col gap-5">
-                  <div className="self-end max-w-[85%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">
-                    해병대 창설 배경을 정리한 한글 문서로 만들어줘
-                  </div>
-                  <div className="text-[15px] leading-relaxed text-text-primary">
-                    네, 해병대 창설 배경을 정리한 문서를 만들었습니다. 아래에서 바로 내려받으실 수 있습니다.
-                  </div>
-                  <div className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-brand-soft bg-brand-subtle">
-                    <div className="shrink-0 w-9 h-9 rounded-lg bg-brand flex items-center justify-center">
-                      <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <path d="M14 2v6h6" />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[13.5px] font-semibold text-text-primary truncate">해병대_창설_배경.hwp</p>
-                      <p className="text-[11.5px] text-brand-hover font-medium mt-0.5">HWP · 128KB · 다운로드</p>
-                    </div>
-                    <svg className="shrink-0 w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+            <div className="mars-reveal min-w-0">
+              <KeywordConstellation />
+            </div>
+
+          </div>
+        </section>
+
+        {/* ── 해병대를 위해 만들었습니다 (틀만 잡아둔 섹션 · 문구 교체 예정) ── */}
+        <section className="relative px-[6vw] mars-section min-h-screen flex flex-col justify-center py-20 overflow-hidden">
+          <div className="mars-glow-bg" style={{ width: 620, height: 620, left: '-8%', top: '46%', transform: 'translateY(-50%)' }} />
+
+          <div className="relative z-[1] max-w-[1280px] mx-auto w-full">
+
+            <div className="max-w-[760px]">
+              <div className="mars-reveal mars-eyebrow mb-5">FOR THE CORPS</div>
+              <h2 className="mars-reveal mars-display leading-[1.22]" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
+                다른 누구도 아닌,<br />
+                <span className="text-brand">해병대</span>를 위해 만들었습니다.
+              </h2>
+              <p className="mars-reveal mt-7 text-[17px] font-semibold text-text-secondary leading-relaxed break-keep max-w-[620px]">
+                [ 왜 해병대 전용인지 · 현장에서 무엇을 보고 만들었는지 2~3문장 ]
+              </p>
+            </div>
+
+            <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                ['해병대 규정만', '[ 타군 규정이 섞이지 않는다는 점 ]'],
+                ['현장의 언어로', '[ 실제 부대에서 쓰는 용어 기준 ]'],
+                ['폐쇄망에서', '[ 망 안에서 그대로 동작한다는 점 ]'],
+              ].map(([t, d]) => (
+                <div
+                  key={t}
+                  className="mars-reveal rounded-2xl border border-brand-soft/60 bg-white p-7 shadow-[0_18px_44px_rgba(150,0,40,0.07)]"
+                >
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-subtle text-brand">
+                    <svg width={21} height={21} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3l7 3v5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-3z" />
                     </svg>
-                  </div>
+                  </span>
+                  <h3 className="mars-brand-serif mt-5 text-[18px] font-bold tracking-tight text-text-primary">{t}</h3>
+                  <p className="mt-2.5 text-[14.5px] leading-[1.9] text-text-secondary break-keep">{d}</p>
                 </div>
-              </div>
+              ))}
+            </div>
+
+            <div className="mars-reveal mt-14 border-t border-surface-border pt-10">
+              <p className="mars-brand-serif text-[clamp(19px,2.1vw,26px)] font-bold leading-[1.6] text-text-primary break-keep max-w-[820px]">
+                [ 마무리 한 문장 · 슬로건 성격의 카피 ]
+              </p>
+              <p className="mt-3 text-[14px] text-text-muted">[ 소속 / 팀명 ]</p>
             </div>
 
           </div>

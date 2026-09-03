@@ -2,8 +2,8 @@ export const HERO = {
   eyebrow: 'Marine Artificial Intelligence Reasoning System',
   headline: 'AI DATA TF',
   sub: '',
-  sub2: '한 눈에 보기 어려운 해병대 규정 및 법률을 AI로',
-  sub3: '데이터 기반 의사결정을 지원하는 해병대 AI 개발 팀입니다.',
+  sub2: '해병대의 경험에 AI의 기술을 더합니다.',
+  sub3: '데이터와 객관적 근거를 기반으로 해병대에 새로운 가치를 창출합니다.',
 }
 
 export interface ValueCard {
@@ -13,9 +13,9 @@ export interface ValueCard {
 }
 
 export const VALUES: ValueCard[] = [
-  { no: '01', title: '정확한 해석', desc: '방대한 규정과 법률 조항을 오독 없이 정확하게 짚어내고, 근거가 되는 원문까지 함께 제시합니다' },
-  { no: '02', title: '빠른 응답', desc: '규정집을 뒤적이지 않아도, 누구나 빠른 시간이내에 필요한 답을 찾을 수 있습니다' },
-  { no: '03', title: '신뢰성', desc: '이론이 아닌 실제 해병대 기준과 조직 문화를 반영해 검증된 답변만 제공합니다' },
+  { no: '01', title: '편리성 ', desc: '복잡한 절차 없이, 필요한 순간 바로 답을 얻을 수 있습니다.' },
+  { no: '02', title: '신뢰성 ', desc: '이론이 아닌 실제 해병대 기준과 조직 문화를 반영해, 검증된 답을 제공합니다.' },
+  { no: '03', title: '해병대', desc: '해병대에 의해, 해병대를 위해. 해병대만을 위한 서비스를 만듭니다.' },
 ]
 
 export interface VoiceCard {
@@ -31,7 +31,7 @@ export const VOICES: VoiceCard[] = [
   { name: '김채호', role: '[백엔드]', quote: '1321기' },
   { name: '김 준', role: '[백엔드]', quote: '1331기' },
   { name: '이지성', role: '[AI/LLM 모델링]', quote: '1331기' },
-  // { name: '', role: '', quote: '1332기' },
+  { name: '김은경', role: '[팀장]', quote: '1332기' },
   // { name: '', role: '', quote: '1332기' },
 ]
 
