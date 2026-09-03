@@ -154,7 +154,7 @@ const LoginPage = () => {
               해병대의 모든 규정을,<br />
               한 번에 <RotatingWord words={HERO_VERBS} />
             </p>
-            <p className="mars-reveal mt-5 text-[16.5px] leading-[1.7] text-text-secondary max-w-[420px] break-keep">
+            <p className="mars-reveal font-semibold mt-5 text-[16.5px] leading-[1.7] text-text-secondary max-w-[420px] break-keep">
               법령·규정·규칙을 참조해 장병의 질문에 근거와 함께 답합니다.
             </p>
             <div className="mars-reveal mt-8 relative h-[52px]">

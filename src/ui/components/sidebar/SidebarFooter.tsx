@@ -78,7 +78,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             </button>
 
             {subOpen && (
-              <div className="absolute bottom-0 left-full z-50 pl-2 animate-fade-in">
+              <div className="absolute bottom-0 left-full font-semibold z-50 pl-2 animate-fade-in">
                 <div className="w-56 rounded-2xl border border-surface-border bg-white py-2 shadow-[0_16px_40px_rgba(40,30,35,0.16)]">
                 <SubItem label="서비스 이용법" onClick={() => go('/guide')} />
                 <SubItem label="튜토리얼" onClick={() => go('/tutorials')} />
@@ -132,7 +132,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
           >
             <span className="max-w-full truncate whitespace-nowrap text-[12.5px] font-bold text-text-primary mt-px">{user.name}</span>
             {user.email && (
-              <span className="max-w-full truncate whitespace-nowrap text-[11px] text-text-muted">{user.email}</span>
+              <span className="max-w-full truncate whitespace-nowrap text-[11px] font-semibold text-text-muted">{user.email}</span>
             )}
           </div>
         </button>

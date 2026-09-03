@@ -33,7 +33,7 @@ export default function NewChatPage() {
           <span className="font-bold text-brand">무엇</span>을 도와드릴까요?
         </h1>
 
-        <p className="mt-3.5 mb-8 text-[15px] text-text-secondary text-center">
+        <p className="mt-3.5 mb-8 text-[15px] font-semibold text-text-secondary text-center">
           법령·규정·규칙을 참조해 MARS가 근거와 함께 답합니다.
         </p>
 
