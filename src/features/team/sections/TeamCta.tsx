@@ -22,7 +22,7 @@ export default function TeamCta() {
           <Placeholder value={CTA.headline} />
         </h2>
 
-        <p className="mx-auto mt-7 max-w-[470px] text-text-secondary text-[clamp(14.5px,1.6vw,25px)] leading-[1.9] break-keep">
+        <p className="mx-auto mt-7 font-semibold max-w-[470px] text-text-secondary text-[clamp(14.5px,1.6vw,25px)] leading-[1.9] break-keep">
           <Placeholder value={CTA.sub} />
         </p>
       </ScrollFade>

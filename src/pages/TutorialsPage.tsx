@@ -26,7 +26,7 @@ export default function TutorialsPage() {
             <h1 className="mars-display mt-5 text-[clamp(34px,5vw,54px)] text-text-primary break-keep">
               MARS <span className="text-brand">튜토리얼</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-[560px] text-[clamp(16px,1.6vw,19px)] leading-[1.7] text-text-secondary break-keep">
+            <p className="mx-auto mt-6 font-semibold max-w-[560px] text-[clamp(16px,1.6vw,19px)] leading-[1.7] text-text-secondary break-keep">
               기능별 사용법을 짧은 영상으로 하나씩 익혀보세요.
               필요한 것만 골라 봐도 됩니다.
             </p>

@@ -203,7 +203,7 @@ const LoginPage = () => {
             <h2 className="mars-reveal mars-display max-w-[820px]" style={{ fontSize: 'clamp(27px,3.2vw,42px)' }}>
               법령, 규정, 규칙을<br /><span className="text-brand">인공지능</span>이 찾아냅니다.
             </h2>
-            <p className="mars-reveal max-w-[560px] mt-4 mb-10 text-[16px] text-text-secondary leading-[1.7] break-keep">
+            <p className="mars-reveal font-semibold max-w-[560px] mt-4 mb-10 text-[16px] text-text-secondary leading-[1.7] break-keep">
               MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께 제시합니다.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -228,7 +228,7 @@ const LoginPage = () => {
               <h2 className="mars-reveal mars-display mb-6" style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}>
                 추측하지 않고,<br /><span className="text-brand">찾아서</span> 답합니다.
               </h2>
-              <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
+              <p className="mars-reveal font-semibold text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
                 궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 원문 조항을 찾아 대조한 뒤 근거와 함께 답합니다.
               </p>
               <div className="flex flex-col gap-7">
@@ -332,7 +332,7 @@ const LoginPage = () => {
                 대화만이 아니라,<br />
               <span className="text-brand">결과물</span>로 남깁니다.
               </h2>
-              <p className="mars-reveal text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
+              <p className="mars-reveal text-[17px] font-semibold text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
                 정리가 필요한 내용은 요청 한 번으로 한글(HWP) 문서로 만들어 바로 내려받을 수 있습니다.
               </p>
               <div className="flex flex-col gap-7">
@@ -387,7 +387,7 @@ const LoginPage = () => {
           <div className="mars-glow-bg" style={{ width: 760, height: 760, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }} />
           <div className="relative z-[1]">
             <h2 className="mars-reveal mars-display m-0 mb-6" style={{ fontSize: 'clamp(36px,5vw,62px)' }}>지금 <span className="text-brand">시작</span>해보세요</h2>
-            <p className="mars-reveal mx-auto max-w-[460px] text-[17px] text-text-secondary leading-relaxed break-keep">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
+            <p className="mars-reveal mx-auto max-w-[460px] text-[17px] text-text-secondary font-semibold leading-relaxed break-keep">해병대의 모든 규정을, 대화 한 번으로.<br />MARS가 장병 여러분과 함께합니다.</p>
           </div>
         </section>
 

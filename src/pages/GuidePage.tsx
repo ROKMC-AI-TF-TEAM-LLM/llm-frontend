@@ -385,7 +385,7 @@ export default function GuidePage() {
               <span className="text-brand">MARS</span> 이용법
             </h1>
           </Reveal>
-          <Reveal delay={160}><p className="mt-6 mx-auto max-w-[540px] text-[18px] leading-[1.75] text-[#6a6a72]">질문 입력부터 도메인 선택, 근거 확인, 문서 검색까지 — MARS가 실제로 어떻게 동작하는지 보여드립니다.</p></Reveal>
+          <Reveal delay={160}><p className="mt-6 mx-auto max-w-[540px] text-[18px] leading-[1.75] font-semibold text-[#6a6a72]">질문 입력부터 도메인 선택, 근거 확인, 문서 검색까지 — MARS가 실제로 어떻게 동작하는지 보여드립니다.</p></Reveal>
 
           <Reveal delay={240} className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
             {['근거 기반 답변', '실시간 스트리밍', '출처 함께 제시', '도메인별 검색'].map((f) => (
