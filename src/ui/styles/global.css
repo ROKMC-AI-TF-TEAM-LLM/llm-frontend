@@ -1479,7 +1479,6 @@ video { content-visibility: auto; }
 .hn-br { display: none; }
 @media (min-width: 640px) { .hn-br { display: inline; } }
 
-/* 팀 소개 히어로 아트: 마커로 그린 듯한 라인 엠블럼 */
 @keyframes ea-stroke {
   from { stroke-dashoffset: 1200; }
   to   { stroke-dashoffset: 0; }
@@ -1501,7 +1500,6 @@ video { content-visibility: auto; }
   50%      { transform: rotate(1.4deg); }
 }
 
-/* 각 획이 순서대로 그려짐 */
 .ea-draw path {
   stroke-dasharray: 1200;
   stroke-dashoffset: 1200;
@@ -1522,7 +1520,6 @@ video { content-visibility: auto; }
 .ea-draw .s13 { animation-delay: 2.85s; }
 .ea-draw .s14 { animation-delay: 3.15s; }
 
-/* 그리기가 끝난 뒤 움직임 시작 */
 .ea-wing-l { animation: ea-flap-l 3.2s ease-in-out 3.7s infinite; }
 .ea-wing-r { animation: ea-flap-r 3.2s ease-in-out 3.7s infinite; }
 .ea-star   { animation: ea-star-pulse 4s ease-in-out 3.9s infinite; }

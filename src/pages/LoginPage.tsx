@@ -21,6 +21,24 @@ const DOMAIN_ICONS = [
   <path key="2" d="M3 7l9-4 9 4-9 4-9-4z M3 12l9 4 9-4 M3 17l9 4 9-4" />,
 ]
 
+const CORPS_CARDS = [
+  {
+    title: '해병대 규정만',
+    desc: '타군이나 일반 행정 자료가 섞이지 않습니다. 해병대사령부가 관리하는 규정과 지침만을 근거로 답변하므로, 우리 부대에 적용되지 않는 내용을 걸러낼 필요가 없습니다.',
+    icon: <path d="M12 3l7 3v5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-3z M9 12l2 2 4-4" />,
+  },
+  {
+    title: '현장의 언어로',
+    desc: '실제 부대에서 쓰는 용어와 편제를 기준으로 이해합니다. 규정집에 적힌 문어체 그대로 입력하지 않아도, 평소 보고하듯 물어보면 필요한 조항을 찾아냅니다.',
+    icon: <path d="M8 10h8M8 14h5M21 12a8 8 0 0 1-8 8H7l-4 3v-4.6A8 8 0 0 1 13 4a8 8 0 0 1 8 8z" />,
+  },
+  {
+    title: '폐쇄망 안에서',
+    desc: '국방망 내부에서 완결되도록 구축했습니다. 질문도 문서도 외부로 나가지 않기 때문에, 보안 규정을 신경 쓰지 않고 업무 자료를 그대로 다룰 수 있습니다.',
+    icon: <path d="M5 11V8a7 7 0 0 1 14 0v3M4 11h16v10H4z M12 15v2" />,
+  },
+]
+
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i
 
 const loginSchema = z.object({
@@ -383,39 +401,33 @@ const LoginPage = () => {
                 다른 누구도 아닌,<br />
                 <span className="text-brand">해병대</span>를 위해 만들었습니다.
               </h2>
-              <p className="mars-reveal mt-7 text-[17px] font-semibold text-text-secondary leading-relaxed break-keep max-w-[620px]">
-                [ 왜 해병대 전용인지 · 현장에서 무엇을 보고 만들었는지 2~3문장 ]
+              <p className="mars-reveal mt-7 text-[17px] font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
+                규정 하나를 확인하려고 여러 부서에 전화를 돌리고, 어느 자료가 최신인지 몰라 다시 묻는 일.
               </p>
+              <p className="mars-reveal text-[17px] font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
+                해병대의 일상에서 반복되던 그 시간을 줄이기 위해
+              </p>                
+               <p className="mars-reveal text-[17px] font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
+                해병대의 규정과 업무 방식만 놓고 처음부터 설계했습니다.
+              </p>   
             </div>
 
             <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                ['해병대 규정만', '[ 타군 규정이 섞이지 않는다는 점 ]'],
-                ['현장의 언어로', '[ 실제 부대에서 쓰는 용어 기준 ]'],
-                ['폐쇄망에서', '[ 망 안에서 그대로 동작한다는 점 ]'],
-              ].map(([t, d]) => (
+              {CORPS_CARDS.map((c) => (
                 <div
-                  key={t}
+                  key={c.title}
                   className="mars-reveal rounded-2xl border border-brand-soft/60 bg-white p-7 shadow-[0_18px_44px_rgba(150,0,40,0.07)]"
                 >
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-subtle text-brand">
                     <svg width={21} height={21} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 3l7 3v5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-3z" />
+                      {c.icon}
                     </svg>
                   </span>
-                  <h3 className="mars-brand-serif mt-5 text-[18px] font-bold tracking-tight text-text-primary">{t}</h3>
-                  <p className="mt-2.5 text-[14.5px] leading-[1.9] text-text-secondary break-keep">{d}</p>
+                  <h3 className="mars-brand-serif mt-5 text-[18px] font-bold tracking-tight text-text-primary">{c.title}</h3>
+                  <p className="mt-3 text-[14.5px] leading-[1.9] text-text-secondary break-keep">{c.desc}</p>
                 </div>
               ))}
             </div>
-
-            <div className="mars-reveal mt-14 border-t border-surface-border pt-10">
-              <p className="mars-brand-serif text-[clamp(19px,2.1vw,26px)] font-bold leading-[1.6] text-text-primary break-keep max-w-[820px]">
-                [ 마무리 한 문장 · 슬로건 성격의 카피 ]
-              </p>
-              <p className="mt-3 text-[14px] text-text-muted">[ 소속 / 팀명 ]</p>
-            </div>
-
           </div>
         </section>
 
