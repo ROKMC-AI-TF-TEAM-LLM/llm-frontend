@@ -254,7 +254,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
     return {
       push: (chunk: string) => {
         buffer += chunk
-        if (!flushTimer) flushTimer = setTimeout(flush, 60)
+        // 답변이 길어질수록 매 flush마다 전체 마크다운을 다시 파싱하는 비용이 커져
+        // 프레임 드롭(끊김)이 생긴다. 60ms는 리렌더가 너무 잦아 그 비용이 누적되므로
+        // 간격을 넓혀 리렌더 횟수 자체를 줄인다. 청크가 대개 문장 단위(수백 ms 간격)로
+        // 오므로 130ms 정도로는 체감 지연이 거의 없다.
+        if (!flushTimer) flushTimer = setTimeout(flush, 130)
       },
       flushNow: () => {
         if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }

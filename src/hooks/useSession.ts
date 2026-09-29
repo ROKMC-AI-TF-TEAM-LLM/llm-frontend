@@ -46,7 +46,18 @@ export const useUpdateSession = () => {
   return useMutation({
     mutationFn: ({ sessionId, data }: { sessionId: string; data: UpdateSessionRequest }) =>
       updateSession(sessionId, data),
-    onSuccess: () => {
+    onMutate: async ({ sessionId, data }) => {
+      if (data.title === undefined) return { snapshots: undefined }
+      await queryClient.cancelQueries({ queryKey: ['sessions'] })
+      await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
+      const snapshots = optimisticallyPatchSession(queryClient, sessionId, (s) => ({
+        ...s,
+        title: data.title as string,
+      }))
+      return { snapshots }
+    },
+    onError: (_err, _vars, context) => rollbackSnapshots(queryClient, context?.snapshots),
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
       queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
     },
@@ -57,11 +68,104 @@ export const useDeleteSession = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (sessionId: string) => deleteSession(sessionId),
-    onSuccess: () => {
+    onMutate: async (sessionId) => {
+      await queryClient.cancelQueries({ queryKey: ['sessions'] })
+      await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
+
+      const snapshots: [readonly unknown[], SessionsInfinite | undefined][] = []
+      const dropSession = (old: SessionsInfinite | undefined) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: {
+              ...page.data,
+              data: {
+                ...page.data.data,
+                items: page.data.data.items.filter((s) => s.session_id !== sessionId),
+              },
+            },
+          })),
+        }
+      }
+
+      snapshots.push([SESSIONS_INFINITE_KEY, queryClient.getQueryData(SESSIONS_INFINITE_KEY)])
+      queryClient.setQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY, dropSession)
+
+      for (const [key, data] of queryClient.getQueriesData<SessionsInfinite>({
+        queryKey: ['projects', 'sessions'],
+      })) {
+        snapshots.push([key, data])
+        queryClient.setQueryData<SessionsInfinite>(key, dropSession)
+      }
+
+      return { snapshots }
+    },
+    onError: (_err, _vars, context) => rollbackSnapshots(queryClient, context?.snapshots),
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
       queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
     },
   })
+}
+
+// 세션 목록 캐시(전역 ['sessions','infinite'] · 프로젝트별 ['projects','sessions',*])는
+// 페이지 구조가 같으므로 한 헬퍼로 낙관적 수정을 적용한다.
+const patchSessionInPages = <T extends SessionsInfinite>(
+  old: T | undefined,
+  sessionId: string,
+  patch: (s: T['pages'][number]['data']['data']['items'][number]) => T['pages'][number]['data']['data']['items'][number],
+): T | undefined => {
+  if (!old) return old
+  return {
+    ...old,
+    pages: old.pages.map((page) => ({
+      ...page,
+      data: {
+        ...page.data,
+        data: {
+          ...page.data.data,
+          items: page.data.data.items.map((s) => (s.session_id === sessionId ? patch(s) : s)),
+        },
+      },
+    })),
+  }
+}
+
+// 전역 목록과 열려 있는 모든 프로젝트 세션 목록에 동시에 적용하고, 롤백용 스냅샷을 돌려준다.
+const optimisticallyPatchSession = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  sessionId: string,
+  patch: (s: GetSessionsResponse['data']['items'][number]) => GetSessionsResponse['data']['items'][number],
+) => {
+  const snapshots: [readonly unknown[], SessionsInfinite | undefined][] = []
+
+  const global = queryClient.getQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY)
+  snapshots.push([SESSIONS_INFINITE_KEY, global])
+  queryClient.setQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY, (old) =>
+    patchSessionInPages(old, sessionId, patch),
+  )
+
+  const projectQueries = queryClient.getQueriesData<SessionsInfinite>({
+    queryKey: ['projects', 'sessions'],
+  })
+  for (const [key, data] of projectQueries) {
+    snapshots.push([key, data])
+    queryClient.setQueryData<SessionsInfinite>(key, (old) =>
+      patchSessionInPages(old, sessionId, patch),
+    )
+  }
+
+  return snapshots
+}
+
+const rollbackSnapshots = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  snapshots: [readonly unknown[], SessionsInfinite | undefined][] | undefined,
+) => {
+  if (!snapshots) return
+  for (const [key, data] of snapshots) queryClient.setQueryData(key, data)
 }
 
 export const useToggleFavorite = () => {
@@ -73,33 +177,15 @@ export const useToggleFavorite = () => {
 
     onMutate: async ({ sessionId, next }) => {
       await queryClient.cancelQueries({ queryKey: ['sessions'] })
-      const prev = queryClient.getQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY)
-
-      queryClient.setQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY, (old) => {
-        if (!old) return old
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            data: {
-              ...page.data,
-              data: {
-                ...page.data.data,
-                items: page.data.data.items.map((s) =>
-                  s.session_id === sessionId ? { ...s, is_favorite: next } : s,
-                ),
-              },
-            },
-          })),
-        }
-      })
-
-      return { prev }
+      await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
+      const snapshots = optimisticallyPatchSession(queryClient, sessionId, (s) => ({
+        ...s,
+        is_favorite: next,
+      }))
+      return { snapshots }
     },
 
-    onError: (_err, _vars, context) => {
-      if (context?.prev) queryClient.setQueryData(SESSIONS_INFINITE_KEY, context.prev)
-    },
+    onError: (_err, _vars, context) => rollbackSnapshots(queryClient, context?.snapshots),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
       queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })

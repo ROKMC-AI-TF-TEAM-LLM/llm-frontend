@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import type { ChatItem } from '../../../types'
 import SessionItem from './SessionItem'
 import { SessionItemSkeleton } from '../Skeleton'
@@ -20,14 +20,18 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   const projects = useProjectStore((s) => s.projects)
-  const projectChats = projects.flatMap((p) =>
-    p.chats.map((c) => ({
-      id: c.id,
-      title: c.title,
-      updatedAt: c.updatedAt,
-      projectId: p.id,
-      projectName: p.name,
-    })),
+  const projectChats = useMemo(
+    () =>
+      projects.flatMap((p) =>
+        p.chats.map((c) => ({
+          id: c.id,
+          title: c.title,
+          updatedAt: c.updatedAt,
+          projectId: p.id,
+          projectName: p.name,
+        })),
+      ),
+    [projects],
   )
 
   useEffect(() => {

@@ -38,14 +38,22 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   setFromServer: (items) =>
     set((s) => {
       const prevById = new Map(s.projects.map((p) => [p.id, p]))
-      const merged = items.map((it) => {
+      let changed = items.length !== s.projects.length
+      const merged = items.map((it, i) => {
         const base = toProject(it)
         const prev = prevById.get(base.id)
-        return prev
-          ? { ...prev, name: base.name, isFavorite: base.isFavorite }
-          : base
+        if (!prev) {
+          changed = true
+          return base
+        }
+        if (prev.name === base.name && prev.isFavorite === base.isFavorite) {
+          if (s.projects[i] !== prev) changed = true
+          return prev
+        }
+        changed = true
+        return { ...prev, name: base.name, isFavorite: base.isFavorite }
       })
-      return { projects: merged }
+      return changed ? { projects: merged } : s
     }),
 
   upsertDetail: (data) =>

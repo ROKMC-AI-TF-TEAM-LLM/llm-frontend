@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../components/sidebar/Sidebar";
-import { useState, useEffect, type CSSProperties } from "react";
+import { useState, useEffect, useCallback, useMemo, type CSSProperties } from "react";
 import { useGetMe } from "../../hooks/useUser";
 import { useInfiniteSessions } from "../../hooks/useSession";
 import { SidebarSkeleton } from "../components/Skeleton";
@@ -23,6 +23,30 @@ const ProtectedLayout = () => {
       }
     }
   }, [isError, meError, logout]);
+
+  const userData = meData?.data?.data;
+  const user = useMemo(
+    () =>
+      userData
+        ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
+        : { id: '', name: '사용자' },
+    [userData],
+  );
+
+  const chats = useMemo(
+    () =>
+      (sessionsInfinite?.pages ?? [])
+        .flatMap((page) => page.data.data.items)
+        .map((s) => ({
+          id: s.session_id,
+          title: s.title,
+          isFavorite: s.is_favorite ?? false,
+          ...(s.project_id ? { projectId: s.project_id } : {}),
+        })),
+    [sessionsInfinite],
+  );
+
+  const handleToggle = useCallback(() => setIsOpen((v) => !v), []);
 
   if (!accessToken) {
     return <Navigate to='/' replace />;
@@ -54,25 +78,11 @@ const ProtectedLayout = () => {
     );
   }
 
-  const userData = meData?.data?.data;
-  const user = userData
-    ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
-    : { id: '', name: '사용자' };
-
-  const chats = (sessionsInfinite?.pages ?? [])
-    .flatMap((page) => page.data.data.items)
-    .map((s) => ({
-      id: s.session_id,
-      title: s.title,
-      isFavorite: s.is_favorite ?? false,
-      ...(s.project_id ? { projectId: s.project_id } : {}),
-    }));
-
   return (
     <>
       <Sidebar
         isOpen={isOpen}
-        onToggle={() => setIsOpen(!isOpen)}
+        onToggle={handleToggle}
         chats={chats}
         user={user}
         hasMore={!!hasNextPage}

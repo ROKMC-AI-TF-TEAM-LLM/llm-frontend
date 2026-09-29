@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect, type PropsWithChildren } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback, useMemo, type PropsWithChildren } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY } from '../constants/key';
 import { login as loginApi, logout as logoutApi } from '../api/services/auth';
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     if (accessToken) scheduleTokenRefresh();
   }, [accessToken]);
 
-  const login = async (signInData: LoginRequest) => {
+  const login = useCallback(async (signInData: LoginRequest) => {
     const response = await loginApi(signInData);
     const { access_token, refresh_token } = response.data.data;
     setAccessTokenInStorage(access_token);
@@ -48,9 +48,9 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setAccessToken(access_token);
     setRefreshToken(refresh_token);
     scheduleTokenRefresh();
-  };
+  }, [setAccessTokenInStorage, setRefreshTokenInStorage]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     const currentRefreshToken = getRefreshTokenFromStorage();
     if (currentRefreshToken) {
       try {
@@ -62,10 +62,15 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setAccessToken(null);
     setRefreshToken(null);
     window.location.href = '/';
-  };
+  }, [getRefreshTokenFromStorage, removeAccessTokenFromStorage, removeRefreshTokenFromStorage]);
+
+  const value = useMemo(
+    () => ({ accessToken, refreshToken, login, logout }),
+    [accessToken, refreshToken, login, logout],
+  );
 
   return (
-    <AuthContext.Provider value={{ accessToken, refreshToken, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
