@@ -13,10 +13,10 @@ export const PAGE_STATES: { value: PageState; label: string }[] = [
 
 export const DRAFTS = [
   { v: 'v1', name: '기본형' },
-  { v: 'v2', name: '표형' },
-  { v: 'v3', name: '대화형' },
-  { v: 'v4', name: '미리보기 중심' },
-  { v: 'v5', name: '진행 강조' },
+  { v: 'v2', name: '대화형' },
+  { v: 'v3', name: '미리보기 중심' },
+  { v: 'v4', name: '진행 강조' },
+  { v: 'v5', name: '반응형 미리보기' },
 ]
 
 export const useDraftScenario = () => {
