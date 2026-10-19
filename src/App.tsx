@@ -29,6 +29,15 @@ const SystemDiagnostics = lazy(() => import('./pages/SystemDiagnostics'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
 
+// TEMP(문서 생성 시안 비교용): 시안 확정 후 6단계에서 라우트와 drafts 폴더 삭제
+const DOCGEN_DRAFTS = {
+  v1: lazy(() => import('./pages/docgen/drafts/DraftV1')),
+  v2: lazy(() => import('./pages/docgen/drafts/DraftV2')),
+  v3: lazy(() => import('./pages/docgen/drafts/DraftV3')),
+  v4: lazy(() => import('./pages/docgen/drafts/DraftV4')),
+  v5: lazy(() => import('./pages/docgen/drafts/DraftV5')),
+};
+
 const publicRoutes: RouteObject[] = [
   {
     element: <AuthLayout />,
@@ -122,6 +131,15 @@ const protectedRoutes: RouteObject[] = [
           </Suspense>
         )
       },
+      // TEMP(문서 생성 시안 비교용)
+      ...Object.entries(DOCGEN_DRAFTS).map(([v, Draft]) => ({
+        path: `/docgen/${v}`,
+        element: (
+          <Suspense fallback={null}>
+            <Draft />
+          </Suspense>
+        ),
+      })),
       {
         element: <AdminLayout />,
         errorElement: <ErrorPage />,
