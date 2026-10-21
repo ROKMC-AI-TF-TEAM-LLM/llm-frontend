@@ -17,6 +17,7 @@ export const DRAFTS = [
   { v: 'v3', name: '미리보기 중심' },
   { v: 'v4', name: '진행 강조' },
   { v: 'v5', name: '반응형 미리보기' },
+  { v: 'v6', name: '전송 모션' },
 ]
 
 export const useDraftScenario = () => {

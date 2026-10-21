@@ -37,6 +37,7 @@ const DOCGEN_DRAFTS = {
   v3: lazy(() => import('./pages/docgen/drafts/DraftV3')),
   v4: lazy(() => import('./pages/docgen/drafts/DraftV4')),
   v5: lazy(() => import('./pages/docgen/drafts/DraftV5')),
+  v6: lazy(() => import('./pages/docgen/drafts/DraftV6')),
 };
 
 const publicRoutes: RouteObject[] = [
