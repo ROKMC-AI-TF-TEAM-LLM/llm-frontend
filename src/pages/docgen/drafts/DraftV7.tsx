@@ -1,10 +1,10 @@
-// TEMP(시안 비교용) v7 전송 모션 다듬기: v6의 흐름은 그대로 두고 움직임·면·누름 반응을 애플 홈페이지 결로 바꾼다.
+// TEMP(시안 비교용) v7 전송 모션 다듬기: v6의 흐름을 유지하면서 움직임·표면·누름 반응을 다듬는다.
 //   글자 크기·색 토큰은 다른 화면과 맞춰야 하므로 v6 그대로 쓴다. 바뀐 점:
-//   - 움직임 곡선을 iOS 시트 곡선으로, 튀어나오는 버튼은 살짝 넘쳤다 돌아오는 스프링으로
+//   - 전환은 부드러운 감속 곡선으로, 튀어나오는 버튼은 살짝 넘쳤다 돌아오는 스프링으로
 //   - 처음 열 때 제목·입력창·목록이 차례로 흐릿하게 떠오르고, 결과 칸 안 내용도 흐림에서 또렷해진다
 //   - 누르면 전송 버튼이 살짝 눌리고, 생성 중 막대 위로 빛이 지나가며, 중지 버튼 둘레에 진행 고리가 찬다
 //   - 진행률 숫자는 굴러 올라가고, 완료 체크는 그려진다
-//   - 오른쪽 미리보기 머리는 반투명 유리로 붙어 있고, 진행 상황은 한 장의 카드 안 구분선 목록이다
+//   - 오른쪽 미리보기 머리는 반투명 유리로 붙어 있고, 생성 문서은 한 장의 카드 안 구분선 목록이다
 //   - 여백을 넉넉하게
 // 아래는 v6 설명 그대로다.
 // v6 전송 모션: 대화형 입력창의 전송 버튼이 진행 막대로 바뀐다.
@@ -15,9 +15,9 @@
 //               좁은 화면: 막대가 그 자리에서 아래로 펼쳐진다
 //   실패·중지 → 막대가 멈춘 자리에서 색이 바뀌고, 떨어진 버튼은 다시 시도 버튼이 된다
 // 미리보기를 닫으면 한 열로 돌아가고, 새로 보내면 미리보기를 접은 뒤 처음부터 재생한다.
-// 진행률·소요 시간 같은 진행 정보는 미리보기 위가 아니라 진행 줄과 아래 진행 상황 목록에 둔다.
-// 진행 상황 목록에서 다른 문서를 골라도 미리보기 크기는 그대로다.
-// 보낸 작업은 진행 줄에서 따라가다가, 끝나면(완료·실패·취소) 진행 상황 목록에 새 줄로 내려앉는다.
+// 진행률·소요 시간 같은 진행 정보는 미리보기 위가 아니라 진행 줄과 아래 생성 문서 목록에 둔다.
+// 생성 문서 목록에서 다른 문서를 골라도 미리보기 크기는 그대로다.
+// 보낸 작업은 진행 줄에서 따라가다가, 끝나면(완료·실패·취소) 생성 문서 목록에 새 줄로 내려앉는다.
 // 진행은 서버(목) 작업 상태를 그대로 따른다. 결과는 무작위이고, 프롬프트에 '실패'·'취소'를 넣으면 고정된다.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import type { DocGenJob } from '../../../types/docgen'
@@ -37,7 +37,7 @@ type Phase = 'compose' | 'drop' | 'draw' | 'merge' | 'track' | 'rejoin' | 'shift
 
 /** 단계별 움직임 시간(ms). 곡선이 끝에서 오래 감속하므로 v6보다 조금씩 길다 */
 const T = { drop: 520, draw: 820, merge: 460, hold: 200, detach: 700, rejoin: 560, shift: 780, open: 900, close: 420 }
-/** iOS 시트 곡선: 빠르게 출발해 길게 내려앉는다 */
+/** 전환 곡선: 빠르게 출발해 길게 내려앉는다 */
 const EASE = 'cubic-bezier(.32,.72,0,1)'
 const EASE_DRAW = 'cubic-bezier(.76,0,.24,1)'
 /** 돋아나는 버튼: 살짝 넘쳤다 돌아온다 */
@@ -169,7 +169,7 @@ function StatusLine({ job, phase }: { job: DocGenJob | null; phase: Phase }) {
   if (!job) return null
   const s = normalizeJobStatus(job.status)
   if (phase === 'rejoin' || s === 'completed')
-    return <><span className="flex items-center gap-1.5 font-semibold text-brand"><DrawnCheck /> 다 만들었습니다</span><span className="tabular-nums">100%</span></>
+    return <><span className="flex items-center gap-1.5 font-semibold text-brand"><DrawnCheck /> 완료</span><span className="tabular-nums">100%</span></>
   if (s === 'failed') {
     const cancelled = job.error?.code === 'CANCELLED'
     const message = getJobErrorMessage(job.error?.code)
@@ -199,8 +199,8 @@ function DoneLine({ job }: { job: DocGenJob | null }) {
   return (
     <>
       <span className="flex min-w-0 items-center gap-1.5 font-semibold text-brand">
-        <DrawnCheck className="h-3.5 w-3.5 shrink-0" /> 다 만들었습니다
-        {(took || at) && <span className="truncate font-normal text-text-muted">{took && `· 소요 ${took}`}{at && ` · ${at} 완료`}</span>}
+        <DrawnCheck className="h-3.5 w-3.5 shrink-0" />
+        {(took || at) && <span className="truncate font-normal text-text-muted">{[took && `소요 ${took}`, at && `${at} 완료`].filter(Boolean).join(' · ')}</span>}
       </span>
     </>
   )
@@ -292,13 +292,13 @@ function Stage() {
   useEffect(() => { wideRef.current = vp.wide })
   const [sideOpen, setSideOpen] = useState(false)
   const side = vp.wide && sideOpen
-  // 진행 상황 목록에서 고른 작업. null이면 입력창에서 보낸 작업을 미리본다
+  // 생성 문서 목록에서 고른 작업. null이면 입력창에서 보낸 작업을 미리본다
   const [viewId, setViewId] = useState<string | null>(null)
   const viewed = jobs.find((j) => j.job_id === viewId) ?? null
   // 막대가 내려앉은 높이(패널 상자 기준). 여기서부터 위아래로 펼쳐진다
   const [panelFrom, setPanelFrom] = useState(0)
 
-  // 진행 줄에 있는 작업은 끝난 뒤에야 진행 상황 목록에 들어간다
+  // 진행 줄에 있는 작업은 끝난 뒤에야 생성 문서 목록에 들어간다
   const settled = phase === 'done' || phase === 'failed' || phase === 'closing'
   const listJobs = jobs.filter((j) => j.job_id !== liveId || settled)
   const isFresh = useFreshIds(jobs.map((j) => j.job_id), !isLoading)
@@ -399,7 +399,7 @@ function Stage() {
     })
   }
 
-  /** 진행 상황 목록에서 고르기. 넓은 화면은 오른쪽 미리보기, 좁은 화면은 그 줄 아래에 펼친다 */
+  /** 생성 문서 목록에서 고르기. 넓은 화면은 오른쪽 미리보기, 좁은 화면은 그 줄 아래에 펼친다 */
   const view = (id: string) => {
     if (!vp.wide && viewId === id) return setViewId(null)
     setViewId(id)
@@ -629,13 +629,13 @@ function Stage() {
 
       <p className={`mt-4 text-center text-[11.5px] text-text-muted ${rise(200).className}`} style={rise(200).style}>MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.</p>
 
-      {/* 진행 상황: 상태·진행률·작업 액션은 미리보기가 아니라 여기서 보여 준다 (v3 상태 표시).
+      {/* 생성 문서: 상태·진행률·작업 액션은 미리보기가 아니라 여기서 보여 준다 (v3 상태 표시).
           진행 줄에서 끝난 작업은 맨 위에 새 줄로 내려앉는다. 한 장의 카드 안에 구분선으로 나눈 목록 */}
-      <section aria-label="진행 상황" className={`mt-16 ${rise(280).className}`} style={rise(280).style}>
-        <h2 className="mb-2.5 px-4 text-[13px] font-semibold text-text-muted">진행 상황 {listJobs.length}</h2>
+      <section aria-label="생성 문서" className={`mt-16 ${rise(280).className}`} style={rise(280).style}>
+        <h2 className="mb-2.5 px-4 text-[13px] font-semibold text-text-muted">생성 문서 {listJobs.length}</h2>
         {listJobs.length === 0 && (
           <p className="rounded-[20px] bg-surface px-4 py-8 text-center text-[12.5px] text-text-muted shadow-[0_0_0_1px_var(--color-surface-border)]">
-            보낸 문서가 다 만들어지면 여기에 쌓입니다.
+            생성된 문서가 여기에 표시됩니다.
           </p>
         )}
         <ul className={`overflow-hidden rounded-[20px] bg-surface shadow-[0_0_0_1px_var(--color-surface-border)] ${listJobs.length ? '' : 'hidden'}`}>
@@ -646,7 +646,7 @@ function Stage() {
             const justDone = item.job_id === liveId && settled
             return (
               <li key={item.job_id} className={isFresh(item.job_id) ? 'animate-docgen-row-in' : ''}>
-                {/* 구분선은 글자 시작선부터 그어 iOS 목록처럼 왼쪽을 비운다 */}
+                {/* 구분선은 글자 시작선부터 그어 왼쪽 여백을 유지한다 */}
                 {i > 0 && <div aria-hidden="true" className="ml-8 h-px bg-surface-border/70" />}
                 <div aria-pressed={on} {...selectable(() => view(item.job_id))}
                   className={`group cursor-pointer px-4 py-3 transition-colors duration-200 ${on ? 'bg-brand-subtle' : 'hover:bg-surface-card1 active:bg-surface-subtle'}`}>
