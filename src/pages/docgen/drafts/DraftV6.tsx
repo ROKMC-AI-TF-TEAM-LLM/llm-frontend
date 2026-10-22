@@ -136,19 +136,14 @@ function StatusLine({ job, phase }: { job: DocGenJob | null; phase: Phase }) {
 }
 
 /** 미리보기가 옆 열로 간 뒤 입력창 아래 남는 완료 한 줄. 소요·완료 시각은 미리보기가 아니라 여기서 보여 준다 */
-function DoneLine({ job, previewOpen, onOpen }: { job: DocGenJob | null; previewOpen: boolean; onOpen: () => void }) {
+function DoneLine({ job }: { job: DocGenJob | null }) {
   const took = job ? formatDuration(job.started_at ?? job.created_at, job.finished_at) : ''
   const at = job ? formatClock(job.finished_at) : ''
   return (
-    <>
-      <span className="flex min-w-0 items-center gap-1.5 font-semibold text-brand">
-        <CheckIcon className="h-3.5 w-3.5 shrink-0" /> 다 만들었습니다
-        {(took || at) && <span className="truncate font-normal text-text-muted">{took && `· 소요 ${took}`}{at && ` · ${at} 완료`}</span>}
-      </span>
-      {previewOpen
-        ? <span className="shrink-0 text-text-muted">오른쪽에서 미리보고 받을 수 있습니다</span>
-        : <button type="button" onClick={onOpen} className="pointer-events-auto shrink-0 font-semibold text-brand hover:underline">미리보기 열기</button>}
-    </>
+    <span className="flex min-w-0 items-center gap-1.5 font-semibold text-brand">
+      <CheckIcon className="h-3.5 w-3.5 shrink-0" /> 다 만들었습니다
+      {(took || at) && <span className="truncate font-normal text-text-muted">{took && `· 소요 ${took}`}{at && ` · ${at} 완료`}</span>}
+    </span>
   )
 }
 
@@ -537,7 +532,7 @@ function Stage() {
               transition: tr([['opacity', 300, EASE, phase === 'track' ? 200 : 0], ['width', T.rejoin], ['transform', T.shift]]),
             }}>
             {handedOff
-              ? <DoneLine job={job} previewOpen={side && !viewed} onOpen={() => { setViewId(null); setSideOpen(true) }} />
+              ? <DoneLine job={job} />
               : lineOn && <StatusLine job={job} phase={phase} />}
           </div>
         </div>
