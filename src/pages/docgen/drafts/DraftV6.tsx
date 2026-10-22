@@ -6,20 +6,22 @@
 //               좁은 화면: 막대가 그 자리에서 아래로 펼쳐진다
 //   실패·중지 → 막대가 멈춘 자리에서 색이 바뀌고, 떨어진 버튼은 다시 시도 버튼이 된다
 // 미리보기를 닫으면 한 열로 돌아가고, 새로 보내면 미리보기를 접은 뒤 처음부터 재생한다.
-// 상단 상태 막대는 각 상태의 정지 화면이고, 입력창에서 직접 보내면 처음부터 움직임이 재생된다.
-// 프롬프트에 '실패'를 넣으면 생성 중에 실패한다.
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import type { DocGenJob, DocGenOutputFormat } from '../../../types/docgen'
+// 진행률·소요 시간 같은 진행 정보는 미리보기 위가 아니라 진행 줄과 아래 진행 상황 목록에 둔다.
+// 진행 상황 목록에서 다른 문서를 골라도 미리보기 크기는 그대로다.
+// 보낸 작업은 진행 줄에서 따라가다가, 끝나면(완료·실패·취소) 진행 상황 목록에 새 줄로 내려앉는다.
+// 진행은 서버(목) 작업 상태를 그대로 따른다. 결과는 무작위이고, 프롬프트에 '실패'·'취소'를 넣으면 고정된다.
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import type { DocGenJob } from '../../../types/docgen'
+import { formatBytes, formatClock, formatDuration, formatEta, getJobErrorMessage, normalizeJobStatus } from '../../../utils/docgen'
+import { useCancelDocGenJob, useDocGenJobs, useRetryDocGenJob } from '../../../hooks/useDocGen'
+import { showToast } from '../../../api/store/toastStore'
+import { selectable, useComposer, useFreshIds } from '../../../features/docgen/hooks'
+import { AlertIcon, ArrowUpIcon, CheckIcon, DocIcon, DownloadIcon, RetryIcon, StopIcon, XIcon } from '../../../features/docgen/icons'
 import {
-  LENGTHS, OUTPUT_FORMATS, STAGES, formatBytes, formatClock, formatDuration, formatEta, getJobErrorMessage,
-  getStageIndex, normalizeJobStatus, type PageState,
-} from '../../../utils/docgen'
-import { SCENARIOS, TEMPLATES, type Scenario } from './fixtures'
-import { useDraftScenario } from './draftState'
-import {
-  AlertIcon, ArrowUpIcon, AttachmentChip, CheckIcon, ChevronIcon, ClipIcon, DocIcon, DownloadIcon,
-  DraftBar, Paper, RetryIcon, Spinner, StopIcon, XIcon,
-} from './shared'
+  ComposerOptions, JobActions, JobProgressText, PreviewBody, ProgressBar, Spinner, StatusDot,
+} from '../../../features/docgen/components'
+import DraftBar from './DraftBar'
+import { useFreshDraft } from './draftState'
 
 type Phase = 'compose' | 'drop' | 'draw' | 'merge' | 'track' | 'rejoin' | 'shift' | 'land' | 'done' | 'failed' | 'closing'
 
@@ -36,16 +38,9 @@ const LANE_H = 64 // 진행 줄 높이
 const DONE_H = 44 // 미리보기가 옆으로 간 뒤 남는 완료 줄 높이
 const BAR_Y = 22 // 진행 줄 안에서 막대 중심
 
-/** 목 진행: 대기 2초 → 0.2초마다 2%씩 */
-const QUEUE_MS = 2000
-const TICK = 200
-const STEP = 2
-
 const TRACK_COLOR = 'var(--color-surface-border)'
-const PHASE_OF: Record<PageState, Phase> = { idle: 'compose', queued: 'track', running: 'track', completed: 'done', failed: 'failed' }
-const LIVE_BASE = SCENARIOS.completed.selected as DocGenJob
 
-interface Geo { slotX: number; slotY: number; laneTop: number; width: number; cardH: number; panelH: number }
+interface Geo { slotX: number; slotY: number; laneTop: number; width: number; cardH: number }
 
 /** 넓은 화면이면 미리보기를 오른쪽 열에 띄운다 */
 const WIDE = '(min-width: 1024px)'
@@ -54,11 +49,6 @@ const easeOut = (t: number) => 1 - (1 - t) ** 3
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2)
 
 const box = (x: number, y: number, w: number, h: number): CSSProperties => ({ transform: `translate(${x}px, ${y}px)`, width: w, height: h })
-const titleOf = (p: string) => {
-  const t = p.trim().split('\n')[0]
-  return t.length > 22 ? `${t.slice(0, 22)}…` : t
-}
-const stageAt = (p: number) => (p < 30 ? 'ANALYZING' : p < 80 ? 'DRAFTING' : 'FORMATTING')
 
 /** 예약한 타이머를 한 번에 지운다 (화면을 떠나거나 다시 시작할 때) */
 function useTimers() {
@@ -94,79 +84,28 @@ function useGeometry() {
   const slotRef = useRef<HTMLDivElement>(null)
   const laneRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
   const [geo, setGeo] = useState<Geo | null>(null)
   const [ready, setReady] = useState(false)
   useLayoutEffect(() => {
-    const [wrap, composer, slot, lane, card, panel] = [wrapRef.current, composerRef.current, slotRef.current, laneRef.current, cardRef.current, panelRef.current]
-    if (!wrap || !composer || !slot || !lane || !card || !panel) return
+    const [wrap, composer, slot, lane, card] = [wrapRef.current, composerRef.current, slotRef.current, laneRef.current, cardRef.current]
+    if (!wrap || !composer || !slot || !lane || !card) return
     const measure = () => {
       const w = wrap.getBoundingClientRect()
       const s = slot.getBoundingClientRect()
-      const next: Geo = { slotX: s.left - w.left, slotY: s.top - w.top, laneTop: lane.getBoundingClientRect().top - w.top, width: w.width, cardH: card.offsetHeight, panelH: panel.offsetHeight }
+      const next: Geo = { slotX: s.left - w.left, slotY: s.top - w.top, laneTop: lane.getBoundingClientRect().top - w.top, width: w.width, cardH: card.offsetHeight }
       setGeo((prev) => (prev && (Object.keys(next) as (keyof Geo)[]).every((k) => prev[k] === next[k]) ? prev : next))
     }
     measure()
     // 처음 자리를 잡은 뒤에야 움직임을 켠다 (0,0에서 날아오지 않게)
     const raf = requestAnimationFrame(() => requestAnimationFrame(() => setReady(true)))
     const ro = new ResizeObserver(measure)
-    ;[wrap, composer, card, panel].forEach((el) => ro.observe(el))
+    ;[wrap, composer, card].forEach((el) => ro.observe(el))
     return () => { ro.disconnect(); cancelAnimationFrame(raf) }
   }, [])
-  return { geo, ready, wrapRef, composerRef, slotRef, laneRef, cardRef, panelRef }
+  return { geo, ready, wrapRef, composerRef, slotRef, laneRef, cardRef }
 }
 
 const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-/* ───────── 입력창 선택 칩 ───────── */
-interface PickerOption { value: string; label: string; hint?: string }
-
-function Picker({ label, value, options, onChange, disabled, icon }: {
-  label: string; value: string | null; options: PickerOption[]; onChange: (v: string) => void; disabled: boolean; icon?: ReactNode
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: PointerEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
-    document.addEventListener('pointerdown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('pointerdown', onDown); document.removeEventListener('keydown', onKey) }
-  }, [open])
-  const current = options.find((o) => o.value === value)
-  return (
-    <div ref={ref} className="relative">
-      <button type="button" disabled={disabled} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}
-        className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition-colors hover:bg-brand-subtle hover:text-brand disabled:pointer-events-none disabled:opacity-60 ${open ? 'bg-brand-subtle text-brand' : current ? 'text-text-primary' : 'text-text-secondary'}`}>
-        {icon}
-        {current?.label ?? label}
-        <ChevronIcon className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <ul role="menu" aria-label={label}
-          className="absolute left-0 top-full z-20 mt-2 w-[260px] rounded-2xl border border-surface-border bg-surface p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.1)] max-sm:fixed max-sm:inset-x-4 max-sm:bottom-4 max-sm:top-auto max-sm:w-auto">
-          <li role="none" className="px-3 pb-1 pt-1.5 text-[11.5px] font-semibold text-text-muted">{label}</li>
-          {options.map((o) => {
-            const on = o.value === value
-            return (
-              <li key={o.value} role="none">
-                <button type="button" role="menuitemradio" aria-checked={on} onClick={() => { onChange(o.value); setOpen(false) }}
-                  className={`flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left transition-colors ${on ? 'bg-brand-subtle' : 'hover:bg-surface-card1'}`}>
-                  <span className="min-w-0 flex-1">
-                    <span className={`block text-[13.5px] font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}>{o.label}</span>
-                    {o.hint && <span className="mt-0.5 block text-[12px] leading-snug text-text-muted">{o.hint}</span>}
-                  </span>
-                  {on && <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand" />}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </div>
-  )
-}
 
 /* ───────── 진행 줄 아래 한 줄 상태 ───────── */
 function StatusLine({ job, phase }: { job: DocGenJob | null; phase: Phase }) {
@@ -176,7 +115,7 @@ function StatusLine({ job, phase }: { job: DocGenJob | null; phase: Phase }) {
     return <><span className="flex items-center gap-1.5 font-semibold text-brand"><CheckIcon className="h-3.5 w-3.5" /> 다 만들었습니다</span><span className="tabular-nums">100%</span></>
   if (s === 'failed') {
     const cancelled = job.error?.code === 'CANCELLED'
-    const message = cancelled ? '생성을 중지했습니다' : getJobErrorMessage(job.error?.code)
+    const message = getJobErrorMessage(job.error?.code)
     return (
       <>
         <span title={message} className={`flex min-w-0 items-center gap-1.5 font-semibold ${cancelled ? 'text-text-secondary' : 'text-status-error'}`}>
@@ -188,23 +127,23 @@ function StatusLine({ job, phase }: { job: DocGenJob | null; phase: Phase }) {
   }
   if (s === 'queued')
     return <><span className="flex items-center gap-1.5 font-semibold text-text-primary"><Spinner className="h-3 w-3 text-brand" /> 대기 중 · 앞에 {job.queue_position ?? 0}건</span><span className="shrink-0">예상 {formatEta(job.eta_seconds)}</span></>
-  const idx = getStageIndex(job.stage)
   return (
     <>
-      <span className="flex min-w-0 items-center gap-1.5 font-semibold text-text-primary"><Spinner className="h-3 w-3 shrink-0 text-brand" /><span className="truncate">{idx}/3 {STAGES[idx - 1].label} 중</span></span>
+      <span className="flex min-w-0 items-center gap-1.5 font-semibold text-text-primary"><Spinner className="h-3 w-3 shrink-0 text-brand" /><span className="truncate">생성 중</span></span>
       <span className="shrink-0 tabular-nums">{job.progress}% · 남은 시간 {formatEta(job.eta_seconds)}</span>
     </>
   )
 }
 
-/** 미리보기가 옆 열로 간 뒤 입력창 아래 남는 완료 한 줄 */
+/** 미리보기가 옆 열로 간 뒤 입력창 아래 남는 완료 한 줄. 소요·완료 시각은 미리보기가 아니라 여기서 보여 준다 */
 function DoneLine({ job, previewOpen, onOpen }: { job: DocGenJob | null; previewOpen: boolean; onOpen: () => void }) {
   const took = job ? formatDuration(job.started_at ?? job.created_at, job.finished_at) : ''
+  const at = job ? formatClock(job.finished_at) : ''
   return (
     <>
       <span className="flex min-w-0 items-center gap-1.5 font-semibold text-brand">
         <CheckIcon className="h-3.5 w-3.5 shrink-0" /> 다 만들었습니다
-        {took && <span className="truncate font-normal text-text-muted">· 소요 {took}</span>}
+        {(took || at) && <span className="truncate font-normal text-text-muted">{took && `· 소요 ${took}`}{at && ` · ${at} 완료`}</span>}
       </span>
       {previewOpen
         ? <span className="shrink-0 text-text-muted">오른쪽에서 미리보고 받을 수 있습니다</span>
@@ -214,8 +153,6 @@ function DoneLine({ job, previewOpen, onOpen }: { job: DocGenJob | null; preview
 }
 
 /* ───────── 막대가 펼쳐져 된 결과 칸 ───────── */
-type PreviewTab = 'doc' | 'files' | 'request'
-
 /** 펼쳐진 칸 안의 한 덩어리가 차례로 떠오르게 한다 */
 const reveal = (open: boolean, animate: boolean, delay: number): CSSProperties => ({
   opacity: open ? 1 : 0,
@@ -223,44 +160,29 @@ const reveal = (open: boolean, animate: boolean, delay: number): CSSProperties =
   transition: animate ? `opacity 320ms ${EASE} ${open ? delay : 0}ms, transform 420ms ${EASE} ${open ? delay : 0}ms` : 'none',
 })
 
-function ResultCard({ job, open, animate, onRegenerate, onClose }: {
-  job: DocGenJob | null; open: boolean; animate: boolean; onRegenerate: () => void
+/** 미리보기: 파일 이름과 다운로드만 두고 아래에 문서를 보여 준다 */
+function PreviewCard({ job, open, animate, onClose }: {
+  job: DocGenJob | null; open: boolean; animate: boolean
   /** 있으면 오른쪽 미리보기 패널로 그린다 */
   onClose?: () => void
 }) {
-  const [tab, setTab] = useState<PreviewTab>('doc')
-  const r = job?.result
-  if (!job || !r) return null
-  const info: [string, string][] = [
-    ['양식', job.template_name],
-    ['근거 자료', `${r.sources_count}건 · 첨부 ${job.attachments.length}개`],
-    ['소요 시간', formatDuration(job.started_at ?? job.created_at, job.finished_at) || '-'],
-    ['완료 시각', formatClock(job.finished_at) || '-'],
-  ]
-  const tabs: [PreviewTab, string][] = [['doc', '문서'], ['files', `첨부 자료 ${job.attachments.length}`], ['request', '요청 정보']]
-  const request: [string, string][] = [
-    ['요청 내용', job.prompt],
-    ['양식', job.template_name],
-    ['파일 유형', OUTPUT_FORMATS.find((f) => f.code === job.output_format)?.label ?? job.output_format],
-    ['분량', LENGTHS.find((l) => l.code === job.length)?.label ?? '-'],
-    ['요청 시각', formatClock(job.created_at) || '-'],
-  ]
+  if (!job) return null
+  const r = job.result
   const panel = !!onClose
   return (
     <div className={`flex flex-col gap-4 ${panel ? 'p-5' : 'p-4 sm:p-5'}`}>
       <div className="flex flex-wrap items-center gap-3" style={reveal(open, animate, 240)}>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand text-white"><DocIcon className="h-5 w-5" /></span>
+        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${r ? 'bg-brand text-white' : 'bg-surface-card1 text-text-muted'}`}><DocIcon className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-bold text-text-primary">{r.file_name}</p>
-          <p className="mt-0.5 text-[12px] text-text-secondary">{job.output_format} · {formatBytes(r.size)} · {r.page_count}쪽</p>
+          <p className="truncate text-[15px] font-bold text-text-primary">{r?.file_name ?? job.title}</p>
+          <p className="mt-0.5 text-[12px] text-text-secondary">{r ? `${job.output_format} · ${formatBytes(r.size)} · ${r.page_count}쪽` : `${job.template_name} · ${job.output_format}`}</p>
         </div>
         <div className="flex gap-2 max-sm:w-full">
-          <button type="button" onClick={onRegenerate} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-brand-soft bg-surface px-4 text-[13px] font-semibold text-text-secondary transition-colors hover:text-brand max-sm:flex-1">
-            <RetryIcon className="h-3.5 w-3.5" /> 다시 생성
-          </button>
-          <button type="button" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-brand px-5 text-[13.5px] font-bold text-white shadow-[0_6px_16px_rgba(220,20,60,0.25)] transition-colors hover:bg-brand-hover max-sm:flex-1">
-            <DownloadIcon className="h-4 w-4" /> 다운로드
-          </button>
+          {r && (
+            <button type="button" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-brand px-5 text-[13.5px] font-bold text-white shadow-[0_6px_16px_rgba(220,20,60,0.25)] transition-colors hover:bg-brand-hover max-sm:flex-1">
+              <DownloadIcon className="h-4 w-4" /> 다운로드
+            </button>
+          )}
           {panel && (
             <button type="button" aria-label="미리보기 닫기" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-subtle hover:text-text-primary">
               <XIcon className="h-4 w-4" />
@@ -269,71 +191,33 @@ function ResultCard({ job, open, animate, onRegenerate, onClose }: {
         </div>
       </div>
 
-      <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4" style={reveal(open, animate, 320)}>
-        {info.map(([k, v]) => (
-          <div key={k} className={`min-w-0 rounded-xl px-3 py-2.5 ${panel ? 'bg-surface-card1' : 'bg-surface/80'}`}>
-            <dt className="text-[11.5px] text-text-muted">{k}</dt>
-            <dd className="mt-0.5 truncate text-[13px] font-semibold text-text-primary">{v}</dd>
-          </div>
-        ))}
-      </dl>
-
-      {/* 미리보기: 막대가 다 펼쳐질 즈음 아래에서 떠오른다. 탭을 바꾸면 칸 높이도 따라 바뀐다 */}
-      <section aria-label="미리보기" className={`overflow-hidden rounded-2xl border bg-surface ${panel ? 'border-surface-border' : 'border-brand-soft'}`} style={reveal(open, animate, 440)}>
-        <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-surface-border px-3 pt-3 text-[13px]">
-          {tabs.map(([key, label]) => (
-            <button key={key} role="tab" type="button" aria-selected={tab === key} onClick={() => setTab(key)}
-              className={`shrink-0 px-3 pb-2.5 font-semibold transition-colors ${tab === key ? 'border-b-2 border-brand text-brand' : 'text-text-muted hover:text-text-primary'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-        <div role="tabpanel" className="bg-surface-card1 p-4 sm:p-6">
-          {tab === 'doc' && <Paper job={job} compact />}
-          {tab === 'files' && (
-            job.attachments.length === 0
-              ? <p className="py-6 text-center text-[13px] text-text-muted">첨부 없이 요청 내용만으로 작성했습니다.</p>
-              : (
-                <ul className="flex flex-col gap-2">
-                  {job.attachments.map((a) => (
-                    <li key={a.name} className="flex items-center gap-3 rounded-xl border border-surface-border bg-surface px-3.5 py-3">
-                      <DocIcon className="h-4 w-4 shrink-0 text-brand" />
-                      <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-text-primary">{a.name}</span>
-                      <span className="shrink-0 text-[12px] text-text-muted">{formatBytes(a.size)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )
-          )}
-          {tab === 'request' && (
-            <dl className="flex flex-col gap-3 rounded-xl border border-surface-border bg-surface p-4">
-              {request.map(([k, v]) => (
-                <div key={k} className="grid gap-1 sm:grid-cols-[88px_1fr] sm:gap-3">
-                  <dt className="text-[12px] text-text-muted">{k}</dt>
-                  <dd className="text-[13.5px] leading-relaxed text-text-primary">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-        </div>
+      {/* 문서: 막대가 다 펼쳐질 즈음 아래에서 떠오른다 */}
+      <section aria-label="미리보기" className={`overflow-hidden rounded-2xl border bg-surface-card1 p-4 sm:p-6 ${panel ? 'border-surface-border' : 'border-brand-soft'}`} style={reveal(open, animate, 360)}>
+        <PreviewBody job={job} compact />
       </section>
     </div>
   )
 }
 
 /* ───────── 화면 ───────── */
-function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
-  const [prompt, setPrompt] = useState(scenario.prompt)
-  const [templateId, setTemplateId] = useState(scenario.templateId)
-  const [format, setFormat] = useState<DocGenOutputFormat | null>(scenario.selected?.output_format ?? null)
-  const [job, setJob] = useState<DocGenJob | null>(scenario.selected)
-  const [phase, setPhase] = useState<Phase>(PHASE_OF[state])
+function Stage() {
+  const { jobs, isLoading } = useDocGenJobs()
+  const c = useComposer()
+  const cancel = useCancelDocGenJob()
+  const retry = useRetryDocGenJob()
+  // 입력창에서 보낸 작업. 진행 줄이 이 작업의 서버 상태를 따라 움직인다
+  const [liveId, setLiveId] = useState<string | null>(null)
+  // 요청 응답을 기다리는 중 (이때는 진행 줄이 예전 상태에 반응하지 않는다)
+  const [awaiting, setAwaiting] = useState(false)
+  const job = jobs.find((j) => j.job_id === liveId) ?? null
+  const liveState = job ? normalizeJobStatus(job.status) : null
+  const [phase, setPhase] = useState<Phase>('compose')
   // 다시 보낼 때 한 번 움직임 없이 처음 자리로 되돌린다
   const [instant, setInstant] = useState(false)
   const [reduce] = useState(prefersReducedMotion)
-  const { later, every, frame, clear } = useTimers()
+  const { later, frame, clear } = useTimers()
 
-  const { geo, ready, wrapRef, composerRef, slotRef, laneRef, cardRef, panelRef } = useGeometry()
+  const { geo, ready, wrapRef, composerRef, slotRef, laneRef, cardRef } = useGeometry()
   const pageRef = useRef<HTMLDivElement>(null)
   const asideRef = useRef<HTMLElement>(null)
   const panelBoxRef = useRef<HTMLDivElement>(null)
@@ -344,62 +228,21 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
   const vp = useViewport()
   const wideRef = useRef(vp.wide)
   useEffect(() => { wideRef.current = vp.wide })
-  const [sideOpen, setSideOpen] = useState(state === 'completed')
+  const [sideOpen, setSideOpen] = useState(false)
   const side = vp.wide && sideOpen
+  // 진행 상황 목록에서 고른 작업. null이면 입력창에서 보낸 작업을 미리본다
+  const [viewId, setViewId] = useState<string | null>(null)
+  const viewed = jobs.find((j) => j.job_id === viewId) ?? null
   // 막대가 내려앉은 높이(패널 상자 기준). 여기서부터 위아래로 펼쳐진다
   const [panelFrom, setPanelFrom] = useState(0)
 
-  const template = TEMPLATES.find((t) => t.template_id === templateId)
-  const canSubmit = !!prompt.trim() && !!template
+  // 진행 줄에 있는 작업은 끝난 뒤에야 진행 상황 목록에 들어간다
+  const settled = phase === 'done' || phase === 'failed' || phase === 'closing'
+  const listJobs = jobs.filter((j) => j.job_id !== liveId || settled)
+  const isFresh = useFreshIds(jobs.map((j) => j.job_id), !isLoading)
+
+  const { canSubmit } = c
   const editable = phase === 'compose' || phase === 'done' || phase === 'failed'
-
-  /* 목 생성: 대기 → 생성 중(진행률) → 완료 또는 실패 */
-  const simulate = (base: DocGenJob) => {
-    const willFail = base.prompt.includes('실패')
-    const startedAt = new Date().toISOString()
-    let p = 0
-    every(TICK, () => {
-      p = Math.min(100, p + STEP)
-      if (willFail && p >= 45) {
-        clear()
-        setJob({ ...base, status: 'FAILED', stage: 'DRAFTING', progress: p, eta_seconds: null, started_at: startedAt, finished_at: new Date().toISOString(), error: { code: 'LLM_SERVER_ERROR', detail: '' } })
-        setPhase('failed')
-        return
-      }
-      if (p >= 100) {
-        clear()
-        setJob({
-          ...base, status: 'COMPLETED', stage: 'FORMATTING', progress: 100, queue_position: null, eta_seconds: null,
-          started_at: startedAt, finished_at: new Date().toISOString(),
-          result: { ...LIVE_BASE.result!, file_name: `${base.template_name} 초안.${base.output_format.toLowerCase()}` },
-        })
-        setPhase('rejoin')
-        later(T.rejoin + 80, () => {
-          if (wideRef.current) return shift()
-          setPhase('done')
-          // 펼쳐지는 칸이 화면 밖으로 내려가면 따라 내려간다
-          later(T.open * 0.5, () => cardRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }))
-        })
-        return
-      }
-      setJob({ ...base, status: 'RUNNING', stage: stageAt(p), progress: p, queue_position: null, eta_seconds: Math.max(1, Math.round((((100 - p) / STEP) * TICK) / 1000)), started_at: startedAt })
-    })
-  }
-
-  /** 전송 → 내려감 → 선 긋기 → 막대로 합쳐짐 → 끝이 떨어져 중지 버튼 */
-  const play = (next: DocGenJob) => {
-    clear()
-    setInstant(false)
-    setJob(next)
-    setPhase('drop')
-    let at = T.drop
-    later(at, () => setPhase('draw'))
-    at += T.draw
-    later(at, () => setPhase('merge'))
-    at += T.merge + T.hold
-    later(at, () => setPhase('track'))
-    later(QUEUE_MS, () => simulate(next))
-  }
 
   /** 넓은 화면 완료: 입력 열이 비켜나는 동안 막대가 오른쪽 열로 미끄러지며 늘어나고, 내려앉으면 위아래로 펼쳐진다 */
   const shift = () => {
@@ -435,44 +278,94 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
     frame(step)
   }
 
+  /** 다 만들어짐: 중지 버튼이 다시 붙고 → 막대가 미리보기로 펼쳐진다 */
+  const finish = () => {
+    setPhase('rejoin')
+    // 다 만들면 미리보기를 방금 만든 문서로 바꾼다
+    later(T.rejoin, () => setViewId(null))
+    later(T.rejoin + 80, () => {
+      if (wideRef.current) return shift()
+      setPhase('done')
+      // 펼쳐지는 칸이 화면 밖으로 내려가면 따라 내려간다
+      later(T.open * 0.5, () => cardRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }))
+    })
+  }
+
+  // 진행 줄은 서버 작업 상태를 따라간다. 상태 전환은 타이머로 넘겨 효과 안에서 바로 바꾸지 않는다
+  useEffect(() => {
+    if (awaiting) return
+    if (phase === 'track' && liveState === 'completed') later(0, finish)
+    else if (phase === 'track' && liveState === 'failed') later(0, () => setPhase('failed'))
+    // 목록에서 실패한 작업을 재시도하면 다시 진행 줄로 돌아온다
+    else if (phase === 'failed' && (liveState === 'queued' || liveState === 'running')) later(0, () => setPhase('track'))
+    // finish·later는 이 상태 변화에만 반응하면 된다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, liveState, awaiting])
+
+  /** 전송 → 내려감 → 선 긋기 → 막대로 합쳐짐 → 끝이 떨어져 중지 버튼. 움직이는 동안 요청을 보낸다 */
+  const play = (start: () => Promise<DocGenJob | null>, keepLive = false) => {
+    clear()
+    setInstant(false)
+    if (!keepLive) setLiveId(null)
+    setAwaiting(true)
+    setPhase('drop')
+    let at = T.drop
+    later(at, () => setPhase('draw'))
+    at += T.draw
+    later(at, () => setPhase('merge'))
+    at += T.merge + T.hold
+    later(at, () => setPhase('track'))
+    start().then((next) => {
+      setAwaiting(false)
+      if (next) return setLiveId(next.job_id)
+      // 보내지 못하면 처음 자리로 되돌린다
+      clear()
+      setInstant(true)
+      setPhase('compose')
+    })
+  }
+
   /** 결과·실패 화면에서 다시 보낼 때: 미리보기를 접고 → 처음 자리로 → 재생 */
-  const restart = (next: DocGenJob) => {
+  const restart = (start: () => Promise<DocGenJob | null>, keepLive = false) => {
     clear()
     setPhase('closing')
     setSideOpen(false)
     later(side ? T.shift : T.close, () => {
       setInstant(true)
       setPhase('compose')
-      later(50, () => play(next))
+      later(50, () => play(start, keepLive))
     })
   }
 
-  const makeJob = (): DocGenJob => {
-    const tpl = template!
-    const now = new Date().toISOString()
-    return {
-      ...LIVE_BASE, job_id: `live-${Date.now()}`, title: titleOf(prompt), prompt: prompt.trim(),
-      template_id: tpl.template_id, template_name: tpl.name, output_format: format ?? tpl.default_format,
-      attachments: scenario.attachments.map(({ name, size }) => ({ name, size })),
-      status: 'QUEUED', stage: null, progress: 0, queue_position: 1, eta_seconds: Math.round((QUEUE_MS + (100 / STEP) * TICK) / 1000),
-      error: null, created_at: now, started_at: null, finished_at: null, result: null,
-    }
+  /** 진행 상황 목록에서 고르기. 넓은 화면은 오른쪽 미리보기, 좁은 화면은 그 줄 아래에 펼친다 */
+  const view = (id: string) => {
+    if (!vp.wide && viewId === id) return setViewId(null)
+    setViewId(id)
+    setSideOpen(true)
   }
 
   const send = () => {
     if (!canSubmit) return
-    if (phase === 'compose') play(makeJob())
-    else if (phase === 'done' || phase === 'failed') restart(makeJob())
+    if (phase === 'compose') play(c.submit)
+    else if (phase === 'done' || phase === 'failed') restart(c.submit)
   }
 
   const stop = () => {
-    clear()
-    setJob((j) => j && { ...j, status: 'CANCELLED', eta_seconds: null, finished_at: new Date().toISOString(), error: { code: 'CANCELLED', detail: '' } })
-    setPhase('failed')
+    if (liveId) cancel.mutate(liveId, { onError: () => showToast('중지하지 못했습니다. 잠시 후 다시 시도해 주세요.') })
+  }
+
+  /** 떨어진 버튼(다시 시도): 같은 작업을 다시 돌린다 */
+  const retryLive = () => {
+    const id = liveId
+    if (!id) return
+    restart(() => retry.mutateAsync(id).then((res) => res.data.data).catch(() => {
+      showToast('다시 시도하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      return null
+    }), true)
   }
 
   /* ── 좌표 ── */
-  const g = geo ?? { slotX: 0, slotY: 0, laneTop: 0, width: 0, cardH: 0, panelH: 0 }
+  const g = geo ?? { slotX: 0, slotY: 0, laneTop: 0, width: 0, cardH: 0 }
   const trackR = g.slotX + SEND
   const trackL = Math.max(0, g.width - trackR)
   const fullW = Math.max(0, trackR - trackL)
@@ -542,12 +435,15 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
       transition: tr([['transform', 300], ['width', phase === 'rejoin' ? T.rejoin : 500], ['background-color', 300], ['opacity', 0]]),
     }
 
-  // 오른쪽 미리보기 패널 — 내려앉은 막대(land)에서 위아래로 펼쳐진다
-  const panelOn = side && (phase === 'land' || phase === 'done')
+  // 오른쪽 미리보기 패널 — 내려앉은 막대(land)에서 위아래로 펼쳐진다. 목록에서 고른 작업이면 바로 보인다
+  const panelJob = viewed ?? job
+  const panelOn = side && (viewed ? phase !== 'shift' && phase !== 'land' && phase !== 'closing' : phase === 'land' || phase === 'done')
+  // 어떤 상태의 문서를 띄워도 패널 크기는 같게 둔다
+  const panelH = Math.max(320, vp.h - 150)
   const panelStyle: CSSProperties = phase === 'land'
     ? { transform: `translateY(${panelFrom}px)`, height: BAR, borderRadius: BAR / 2, backgroundColor: 'var(--color-brand)', boxShadow: '0 0 0 1px transparent', transition: 'none' }
     : {
-      transform: 'none', height: Math.min(g.panelH, Math.max(320, vp.h - 150)), borderRadius: 20, opacity: panelOn ? 1 : 0,
+      transform: 'none', height: panelH, borderRadius: 20, opacity: panelOn ? 1 : 0,
       backgroundColor: 'var(--color-surface)', boxShadow: '0 0 0 1px var(--color-surface-border), 0 12px 32px rgba(0,0,0,0.06)',
       transition: tr([['transform', T.open], ['height', T.open], ['border-radius', T.open], ['background-color', T.open * 0.6], ['box-shadow', T.open], ['opacity', T.close]]),
     }
@@ -575,31 +471,18 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
       <h1 className="text-center text-[24px] font-bold text-text-primary sm:text-[28px]">
         어떤 <span className="text-brand">문서</span>를 만들까요?
       </h1>
-      <p className="mt-2 text-center text-[13.5px] text-text-secondary">요청과 자료를 주시면 고른 양식에 맞춰 초안을 써 드립니다.</p>
+      <p className="mt-2 text-center text-[13.5px] text-text-secondary">요청을 적고 양식을 고르면 그 양식에 맞춰 초안을 써 드립니다.</p>
 
       <div ref={wrapRef} className="relative mt-7">
         <section ref={composerRef} aria-label="문서 요청"
           className={`rounded-[28px] border bg-surface shadow-[0_12px_30px_rgba(220,20,60,0.05)] transition-colors ${editable ? 'border-brand-soft focus-within:border-brand' : 'border-surface-border'}`}>
           <label htmlFor="v6-prompt" className="sr-only">프롬프트</label>
-          <textarea id="v6-prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} readOnly={!editable} rows={3}
+          <textarea id="v6-prompt" value={c.prompt} onChange={(e) => c.setPrompt(e.target.value)} readOnly={!editable} rows={3}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send() } }}
-            placeholder="만들 문서를 설명해 주세요. 참고 자료는 첨부하세요."
+            placeholder="만들 문서를 설명해 주세요."
             className={`w-full resize-none bg-transparent px-5 pt-5 text-[15px] leading-relaxed outline-none placeholder:text-text-muted sm:px-6 ${editable ? 'text-text-primary' : 'text-text-secondary'}`} />
-          {scenario.attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2 px-4">{scenario.attachments.map((a) => <AttachmentChip key={a.name} {...a} />)}</div>
-          )}
           <div className="flex flex-wrap items-center gap-1 px-3 pb-3 pt-2">
-            <button type="button" aria-label="파일 첨부" disabled={!editable} className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-brand-subtle hover:text-brand disabled:pointer-events-none disabled:opacity-60">
-              <ClipIcon className="h-[18px] w-[18px]" />
-            </button>
-            <Picker label="파일 유형" value={format} disabled={!editable} onChange={(v) => setFormat(v as DocGenOutputFormat)}
-              options={OUTPUT_FORMATS.map((f) => ({ value: f.code, label: f.label }))} />
-            <Picker label="양식" value={templateId} disabled={!editable} icon={<DocIcon className="h-3.5 w-3.5" />}
-              onChange={(v) => {
-                setTemplateId(v)
-                if (!format) setFormat(TEMPLATES.find((t) => t.template_id === v)?.default_format ?? null)
-              }}
-              options={TEMPLATES.map((t) => ({ value: t.template_id, label: t.name, hint: t.description }))} />
+            <ComposerOptions c={c} disabled={!editable} withTemplate />
             <span className="flex-1" />
             {/* 전송 자리. 처음에는 위 겹의 움직이는 버튼이 여기 앉고, 결과·실패 뒤에는 새 버튼이 돋아난다 */}
             <div ref={slotRef} className="h-10 w-10 shrink-0">
@@ -626,7 +509,7 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
           {/* 진행 채움 → 결과 칸 */}
           <div ref={fillRef} className={`absolute left-0 top-0 overflow-hidden ${sheet && phase === 'done' ? 'pointer-events-auto' : ''}`} style={fillStyle}>
             <div ref={cardRef} inert={!(sheet && phase === 'done')} style={{ width: g.width }}>
-              {!vp.wide && <ResultCard key={job?.job_id} job={job} open={phase === 'done'} animate={animate} onRegenerate={() => canSubmit && restart(makeJob())} />}
+              {!vp.wide && <PreviewCard key={job?.job_id} job={job} open={phase === 'done'} animate={animate} />}
             </div>
           </div>
 
@@ -638,7 +521,7 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
           </button>
 
           <button type="button" aria-label={phase === 'failed' ? '다시 시도' : '생성 중지'} title={phase === 'failed' ? '다시 시도' : '중지'} tabIndex={detached ? 0 : -1}
-            onClick={phase === 'failed' ? () => canSubmit && restart(makeJob()) : stop}
+            onClick={phase === 'failed' ? retryLive : stop}
             className={`absolute left-0 top-0 flex items-center justify-center rounded-full transition-colors hover:bg-black/5 ${detached ? 'pointer-events-auto' : ''} ${phase === 'failed' ? 'text-brand' : 'text-text-primary'}`}
             style={{
               ...box(trackR - STOP, cy - STOP / 2, STOP, STOP), opacity: detached ? 1 : 0,
@@ -654,15 +537,58 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
               transition: tr([['opacity', 300, EASE, phase === 'track' ? 200 : 0], ['width', T.rejoin], ['transform', T.shift]]),
             }}>
             {handedOff
-              ? <DoneLine job={job} previewOpen={side} onOpen={() => setSideOpen(true)} />
+              ? <DoneLine job={job} previewOpen={side && !viewed} onOpen={() => { setViewId(null); setSideOpen(true) }} />
               : lineOn && <StatusLine job={job} phase={phase} />}
           </div>
         </div>
       </div>
 
       <p className="mt-4 text-center text-[11.5px] text-text-muted">MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.</p>
+
+      {/* 진행 상황: 상태·진행률·작업 액션은 미리보기가 아니라 여기서 보여 준다 (v3 상태 표시).
+          진행 줄에서 끝난 작업은 맨 위에 새 줄로 내려앉는다 */}
+      <section aria-label="진행 상황" className="mt-10">
+        <h2 className="mb-2 px-1 text-[13px] font-semibold text-text-muted">진행 상황 {listJobs.length}</h2>
+        {listJobs.length === 0 && (
+          <p className="rounded-xl border border-dashed border-surface-border px-4 py-6 text-center text-[12.5px] text-text-muted">
+            보낸 문서가 다 만들어지면 여기에 쌓입니다.
+          </p>
+        )}
+        <ul className="flex flex-col gap-0.5">
+          {listJobs.map((item) => {
+            // 넓은 화면: 오른쪽 미리보기에 떠 있는 줄 / 좁은 화면: 아래로 펼친 줄
+            const previewing = viewed ? viewId : side && settled ? liveId : null
+            const on = vp.wide ? side && previewing === item.job_id : viewId === item.job_id
+            const justDone = item.job_id === liveId && settled
+            return (
+              <li key={item.job_id} className={isFresh(item.job_id) ? 'animate-docgen-row-in rounded-xl' : ''}>
+                <div aria-pressed={on} {...selectable(() => view(item.job_id))}
+                  className={`group cursor-pointer rounded-xl px-3 py-2.5 transition-colors ${on ? 'bg-brand-subtle' : 'hover:bg-surface-card1'}`}>
+                  <div className="flex items-center gap-2">
+                    <StatusDot job={item} />
+                    <span className={`min-w-0 flex-1 truncate text-[13.5px] font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}>{item.title}</span>
+                    {justDone && <span className="shrink-0 rounded-full bg-brand px-2 py-0.5 text-[10.5px] font-bold text-white">방금</span>}
+                    <span className="shrink-0 text-[11.5px] text-text-muted">{item.template_name} · {item.output_format}</span>
+                  </div>
+                  {normalizeJobStatus(item.status) === 'running' && <ProgressBar value={item.progress} className="ml-4 mt-2" />}
+                  <div className="mt-1 flex min-h-8 items-center justify-between gap-2 pl-4 text-[11.5px] text-text-muted">
+                    <JobProgressText job={item} />
+                    <span onClick={(e) => e.stopPropagation()} className={on ? '' : 'lg:opacity-0 lg:group-hover:opacity-100'}><JobActions job={item} /></span>
+                  </div>
+                </div>
+                {!vp.wide && on && (
+                  <div className="mt-2 overflow-hidden rounded-[20px] border border-surface-border bg-surface">
+                    <PreviewCard job={item} open animate={false} />
+                  </div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
       <p className="mt-6 text-center text-[11.5px] text-text-hint">
-        <span className="text-text-muted">시안 메모 · 직접 보내면 움직임이 처음부터 재생됩니다. 프롬프트에 ‘실패’를 넣으면 실패 흐름을 볼 수 있습니다.</span>
+        <span className="text-text-muted">시안 메모 · 결과(완료·실패·취소)는 무작위입니다. 프롬프트에 ‘실패’·‘취소’를 넣으면 그 흐름으로 고정됩니다.</span>
       </p>
       </div>
 
@@ -672,9 +598,10 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
         <div ref={panelBoxRef} className="sticky top-6">
           <div className="overflow-hidden" style={panelStyle}>
             <div className="custom-scroll h-full overflow-y-auto">
-              <div ref={panelRef}>
-                {vp.wide && <ResultCard key={job?.job_id} job={job} open={phase === 'done'} animate={animate} onRegenerate={() => canSubmit && restart(makeJob())} onClose={() => setSideOpen(false)} />}
-              </div>
+              {vp.wide && (
+                <PreviewCard key={panelJob?.job_id} job={panelJob} open={viewed ? true : phase === 'done'} animate={!viewed && animate}
+                  onClose={() => setSideOpen(false)} />
+              )}
             </div>
           </div>
         </div>
@@ -688,13 +615,12 @@ function Stage({ state, scenario }: { state: PageState; scenario: Scenario }) {
 }
 
 export default function DraftV6() {
-  const { state, scenario } = useDraftScenario()
+  useFreshDraft()
   return (
     <div className="flex h-full flex-col">
       <DraftBar current="v6" />
       <div className="custom-scroll min-h-0 flex-1 overflow-y-auto">
-        {/* 상단 상태 막대로 시나리오를 바꾸면 화면 안의 값·타이머가 초기화된다 */}
-        <Stage key={state} state={state} scenario={scenario} />
+        <Stage />
       </div>
     </div>
   )

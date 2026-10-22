@@ -30,20 +30,10 @@ export const getDocGenJob = (jobId: string) =>
     ? docgenMock.getJob(jobId)
     : backendApi.get<GetDocGenJobResponse>(`${BASE}/jobs/${jobId}`)
 
-export const createDocGenJob = (fields: CreateDocGenJobFields, files: File[]) => {
-  if (USE_MOCK) return docgenMock.createJob(fields, files)
-  const form = new FormData()
-  form.append('prompt', fields.prompt)
-  form.append('template_id', fields.template_id)
-  if (fields.domain) form.append('domain', fields.domain)
-  form.append('output_format', fields.output_format)
-  form.append('length', fields.length)
-  files.forEach((f) => form.append('files', f))
-  return backendApi.post<CreateDocGenJobResponse>(`${BASE}/jobs`, form, {
-    headers: { 'Content-Type': undefined },
-    timeout: 120000,
-  })
-}
+export const createDocGenJob = (fields: CreateDocGenJobFields) =>
+  USE_MOCK
+    ? docgenMock.createJob(fields)
+    : backendApi.post<CreateDocGenJobResponse>(`${BASE}/jobs`, fields)
 
 export const cancelDocGenJob = (jobId: string) =>
   USE_MOCK

@@ -149,6 +149,19 @@ body {
   .animate-page-in { animation: none; }
 }
 
+/* 문서 생성 진행 상황에 새 줄이 들어올 때: 위에서 내려앉고 잠깐 강조된 뒤 원래 색으로 */
+@keyframes docgen-row-in {
+  0%   { opacity: 0; transform: translateY(-10px) scale(.98); background-color: var(--color-brand-subtle); }
+  35%  { opacity: 1; transform: none; background-color: var(--color-brand-subtle); }
+  100% { background-color: transparent; }
+}
+.animate-docgen-row-in {
+  animation: docgen-row-in 1.6s cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-docgen-row-in { animation: none; }
+}
+
 @keyframes chase {
   0%, 100% { opacity: 0.15; transform: scale(0.7); }
   50%       { opacity: 1;    transform: scale(1);   }

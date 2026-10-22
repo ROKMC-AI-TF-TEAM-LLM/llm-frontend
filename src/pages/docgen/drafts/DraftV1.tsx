@@ -1,17 +1,17 @@
-// TEMP(시안 비교용) v1 기본형: 와이어프레임 그대로. 왼쪽 입력·양식 카드·큐 목록, 오른쪽 고정 미리보기
+// TEMP(시안 비교용) v1 기본형: 와이어프레임 그대로. 왼쪽 입력·양식 카드·진행 상황 목록, 오른쪽 고정 미리보기
 import { getDomainStyle } from '../../../utils/document'
 import { normalizeJobStatus } from '../../../utils/docgen'
-import { TEMPLATES } from './fixtures'
-import { useDraftScenario } from './draftState'
+import { selectable, useDocGenPage } from '../../../features/docgen/hooks'
+import { ArrowUpIcon, DocIcon } from '../../../features/docgen/icons'
 import {
-  ArrowUpIcon, AttachmentChip, ClipIcon, DocIcon, DomainOption, DraftBar, JobActions, JobMeta,
-  JobProgressText, OptionChip, PreviewActions, PreviewBody, ProgressBar, StatusBadge,
-} from './shared'
+  ComposerOptions, JobActions, JobMeta, JobProgressText, PreviewActions, PreviewBody, ProgressBar, StatusBadge,
+} from '../../../features/docgen/components'
+import DraftBar from './DraftBar'
+import { useFreshDraft } from './draftState'
 
 export default function DraftV1() {
-  const { scenario } = useDraftScenario()
-  const { selected, jobs, prompt, templateId, attachments } = scenario
-  const canSubmit = !!prompt.trim() && !!templateId
+  useFreshDraft()
+  const { jobs, c, selected, select, isFresh, send } = useDocGenPage()
 
   return (
     <div className="flex h-full flex-col">
@@ -22,7 +22,7 @@ export default function DraftV1() {
           <div className="flex min-w-0 flex-[1_1_560px] flex-col gap-6">
             <header>
               <h1 className="text-[22px] font-bold text-text-primary">문서 생성</h1>
-              <p className="mt-1 text-[13px] text-text-muted">요청과 자료를 넣고 양식을 고르면 MARS가 문서 초안을 만들어 드립니다.</p>
+              <p className="mt-1 text-[13px] text-text-muted">요청을 적고 양식을 고르면 MARS가 문서 초안을 만들어 드립니다.</p>
             </header>
 
             <section aria-label="프롬프트 입력" className="rounded-[22px] border border-surface-border bg-surface transition-colors focus-within:border-brand">
@@ -30,27 +30,18 @@ export default function DraftV1() {
               <textarea
                 id="v1-prompt"
                 rows={3}
-                defaultValue={prompt}
-                key={prompt}
-                placeholder="어떤 문서를 만들지 적어주세요. 예) 첨부한 점검표로 3분기 보안 점검 결과 보고서를 써줘"
+                value={c.prompt}
+                onChange={(e) => c.setPrompt(e.target.value)}
+                placeholder="어떤 문서를 만들지 적어주세요. 예) 3분기 보안 점검 결과 보고서를 써줘"
                 className="w-full resize-none bg-transparent px-5 pt-5 text-[15px] leading-relaxed text-text-primary outline-none placeholder:text-text-muted"
               />
-              {attachments.length > 0 && (
-                <div className="flex flex-wrap gap-2 px-4 pt-1">
-                  {attachments.map((a) => <AttachmentChip key={a.name} {...a} />)}
-                </div>
-              )}
               <div className="flex flex-wrap items-center gap-1 px-3 pb-3 pt-2">
-                <button type="button" aria-label="파일 첨부" className="flex h-10 w-10 items-center justify-center rounded-full text-text-muted hover:bg-brand-subtle hover:text-brand">
-                  <ClipIcon className="h-[18px] w-[18px]" />
-                </button>
-                <DomainOption code={templateId ? 'TECH' : null} />
-                <OptionChip label={templateId ? '한글(HWPX)' : '출력 형식'} />
-                <OptionChip label={templateId ? '분량 보통' : '분량'} />
+                <ComposerOptions c={c} />
                 <span className="flex-1" />
                 <button
                   type="button"
-                  disabled={!canSubmit}
+                  disabled={!c.canSubmit}
+                  onClick={send}
                   className="inline-flex h-10 items-center gap-1.5 rounded-full bg-gradient-to-r from-brand to-brand-light px-5 text-[14px] font-bold text-white transition hover:brightness-105 disabled:from-surface-subtle disabled:to-surface-subtle disabled:text-text-muted"
                 >
                   <ArrowUpIcon className="h-4 w-4" /> 생성
@@ -64,13 +55,14 @@ export default function DraftV1() {
                 <button type="button" className="text-[12.5px] font-semibold text-text-muted hover:text-brand">양식 전체 보기</button>
               </div>
               <div className="grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-2.5">
-                {TEMPLATES.map((t) => {
-                  const on = t.template_id === templateId
+                {c.templates.map((t) => {
+                  const on = t.template_id === c.templateId
                   return (
                     <button
                       key={t.template_id}
                       type="button"
                       aria-pressed={on}
+                      onClick={() => c.pickTemplate(t.template_id)}
                       className={`group flex flex-col gap-2 rounded-2xl border p-2.5 text-left transition-colors ${on ? 'border-brand bg-brand-subtle' : 'border-surface-border hover:border-brand-soft'}`}
                     >
                       <span className={`flex aspect-[4/3] items-center justify-center rounded-xl ${on ? 'bg-surface' : 'bg-surface-card1'}`}>
@@ -83,9 +75,9 @@ export default function DraftV1() {
               </div>
             </section>
 
-            <section aria-label="생성 큐" className="rounded-[20px] border border-surface-border">
+            <section aria-label="진행 상황" className="rounded-[20px] border border-surface-border">
               <div className="flex items-center gap-2 border-b border-surface-border px-5 py-3">
-                <h2 className="text-[15px] font-bold text-text-primary">생성 큐</h2>
+                <h2 className="text-[15px] font-bold text-text-primary">진행 상황</h2>
                 <span className="text-[12.5px] text-text-muted">{jobs.length}건</span>
               </div>
               {jobs.length === 0 ? (
@@ -96,16 +88,16 @@ export default function DraftV1() {
                     const s = normalizeJobStatus(job.status)
                     const on = job.job_id === selected?.job_id
                     return (
-                      <li key={job.job_id} className={`flex items-center gap-3 border-b border-surface-border px-5 py-3 last:border-b-0 ${on ? 'bg-brand-subtle/50' : 'hover:bg-surface-card1'}`}>
+                      <li key={job.job_id} aria-pressed={on} {...selectable(() => select(job.job_id))} className={`flex cursor-pointer items-center gap-3 border-b border-surface-border px-5 py-3 last:border-b-0 ${on ? 'bg-brand-subtle/50' : 'hover:bg-surface-card1'} ${isFresh(job.job_id) ? 'animate-docgen-row-in' : ''}`}>
                         <span className="h-9 w-1 shrink-0 rounded-full" style={{ background: getDomainStyle(job.domain).bar }} />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[14px] font-semibold text-text-primary">{job.title}</p>
                           <JobMeta job={job} />
                           {s === 'running' && <ProgressBar value={job.progress} className="mt-1.5 max-w-[240px]" />}
                         </div>
-                        <span className="hidden w-[150px] shrink-0 text-[12px] text-text-secondary sm:block"><JobProgressText job={job} /></span>
+                        <span className="hidden w-[190px] shrink-0 text-[12px] text-text-secondary sm:block"><JobProgressText job={job} /></span>
                         <StatusBadge job={job} />
-                        <JobActions job={job} />
+                        <span onClick={(e) => e.stopPropagation()}><JobActions job={job} /></span>
                       </li>
                     )
                   })}
@@ -123,11 +115,6 @@ export default function DraftV1() {
             <div className="custom-scroll flex flex-1 items-start justify-center overflow-y-auto bg-surface-card1 p-6">
               <PreviewBody job={selected} />
             </div>
-            {selected?.result && (
-              <div className="border-t border-surface-border px-5 py-3 text-[12.5px] text-text-secondary">
-                참고 근거 <b className="text-text-primary">{selected.result.sources_count}건</b> · {selected.result.page_count}쪽
-              </div>
-            )}
           </aside>
         </div>
       </div>

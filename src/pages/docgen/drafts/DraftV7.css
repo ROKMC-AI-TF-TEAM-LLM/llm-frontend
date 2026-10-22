@@ -1,0 +1,40 @@
+/* TEMP(시안 비교용) v7 전용 움직임. 시안이 정해지면 drafts 폴더째 삭제 */
+
+/* 처음 열 때 덩어리마다 흐릿하게 아래에서 떠오른다 (--d 로 차례를 준다)
+   끝난 뒤 값을 붙잡아 두면(forwards·both) 요소마다 겹(stacking context)이 남아 위 요소의 펼침 메뉴를 가린다.
+   그래서 기다리는 동안만 처음 값을 쓰고(backwards) 끝나면 흔적을 남기지 않는다 */
+@keyframes v7-rise {
+  from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.v7-rise {
+  animation: v7-rise 900ms cubic-bezier(.32,.72,0,1) backwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* 생성 중 막대 위를 지나가는 빛 */
+@keyframes v7-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+.v7-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / .55), transparent);
+  animation: v7-shimmer 1.6s ease-in-out infinite;
+}
+
+/* 완료 체크가 그려진다 */
+@keyframes v7-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+.v7-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: v7-check-draw 480ms cubic-bezier(.65,0,.35,1) 120ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v7-rise, .v7-shimmer, .v7-check { animation: none; }
+  .v7-check { stroke-dashoffset: 0; }
+}

@@ -28,7 +28,6 @@ const TeamPage = lazy(() => import('./pages/TeamPage'));
 const SystemDiagnostics = lazy(() => import('./pages/SystemDiagnostics'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
-const CapMorphLab = lazy(() => import('./pages/docgen/experiments/CapMorphLab'));
 
 // TEMP(문서 생성 시안 비교용): 시안 확정 후 6단계에서 라우트와 drafts 폴더 삭제
 const DOCGEN_DRAFTS = {
@@ -38,14 +37,10 @@ const DOCGEN_DRAFTS = {
   v4: lazy(() => import('./pages/docgen/drafts/DraftV4')),
   v5: lazy(() => import('./pages/docgen/drafts/DraftV5')),
   v6: lazy(() => import('./pages/docgen/drafts/DraftV6')),
+  v7: lazy(() => import('./pages/docgen/drafts/DraftV7')),
 };
 
 const publicRoutes: RouteObject[] = [
-  {
-    path: '/docgen/cap-morph-lab',
-    errorElement: <ErrorPage />,
-    element: <Suspense fallback={null}><CapMorphLab /></Suspense>,
-  },
   {
     element: <AuthLayout />,
     errorElement: <ErrorPage />,

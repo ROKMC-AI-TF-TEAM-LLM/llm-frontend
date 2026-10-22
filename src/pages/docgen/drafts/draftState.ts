@@ -1,15 +1,7 @@
-// TEMP(시안 비교용): 6단계에서 drafts 폴더째 삭제
-import { useSearchParams } from 'react-router-dom'
-import type { PageState } from '../../../utils/docgen'
-import { SCENARIOS } from './fixtures'
-
-export const PAGE_STATES: { value: PageState; label: string }[] = [
-  { value: 'idle', label: '처음' },
-  { value: 'queued', label: '대기' },
-  { value: 'running', label: '생성 중' },
-  { value: 'completed', label: '완료' },
-  { value: 'failed', label: '실패' },
-]
+// TEMP(시안 비교용): 시안이 정해지면 drafts 폴더째 삭제
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { resetDocGenMock } from '../../../api/services/docgenMock'
 
 export const DRAFTS = [
   { v: 'v1', name: '기본형' },
@@ -18,11 +10,18 @@ export const DRAFTS = [
   { v: 'v4', name: '진행 강조' },
   { v: 'v5', name: '반응형 미리보기' },
   { v: 'v6', name: '전송 모션' },
+  { v: 'v7', name: '전송 모션 다듬기' },
 ]
 
-export const useDraftScenario = () => {
-  const [params] = useSearchParams()
-  const raw = params.get('state') as PageState | null
-  const state: PageState = raw && raw in SCENARIOS ? raw : 'idle'
-  return { state, scenario: SCENARIOS[state] }
+/**
+ * 시안을 열 때마다 목 작업을 비워 처음 상태에서 시작한다.
+ * 작업 목록을 부르는 훅보다 먼저 불러야 한다.
+ */
+export const useFreshDraft = () => {
+  const queryClient = useQueryClient()
+  useState(() => {
+    resetDocGenMock()
+    queryClient.removeQueries({ queryKey: ['docgen', 'jobs'] })
+    return true
+  })
 }

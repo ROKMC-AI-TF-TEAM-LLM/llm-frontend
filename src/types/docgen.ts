@@ -13,7 +13,7 @@ export type DocGenServerStatus =
 /** 생성 중 세부 단계 */
 export type DocGenStage = 'ANALYZING' | 'DRAFTING' | 'FORMATTING' | (string & {})
 
-export type DocGenOutputFormat = 'HWPX' | 'DOCX' | 'PDF'
+export type DocGenOutputFormat = 'HWPX' | 'PDF'
 export type DocGenLength = 'SHORT' | 'NORMAL' | 'LONG'
 
 export interface DocGenTemplate {
@@ -25,19 +25,12 @@ export interface DocGenTemplate {
   default_format: DocGenOutputFormat
 }
 
-export interface DocGenAttachment {
-  name: string
-  size: number
-}
-
 export interface DocGenError {
   code: DocGenErrorCode
   detail: string
 }
 
 export type DocGenErrorCode =
-  | 'ATTACHMENT_UNREADABLE'
-  | 'ATTACHMENT_TOO_LARGE'
   | 'TEMPLATE_NOT_FOUND'
   | 'LLM_SERVER_ERROR'
   | 'TIMEOUT'
@@ -67,7 +60,6 @@ export interface DocGenJob {
   domain: string | null
   output_format: DocGenOutputFormat
   length: DocGenLength
-  attachments: DocGenAttachment[]
   status: DocGenServerStatus
   stage: DocGenStage | null
   /** 0~100 */

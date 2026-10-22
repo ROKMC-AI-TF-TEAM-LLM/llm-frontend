@@ -1,4 +1,4 @@
-import type { DocGenErrorCode, DocGenJob, DocGenLength, DocGenOutputFormat, DocGenStage } from '../types/docgen'
+import type { DocGenErrorCode, DocGenJob, DocGenLength, DocGenOutputFormat } from '../types/docgen'
 
 /**
  * 상태 흐름
@@ -37,21 +37,8 @@ export const JOB_STATE_LABEL: Record<JobState, string> = {
   failed: '실패',
 }
 
-export const STAGES: { code: DocGenStage; label: string }[] = [
-  { code: 'ANALYZING', label: '자료 분석' },
-  { code: 'DRAFTING', label: '초안 작성' },
-  { code: 'FORMATTING', label: '서식 적용' },
-]
-
-/** 현재 단계의 순번(1부터). 모르면 1 */
-export const getStageIndex = (stage: string | null | undefined): number => {
-  const idx = STAGES.findIndex((s) => s.code === String(stage ?? '').toUpperCase())
-  return idx === -1 ? 1 : idx + 1
-}
-
 export const OUTPUT_FORMATS: { code: DocGenOutputFormat; label: string }[] = [
   { code: 'HWPX', label: '한글(HWPX)' },
-  { code: 'DOCX', label: '워드(DOCX)' },
   { code: 'PDF', label: 'PDF' },
 ]
 
@@ -63,12 +50,10 @@ export const LENGTHS: { code: DocGenLength; label: string }[] = [
 
 /** 오류 코드별 문구. TODO(백엔드 확인): 실제 오류 코드 목록 */
 const ERROR_MESSAGES: Record<string, string> = {
-  ATTACHMENT_UNREADABLE: '첨부 파일을 읽을 수 없습니다. 암호가 걸려 있거나 손상된 파일인지 확인해 주세요.',
-  ATTACHMENT_TOO_LARGE: '첨부 파일이 너무 큽니다. 파일당 50MB 이하로 올려 주세요.',
   TEMPLATE_NOT_FOUND: '선택한 양식을 찾을 수 없습니다. 다른 양식을 골라 주세요.',
   LLM_SERVER_ERROR: '생성 서버에 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.',
   TIMEOUT: '생성 시간이 너무 오래 걸려 중단되었습니다. 분량을 줄여 다시 시도해 보세요.',
-  CANCELLED: '요청을 취소했습니다.',
+  CANCELLED: '요청이 취소되었습니다.',
 }
 
 export const getJobErrorMessage = (code: DocGenErrorCode | null | undefined, fallback?: string): string =>
@@ -100,7 +85,3 @@ export const formatEta = (seconds?: number | null): string => {
   if (seconds < 60) return '1분 이내'
   return `약 ${Math.ceil(seconds / 60)}분`
 }
-
-export const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024
-export const MAX_ATTACHMENTS = 5
-export const ATTACHMENT_ACCEPT = '.pdf,.docx,.hwp,.hwpx,.xlsx,.txt,.md'
