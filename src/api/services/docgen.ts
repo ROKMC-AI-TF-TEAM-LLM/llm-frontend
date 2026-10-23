@@ -3,10 +3,13 @@ import { docgenMock } from './docgenMock'
 import type {
   CreateDocGenJobFields,
   CreateDocGenJobResponse,
+  CreateDocGenOutlineFields,
+  CreateDocGenOutlineResponse,
   DeleteDocGenJobResponse,
   GetDocGenJobResponse,
   GetDocGenJobsResponse,
   GetDocGenTemplatesResponse,
+  ReviseDocGenJobFields,
 } from '../../types/docgen'
 
 // TODO(백엔드 연결): 엔드포인트 경로는 가정값이다. 명세 확인 후 맞추고 USE_MOCK을 끈다.
@@ -44,6 +47,18 @@ export const retryDocGenJob = (jobId: string) =>
   USE_MOCK
     ? docgenMock.retryJob(jobId)
     : backendApi.post<GetDocGenJobResponse>(`${BASE}/jobs/${jobId}/retry`)
+
+/** 만들기 전에 쪽·장 개요만 먼저 받는다 (가벼운 요청) */
+export const createDocGenOutline = (fields: CreateDocGenOutlineFields) =>
+  USE_MOCK
+    ? docgenMock.createOutline(fields)
+    : backendApi.post<CreateDocGenOutlineResponse>(`${BASE}/outlines`, fields, { timeout: 60000 })
+
+/** 만든 작업을 기준으로 고친 새 버전 작업을 만든다 */
+export const reviseDocGenJob = (jobId: string, fields: ReviseDocGenJobFields) =>
+  USE_MOCK
+    ? docgenMock.reviseJob(jobId, fields)
+    : backendApi.post<CreateDocGenJobResponse>(`${BASE}/jobs/${jobId}/revisions`, fields)
 
 export const deleteDocGenJob = (jobId: string) =>
   USE_MOCK

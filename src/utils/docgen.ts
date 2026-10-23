@@ -1,4 +1,4 @@
-import type { DocGenErrorCode, DocGenJob, DocGenLength, DocGenOutputFormat } from '../types/docgen'
+import type { DocGenErrorCode, DocGenJob, DocGenKind, DocGenLength, DocGenOutputFormat } from '../types/docgen'
 
 /**
  * 상태 흐름
@@ -37,10 +37,25 @@ export const JOB_STATE_LABEL: Record<JobState, string> = {
   failed: '실패',
 }
 
-export const OUTPUT_FORMATS: { code: DocGenOutputFormat; label: string }[] = [
-  { code: 'HWPX', label: '한글(HWPX)' },
-  { code: 'PDF', label: 'PDF' },
-]
+/** 종류별로 고를 수 있는 파일 형식 */
+export const FORMATS_BY_KIND: Record<DocGenKind, { code: DocGenOutputFormat; label: string }[]> = {
+  doc: [
+    { code: 'HWPX', label: '한글(HWPX)' },
+    { code: 'PDF', label: 'PDF' },
+  ],
+  deck: [
+    { code: 'PPTX', label: '파워포인트(PPTX)' },
+    { code: 'PDF', label: 'PDF' },
+  ],
+}
+
+/** 문서 생성 시안(drafts)이 쓰는 형식 목록 = 문서 형식 */
+export const OUTPUT_FORMATS = FORMATS_BY_KIND.doc
+
+export const KIND_LABEL: Record<DocGenKind, { name: string; unit: string }> = {
+  doc: { name: '문서', unit: '쪽' },
+  deck: { name: '발표 자료', unit: '장' },
+}
 
 export const LENGTHS: { code: DocGenLength; label: string }[] = [
   { code: 'SHORT', label: '짧게' },

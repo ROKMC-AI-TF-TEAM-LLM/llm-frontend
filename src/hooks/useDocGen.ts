@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   cancelDocGenJob,
   createDocGenJob,
+  createDocGenOutline,
   deleteDocGenJob,
   getDocGenJobs,
   getDocGenTemplates,
   retryDocGenJob,
+  reviseDocGenJob,
 } from '../api/services/docgen'
-import type { CreateDocGenJobFields } from '../types/docgen'
+import type { CreateDocGenJobFields, CreateDocGenOutlineFields, ReviseDocGenJobFields } from '../types/docgen'
 import { isJobActive } from '../utils/docgen'
 import { useAuth } from '../context/AuthContext'
 
@@ -68,4 +70,17 @@ export const useRetryDocGenJob = () => {
 export const useDeleteDocGenJob = () => {
   const onSuccess = useInvalidateJobs()
   return useMutation({ mutationFn: (jobId: string) => deleteDocGenJob(jobId), onSuccess })
+}
+
+/** 개요만 먼저 받는다. 작업 목록은 바뀌지 않는다 */
+export const useCreateDocGenOutline = () =>
+  useMutation({ mutationFn: (fields: CreateDocGenOutlineFields) => createDocGenOutline(fields) })
+
+/** 고친 새 버전 작업을 만든다 */
+export const useReviseDocGenJob = () => {
+  const onSuccess = useInvalidateJobs()
+  return useMutation({
+    mutationFn: ({ jobId, ...fields }: ReviseDocGenJobFields & { jobId: string }) => reviseDocGenJob(jobId, fields),
+    onSuccess,
+  })
 }

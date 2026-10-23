@@ -11,7 +11,8 @@ export const useComposer = () => {
   /** '' = 전체 분야 */
   const [domain, setDomain] = useState('')
   const [format, setFormat] = useState<DocGenOutputFormat | null>(null)
-  const { templates } = useDocGenTemplates()
+  // 문서 생성 시안은 문서 양식만 쓴다. 발표 자료는 스튜디오(features/studio)에서 만든다
+  const templates = useDocGenTemplates().templates.filter((t) => t.kind === 'doc')
   const { domains } = useDomainCapabilities()
   const create = useCreateDocGenJob()
   const template = templates.find((t) => t.template_id === templateId)

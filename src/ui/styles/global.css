@@ -954,11 +954,19 @@ body.modal-open {
 }
 .sb-item:hover .sb-icon-translate { animation: sb-translate-flip 0.6s ease-in-out 1 both; }
 
+@keyframes sb-studio-rise {
+  0%   { transform: translateY(0) scale(1); }
+  45%  { transform: translateY(-3px) scale(1.12); }
+  100% { transform: translateY(0) scale(1.08); }
+}
+.sb-item:hover .sb-icon-studio { animation: sb-studio-rise 0.5s cubic-bezier(.34,1.5,.64,1) 1 both; }
+
 @media (prefers-reduced-motion: reduce) {
   .sb-icon { transition: none; }
   .sb-item:hover .sb-icon-plus,
   .sb-item:hover .sb-icon-search,
   .sb-item:hover .sb-icon-folder,
+  .sb-item:hover .sb-icon-studio,
   .sb-item:hover .sb-icon-translate {
     animation: none;
     transform: none;

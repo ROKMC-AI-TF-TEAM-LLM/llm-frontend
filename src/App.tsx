@@ -28,6 +28,8 @@ const TeamPage = lazy(() => import('./pages/TeamPage'));
 const SystemDiagnostics = lazy(() => import('./pages/SystemDiagnostics'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
+const StudioHomePage = lazy(() => import('./pages/studio/StudioHomePage'));
+const StudioEditorPage = lazy(() => import('./pages/studio/StudioEditorPage'));
 
 // TEMP(문서 생성 시안 비교용): 시안 확정 후 6단계에서 라우트와 drafts 폴더 삭제
 const DOCGEN_DRAFTS = {
@@ -130,6 +132,22 @@ const protectedRoutes: RouteObject[] = [
         element: (
           <Suspense fallback={null}>
             <ProjectPage />
+          </Suspense>
+        )
+      },
+      {
+        path: '/studio',
+        element: (
+          <Suspense fallback={null}>
+            <StudioHomePage />
+          </Suspense>
+        )
+      },
+      {
+        path: '/studio/:id',
+        element: (
+          <Suspense fallback={null}>
+            <StudioEditorPage />
           </Suspense>
         )
       },

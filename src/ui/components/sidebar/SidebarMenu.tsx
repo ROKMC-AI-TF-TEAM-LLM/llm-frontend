@@ -25,6 +25,15 @@ const navItems = [
     ),
   },
   {
+    label: "문서 스튜디오",
+    path: "/studio",
+    icon: (
+      <svg className="sb-icon sb-icon-studio" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4M7 9h6M7 12.5h4" />
+      </svg>
+    ),
+  },
+  {
     label: "번역",
     path: "/translate",
     icon: (
@@ -41,7 +50,8 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
   const location = useLocation();
 
   const isNewChatActive = location.pathname === "/chat";
-  const isItemActive = (path: string) => location.pathname === path;
+  // 스튜디오 편집기(/studio/:id)처럼 아래 경로에 있어도 그 탭을 켠다
+  const isItemActive = (path: string) => location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   const labelCls = `overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${
     isOpen ? 'opacity-100 max-w-[140px]' : 'opacity-0 max-w-0'
