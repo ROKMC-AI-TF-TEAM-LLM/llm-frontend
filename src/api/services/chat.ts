@@ -1,5 +1,6 @@
 import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
+import { API_BASE_URL } from '../../constants/api'
 import { logError } from '../../utils/logError'
 import type { GetMessagesResponse, GetMessagesParams, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source, FileAttachment, Notice } from '../../types'
@@ -197,7 +198,7 @@ export const streamMessage = async (
   onThought?: (thought: string, step?: number) => void,
 ) => {
   const response = await postSse(
-    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
+    `${API_BASE_URL}/api/v1/sessions/${sessionId}/messages/stream`,
     data,
     signal,
   )
@@ -216,7 +217,7 @@ export const regenerateMessageStream = async (
   onThought?: (thought: string, step?: number) => void,
 ) => {
   const response = await postSse(
-    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
+    `${API_BASE_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
     undefined,
     signal,
   )

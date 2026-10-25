@@ -1,9 +1,10 @@
 import type { FileAttachment } from '../types';
 import { getValidAccessToken } from '../api/lib/axios';
 import { logError } from './logError';
+import { API_BASE_URL } from '../constants/api';
 
 export const resolveAttachmentUrl = (att: FileAttachment): string => {
-  const base = import.meta.env.VITE_SERVER_API_URL ?? '';
+  const base = API_BASE_URL;
   const path = att.url ?? `/api/v1/files/${att.attachment_id}`;
   if (/^https?:\/\//i.test(path)) return path;
   return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
@@ -34,7 +35,7 @@ export const downloadAttachment = (att: FileAttachment): Promise<string | null> 
   downloadFileWithAuth(resolveAttachmentUrl(att), att.name);
 
 export const downloadDocumentByName = (name: string): Promise<string | null> => {
-  const base = import.meta.env.VITE_SERVER_API_URL ?? '';
+  const base = API_BASE_URL;
   return downloadFileWithAuth(`${base}/api/v1/documents/${encodeURIComponent(name)}/download`, name);
 };
 

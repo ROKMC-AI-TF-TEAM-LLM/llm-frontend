@@ -1,10 +1,11 @@
 import axios from 'axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
+import { API_BASE_URL } from '../../constants/api'
 import type { RefreshResponse } from '../../types/auth'
 import { logError } from '../../utils/logError'
 
 export const backendApi = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -118,7 +119,7 @@ backendApi.interceptors.response.use(
     }
 
     if (!error?.response) {
-      const baseUrl = import.meta.env.VITE_SERVER_API_URL ?? '(VITE_SERVER_API_URL 미설정)'
+      const baseUrl = API_BASE_URL || '(VITE_SERVER_API_URL 미설정 — 같은 도메인 /api)'
       logError(
         `axios.response:${requestUrl || '(요청 전 실패)'}`,
         error,
