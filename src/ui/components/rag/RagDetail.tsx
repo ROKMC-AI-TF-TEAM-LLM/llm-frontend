@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { DocumentItem } from '../../../types/document'
 import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../../utils/document'
-import { downloadDocumentByName } from '../../../utils/downloadAttachment'
+import { downloadDocument } from '../../../utils/downloadAttachment'
 
 interface RagDetailProps {
   doc: DocumentItem
@@ -17,7 +17,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
     if (downloading) return
     setDownloading(true)
     setDownloadErr(null)
-    const msg = await downloadDocumentByName(doc.name)
+    const msg = await downloadDocument(doc.document_id, doc.name)
     if (msg) setDownloadErr(msg)
     setDownloading(false)
   }

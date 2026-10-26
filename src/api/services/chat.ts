@@ -33,7 +33,13 @@ export const normalizeSource = (raw: unknown): Source => {
         ? rawPage.join(', ')
         : String(rawPage)
 
-  return { name, page }
+  const documentId = s.document_id ?? s.documentId ?? s.doc_id ?? null
+
+  return {
+    ...(documentId ? { document_id: String(documentId) } : {}),
+    name,
+    page,
+  }
 }
 
 export const toAttachment = (raw: Record<string, unknown>): FileAttachment => {

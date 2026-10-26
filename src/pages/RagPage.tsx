@@ -112,8 +112,8 @@ const RagPage = () => {
           </p>
         ) : (
           <div className="flex flex-col mt-1">
-            {filtered.map((doc, i) => (
-              <RagListItem key={`${doc.name}-${i}`} doc={doc} onClick={() => openDoc(doc)} />
+            {filtered.map((doc) => (
+              <RagListItem key={doc.document_id} doc={doc} onClick={() => openDoc(doc)} />
             ))}
           </div>
         )}
