@@ -70,6 +70,19 @@ const normalizeDocName = (name: string): string =>
     .trim()
     .toLowerCase()
 
+// 문서 식별은 document_id가 정답이다. 출처에 ID가 실려 오면 그것으로 찾고,
+// 아직 안 오는 경우에만 이름 매칭으로 떨어진다(동명이문서는 구분이 불가능하다).
+export const findDocument = (
+  docs: DocumentItem[],
+  source: { document_id?: string | null; name: string },
+): DocumentItem | undefined => {
+  if (source.document_id) {
+    const byId = docs.find((d) => d.document_id === source.document_id)
+    if (byId) return byId
+  }
+  return findDocumentByName(docs, source.name)
+}
+
 export const findDocumentByName = (
   docs: DocumentItem[],
   sourceName: string,

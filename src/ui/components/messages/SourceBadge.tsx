@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Source, Notice } from '../../../types';
 import { useDocumentLookup } from '../../../hooks/useDocument';
 import { useDocumentDrawer } from '../../../hooks/useDocumentDrawer';
-import { findDocumentByName, getDomainStyle, getDomainLabel } from '../../../utils/document';
+import { findDocument, getDomainStyle, getDomainLabel } from '../../../utils/document';
 import DocumentDrawer from '../rag/DocumentDrawer';
 
 interface SourceBadgeProps {
@@ -43,13 +43,13 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
       {hasSources && open && (
         <div className="mt-2 space-y-2">
           {sources.map((s, i) => {
-            const matched = findDocumentByName(documents, s.name);
+            const matched = findDocument(documents, s);
             const style = getDomainStyle(matched?.domain);
             const title = (matched?.name ?? s.name).replace(/\.[^/.]+$/, '');
 
             return (
               <button
-                key={i}
+                key={s.document_id ?? `${s.name}-${i}`}
                 type="button"
                 disabled={!matched}
                 onClick={() => matched && openDoc(matched)}

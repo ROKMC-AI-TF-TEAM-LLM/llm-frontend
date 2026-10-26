@@ -1,4 +1,6 @@
 export interface Source {
+  /** 백엔드가 출처에 실어 보내면 채워진다. 없으면 이름으로 문서를 찾는 기존 경로로 떨어진다. */
+  document_id?: string | null;
   name: string;
   page?: string | null;
 }
