@@ -31,7 +31,7 @@ export const VOICES: VoiceCard[] = [
   { name: '김채호', role: '[백엔드]', quote: '1321기' },
   { name: '김 준', role: '[백엔드]', quote: '1331기' },
   { name: '이지성', role: '[AI/LLM 모델링]', quote: '1331기' },
-  { name: '김은경', role: '[팀장]', quote: '1332기' },
+  { name: '김은경', role: '[팀장]', quote: '' },
   // { name: '', role: '', quote: '1332기' },
 ]
 

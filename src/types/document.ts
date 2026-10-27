@@ -1,4 +1,5 @@
 export interface DocumentItem {
+  document_id: string
   name: string
   type?: string | null
   domain?: string | null

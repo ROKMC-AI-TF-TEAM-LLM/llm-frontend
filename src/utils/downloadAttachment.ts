@@ -33,9 +33,11 @@ export const downloadFileWithAuth = async (url: string, filename: string): Promi
 export const downloadAttachment = (att: FileAttachment): Promise<string | null> =>
   downloadFileWithAuth(resolveAttachmentUrl(att), att.name);
 
-export const downloadDocumentByName = (name: string): Promise<string | null> => {
+// 문서 식별은 document_id로 한다. 이름 기반 엔드포인트는 동명이문서가 있을 때
+// 가장 최근 등록분을 돌려주므로, 인용된 문서와 다른 파일이 내려올 수 있다.
+export const downloadDocument = (documentId: string, filename: string): Promise<string | null> => {
   const base = import.meta.env.VITE_SERVER_API_URL ?? '';
-  return downloadFileWithAuth(`${base}/api/v1/documents/${encodeURIComponent(name)}/download`, name);
+  return downloadFileWithAuth(`${base}/api/v1/documents/${documentId}/download`, filename);
 };
 
 export const fileExtOf = (name: string): string | null => {
