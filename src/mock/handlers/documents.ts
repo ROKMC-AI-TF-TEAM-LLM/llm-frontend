@@ -13,6 +13,7 @@ const extensionOf = (name: string) => name.split('.').pop()?.toUpperCase() ?? nu
 
 /** 사용자 자료실(`/documents`)은 처리 완료된 문서만, 다른 필드 이름으로 보여준다 */
 const toLibraryItem = (doc: AdminDocumentItem): DocumentItem => ({
+  document_id: doc.document_id,
   name: doc.name,
   type: extensionOf(doc.name),
   domain: doc.domain,
