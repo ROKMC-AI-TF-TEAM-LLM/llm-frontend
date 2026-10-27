@@ -1,0 +1,56 @@
+/* TEMP(시안 비교용) v8 전용 움직임. 시안이 정해지면 drafts 폴더째 삭제 */
+
+/* 흐릿하게 아래에서 떠오른다 (--d 로 차례를 준다). 끝난 뒤 흔적을 남기지 않도록 backwards */
+@keyframes v8-rise {
+  from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.v8-rise {
+  animation: v8-rise 900ms cubic-bezier(.32,.72,0,1) backwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* 조각이 모이는 순간 엠블럼이 한 번 움찔했다 자리 잡는다 */
+@keyframes v8-settle {
+  0%, 50% { transform: none; }
+  64%     { transform: scale(.94); }
+  80%     { transform: scale(1.06); }
+  100%    { transform: none; }
+}
+.v8-settle {
+  animation: v8-settle 1100ms cubic-bezier(.34,1.56,.64,1);
+}
+
+/* 합쳐지는 순간 퍼지는 충격파 */
+@keyframes v8-shock {
+  0%   { transform: scale(.4); opacity: 0; stroke-width: 6; }
+  12%  { opacity: .9; }
+  100% { transform: scale(3); opacity: 0; stroke-width: .5; }
+}
+.v8-shock {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: v8-shock 900ms cubic-bezier(.22,1,.36,1) 520ms forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v8-rise, .v8-settle, .v8-shock { animation: none; }
+}
+
+/* 측면 별: 합쳐진 뒤 튀어나오듯 붙는다 (transition-delay는 인라인으로) */
+.v8-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 500ms cubic-bezier(.34,1.56,.64,1), opacity 200ms;
+}
+.v8-pop[data-on="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v8-pop { transition: none; }
+}
