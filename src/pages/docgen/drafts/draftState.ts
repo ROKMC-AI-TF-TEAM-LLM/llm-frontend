@@ -12,6 +12,9 @@ export const DRAFTS = [
   { v: 'v6', name: '전송 모션' },
   { v: 'v7', name: '전송 모션 다듬기' },
   { v: 'v8', name: '엠블럼 융합' },
+  { v: 'v9', name: '로프 고리' },
+  { v: 'v10', name: '독수리 막대' },
+  { v: 'v11', name: '로프+독수리' },
 ]
 
 /**

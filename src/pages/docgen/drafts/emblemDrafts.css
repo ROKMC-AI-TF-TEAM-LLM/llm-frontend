@@ -1,0 +1,36 @@
+/* TEMP(시안 비교용) v9~v11 전용 움직임. 시안이 정해지면 drafts 폴더째 삭제 */
+
+/* 독수리가 막대 위에서 살짝 오르내리며 난다. 진행률이 잠시 멈춰도 멈춘 것처럼 보이지 않게 */
+@keyframes emb-glide {
+  50% { transform: translateY(-3px); }
+}
+.emb-glide {
+  animation: emb-glide 1.6s ease-in-out infinite;
+}
+
+/* 로프 무늬가 흘러가 줄을 당기는 것처럼 보인다 */
+@keyframes emb-rope-pull {
+  to { background-position: 10px 0; }
+}
+.emb-rope-pull {
+  animation: emb-rope-pull .8s linear infinite;
+}
+
+/* 로프 고리가 돈다 (아직 일하는 중) */
+@keyframes emb-spin {
+  to { transform: rotate(360deg); }
+}
+.emb-spin {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: emb-spin 1.2s linear infinite;
+}
+.emb-spin-slow {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: emb-spin 2.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emb-glide, .emb-rope-pull, .emb-spin, .emb-spin-slow { animation: none; }
+}
