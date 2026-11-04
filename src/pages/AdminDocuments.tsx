@@ -3,12 +3,13 @@ import {
   useInfiniteAdminDocuments,
   useUploadDocument,
   useDeleteDocument,
+  useRetryDocument,
   useAdminDocumentStatus,
 } from '../hooks/useAdminDocument';
 import { DOMAINS, getDomainLabel, getDomainStyle, normalizeDocStatus } from '../utils/document';
 import DomainIcon from '../ui/components/chat/DomainIcon';
 import { showToast } from '../api/store/toastStore';
-import { getApiError, DEFAULT_STATUS_ERRORS } from '../utils/error';
+import { getApiError, DEFAULT_STATUS_ERRORS, type ApiError } from '../utils/error';
 import type { AdminDocumentItem, AdminDocStatus } from '../types/adminDocument';
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
@@ -39,11 +40,13 @@ function DocumentRow({
   onDelete,
   onRetry,
   deleting,
+  retrying,
 }: {
   doc: AdminDocumentItem;
   onDelete: (doc: AdminDocumentItem) => void;
   onRetry: (doc: AdminDocumentItem) => void;
   deleting: boolean;
+  retrying: boolean;
 }) {
   const listStatus = normalizeDocStatus(doc.status);
   const isProcessing = listStatus === 'processing';
@@ -92,7 +95,8 @@ function DocumentRow({
           {isFailed && (
             <button
               onClick={() => onRetry(doc)}
-              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
+              disabled={retrying}
+              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
             >
               재시도
             </button>
@@ -144,6 +148,7 @@ export default function AdminDocuments() {
   } = useInfiniteAdminDocuments(debouncedSearch ? { search: debouncedSearch } : undefined);
   const uploadMut = useUploadDocument();
   const deleteMut = useDeleteDocument();
+  const retryMut = useRetryDocument();
 
   const documents = useMemo<AdminDocumentItem[]>(
     () => (data?.pages ?? []).flatMap((p) => p.data.data.documents ?? []),
@@ -191,7 +196,14 @@ export default function AdminDocuments() {
     });
   };
 
-  const handleRetry = (_doc: AdminDocumentItem) => {
+  const handleRetry = (doc: AdminDocumentItem) => {
+    retryMut.mutate(doc.document_id, {
+      onSuccess: () => showToast(`'${doc.name}' 색인을 다시 시작했습니다.`, 'success'),
+      onError: (e) => {
+        const detail = (e as ApiError)?.response?.data?.error?.detail;
+        showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      },
+    });
   };
 
   return (
@@ -342,6 +354,7 @@ export default function AdminDocuments() {
                   onDelete={handleDelete}
                   onRetry={handleRetry}
                   deleting={deleteMut.isPending}
+                  retrying={retryMut.isPending && retryMut.variables === doc.document_id}
                 />
               ))
             )}

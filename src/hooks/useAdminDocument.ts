@@ -10,6 +10,7 @@ import {
   getAdminDocuments,
   getAdminDocumentStatus,
   deleteAdminDocument,
+  retryAdminDocument,
 } from '../api/services/adminDocument'
 import type { GetAdminDocumentsParams, UploadDocumentFields } from '../types/adminDocument'
 import { normalizeDocStatus } from '../utils/document'
@@ -61,6 +62,18 @@ export const useDeleteDocument = () => {
     mutationFn: (documentId: string) => deleteAdminDocument(documentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'documents'] })
+    },
+  })
+}
+
+export const useRetryDocument = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (documentId: string) => retryAdminDocument(documentId),
+    onSuccess: (_res, documentId) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'documents'] })
+      // 행은 상태 조회 캐시를 목록보다 우선하므로, 이전 폴링에서 남은 실패 상태를 비운다.
+      queryClient.invalidateQueries({ queryKey: ['admin', 'document-status', documentId] })
     },
   })
 }
