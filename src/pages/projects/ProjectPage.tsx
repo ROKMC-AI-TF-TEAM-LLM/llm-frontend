@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useDeleteProject, useRetryProjectDocument } from '../../hooks/useProject'
+import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument } from '../../hooks/useProject'
 import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
@@ -28,6 +28,17 @@ import {
   SparkIcon,
 } from '../../features/projects/ui'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { useQueryClient } from '@tanstack/react-query'
+import { isNetworkError } from '../../utils/error'
+import { logError } from '../../utils/logError'
+
+// ChatPage·NewChatPage와 같은 안내 문구.
+const AI_NOTICE = 'MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.'
+
+const SESSION_ERRORS: Record<string, string> = {
+  SESSION_NOT_FOUND: '존재하지 않는 대화입니다.',
+  SESSION_ACCESS_DENIED: '접근 권한이 없는 대화입니다.',
+}
 
 function PollingDocRow({
   projectId,
@@ -66,7 +77,7 @@ export default function ProjectPage() {
   const { id, chatId } = useParams()
   const navigate = useNavigate()
   const project = useProjectStore((s) => s.projects.find((p) => p.id === id))
-  const { mutate: deleteProjectApi } = useDeleteProject()
+  const confirmDeleteProject = useConfirmDeleteProject()
   const upsertDetail = useProjectStore((s) => s.upsertDetail)
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
@@ -79,14 +90,85 @@ export default function ProjectPage() {
     if (detailData?.data?.data) upsertDetail(detailData.data.data)
   }, [detailData, upsertDetail])
 
+  const queryClient = useQueryClient()
   const connect = useChatStore((s) => s.connect)
   const disconnect = useChatStore((s) => s.disconnect)
   const isConnecting = useChatStore((s) => s.isConnecting)
+  const chatError = useChatStore((s) => s.error)
+  const clearChatError = useChatStore((s) => s.clearError)
+  const isDeleted = useChatStore((s) => s.isDeleted)
+  const resetDeleted = useChatStore((s) => s.resetDeleted)
+
+  // 일시적 오류(5xx·네트워크)는 ChatPage처럼 재시도 화면을 보여준다.
+  // 어느 대화의 오류인지 함께 저장해, 다른 대화로 옮기면 자동으로 무시되게 한다.
+  const [connectError, setConnectError] = useState<{ chatId: string; message: string } | null>(null)
+  const [retryKey, setRetryKey] = useState(0)
+
+  // useLayoutEffect: 라우터 내비게이션은 트랜지션으로 커밋되므로 useEffect면
+  // 이전 대화의 메시지가 한 프레임 그려질 수 있다. ChatPage와 동일하게 페인트 전에 연결한다.
+  useLayoutEffect(() => {
+    if (!chatId) {
+      disconnect()
+      return
+    }
+    let cancelled = false
+    connect(chatId)
+      .then(() => {
+        if (!cancelled) setConnectError(null)
+      })
+      .catch((e) => {
+        if (cancelled) return
+        logError('ProjectPage.connect', e, { projectId: id, chatId })
+        const code = e?.response?.data?.error?.code as string | undefined
+        const status = (e?.response?.status ?? 0) as number
+        const known = code ? SESSION_ERRORS[code] : undefined
+        if (known) {
+          // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
+          showToast(known)
+          queryClient.invalidateQueries({ queryKey: ['projects', 'sessions', id] })
+          navigate(`/projects/${id}`, { replace: true })
+        } else if (status >= 500) {
+          const detail = e?.response?.data?.error?.detail as string | undefined
+          setConnectError({
+            chatId,
+            message: detail
+              ? `서버에 일시적인 오류가 발생했습니다. (${status}: ${detail})`
+              : `서버에 일시적인 오류가 발생했습니다. (${status})`,
+          })
+        } else if (isNetworkError(e)) {
+          setConnectError({ chatId, message: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.' })
+        } else {
+          showToast('대화를 불러오는 중 오류가 발생했습니다.')
+          navigate(`/projects/${id}`, { replace: true })
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [chatId, id, retryKey, connect, disconnect, navigate, queryClient])
+  // 같은 대화로 돌아와 다시 연결 중일 때는 이전 오류를 숨긴다(성공하면 위 then에서 지워진다).
+  const activeConnectError =
+    connectError && connectError.chatId === chatId && !isConnecting ? connectError.message : null
+  const retryConnect = () => {
+    setConnectError(null)
+    setRetryKey((k) => k + 1)
+  }
+
+  // ChatPage와 동일하게 스트림 오류·첫 응답 실패로 인한 세션 삭제를 처리한다.
   useEffect(() => {
-    if (chatId) connect(chatId)
-    else disconnect()
-  }, [chatId, connect, disconnect])
-  useDocumentTitle(project ? project.name : '프로젝트')
+    if (isDeleted) {
+      const msg = chatError
+      resetDeleted()
+      clearChatError()
+      if (msg) showToast(msg)
+      navigate(`/projects/${id}`, { replace: true })
+      return
+    }
+    if (chatError) {
+      showToast(chatError)
+      clearChatError()
+    }
+  }, [isDeleted, chatError, resetDeleted, clearChatError, navigate, id])
   const [modalOpen, setModalOpen] = useState(false)
   const [filesOpen, setFilesOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -144,6 +226,9 @@ export default function ProjectPage() {
         messageCount: 0,
       }))
   }, [sessionsData])
+  const openChatTitle = chatId ? chats.find((c) => c.id === chatId)?.title : undefined
+  // ChatPage와 같이 대화를 열면 탭 제목을 대화 제목으로 바꾼다.
+  useDocumentTitle(openChatTitle ?? (project ? project.name : '프로젝트'))
 
   const { mutate: updateSessionApi } = useUpdateSession()
   const { mutate: toggleSessionFavoriteApi } = useToggleSessionFavorite()
@@ -231,14 +316,7 @@ export default function ProjectPage() {
               setNameDraft(project.name)
               setRenaming(true)
             }}
-            onDelete={() => {
-              const ok = window.confirm(
-                `'${project.name}' 프로젝트를 삭제하시겠습니까?\n\n하위 대화와 메시지, 업로드한 참고 파일이 모두 함께 삭제되며 되돌릴 수 없습니다.`,
-              )
-              if (!ok) return
-              deleteProjectApi(project.id)
-              navigate('/chat')
-            }}
+            onDelete={() => confirmDeleteProject({ id: project.id, name: project.name })}
           />
           <span className="ml-auto">
             <IconButton label="컨텍스트 접기" onClick={() => setPanelOpen(false)}>
@@ -343,13 +421,21 @@ export default function ProjectPage() {
           </div>
         </header>
 
-        {openChatId ? (
+        {openChatId && activeConnectError ? (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6">
+            <p className="text-text-secondary">{activeConnectError}</p>
+            <button type="button" onClick={retryConnect} className="text-sm text-brand hover:underline">
+              다시 시도
+            </button>
+          </div>
+        ) : openChatId ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex-1 min-h-0">
               <MessageList title={project.name} isLoading={isConnecting} hideHeader />
             </div>
             <div className="shrink-0 bg-surface px-4 pb-2">
               <ChatInput isConnecting={isConnecting} hideDomain />
+              <p className="text-xs text-center text-text-muted pt-2">{AI_NOTICE}</p>
             </div>
           </div>
         ) : (
@@ -358,7 +444,7 @@ export default function ProjectPage() {
               <p className="mb-6 text-center text-[14px] text-text-muted">
                 MARS는 이 프로젝트에서 대화할 때마다 동일한 지침과 파일을 참조합니다.
               </p>
-              <ChatInput projectId={project.id} hideDomain />
+              <ChatInput projectId={project.id} hideDomain notice={AI_NOTICE} />
             </div>
           </div>
         )}

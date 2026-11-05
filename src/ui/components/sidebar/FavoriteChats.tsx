@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 import type { ChatItem } from '../../../types'
 import SessionItem from './SessionItem'
 import { showToast } from '../../../api/store/toastStore'
 import ProjectItem from './ProjectItem'
 import { useProjectStore } from '../../../features/projects/projectStore'
-import { useUpdateProject, useToggleProjectFavorite } from '../../../hooks/useProject'
+import { useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '../../../hooks/useProject'
 
 interface FavoriteChatsProps {
   isOpen: boolean
@@ -14,13 +13,11 @@ interface FavoriteChatsProps {
 
 export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps) {
   const [expanded, setExpanded] = useState(true)
-  const navigate = useNavigate()
-  const location = useLocation()
 
   const projects = useProjectStore((s) => s.projects)
-  const remove = useProjectStore((s) => s.remove)
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
+  const confirmDelete = useConfirmDeleteProject()
   const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
@@ -30,8 +27,8 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
   const favProjects = projects.filter((p) => p.isFavorite)
 
   const handleDelete = (id: string) => {
-    remove(id)
-    if (location.pathname.startsWith(`/projects/${id}`)) navigate('/chat')
+    const target = projects.find((p) => p.id === id)
+    if (target) confirmDelete({ id, name: target.name })
   }
 
   if (favorites.length === 0 && favProjects.length === 0) return null

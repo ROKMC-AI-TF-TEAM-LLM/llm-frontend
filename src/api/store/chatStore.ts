@@ -9,6 +9,13 @@ import { logError } from '../../utils/logError';
 import { uuid } from '../../utils/uuid';
 import { getDomainLabel } from '../../utils/document';
 
+// 세션 목록은 전역(['sessions'])과 프로젝트별(['projects','sessions',id]) 두 캐시에 있다.
+// 세션이 바뀌면 둘 다 갱신해야 프로젝트 패널이 사이드바와 어긋나지 않는다.
+const invalidateSessionLists = () => {
+  queryClient.invalidateQueries({ queryKey: ['sessions'] });
+  queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] });
+};
+
 export interface DomainSelection {
   code: string;
   label: string;
@@ -345,7 +352,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         messageCache.delete(sessionId)
         streamRegistry.delete(sessionId)
         deleteSession(sessionId)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .then(invalidateSessionLists)
           .catch((e) => logError('deleteSession', e))
         if (viewing) set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, isDeleted: true })
         return
@@ -376,7 +383,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         messageCache.delete(sessionId)
         streamRegistry.delete(sessionId)
         deleteSession(sessionId)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .then(invalidateSessionLists)
           .catch((e) => logError('deleteSession', e))
         if (viewing) set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.', isStreaming: false, abortController: null, isDeleted: true })
         return
@@ -396,7 +403,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     const doneMsgs = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
     streamRegistry.delete(sessionId)
     messageCache.set(sessionId, doneMsgs)
-    queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    invalidateSessionLists()
     if (get().sessionId === sessionId) {
       set({ isStreaming: false, abortController: null, messages: doneMsgs })
     }
@@ -448,7 +455,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const done = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
       streamRegistry.set(sessionId, done)
       messageCache.set(sessionId, done)
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      invalidateSessionLists()
       return
     }
 
@@ -463,7 +470,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       ),
     }))
     messageCache.set(sessionId, get().messages)
-    queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    invalidateSessionLists()
   }
 
   return {
@@ -504,7 +511,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       connectAbortController = new AbortController();
       const { signal } = connectAbortController;
 
-      set({ nextCursor: null, hasMore: false, isLoadingMore: false });
+      set({ nextCursor: null, hasMore: false, isLoadingMore: false, isDeleted: false });
 
       const streaming = streamRegistry.get(sessionId);
       if (streaming) {
@@ -621,7 +628,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         if (stillEmpty) {
           clearCache(sessionId);
           deleteSession(sessionId)
-            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+            .then(invalidateSessionLists)
             .catch((e) => logError('deleteSession', e));
           set({ isDeleted: true });
         }
