@@ -223,10 +223,12 @@ export const regenerateMessageStream = async (
   onFiles?: (files: FileAttachment[]) => void,
   onNotice?: (notice: Notice) => void,
   onThought?: (thought: string, step?: number) => void,
+  domain?: string,
 ) => {
+  // 서버는 원래 질문의 분야를 저장하지 않는다. 재생성 때 다시 보내지 않으면 자동 분류로 바뀐다.
   const response = await postSse(
     `${API_BASE_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
-    undefined,
+    domain ? { domain } : undefined,
     signal,
   )
   await readSse(response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal })

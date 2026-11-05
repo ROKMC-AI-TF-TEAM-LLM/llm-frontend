@@ -439,6 +439,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     assistantId: string,
     serverId: string,
     signal: AbortSignal,
+    domain?: string,
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
@@ -457,7 +458,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice, writer.setThought)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice, writer.setThought, domain)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -879,7 +880,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
       streamControllers.set(sessionId, controller);
 
       try {
-        await executeRegenerate(sessionId, assistantId, serverId, controller.signal);
+        // 원래 질문에 지정했던 분야로 다시 답하게 한다.
+        await executeRegenerate(sessionId, assistantId, serverId, controller.signal, prevDomain?.code);
       } finally {
         releaseController(sessionId, controller);
       }
