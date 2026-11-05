@@ -3,6 +3,7 @@ import { LOCAL_STORAGE_KEY } from '../../constants/key'
 import { API_BASE_URL } from '../../constants/api'
 import type { RefreshResponse } from '../../types/auth'
 import { logError } from '../../utils/logError'
+import { clearStoredChatData } from '../../utils/chatStorage'
 
 export const backendApi = axios.create({
   baseURL: API_BASE_URL,
@@ -113,6 +114,7 @@ backendApi.interceptors.response.use(
         logError('axios.response.refresh', refreshError)
         sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        clearStoredChatData()
         window.location.href = '/'
         return Promise.reject(refreshError)
       }

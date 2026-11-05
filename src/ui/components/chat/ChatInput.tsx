@@ -1,7 +1,7 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import type { ApiError } from '../../../utils/error';
-import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
+import { useChatStore, saveInflight } from '../../../api/store/chatStore';
 import type { DomainSelection } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import { useCreateSession } from '../../../hooks/useSession';
@@ -153,12 +153,8 @@ export default function ChatInput({
     } else if (isNewChat) {
       clearDraft();
       resetTextarea();
-      if (isStreaming) abortStream();
-      const prevSessionId = useChatStore.getState().sessionId;
-      if (prevSessionId) {
-        clearInflight(prevSessionId);
-        clearCache(prevSessionId);
-      }
+      // 이전 대화의 스트림은 건드리지 않는다. 진행 중이던 답변은 백그라운드에서 끝까지 받아지고,
+      // 다시 열면 이어서 보인다(예전에는 여기서 중단하고 캐시까지 지워 답변이 사라졌다).
       try {
         const res = await createSession({ title: toSessionTitle(text), ...(projectId ? { project_id: projectId } : {}) });
         const sessionId = res.data.data.session_id;
