@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo, useRef } from 'react'
+import { useQuery, useInfiniteQuery, useMutation, useMutationState, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query'
 import {
   getProjects, getProject, createProject, updateProject,
   setProjectFavorite, setProjectInstruction, getProjectSessions, deleteProject,
@@ -7,10 +7,96 @@ import {
 } from '../api/services/project'
 import type { AxiosResponse } from 'axios'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { CreateProjectRequest, GetProjectSessionsParams, GetProjectDocumentStatusResponse, GetProjectDocumentsResponse } from '../types/project'
-import { useProjectStore } from '../features/projects/projectStore'
+import type {
+  CreateProjectRequest, GetProjectSessionsParams, GetProjectDocumentStatusResponse, GetProjectDocumentsResponse,
+  GetProjectsResponse, GetProjectResponse, ProjectData,
+} from '../types/project'
 import { useAuth } from '../context/AuthContext'
 import { showToast } from '../api/store/toastStore'
+
+// 프로젝트 목록·상세의 단일 출처는 React Query 캐시다.
+// (예전에는 zustand 스토어에 복사해 썼는데, 서버 응답이 올 때마다 스토어를 통째로 덮어써
+//  낙관적 변경이 되돌아가거나 삭제한 프로젝트가 되살아나는 문제가 있었다.)
+
+export interface ProjectView {
+  id: string
+  name: string
+  isFavorite: boolean
+  instructions: string
+}
+
+type ProjectsInfinite = InfiniteData<AxiosResponse<GetProjectsResponse>, string | undefined>
+type ProjectDetail = AxiosResponse<GetProjectResponse>
+type Snapshot = [readonly unknown[], unknown]
+
+const PROJECTS_INFINITE_PREFIX = ['projects', 'infinite'] as const
+const PROJECTS_ALL_KEY = ['projects', 'infinite', 'all'] as const
+const projectDetailKey = (projectId: string | undefined) => ['projects', 'detail', projectId] as const
+
+// 프로젝트를 바꾸는 mutation은 모두 이 접두사를 쓴다.
+// 여러 변경이 겹칠 때 마지막 것만 목록을 다시 받게 해, 중간 상태 응답이 화면을 되돌리지 않게 한다.
+const PROJECT_MUTATION_PREFIX = ['projects', 'mutate'] as const
+const PROJECT_DELETE_KEY = ['projects', 'mutate', 'delete'] as const
+
+type ProjectPatch = Partial<Pick<ProjectData, 'title' | 'is_favorite' | 'instructions'>>
+
+// 목록(모든 infinite 쿼리)과 상세 캐시에 같은 변경을 적용하고, 롤백용 스냅샷을 돌려준다.
+// patch가 null이면 목록에서 제거한다.
+const patchProjectCaches = (qc: QueryClient, projectId: string, patch: ProjectPatch | null): Snapshot[] => {
+  const snapshots: Snapshot[] = []
+  for (const [key, data] of qc.getQueriesData<ProjectsInfinite>({ queryKey: PROJECTS_INFINITE_PREFIX })) {
+    if (!data) continue
+    snapshots.push([key, data])
+    qc.setQueryData<ProjectsInfinite>(key, {
+      ...data,
+      pages: data.pages.map((page) => {
+        const items = page.data.data.items
+        const nextItems = patch
+          ? items.map((it) =>
+              it.project_id === projectId
+                ? {
+                    ...it,
+                    ...(patch.title !== undefined ? { title: patch.title } : {}),
+                    ...(patch.is_favorite !== undefined ? { is_favorite: patch.is_favorite } : {}),
+                  }
+                : it,
+            )
+          : items.filter((it) => it.project_id !== projectId)
+        return { ...page, data: { ...page.data, data: { ...page.data.data, items: nextItems } } }
+      }),
+    })
+  }
+  if (patch) {
+    const key = projectDetailKey(projectId)
+    const detail = qc.getQueryData<ProjectDetail>(key)
+    if (detail?.data?.data) {
+      snapshots.push([key, detail])
+      qc.setQueryData<ProjectDetail>(key, {
+        ...detail,
+        data: { ...detail.data, data: { ...detail.data.data, ...patch } },
+      })
+    }
+  }
+  return snapshots
+}
+
+const rollback = (qc: QueryClient, snapshots: Snapshot[] | undefined) => {
+  if (!snapshots) return
+  for (const [key, data] of snapshots) qc.setQueryData(key, data)
+}
+
+const cancelProjectQueries = async (qc: QueryClient, projectId: string) => {
+  await qc.cancelQueries({ queryKey: PROJECTS_INFINITE_PREFIX })
+  await qc.cancelQueries({ queryKey: projectDetailKey(projectId) })
+}
+
+// 마지막으로 끝난 변경만 서버 값을 다시 받는다. 실패했으면(force) 항상 다시 받는다.
+// onSettled 시점의 mutation은 아직 pending으로 집계되므로, 1이면 '내가 마지막'이다.
+const settleProjects = (qc: QueryClient, force = false) => {
+  if (!force && qc.isMutating({ mutationKey: PROJECT_MUTATION_PREFIX }) > 1) return
+  qc.invalidateQueries({ queryKey: PROJECTS_INFINITE_PREFIX })
+  qc.invalidateQueries({ queryKey: ['projects', 'detail'] })
+}
 
 export const useInfiniteProjects = (isFavorite?: boolean) => {
   const { accessToken } = useAuth()
@@ -27,104 +113,155 @@ export const useInfiniteProjects = (isFavorite?: boolean) => {
   })
 }
 
+// 사이드바용 프로젝트 목록. 삭제 요청 중인 프로젝트는 그사이 목록을 다시 받아도 보이지 않게 거른다.
+export const useProjectList = () => {
+  const query = useInfiniteProjects()
+  const deletingIds = useMutationState({
+    filters: { mutationKey: PROJECT_DELETE_KEY, status: 'pending' },
+    select: (m) => m.state.variables as string,
+  })
+  const deletingKey = deletingIds.join(',')
+  const projects = useMemo<ProjectView[]>(() => {
+    const hidden = new Set(deletingKey ? deletingKey.split(',') : [])
+    return (query.data?.pages ?? [])
+      .flatMap((p) => p.data.data.items)
+      .filter((it) => !hidden.has(it.project_id))
+      .map((it) => ({ id: it.project_id, name: it.title ?? '', isFavorite: it.is_favorite, instructions: '' }))
+  }, [query.data, deletingKey])
+  return { ...query, projects }
+}
+
 export const useProject = (projectId: string | undefined) => {
   const { accessToken } = useAuth()
   return useQuery({
-    queryKey: ['projects', 'detail', projectId],
+    queryKey: projectDetailKey(projectId),
     queryFn: () => getProject(projectId as string),
     enabled: !!accessToken && !!projectId,
   })
 }
 
+// 프로젝트 페이지용. 상세를 우선 쓰고, 상세가 오기 전에는 사이드바 목록에 있는 값으로 먼저 그린다.
+export const useProjectView = (projectId: string | undefined) => {
+  const detail = useProject(projectId)
+  const { projects } = useProjectList()
+  const fromList = projects.find((p) => p.id === projectId)
+  const d = detail.data?.data?.data
+  const project = useMemo<ProjectView | undefined>(() => {
+    if (d) return { id: d.project_id, name: d.title ?? '', isFavorite: d.is_favorite, instructions: d.instructions ?? '' }
+    return fromList
+  }, [d, fromList])
+  return { project, isLoading: detail.isLoading, isError: detail.isError }
+}
+
 export const useCreateProject = () => {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: [...PROJECT_MUTATION_PREFIX, 'create'],
     mutationFn: (data: CreateProjectRequest) => createProject(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    onSuccess: (res) => {
+      const created = res.data.data
+      // 이동한 프로젝트 페이지가 곧바로 그려지도록 상세 캐시를 채우고, 목록 맨 앞에도 넣는다.
+      queryClient.setQueryData<ProjectDetail>(projectDetailKey(created.project_id), {
+        ...res,
+        data: { success: true, status_code: res.data.status_code, data: created, error: null },
+      })
+      queryClient.setQueryData<ProjectsInfinite>(PROJECTS_ALL_KEY, (old) => {
+        if (!old || old.pages.length === 0) return old
+        const [first, ...rest] = old.pages
+        if (first.data.data.items.some((it) => it.project_id === created.project_id)) return old
+        const item = { project_id: created.project_id, title: created.title, is_favorite: created.is_favorite }
+        return {
+          ...old,
+          pages: [
+            { ...first, data: { ...first.data, data: { ...first.data.data, items: [item, ...first.data.data.items] } } },
+            ...rest,
+          ],
+        }
+      })
     },
+    onSettled: () => settleProjects(queryClient),
   })
 }
 
 export const useUpdateProject = () => {
   const queryClient = useQueryClient()
-  const rename = useProjectStore((s) => s.rename)
   return useMutation({
+    mutationKey: [...PROJECT_MUTATION_PREFIX, 'update'],
     mutationFn: ({ projectId, title }: { projectId: string; title: string }) =>
       updateProject(projectId, { title }),
-    onMutate: ({ projectId, title }) => {
-      const prev = useProjectStore.getState().projects.find((p) => p.id === projectId)?.name
-      rename(projectId, title)
-      return { projectId, prevName: prev }
+    onMutate: async ({ projectId, title }) => {
+      await cancelProjectQueries(queryClient, projectId)
+      return { snapshots: patchProjectCaches(queryClient, projectId, { title }) }
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prevName != null) rename(ctx.projectId, ctx.prevName)
+      rollback(queryClient, ctx?.snapshots)
+      showToast('프로젝트 이름을 바꾸지 못했습니다. 잠시 후 다시 시도해주세요.')
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-    },
+    onSettled: (_d, e) => settleProjects(queryClient, !!e),
   })
 }
 
 export const useToggleProjectFavorite = () => {
   const queryClient = useQueryClient()
-  const setFavorite = useProjectStore((s) => s.setFavorite)
   return useMutation({
+    mutationKey: [...PROJECT_MUTATION_PREFIX, 'favorite'],
     mutationFn: ({ projectId, next }: { projectId: string; next: boolean }) =>
       setProjectFavorite(projectId, { is_favorite: next }),
-    onMutate: ({ projectId, next }) => {
-      const prev = useProjectStore.getState().projects.find((p) => p.id === projectId)?.isFavorite
-      setFavorite(projectId, next)
-      return { projectId, prev }
+    onMutate: async ({ projectId, next }) => {
+      await cancelProjectQueries(queryClient, projectId)
+      return { snapshots: patchProjectCaches(queryClient, projectId, { is_favorite: next }) }
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prev != null) setFavorite(ctx.projectId, ctx.prev)
+      rollback(queryClient, ctx?.snapshots)
+      showToast('즐겨찾기를 변경하지 못했습니다. 잠시 후 다시 시도해주세요.')
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-    },
+    onSettled: (_d, e) => settleProjects(queryClient, !!e),
   })
 }
+
 export const useSetProjectInstruction = () => {
   const queryClient = useQueryClient()
-  const setInstructions = useProjectStore((s) => s.setInstructions)
   return useMutation({
+    mutationKey: [...PROJECT_MUTATION_PREFIX, 'instruction'],
     mutationFn: ({ projectId, instructions }: { projectId: string; instructions: string }) =>
       setProjectInstruction(projectId, { instructions: instructions.trim() === '' ? null : instructions }),
-    onMutate: ({ projectId, instructions }) => {
-      const prev = useProjectStore.getState().projects.find((p) => p.id === projectId)?.instructions
-      setInstructions(projectId, instructions)
-      return { projectId, prev }
+    onMutate: async ({ projectId, instructions }) => {
+      await queryClient.cancelQueries({ queryKey: projectDetailKey(projectId) })
+      return { snapshots: patchProjectCaches(queryClient, projectId, { instructions }) }
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prev != null) setInstructions(ctx.projectId, ctx.prev)
+      rollback(queryClient, ctx?.snapshots)
+      showToast('지침을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.')
     },
     onSettled: (_d, _e, v) => {
-      queryClient.invalidateQueries({ queryKey: ['projects', 'detail', v.projectId] })
+      queryClient.invalidateQueries({ queryKey: projectDetailKey(v.projectId) })
     },
   })
 }
 
 export const useDeleteProject = () => {
   const queryClient = useQueryClient()
-  const remove = useProjectStore((s) => s.remove)
   return useMutation({
+    mutationKey: PROJECT_DELETE_KEY,
     mutationFn: (projectId: string) => deleteProject(projectId),
     onMutate: async (projectId) => {
-      // 진행 중인 목록 요청이 삭제 전 데이터로 돌아와 setFromServer가 프로젝트를 되살리지 않게 한다.
-      await queryClient.cancelQueries({ queryKey: ['projects', 'infinite'] })
-      const prev = useProjectStore.getState().projects
-      remove(projectId)
-      return { prev }
+      await queryClient.cancelQueries({ queryKey: PROJECTS_INFINITE_PREFIX })
+      return { snapshots: patchProjectCaches(queryClient, projectId, null) }
+    },
+    onSuccess: (_d, projectId) => {
+      // 이미 페이지를 떠났으므로 이 프로젝트의 캐시는 버린다.
+      queryClient.removeQueries({ queryKey: projectDetailKey(projectId) })
+      queryClient.removeQueries({ queryKey: ['projects', 'sessions', projectId] })
+      queryClient.removeQueries({ queryKey: ['projects', 'documents', projectId] })
     },
     onError: (e, _projectId, ctx) => {
-      if (ctx?.prev) useProjectStore.setState({ projects: ctx.prev })
+      rollback(queryClient, ctx?.snapshots)
       // 삭제 요청 직후 화면을 떠나므로 실패를 알리지 않으면 사용자는 알 수 없다.
       const detail = (e as { response?: { data?: { error?: { detail?: string } } } })?.response?.data?.error?.detail
       showToast(detail ? `프로젝트를 삭제하지 못했습니다. (${detail})` : '프로젝트를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.')
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    onSettled: (_d, e) => {
+      settleProjects(queryClient, !!e)
       // 전역 세션 목록(사이드바 최근 대화)에도 프로젝트 하위 세션이 들어 있다.
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
     },

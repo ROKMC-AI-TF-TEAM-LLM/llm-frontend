@@ -1,10 +1,7 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { ChatItem } from '../../../types'
 import SessionItem from './SessionItem'
 import { SessionItemSkeleton } from '../Skeleton'
-import { showToast } from '../../../api/store/toastStore'
-import ProjectChatItem from './ProjectChatItem'
-import { useProjectStore } from '../../../features/projects/projectStore'
 
 interface RecentChatsProps {
   isOpen: boolean;
@@ -18,21 +15,6 @@ interface RecentChatsProps {
 export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: RecentChatsProps) {
   const [expanded, setExpanded] = useState(true)
   const sentinelRef = useRef<HTMLDivElement>(null)
-
-  const projects = useProjectStore((s) => s.projects)
-  const projectChats = useMemo(
-    () =>
-      projects.flatMap((p) =>
-        p.chats.map((c) => ({
-          id: c.id,
-          title: c.title,
-          updatedAt: c.updatedAt,
-          projectId: p.id,
-          projectName: p.name,
-        })),
-      ),
-    [projects],
-  )
 
   useEffect(() => {
     const el = sentinelRef.current
@@ -79,12 +61,8 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
             </ul>
           ) : (
             <ul className="space-y-0">
-              {projectChats.map((c) => (
-                <ProjectChatItem key={`${c.projectId}-${c.id}`} chat={c} />
-              ))}
-
               {chats.map((chat) => (
-                <SessionItem key={chat.id} chat={chat} onError={showToast} />
+                <SessionItem key={chat.id} chat={chat} />
               ))}
 
               {isLoadingMore && (

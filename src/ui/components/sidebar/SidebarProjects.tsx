@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useProjectStore } from '../../../features/projects/projectStore'
-import { useInfiniteProjects, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '../../../hooks/useProject'
+import { useProjectList, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '../../../hooks/useProject'
 import ProjectItem from './ProjectItem'
 import { CreateProjectModal } from '../../../features/projects/ui'
 
@@ -9,11 +8,8 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const navigate = useNavigate()
   const [expanded, setExpanded] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
-  const projects = useProjectStore((s) => s.projects)
-  const setFromServer = useProjectStore((s) => s.setFromServer)
-  const addCreated = useProjectStore((s) => s.addCreated)
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteProjects()
+  const { projects, hasNextPage, fetchNextPage, isFetchingNextPage } = useProjectList()
   const { mutateAsync: createProjectApi } = useCreateProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
@@ -24,12 +20,6 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
     toggleFavoriteApi({ projectId: id, next: !cur })
   }
 
-  useEffect(() => {
-    if (!data) return
-    const serverItems = data.pages.flatMap((p) => p.data.data.items)
-    setFromServer(serverItems)
-  }, [data, setFromServer])
-
   const sentinelRef = useRef<HTMLLIElement>(null)
   useEffect(() => {
     const el = sentinelRef.current
@@ -39,7 +29,7 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
     }, { threshold: 0.1 })
     io.observe(el)
     return () => io.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, expanded])
 
   const items = projects.filter((p) => !p.isFavorite)
 
@@ -117,7 +107,7 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
         onClose={() => setCreateOpen(false)}
         onSubmit={async (name, instructions) => {
           const res = await createProjectApi({ title: name, instructions })
-          const newId = addCreated(res.data.data)
+          const newId = res.data.data.project_id
           navigate(`/projects/${newId}`)
         }}
       />

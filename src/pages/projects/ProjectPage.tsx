@@ -1,10 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
-import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDeleteSession } from '../../hooks/useSession'
+import { useProjectView, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
+import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useConfirmDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
 import MessageList from '../../ui/components/messages/MessageList'
@@ -77,19 +76,13 @@ const formatTime = (iso?: string | null): string => {
 export default function ProjectPage() {
   const { id, chatId } = useParams()
   const navigate = useNavigate()
-  const project = useProjectStore((s) => s.projects.find((p) => p.id === id))
+  const { project, isLoading: isDetailLoading, isError: isDetailError } = useProjectView(id)
   const confirmDeleteProject = useConfirmDeleteProject()
-  const upsertDetail = useProjectStore((s) => s.upsertDetail)
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
   const { mutate: setInstructionApi } = useSetProjectInstruction()
   const renameProject = (pid: string, next: string) => updateProject({ projectId: pid, title: next })
   const toggleFavorite = (pid: string) => toggleFavoriteApi({ projectId: pid, next: !(project?.isFavorite ?? false) })
-
-  const { data: detailData, isLoading: isDetailLoading, isError: isDetailError } = useProject(id)
-  useEffect(() => {
-    if (detailData?.data?.data) upsertDetail(detailData.data.data)
-  }, [detailData, upsertDetail])
 
   const queryClient = useQueryClient()
   const connect = useChatStore((s) => s.connect)
@@ -270,7 +263,7 @@ export default function ProjectPage() {
 
   const { mutate: updateSessionApi } = useUpdateSession()
   const { mutate: toggleSessionFavoriteApi } = useToggleSessionFavorite()
-  const { mutate: deleteSessionApi } = useDeleteSession()
+  const confirmDeleteChat = useConfirmDeleteSession()
 
   const renameChat = (targetId: string, next: string) => {
     updateSessionApi({ sessionId: targetId, data: { title: next } })
@@ -280,8 +273,9 @@ export default function ProjectPage() {
     toggleSessionFavoriteApi({ sessionId: targetId, next: !(cur?.isFavorite ?? false) })
   }
   const deleteChat = (targetId: string) => {
-    deleteSessionApi(targetId)
-    if (openChatId === targetId) closeChat()
+    // 확인 창, 열려 있던 대화면 프로젝트 첫 화면으로 이동, 실패 알림은 훅이 맡는다.
+    const target = chats.find((c) => c.id === targetId)
+    confirmDeleteChat({ id: targetId, title: target?.title, projectId: id })
   }
 
   const submitRename = () => {
