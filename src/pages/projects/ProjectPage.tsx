@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument } from '../../hooks/useProject'
+import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
 import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
@@ -26,9 +26,10 @@ import {
   ProjectDocRow,
   ProjectPath,
   SparkIcon,
+  UploadingDocRow,
 } from '../../features/projects/ui'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutationState, useQueryClient } from '@tanstack/react-query'
 import { isNetworkError } from '../../utils/error'
 import { logError } from '../../utils/logError'
 
@@ -180,22 +181,59 @@ export default function ProjectPage() {
 
   const { data: docsData } = useProjectDocuments(id)
   const documents = docsData?.data?.data?.documents ?? []
-  const { mutate: uploadDoc } = useUploadProjectDocument(id ?? '')
-  const { mutate: deleteDoc, isPending: isDeletingDoc } = useDeleteProjectDocument(id ?? '')
+  const { mutate: uploadDoc, isPending: isUploading, variables: uploadingFile } = useUploadProjectDocument(id ?? '')
+  const { mutate: deleteDoc } = useDeleteProjectDocument(id ?? '')
   const { mutate: retryDoc } = useRetryProjectDocument(id ?? '')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // 진행 중인 삭제를 뮤테이션 캐시에서 읽는다. 컴포넌트 state와 달리 페이지가 다시 마운트돼도 유지되고,
+  // 여러 파일을 동시에 지워도 각 행이 자기 상태를 표시한다.
+  const deletingIds = useMutationState({
+    filters: { mutationKey: projectDocumentDeleteKey(id ?? ''), status: 'pending' },
+    select: (m) => m.state.variables as string,
+  })
+  const isDeletingRow = (documentId: string) => deletingIds.includes(documentId)
+  // 되돌릴 수 없으므로 프로젝트·대화 삭제와 같이 확인을 받는다.
+  const handleDeleteDoc = (documentId: string) => {
+    if (isDeletingRow(documentId)) return
+    const name = documents.find((d) => d.document_id === documentId)?.name ?? '이 파일'
+    const ok = window.confirm(
+      `'${name}'을(를) 프로젝트에서 삭제하시겠습니까?\n\n이후 대화에서 이 파일을 참조하지 않으며 되돌릴 수 없습니다.`,
+    )
+    if (ok) deleteDoc(documentId)
+  }
 
   const MAX_UPLOAD = 50 * 1024 * 1024
+  const ALLOWED_EXT = ['md', 'txt', 'pdf']
   const tryUpload = (file: File): boolean => {
     if (!id) return false
+    if (isUploading) {
+      showToast('이전 파일을 업로드하는 중입니다. 완료 후 다시 시도해주세요.')
+      return false
+    }
+    // accept 속성은 파일 선택 창의 '모든 파일'로 우회되므로 직접 확인한다.
+    const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : ''
+    if (!ALLOWED_EXT.includes(ext)) {
+      showToast(`'${file.name}' 지원하지 않는 형식입니다. (.md, .txt, .pdf)`)
+      return false
+    }
     if (file.size > MAX_UPLOAD) {
-      window.alert(`'${file.name}'은(는) 50MB를 초과하여 업로드할 수 없습니다.`)
+      showToast(`'${file.name}' 50MB를 초과하여 업로드할 수 없습니다.`)
+      return false
+    }
+    if (file.size === 0) {
+      showToast(`'${file.name}' 빈 파일은 업로드할 수 없습니다.`)
       return false
     }
     uploadDoc(file)
     return true
   }
-  const handlePickFile = () => showToast('추후 구현 예정입니다.')
+  const handlePickFile = () => {
+    if (isUploading) {
+      showToast('이전 파일을 업로드하는 중입니다. 완료 후 다시 시도해주세요.')
+      return
+    }
+    fileInputRef.current?.click()
+  }
   const handleUploadFiles = (files: FileList | null) => {
     const file = files?.[0]
     if (file) tryUpload(file)
@@ -353,20 +391,23 @@ export default function ProjectPage() {
               className="hidden"
               onChange={(e) => handleUploadFiles(e.target.files)}
             />
-            {documents.length === 0 ? (
+            {documents.length === 0 && !isUploading ? (
               <button type="button" onClick={handlePickFile} className="w-full text-left">
                 <EmptyFiles />
               </button>
             ) : (
               <div className="-mx-2">
+                {isUploading && uploadingFile && (
+                  <UploadingDocRow name={uploadingFile.name} size={uploadingFile.size} />
+                )}
                 {documents.map((d) => (
                   <PollingDocRow
                     key={d.document_id}
                     projectId={id ?? ''}
                     doc={d}
                     onRetry={() => handleRetryDoc(d.document_id)}
-                    onDelete={() => deleteDoc(d.document_id)}
-                    deleting={isDeletingDoc}
+                    onDelete={() => handleDeleteDoc(d.document_id)}
+                    deleting={isDeletingRow(d.document_id)}
                   />
                 ))}
               </div>
@@ -461,9 +502,9 @@ export default function ProjectPage() {
         documents={documents}
         onClose={() => setFilesOpen(false)}
         onUpload={(file) => tryUpload(file)}
-        onDelete={(docId) => deleteDoc(docId)}
+        onDelete={handleDeleteDoc}
         onRetry={handleRetryDoc}
-        deleting={isDeletingDoc}
+        deletingIds={deletingIds}
       />
     </div>
   )

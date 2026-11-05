@@ -7,7 +7,7 @@ import {
 } from '../api/services/project'
 import type { AxiosResponse } from 'axios'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { CreateProjectRequest, GetProjectSessionsParams, GetProjectDocumentStatusResponse } from '../types/project'
+import type { CreateProjectRequest, GetProjectSessionsParams, GetProjectDocumentStatusResponse, GetProjectDocumentsResponse } from '../types/project'
 import { useProjectStore } from '../features/projects/projectStore'
 import { useAuth } from '../context/AuthContext'
 import { showToast } from '../api/store/toastStore'
@@ -179,15 +179,73 @@ export const useUploadProjectDocument = (projectId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
     },
+    // 훅 레벨 콜백이라 업로드 중 페이지를 떠나도 실패를 알린다.
+    onError: (e, file) => {
+      const err = e as { code?: string; response?: { data?: { error?: { code?: string; detail?: string } } } }
+      const code = err?.response?.data?.error?.code
+      const detail = err?.response?.data?.error?.detail
+      const fallback =
+        code === 'FILE_TOO_LARGE'
+          ? '파일이 너무 커서 업로드할 수 없습니다. (최대 50MB)'
+          : code === 'BAD_REQUEST'
+            ? '지원하지 않는 파일입니다. (.md, .txt, .pdf)'
+            : code === 'LLM_SERVER_ERROR'
+              ? '문서 처리 서버에 일시적인 오류가 발생했습니다.'
+              : err?.code === 'ECONNABORTED'
+                ? '업로드 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.'
+                : !err?.response
+                  ? '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
+                  : '업로드에 실패했습니다. 잠시 후 다시 시도해주세요.'
+      showToast(`'${file.name}' ${detail ?? fallback}`)
+    },
   })
 }
+
+export const projectDocumentDeleteKey = (projectId: string) => ['projects', 'documents', 'delete', projectId]
 
 export const useDeleteProjectDocument = (projectId: string) => {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: projectDocumentDeleteKey(projectId),
     mutationFn: (documentId: string) => deleteProjectDocument(projectId, documentId),
-    onSuccess: () => {
+    onSuccess: (_d, documentId) => {
+      // 목록 재조회가 끝나기 전에 '삭제 중' 표시가 풀려 행이 잠깐 되살아나 보이지 않도록 먼저 뺀다.
+      queryClient.setQueryData<AxiosResponse<GetProjectDocumentsResponse>>(
+        ['projects', 'documents', projectId],
+        (old) => {
+          if (!old) return old
+          const docs = old.data.data.documents.filter((d) => d.document_id !== documentId)
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              data: { ...old.data.data, documents: docs, total: Math.max(0, old.data.data.total - 1) },
+            },
+          }
+        },
+      )
+      queryClient.removeQueries({ queryKey: ['projects', 'documents', 'status', projectId, documentId] })
       queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
+    },
+    onError: (e) => {
+      const err = e as { response?: { data?: { error?: { code?: string; detail?: string } } } }
+      const code = err?.response?.data?.error?.code
+      const detail = err?.response?.data?.error?.detail
+      if (code === 'DOCUMENT_NOT_FOUND') {
+        // 이미 지워진 파일: 목록만 맞춘다.
+        showToast('이미 삭제된 파일입니다.')
+        queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
+        return
+      }
+      const fallback =
+        code === 'CONFLICT'
+          ? '파일을 처리(색인)하는 중이라 삭제할 수 없습니다. 처리가 끝난 뒤 다시 시도해주세요.'
+          : code === 'LLM_SERVER_ERROR'
+            ? '문서 처리 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+            : !err?.response
+              ? '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
+              : '파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.'
+      showToast(detail ? `파일을 삭제하지 못했습니다. (${detail})` : fallback)
     },
   })
 }
