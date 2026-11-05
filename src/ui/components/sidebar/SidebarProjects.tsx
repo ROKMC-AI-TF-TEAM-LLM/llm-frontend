@@ -1,24 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useProjectStore } from '../../../features/projects/projectStore'
-import { useInfiniteProjects, useCreateProject, useUpdateProject, useToggleProjectFavorite } from '../../../hooks/useProject'
+import { useInfiniteProjects, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '../../../hooks/useProject'
 import ProjectItem from './ProjectItem'
 import { CreateProjectModal } from '../../../features/projects/ui'
 
 export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const navigate = useNavigate()
-  const location = useLocation()
   const [expanded, setExpanded] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
   const projects = useProjectStore((s) => s.projects)
   const setFromServer = useProjectStore((s) => s.setFromServer)
   const addCreated = useProjectStore((s) => s.addCreated)
-  const remove = useProjectStore((s) => s.remove)
 
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteProjects()
   const { mutateAsync: createProjectApi } = useCreateProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
+  const confirmDelete = useConfirmDeleteProject()
   const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
@@ -45,8 +44,8 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const items = projects.filter((p) => !p.isFavorite)
 
   const handleDelete = (id: string) => {
-    remove(id)
-    if (location.pathname.startsWith(`/projects/${id}`)) navigate('/chat')
+    const target = projects.find((p) => p.id === id)
+    if (target) confirmDelete({ id, name: target.name })
   }
 
   return (
