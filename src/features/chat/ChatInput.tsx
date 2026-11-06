@@ -28,6 +28,7 @@ const domainDrafts = {
     try {
       sessionStorage.setItem(DOMAIN_DRAFT_KEY, JSON.stringify(map));
     } catch {
+      // 저장소를 못 쓰면(사생활 보호 모드 등) 초안을 남기지 않는다
     }
   },
   get(key: string): DomainSelection | null {
@@ -106,9 +107,15 @@ export default function ChatInput({
     }
   };
 
-  useEffect(() => {
+  // 대화(draftKey)가 바뀌면 그 대화의 입력 초안·분야로 바꾼다. 렌더 중에 맞춰 effect 한 번을 더 돌지 않게 한다
+  const [shownKey, setShownKey] = useState(draftKey);
+  if (shownKey !== draftKey) {
+    setShownKey(draftKey);
     setValue(inputDrafts.get(draftKey) ?? '');
     setDomainState(domainDrafts.get(draftKey) ?? null);
+  }
+
+  useEffect(() => {
     requestAnimationFrame(resizeTextarea);
   }, [draftKey]);
 

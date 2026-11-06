@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useTranslate } from '../hooks/useTranslate'
 import { showToast } from '../api/store/toastStore'
@@ -91,12 +91,6 @@ export default function TranslatePage() {
     )
   }, [input, source, target, style, translateApi])
 
-  useEffect(() => {
-    if (!input.trim()) {
-      setResult('')
-      }
-  }, [input, source, target, runTranslate])
-
   const copyResult = () => {
     if (result) copyText(result).catch(() => {})
   }
@@ -165,7 +159,11 @@ export default function TranslatePage() {
           <div className="flex min-h-[460px] flex-col rounded-[18px] border border-[#f0e6e8] bg-white">
             <textarea
               value={input}
-              onChange={(e) => setInput(e.target.value.slice(0, MAX))}
+              onChange={(e) => {
+                const next = e.target.value.slice(0, MAX)
+                setInput(next)
+                if (!next.trim()) setResult('')
+              }}
               placeholder="번역할 내용을 입력하세요"
               spellCheck={false}
               style={{ fontSize }}

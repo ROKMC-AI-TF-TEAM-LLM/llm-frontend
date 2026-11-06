@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getDocuments, pickDocuments } from '../api/services/document'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { logError } from '../utils/logError'
 import type { DocumentItem } from '../types/document'
 

@@ -11,7 +11,7 @@ import type {
   CreateProjectRequest, GetProjectSessionsParams, GetProjectDocumentStatusResponse, GetProjectDocumentsResponse,
   GetProjectsResponse, GetProjectResponse, ProjectData,
 } from '../types/project'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { showToast } from '../api/store/toastStore'
 
 // 프로젝트 목록·상세의 단일 출처는 React Query 캐시다.

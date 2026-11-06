@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect, useCallback, useMemo, type PropsWithChildren } from 'react';
+import { useState, useEffect, useCallback, useMemo, type PropsWithChildren } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY } from '../constants/key';
 import { login as loginApi, logout as logoutApi } from '../api/services/auth';
@@ -6,15 +6,7 @@ import { logError } from '../utils/logError';
 import { scheduleTokenRefresh } from '../api/lib/axios';
 import { clearStoredChatData } from '../utils/chatStorage';
 import type { LoginRequest } from '../types/auth';
-
-interface AuthContextType {
-  accessToken: string | null;
-  refreshToken: string | null;
-  login: (signInData: LoginRequest) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext } from './useAuth';
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const {
@@ -76,12 +68,4 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('authcontext를 찾을 수 없습니다.');
-  }
-  return context;
 };

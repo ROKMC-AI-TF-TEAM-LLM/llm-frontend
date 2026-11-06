@@ -14,6 +14,7 @@ export const tryReloadOnce = (): boolean => {
       return true
     }
   } catch {
+    // sessionStorage를 못 쓰면 새로고침하지 않는다 (무한 새로고침 방지 기록을 남길 수 없음)
   }
   return false
 }

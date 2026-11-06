@@ -162,6 +162,7 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
+        // 끝 신호. 마무리는 스트림이 닫힌 뒤 한 곳에서 한다
       } else if (evt.type === 'notice') {
         const fromCode = noticeFromCode(evt.code)
         if (fromCode) onNotice?.(fromCode)

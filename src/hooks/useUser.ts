@@ -1,7 +1,7 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMeUsers, getUsers, deleteUsers, inquiryUsers, approveUser, rejectUser } from '../api/services/user'
 import type { UserRole, UserStatus, GetAdminUsersParams } from '../types/user'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 
 export const useGetMe = () => {
   const { accessToken } = useAuth()

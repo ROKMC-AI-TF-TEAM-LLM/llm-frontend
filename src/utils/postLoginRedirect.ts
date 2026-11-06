@@ -5,6 +5,7 @@ export function setPostLoginRedirect(path: string) {
     if (!path.startsWith('/') || path.startsWith('//')) return
     sessionStorage.setItem(KEY, path)
   } catch {
+    // 저장소를 못 쓰면 로그인 뒤 기본 화면으로 간다
   }
 }
 

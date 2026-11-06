@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import Sidebar from "../components/sidebar/Sidebar";
 import { useState, useEffect, useCallback, useMemo, type CSSProperties } from "react";
 import { useGetMe } from "../../hooks/useUser";

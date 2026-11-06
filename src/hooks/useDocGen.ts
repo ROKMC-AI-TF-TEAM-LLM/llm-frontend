@@ -9,7 +9,7 @@ import {
 } from '../api/services/docgen'
 import type { CreateDocGenJobFields } from '../types/docgen'
 import { isJobActive } from '../utils/docgen'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 
 const JOBS_KEY = ['docgen', 'jobs']
 /** 대기·생성 중인 작업이 있는 동안 목록을 다시 받는 간격 */

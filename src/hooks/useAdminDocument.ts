@@ -13,7 +13,7 @@ import {
 } from '../api/services/adminDocument'
 import type { GetAdminDocumentsParams, UploadDocumentFields } from '../types/adminDocument'
 import { normalizeDocStatus } from '../utils/document'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 
 const ADMIN_DOC_LIMIT = 20
 
