@@ -3,6 +3,7 @@ import type { DocGenJob, DocGenOutputFormat } from '../../types/docgen'
 import { useCreateDocGenJob, useDocGenJobs, useDocGenTemplates } from '../../hooks/useDocGen'
 import { useDomainCapabilities } from '../../hooks/useCapabilities'
 import { showToast } from '../../api/store/toastStore'
+import { isJobActive } from '../../utils/docgen'
 
 /** 입력창 값과 보내기. 분야는 capabilities, 양식은 서버 양식 목록에서 고른다 */
 export const useComposer = () => {
@@ -83,6 +84,51 @@ export const useDocGenPage = () => {
   }
 
   return { jobs, isLoading, c, selected, select, close, isFresh, send }
+}
+
+/**
+ * 문서 제작 화면(v12, DocGenWorkspace) 상태: 입력창, 오른쪽 미리보기(열림·띄운 작업), 진행 중/끝난 작업 목록.
+ * 보내면 응답을 기다리지 않고 미리보기부터 열어 스켈레톤을 보여 준다.
+ */
+export const useDocGenWorkspace = () => {
+  const { jobs, isLoading } = useDocGenJobs()
+  const composer = useComposer()
+  const isFresh = useFreshIds(jobs.map((j) => j.job_id), !isLoading)
+
+  const [previewOpen, setPreviewOpen] = useState(false)
+  /** 미리보기에 띄운 작업. 보내면 새 작업, 목록에서 고르면 그 작업 */
+  const [viewId, setViewId] = useState<string | null>(null)
+  /** 생성 요청 응답을 기다리는 중 */
+  const [pending, setPending] = useState(false)
+
+  const viewed = jobs.find((j) => j.job_id === viewId) ?? null
+  /** 목록에서 강조할 작업 (미리보기가 닫혀 있으면 없음) */
+  const previewingId = previewOpen ? viewId : null
+
+  const activeJobs = jobs.filter(isJobActive)
+  const finishedJobs = jobs.filter((j) => !isJobActive(j))
+
+  const send = async () => {
+    if (!composer.canSubmit || pending) return
+    setPending(true)
+    setViewId(null)
+    setPreviewOpen(true)
+    const job = await composer.submit()
+    setPending(false)
+    if (job) setViewId(job.job_id)
+    else setPreviewOpen(false) // 보내지 못하면(알림은 useComposer가 띄움) 미리보기를 다시 닫는다
+  }
+
+  const view = (id: string) => {
+    setViewId(id)
+    setPreviewOpen(true)
+  }
+
+  return {
+    composer, isFresh, pending, send,
+    activeJobs, finishedJobs,
+    preview: { open: previewOpen, job: viewed, previewingId, view, close: () => setPreviewOpen(false) },
+  }
 }
 
 /** 진행 상황 목록에서 누를 수 있는 줄 */
