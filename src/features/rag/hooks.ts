@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { DocumentItem } from '../types/document'
-import { DRAWER_MS } from '../ui/components/rag/DocumentDrawer'
+import type { DocumentItem } from '../../types/document'
+import { DRAWER_MS } from './DocumentDrawer'
 
 export const useDocumentDrawer = () => {
   const [doc, setDoc] = useState<DocumentItem | null>(null)

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import type { DocumentItem } from '../../../types/document'
-import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../../utils/document'
-import { downloadDocument } from '../../../utils/downloadAttachment'
+import type { DocumentItem } from '../../types/document'
+import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../utils/document'
+import { downloadDocument } from '../../utils/downloadAttachment'
 
 interface RagDetailProps {
   doc: DocumentItem

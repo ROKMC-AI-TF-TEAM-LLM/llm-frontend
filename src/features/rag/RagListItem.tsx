@@ -1,5 +1,5 @@
-import type { DocumentItem } from '../../../types/document'
-import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../../utils/document'
+import type { DocumentItem } from '../../types/document'
+import { getDomainStyle, getDomainLabel, formatAppliedAt } from '../../utils/document'
 
 interface RagListItemProps {
   doc: DocumentItem

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { Source, Notice } from '../../../types';
 import { useDocumentLookup } from '../../../hooks/useDocument';
-import { useDocumentDrawer } from '../../../hooks/useDocumentDrawer';
+import { useDocumentDrawer } from '../../../features/rag/hooks';
 import { findDocument, getDomainStyle, getDomainLabel } from '../../../utils/document';
-import DocumentDrawer from '../rag/DocumentDrawer';
+import DocumentDrawer from '../../../features/rag/DocumentDrawer';
 
 interface SourceBadgeProps {
   sources?: Source[];

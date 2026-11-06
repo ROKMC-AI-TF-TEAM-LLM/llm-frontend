@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import RagDetail from './RagDetail'
-import type { DocumentItem } from '../../../types/document'
+import type { DocumentItem } from '../../types/document'
 
 export const DRAWER_MS = 320
 
