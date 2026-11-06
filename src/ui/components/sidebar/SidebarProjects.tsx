@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProjectList, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '../../../hooks/useProject'
 import ProjectItem from './ProjectItem'
-import { CreateProjectModal } from '../../../features/projects/ui'
+import CreateProjectModal from '../../../features/projects/CreateProjectModal'
 
 export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const navigate = useNavigate()

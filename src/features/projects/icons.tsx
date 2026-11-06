@@ -32,34 +32,9 @@ export const FileIcon = ({ className = 'w-4 h-4' }: IconProps) => (
   </svg>
 )
 
-export const ChatIcon = ({ className = 'w-4 h-4' }: IconProps) => (
-  <svg className={className} {...base}>
-    <path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.5-4.5A8 8 0 1 1 21 12z" />
-  </svg>
-)
-
 export const PlusIcon = ({ className = 'w-4 h-4' }: IconProps) => (
   <svg className={className} {...base} strokeWidth={2.2}>
     <path d="M12 5v14M5 12h14" />
-  </svg>
-)
-
-export const SearchIcon = ({ className = 'w-4 h-4' }: IconProps) => (
-  <svg className={className} {...base} strokeWidth={2}>
-    <circle cx="11" cy="11" r="7" />
-    <path d="M21 21l-4.3-4.3" />
-  </svg>
-)
-
-export const ChevronRight = ({ className = 'w-4 h-4' }: IconProps) => (
-  <svg className={className} {...base} strokeWidth={2.2}>
-    <path d="M9 6l6 6-6 6" />
-  </svg>
-)
-
-export const ChevronDown = ({ className = 'w-4 h-4' }: IconProps) => (
-  <svg className={className} {...base} strokeWidth={2.2}>
-    <path d="M6 9l6 6 6-6" />
   </svg>
 )
 

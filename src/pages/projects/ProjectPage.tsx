@@ -1,32 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useChatStore } from '../../api/store/chatStore'
-import type { ProjectChat } from '../../features/projects/mock'
+import type { ProjectChat } from '../../features/projects/types'
 import { useProjectView, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
 import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useConfirmDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../features/chat/ChatInput'
 import MessageList from '../../features/chat/MessageList'
 import { showToast } from '../../api/store/toastStore'
-import {
-  Block,
-  ChatRow,
-  EmptyFiles,
-  FavStar,
-  FilesModal,
-  IconButton,
-  InstructionBody,
-  InstructionModal,
-  KebabMenu,
-  Mark,
-  NewChatIcon,
-  PanelIcon,
-  PlusIcon,
-  ProjectDocRow,
-  ProjectPath,
-  SparkIcon,
-  UploadingDocRow,
-} from '../../features/projects/ui'
+import { Block, FavStar, IconButton, KebabMenu, Mark, ProjectPath } from '../../features/projects/primitives'
+import { ChatRow, EmptyFiles, ProjectDocRow, UploadingDocRow } from '../../features/projects/rows'
+import { InstructionBody, InstructionModal } from '../../features/projects/Instruction'
+import FilesModal from '../../features/projects/FilesModal'
+import { NewChatIcon, PanelIcon, PlusIcon, SparkIcon } from '../../features/projects/icons'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useMutationState, useQueryClient } from '@tanstack/react-query'
 import { isNetworkError } from '../../utils/error'
