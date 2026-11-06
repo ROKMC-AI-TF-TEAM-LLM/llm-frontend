@@ -49,13 +49,6 @@ export const useComposer = () => {
 }
 export type Composer = ReturnType<typeof useComposer>
 
-/** 목록에서 고른 작업. 목록이 갱신되면 같은 id의 최신 상태를 돌려준다 */
-export const useJobSelection = (jobs: DocGenJob[]) => {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const selected = jobs.find((j) => j.job_id === selectedId) ?? null
-  return { selected, select: setSelectedId, close: () => setSelectedId(null) }
-}
-
 /**
  * 화면을 연 뒤 새로 생긴 작업인지. 처음 받아 온 목록을 기준으로 삼고,
  * 그 뒤에 나타난 줄에만 등장 움직임을 준다.
@@ -66,28 +59,8 @@ export const useFreshIds = (ids: string[], ready: boolean) => {
   return (id: string) => baseline !== null && !baseline.has(id)
 }
 
-/** 문서 생성 화면 한 벌: 작업 목록 + 입력창 + 고른 작업 + 새 줄 표시 */
-export const useDocGenPage = () => {
-  const { jobs, isLoading } = useDocGenJobs()
-  const c = useComposer()
-  const { selected, select, close } = useJobSelection(jobs)
-  const isFresh = useFreshIds(jobs.map((j) => j.job_id), !isLoading)
-
-  /** 보내고, 만들어진 작업을 미리보기로 고른 뒤 입력창을 비운다 */
-  const send = async () => {
-    const job = await c.submit()
-    if (job) {
-      select(job.job_id)
-      c.setPrompt('')
-    }
-    return job
-  }
-
-  return { jobs, isLoading, c, selected, select, close, isFresh, send }
-}
-
 /**
- * 문서 제작 화면(v12, DocGenWorkspace) 상태: 입력창, 오른쪽 미리보기(열림·띄운 작업), 진행 중/끝난 작업 목록.
+ * 문서 제작 화면(DocGenWorkspace) 상태: 입력창, 오른쪽 미리보기(열림·띄운 작업), 진행 중/끝난 작업 목록.
  * 보내면 응답을 기다리지 않고 미리보기부터 열어 스켈레톤을 보여 준다.
  */
 export const useDocGenWorkspace = () => {

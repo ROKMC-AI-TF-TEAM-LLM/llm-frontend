@@ -106,7 +106,7 @@ const Line = ({ w, strong = false, faint = false }: { w: string; strong?: boolea
   <span className={`block rounded-sm ${strong ? 'h-3.5' : 'h-2'} ${faint ? 'bg-surface-subtle/70' : strong ? 'bg-text-hint' : 'bg-surface-subtle'}`} style={{ width: w }} />
 )
 
-export function Paper({ job, compact = false }: { job: DocGenJob; compact?: boolean }) {
+function Paper({ job, compact = false }: { job: DocGenJob; compact?: boolean }) {
   const s = normalizeJobStatus(job.status)
   const pad = compact ? 'p-6' : 'p-9'
   if (s === 'completed' && job.result) {
@@ -142,7 +142,7 @@ export function Paper({ job, compact = false }: { job: DocGenJob; compact?: bool
   )
 }
 
-export function EmptyPreview({ title = '아직 미리볼 문서가 없습니다' }: { title?: string }) {
+function EmptyPreview({ title = '아직 미리볼 문서가 없습니다' }: { title?: string }) {
   return (
     <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-subtle text-brand">
@@ -154,7 +154,7 @@ export function EmptyPreview({ title = '아직 미리볼 문서가 없습니다'
   )
 }
 
-export function FailedNotice({ job }: { job: DocGenJob }) {
+function FailedNotice({ job }: { job: DocGenJob }) {
   const cancelled = job.error?.code === 'CANCELLED'
   return (
     <div role="alert" className={`mx-auto flex w-full max-w-[380px] flex-col items-center gap-2 rounded-2xl border bg-surface px-6 py-7 text-center ${cancelled ? 'border-surface-border' : 'border-status-error/30'}`}>
@@ -172,10 +172,10 @@ export function FailedNotice({ job }: { job: DocGenJob }) {
 const ghostBtn = 'inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-lg border px-2.5 text-[12.5px] font-semibold transition-colors disabled:opacity-50'
 
 // TODO(백엔드 연결): 결과 파일 다운로드 엔드포인트가 정해지면 연결한다
-export function DownloadButton({ job, primary = false }: { job: DocGenJob; primary?: boolean }) {
+function DownloadButton({ job }: { job: DocGenJob }) {
   return (
     <button type="button" aria-label={`${job.result?.file_name ?? job.title} 다운로드`}
-      className={`${ghostBtn} ${primary ? 'border-brand bg-brand text-white hover:bg-brand-hover' : 'border-brand-soft text-brand hover:bg-brand-subtle'}`}>
+      className={`${ghostBtn} border-brand-soft text-brand hover:bg-brand-subtle`}>
       <DownloadIcon className="h-3.5 w-3.5" /> 다운로드
     </button>
   )
@@ -205,12 +205,6 @@ export function JobActions({ job }: { job: DocGenJob }) {
   )
 }
 
-/** 미리보기 머리 액션: 다운로드만 둔다 */
-export function PreviewActions({ job }: { job: DocGenJob | null }) {
-  if (!job || normalizeJobStatus(job.status) !== 'completed') return null
-  return <DownloadButton job={job} primary />
-}
-
 /** 미리보기 본문 (상태별). 진행 정보는 진행 상황 목록에서 보여 준다 */
 export function PreviewBody({ job, compact = false }: { job: DocGenJob | null; compact?: boolean }) {
   if (!job) return <EmptyPreview />
@@ -221,7 +215,7 @@ export function PreviewBody({ job, compact = false }: { job: DocGenJob | null; c
 /* ───────── 입력창 선택 칩 ───────── */
 interface PickerOption { value: string; label: string; hint?: string }
 
-export function Picker({ label, value, options, onChange, disabled = false, icon }: {
+function Picker({ label, value, options, onChange, disabled = false, icon }: {
   label: string; value: string | null; options: PickerOption[]; onChange: (v: string) => void; disabled?: boolean; icon?: ReactNode
 }) {
   const [open, setOpen] = useState(false)

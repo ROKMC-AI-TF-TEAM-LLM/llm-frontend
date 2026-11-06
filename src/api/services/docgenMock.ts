@@ -183,9 +183,6 @@ const toTitle = (prompt: string): string => {
   return line.length > 40 ? `${line.slice(0, 40)}…` : line
 }
 
-/** 저장된 작업을 모두 지운다 (시안을 처음 상태로 열 때) */
-export const resetDocGenMock = () => write([])
-
 export const docgenMock = {
   getTemplates: (): Promise<{ data: GetDocGenTemplatesResponse }> => ok({ templates: MOCK_TEMPLATES }),
 

@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
-  Navigate,
   RouterProvider,
   useLocation,
   type RouteObject
@@ -30,23 +29,7 @@ const TeamPage = lazy(() => import('./pages/TeamPage'));
 const SystemDiagnostics = lazy(() => import('./pages/SystemDiagnostics'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
-
-// TEMP(문서 생성 시안 비교용): 시안 확정 후 6단계에서 라우트와 drafts 폴더 삭제
-const DOCGEN_DRAFTS = {
-  v1: lazy(() => import('./pages/docgen/drafts/DraftV1')),
-  v2: lazy(() => import('./pages/docgen/drafts/DraftV2')),
-  v3: lazy(() => import('./pages/docgen/drafts/DraftV3')),
-  v4: lazy(() => import('./pages/docgen/drafts/DraftV4')),
-  v5: lazy(() => import('./pages/docgen/drafts/DraftV5')),
-  v6: lazy(() => import('./pages/docgen/drafts/DraftV6')),
-  v7: lazy(() => import('./pages/docgen/drafts/DraftV7')),
-  v8: lazy(() => import('./pages/docgen/drafts/DraftV8')),
-  v9: lazy(() => import('./pages/docgen/drafts/DraftV9')),
-  v10: lazy(() => import('./pages/docgen/drafts/DraftV10')),
-  v11: lazy(() => import('./pages/docgen/drafts/DraftV11')),
-  v12: lazy(() => import('./pages/docgen/drafts/DraftV12')),
-  v13: lazy(() => import('./pages/docgen/drafts/DraftV13')),
-};
+const DocGenPage = lazy(() => import('./pages/DocGenPage'));
 
 const publicRoutes: RouteObject[] = [
   {
@@ -142,17 +125,14 @@ const protectedRoutes: RouteObject[] = [
           </Suspense>
         )
       },
-      // 문서 제작 첫 화면은 v13 시안(디자인 G안 스테이지)으로 연다
-      { path: '/docgen', element: <Navigate to="/docgen/v13" replace /> },
-      // TEMP(문서 생성 시안 비교용)
-      ...Object.entries(DOCGEN_DRAFTS).map(([v, Draft]) => ({
-        path: `/docgen/${v}`,
+      {
+        path: '/docgen',
         element: (
           <Suspense fallback={null}>
-            <Draft />
+            <DocGenPage />
           </Suspense>
-        ),
-      })),
+        )
+      },
       {
         element: <AdminLayout />,
         errorElement: <ErrorPage />,
