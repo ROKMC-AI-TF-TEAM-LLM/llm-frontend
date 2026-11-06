@@ -1,0 +1,13 @@
+/* TEMP(시안 비교용) v13 스테이지 전용 움직임. 시안이 정해지면 drafts 폴더째 삭제 */
+
+/* 방금 완성된 문서 위로 빛이 한 번 스치고 지나간다 */
+@keyframes stage-sheen {
+  from { transform: translateX(-160%) skewX(-16deg); }
+  to { transform: translateX(420%) skewX(-16deg); }
+}
+.stage-sheen {
+  animation: stage-sheen 1.4s .15s cubic-bezier(.4, 0, .2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-sheen { animation: none; opacity: 0; }
+}

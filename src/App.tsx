@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
+  Navigate,
   RouterProvider,
   useLocation,
   type RouteObject
@@ -42,6 +43,8 @@ const DOCGEN_DRAFTS = {
   v9: lazy(() => import('./pages/docgen/drafts/DraftV9')),
   v10: lazy(() => import('./pages/docgen/drafts/DraftV10')),
   v11: lazy(() => import('./pages/docgen/drafts/DraftV11')),
+  v12: lazy(() => import('./pages/docgen/drafts/DraftV12')),
+  v13: lazy(() => import('./pages/docgen/drafts/DraftV13')),
 };
 
 const publicRoutes: RouteObject[] = [
@@ -137,6 +140,8 @@ const protectedRoutes: RouteObject[] = [
           </Suspense>
         )
       },
+      // 문서 제작 첫 화면은 v13 시안(디자인 G안 스테이지)으로 연다
+      { path: '/docgen', element: <Navigate to="/docgen/v13" replace /> },
       // TEMP(문서 생성 시안 비교용)
       ...Object.entries(DOCGEN_DRAFTS).map(([v, Draft]) => ({
         path: `/docgen/${v}`,

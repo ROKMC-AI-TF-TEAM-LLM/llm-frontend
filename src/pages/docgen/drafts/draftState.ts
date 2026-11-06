@@ -15,6 +15,8 @@ export const DRAFTS = [
   { v: 'v9', name: '로프 고리' },
   { v: 'v10', name: '독수리 막대' },
   { v: 'v11', name: '로프+독수리' },
+  { v: 'v12', name: '문서 제작' },
+  { v: 'v13', name: '스테이지' },
 ]
 
 /**
