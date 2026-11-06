@@ -13,7 +13,7 @@ import {
 import { getDomainLabel, getDomainStyle } from '../../utils/document'
 import { useCancelDocGenJob, useDeleteDocGenJob, useRetryDocGenJob } from '../../hooks/useDocGen'
 import { showToast } from '../../api/store/toastStore'
-import DomainIcon from '../../ui/components/chat/DomainIcon'
+import DomainIcon from '../../ui/components/DomainIcon'
 import { AlertIcon, CheckIcon, ChevronIcon, DocIcon, DownloadIcon, RetryIcon, StopIcon } from './icons'
 import type { Composer } from './hooks'
 

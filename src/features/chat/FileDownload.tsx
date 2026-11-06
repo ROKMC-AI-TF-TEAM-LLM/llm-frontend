@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { FileAttachment } from '../../../types';
-import { downloadAttachment, fileExtOf, formatFileSize } from '../../../utils/downloadAttachment';
+import type { FileAttachment } from '../../types';
+import { downloadAttachment, fileExtOf, formatFileSize } from '../../utils/downloadAttachment';
 
 interface FileDownloadProps {
   attachments?: FileAttachment[];

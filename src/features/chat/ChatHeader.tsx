@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useServerStatus } from '../../../hooks/useServerStatus'
-import { useChatStore } from '../../../api/store/chatStore'
+import { useServerStatus } from '../../hooks/useServerStatus'
+import { useChatStore } from '../../api/store/chatStore'
 import FilesDrawer from './FilesDrawer'
-import type { FileAttachment } from '../../../types'
+import type { FileAttachment } from '../../types'
 
 const STATUS_CONFIG = {
   ok:       { dot: 'bg-status-ok',    pulse: false, label: '서버 양호',    text: 'text-status-ok'    },

@@ -6,7 +6,7 @@ import {
   useAdminDocumentStatus,
 } from '../hooks/useAdminDocument';
 import { DOMAINS, getDomainLabel, getDomainStyle, normalizeDocStatus } from '../utils/document';
-import DomainIcon from '../ui/components/chat/DomainIcon';
+import DomainIcon from '../ui/components/DomainIcon';
 import { showToast } from '../api/store/toastStore';
 import { getApiError, DEFAULT_STATUS_ERRORS } from '../utils/error';
 import type { AdminDocumentItem, AdminDocStatus } from '../types/adminDocument';

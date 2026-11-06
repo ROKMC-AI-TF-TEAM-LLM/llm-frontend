@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import DomainIcon from '../ui/components/chat/DomainIcon';
+import DomainIcon from '../ui/components/DomainIcon';
 import LandingFooter from '../ui/components/landing/LandingFooter';
 import PageNav from '../ui/components/landing/PageNav'
 import MarsPlanet from '../ui/components/MarsPlanet'

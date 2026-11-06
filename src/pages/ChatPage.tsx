@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import MessageList from '../ui/components/messages/MessageList';
-import ChatInput from '../ui/components/chat/ChatInput';
+import MessageList from '../features/chat/MessageList';
+import ChatInput from '../features/chat/ChatInput';
 import { showToast } from '../api/store/toastStore';
 import { useChatStore } from '../api/store/chatStore';
 import { useInfiniteSessions } from '../hooks/useSession';

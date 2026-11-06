@@ -1,11 +1,11 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import type { ApiError } from '../../../utils/error';
-import { useChatStore, saveInflight } from '../../../api/store/chatStore';
-import type { DomainSelection } from '../../../api/store/chatStore';
-import { logError } from '../../../utils/logError';
-import { useCreateSession } from '../../../hooks/useSession';
-import { showToast } from '../../../api/store/toastStore';
+import type { ApiError } from '../../utils/error';
+import { useChatStore, saveInflight } from '../../api/store/chatStore';
+import type { DomainSelection } from '../../api/store/chatStore';
+import { logError } from '../../utils/logError';
+import { useCreateSession } from '../../hooks/useSession';
+import { showToast } from '../../api/store/toastStore';
 import DomainPicker from './DomainPicker';
 
 const MAX_LEN = 1000;

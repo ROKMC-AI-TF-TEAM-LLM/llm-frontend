@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useChatStore } from '../../../api/store/chatStore';
-import { logError } from '../../../utils/logError';
-import { copyText } from '../../../utils/clipboard';
-import { showToast } from '../../../api/store/toastStore';
-import type { Message } from '../../../types';
+import { useChatStore } from '../../api/store/chatStore';
+import { logError } from '../../utils/logError';
+import { copyText } from '../../utils/clipboard';
+import { showToast } from '../../api/store/toastStore';
+import type { Message } from '../../types';
 import ChatHeader from './ChatHeader';
 import MessageRow from './MessageRow';
-import { MessagesSkeleton } from '../Skeleton';
+import { MessagesSkeleton } from '../../ui/components/Skeleton';
 
 interface MessageListProps {
   title: string;

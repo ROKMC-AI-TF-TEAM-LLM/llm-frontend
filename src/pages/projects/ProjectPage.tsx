@@ -5,8 +5,8 @@ import type { ProjectChat } from '../../features/projects/mock'
 import { useProjectView, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
 import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useConfirmDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
-import ChatInput from '../../ui/components/chat/ChatInput'
-import MessageList from '../../ui/components/messages/MessageList'
+import ChatInput from '../../features/chat/ChatInput'
+import MessageList from '../../features/chat/MessageList'
 import { showToast } from '../../api/store/toastStore'
 import {
   Block,

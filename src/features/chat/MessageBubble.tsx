@@ -1,6 +1,6 @@
 import { Streamdown } from 'streamdown';
 import type { Components } from 'streamdown';
-import type { MessageRole, StatusStep } from '../../../types';
+import type { MessageRole, StatusStep } from '../../types';
 
 const fixBold = (content: string): string =>
   content

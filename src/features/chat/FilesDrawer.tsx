@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { FileAttachment } from '../../../types';
-import { downloadAttachment, fileExtOf, formatFileSize } from '../../../utils/downloadAttachment';
+import type { FileAttachment } from '../../types';
+import { downloadAttachment, fileExtOf, formatFileSize } from '../../utils/downloadAttachment';
 
 interface FilesDrawerProps {
   open: boolean;

@@ -1,18 +1,18 @@
 import { memo } from 'react';
-import type { Message } from '../../../types';
+import type { Message } from '../../types';
 import MessageBubble from './MessageBubble';
 import MessageActions from './MessageActions';
 import SourceBadge from './SourceBadge';
 import FileDownload from './FileDownload';
 import ImageAttachment from './ImageAttachment';
-import DomainIcon from '../chat/DomainIcon';
+import DomainIcon from '../../ui/components/DomainIcon';
 
 interface MessageRowProps {
   msg: Message;
   isLast: boolean;
   isStreaming: boolean;
   statusText: string | null;
-  statusSteps?: import('../../../types').StatusStep[];
+  statusSteps?: import('../../types').StatusStep[];
   onCopy: (text: string) => void;
   onRegenerate: (id: string) => void;
 }
