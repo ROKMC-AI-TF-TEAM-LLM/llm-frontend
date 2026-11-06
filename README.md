@@ -33,64 +33,29 @@ npm run build:mock # Mock 버전 빌드
 npm run build      # 일반 버전 빌드
 ```
 
-## Vite 참고
+## 폴더 구조
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      tseslint.configs.recommendedTypeChecked,
-      tseslint.configs.strictTypeChecked,
-      tseslint.configs.stylisticTypeChecked,
-
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
+```
+src/
+  pages/           라우트 진입점. features 조각을 조립만 한다 (예: DocGenPage → features/docgen/DocGenWorkspace)
+  features/<기능>/  한 기능(화면)에서만 쓰는 컴포넌트·화면 상태 훅(hooks.ts)·타입·아이콘
+  ui/              여러 기능이 같이 쓰는 부품(components: Skeleton·Toast·DomainIcon·사이드바·랜딩)과 레이아웃(layouts)
+  hooks/           서버 상태 훅(React Query, api/services·types와 이름을 맞춤)과 범용 훅(useLocalStorage 등)
+  api/             axios 설정(lib), API 호출(services), 전역 상태(store)
+  context/         인증(AuthProvider, useAuth)
+  types/ utils/ constants/
+  mock/            mock 모드 전용 가짜 백엔드
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 어디에 둘까
 
-```js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| 무엇 | 위치 |
+| --- | --- |
+| 서버 데이터를 읽고 쓰는 훅 (React Query) | `hooks/useX.ts` |
+| 한 화면에서만 쓰는 상태 훅 | `features/<기능>/hooks.ts` |
+| 한 기능에서만 쓰는 컴포넌트 | `features/<기능>/` (평평하게, 컴포넌트 파일은 대문자) |
+| 두 기능 이상이 같이 쓰는 컴포넌트 | `ui/components/` |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      reactX.configs['recommended-typescript'],
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
-```
+의존 방향은 `pages → features → ui · hooks → api · utils · types` 한쪽으로만 둔다.
+`hooks`·`api`·`utils`·`types`·`context`는 `features`·`ui`·`pages`를 가져다 쓰지 않는다.
+기능끼리는 공개된 컴포넌트만 가져다 쓴다 (예: 채팅 출처 배지 → `features/rag/DocumentDrawer`).
