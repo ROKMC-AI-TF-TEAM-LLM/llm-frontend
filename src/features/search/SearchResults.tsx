@@ -1,5 +1,5 @@
 import SearchResultItem, { type SearchResult } from './SearchResultItem'
-import { SearchResultSkeleton } from '../Skeleton'
+import { SearchResultSkeleton } from '../../ui/components/Skeleton'
 
 interface Props {
   results: SearchResult[]
