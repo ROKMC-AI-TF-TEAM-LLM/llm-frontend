@@ -1,6 +1,8 @@
 import { backendApi, refreshTokenOnce, getValidAccessToken } from '../lib/axios'
 import { LOCAL_STORAGE_KEY } from '../../constants/key'
+import { API_BASE_URL } from '../../constants/api'
 import { logError } from '../../utils/logError'
+import { clearStoredChatData } from '../../utils/chatStorage'
 import type { GetMessagesResponse, GetMessagesParams, StreamMessageRequest, DeleteMessageResponse } from '../../types/chat'
 import type { Source, FileAttachment, Notice } from '../../types'
 import { noticeFromCode } from '../../types'
@@ -83,6 +85,7 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
       logError('postSse.refresh', e)
       sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
       localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+      clearStoredChatData()
       window.location.href = '/'
       throw new Error('HTTP 401', { cause: e })
     }
@@ -203,7 +206,7 @@ export const streamMessage = async (
   onThought?: (thought: string, step?: number) => void,
 ) => {
   const response = await postSse(
-    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/stream`,
+    `${API_BASE_URL}/api/v1/sessions/${sessionId}/messages/stream`,
     data,
     signal,
   )
@@ -220,10 +223,12 @@ export const regenerateMessageStream = async (
   onFiles?: (files: FileAttachment[]) => void,
   onNotice?: (notice: Notice) => void,
   onThought?: (thought: string, step?: number) => void,
+  domain?: string,
 ) => {
+  // 서버는 원래 질문의 분야를 저장하지 않는다. 재생성 때 다시 보내지 않으면 자동 분류로 바뀐다.
   const response = await postSse(
-    `${import.meta.env.VITE_SERVER_API_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
-    undefined,
+    `${API_BASE_URL}/api/v1/sessions/${sessionId}/messages/${messageId}/regenerate`,
+    domain ? { domain } : undefined,
     signal,
   )
   await readSse(response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal })

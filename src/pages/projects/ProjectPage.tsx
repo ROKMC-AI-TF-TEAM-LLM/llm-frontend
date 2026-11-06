@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useProjectStore } from '../../features/projects/projectStore'
 import { useChatStore } from '../../api/store/chatStore'
 import type { ProjectChat } from '../../features/projects/mock'
-import { useProject, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useDeleteProject, useRetryProjectDocument } from '../../hooks/useProject'
-import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useDeleteSession } from '../../hooks/useSession'
+import { useProjectView, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
+import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useConfirmDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
 import MessageList from '../../ui/components/messages/MessageList'
@@ -26,8 +25,20 @@ import {
   ProjectDocRow,
   ProjectPath,
   SparkIcon,
+  UploadingDocRow,
 } from '../../features/projects/ui'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { useMutationState, useQueryClient } from '@tanstack/react-query'
+import { isNetworkError } from '../../utils/error'
+import { logError } from '../../utils/logError'
+
+// ChatPage·NewChatPage와 같은 안내 문구.
+const AI_NOTICE = 'MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.'
+
+const SESSION_ERRORS: Record<string, string> = {
+  SESSION_NOT_FOUND: '존재하지 않는 대화입니다.',
+  SESSION_ACCESS_DENIED: '접근 권한이 없는 대화입니다.',
+}
 
 function PollingDocRow({
   projectId,
@@ -65,28 +76,93 @@ const formatTime = (iso?: string | null): string => {
 export default function ProjectPage() {
   const { id, chatId } = useParams()
   const navigate = useNavigate()
-  const project = useProjectStore((s) => s.projects.find((p) => p.id === id))
-  const { mutate: deleteProjectApi } = useDeleteProject()
-  const upsertDetail = useProjectStore((s) => s.upsertDetail)
+  const { project, isLoading: isDetailLoading, isError: isDetailError } = useProjectView(id)
+  const confirmDeleteProject = useConfirmDeleteProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
   const { mutate: setInstructionApi } = useSetProjectInstruction()
   const renameProject = (pid: string, next: string) => updateProject({ projectId: pid, title: next })
   const toggleFavorite = (pid: string) => toggleFavoriteApi({ projectId: pid, next: !(project?.isFavorite ?? false) })
 
-  const { data: detailData, isLoading: isDetailLoading, isError: isDetailError } = useProject(id)
-  useEffect(() => {
-    if (detailData?.data?.data) upsertDetail(detailData.data.data)
-  }, [detailData, upsertDetail])
-
+  const queryClient = useQueryClient()
   const connect = useChatStore((s) => s.connect)
   const disconnect = useChatStore((s) => s.disconnect)
   const isConnecting = useChatStore((s) => s.isConnecting)
+  const chatError = useChatStore((s) => s.error)
+  const clearChatError = useChatStore((s) => s.clearError)
+  const isDeleted = useChatStore((s) => s.isDeleted)
+  const resetDeleted = useChatStore((s) => s.resetDeleted)
+
+  // 일시적 오류(5xx·네트워크)는 ChatPage처럼 재시도 화면을 보여준다.
+  // 어느 대화의 오류인지 함께 저장해, 다른 대화로 옮기면 자동으로 무시되게 한다.
+  const [connectError, setConnectError] = useState<{ chatId: string; message: string } | null>(null)
+  const [retryKey, setRetryKey] = useState(0)
+
+  // useLayoutEffect: 라우터 내비게이션은 트랜지션으로 커밋되므로 useEffect면
+  // 이전 대화의 메시지가 한 프레임 그려질 수 있다. ChatPage와 동일하게 페인트 전에 연결한다.
+  useLayoutEffect(() => {
+    if (!chatId) {
+      disconnect()
+      return
+    }
+    let cancelled = false
+    connect(chatId)
+      .then(() => {
+        if (!cancelled) setConnectError(null)
+      })
+      .catch((e) => {
+        if (cancelled) return
+        logError('ProjectPage.connect', e, { projectId: id, chatId })
+        const code = e?.response?.data?.error?.code as string | undefined
+        const status = (e?.response?.status ?? 0) as number
+        const known = code ? SESSION_ERRORS[code] : undefined
+        if (known) {
+          // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
+          showToast(known)
+          queryClient.invalidateQueries({ queryKey: ['projects', 'sessions', id] })
+          navigate(`/projects/${id}`, { replace: true })
+        } else if (status >= 500) {
+          const detail = e?.response?.data?.error?.detail as string | undefined
+          setConnectError({
+            chatId,
+            message: detail
+              ? `서버에 일시적인 오류가 발생했습니다. (${status}: ${detail})`
+              : `서버에 일시적인 오류가 발생했습니다. (${status})`,
+          })
+        } else if (isNetworkError(e)) {
+          setConnectError({ chatId, message: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.' })
+        } else {
+          showToast('대화를 불러오는 중 오류가 발생했습니다.')
+          navigate(`/projects/${id}`, { replace: true })
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [chatId, id, retryKey, connect, disconnect, navigate, queryClient])
+  // 같은 대화로 돌아와 다시 연결 중일 때는 이전 오류를 숨긴다(성공하면 위 then에서 지워진다).
+  const activeConnectError =
+    connectError && connectError.chatId === chatId && !isConnecting ? connectError.message : null
+  const retryConnect = () => {
+    setConnectError(null)
+    setRetryKey((k) => k + 1)
+  }
+
+  // ChatPage와 동일하게 스트림 오류·첫 응답 실패로 인한 세션 삭제를 처리한다.
   useEffect(() => {
-    if (chatId) connect(chatId)
-    else disconnect()
-  }, [chatId, connect, disconnect])
-  useDocumentTitle(project ? project.name : '프로젝트')
+    if (isDeleted) {
+      const msg = chatError
+      resetDeleted()
+      clearChatError()
+      if (msg) showToast(msg)
+      navigate(`/projects/${id}`, { replace: true })
+      return
+    }
+    if (chatError) {
+      showToast(chatError)
+      clearChatError()
+    }
+  }, [isDeleted, chatError, resetDeleted, clearChatError, navigate, id])
   const [modalOpen, setModalOpen] = useState(false)
   const [filesOpen, setFilesOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
@@ -98,22 +174,59 @@ export default function ProjectPage() {
 
   const { data: docsData } = useProjectDocuments(id)
   const documents = docsData?.data?.data?.documents ?? []
-  const { mutate: uploadDoc } = useUploadProjectDocument(id ?? '')
-  const { mutate: deleteDoc, isPending: isDeletingDoc } = useDeleteProjectDocument(id ?? '')
+  const { mutate: uploadDoc, isPending: isUploading, variables: uploadingFile } = useUploadProjectDocument(id ?? '')
+  const { mutate: deleteDoc } = useDeleteProjectDocument(id ?? '')
   const { mutate: retryDoc } = useRetryProjectDocument(id ?? '')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // 진행 중인 삭제를 뮤테이션 캐시에서 읽는다. 컴포넌트 state와 달리 페이지가 다시 마운트돼도 유지되고,
+  // 여러 파일을 동시에 지워도 각 행이 자기 상태를 표시한다.
+  const deletingIds = useMutationState({
+    filters: { mutationKey: projectDocumentDeleteKey(id ?? ''), status: 'pending' },
+    select: (m) => m.state.variables as string,
+  })
+  const isDeletingRow = (documentId: string) => deletingIds.includes(documentId)
+  // 되돌릴 수 없으므로 프로젝트·대화 삭제와 같이 확인을 받는다.
+  const handleDeleteDoc = (documentId: string) => {
+    if (isDeletingRow(documentId)) return
+    const name = documents.find((d) => d.document_id === documentId)?.name ?? '이 파일'
+    const ok = window.confirm(
+      `'${name}'을(를) 프로젝트에서 삭제하시겠습니까?\n\n이후 대화에서 이 파일을 참조하지 않으며 되돌릴 수 없습니다.`,
+    )
+    if (ok) deleteDoc(documentId)
+  }
 
   const MAX_UPLOAD = 50 * 1024 * 1024
+  const ALLOWED_EXT = ['md', 'txt', 'pdf']
   const tryUpload = (file: File): boolean => {
     if (!id) return false
+    if (isUploading) {
+      showToast('이전 파일을 업로드하는 중입니다. 완료 후 다시 시도해주세요.')
+      return false
+    }
+    // accept 속성은 파일 선택 창의 '모든 파일'로 우회되므로 직접 확인한다.
+    const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : ''
+    if (!ALLOWED_EXT.includes(ext)) {
+      showToast(`'${file.name}' 지원하지 않는 형식입니다. (.md, .txt, .pdf)`)
+      return false
+    }
     if (file.size > MAX_UPLOAD) {
-      window.alert(`'${file.name}'은(는) 50MB를 초과하여 업로드할 수 없습니다.`)
+      showToast(`'${file.name}' 50MB를 초과하여 업로드할 수 없습니다.`)
+      return false
+    }
+    if (file.size === 0) {
+      showToast(`'${file.name}' 빈 파일은 업로드할 수 없습니다.`)
       return false
     }
     uploadDoc(file)
     return true
   }
-  const handlePickFile = () => showToast('추후 구현 예정입니다.')
+  const handlePickFile = () => {
+    if (isUploading) {
+      showToast('이전 파일을 업로드하는 중입니다. 완료 후 다시 시도해주세요.')
+      return
+    }
+    fileInputRef.current?.click()
+  }
   const handleUploadFiles = (files: FileList | null) => {
     const file = files?.[0]
     if (file) tryUpload(file)
@@ -144,10 +257,13 @@ export default function ProjectPage() {
         messageCount: 0,
       }))
   }, [sessionsData])
+  const openChatTitle = chatId ? chats.find((c) => c.id === chatId)?.title : undefined
+  // ChatPage와 같이 대화를 열면 탭 제목을 대화 제목으로 바꾼다.
+  useDocumentTitle(openChatTitle ?? (project ? project.name : '프로젝트'))
 
   const { mutate: updateSessionApi } = useUpdateSession()
   const { mutate: toggleSessionFavoriteApi } = useToggleSessionFavorite()
-  const { mutate: deleteSessionApi } = useDeleteSession()
+  const confirmDeleteChat = useConfirmDeleteSession()
 
   const renameChat = (targetId: string, next: string) => {
     updateSessionApi({ sessionId: targetId, data: { title: next } })
@@ -157,8 +273,9 @@ export default function ProjectPage() {
     toggleSessionFavoriteApi({ sessionId: targetId, next: !(cur?.isFavorite ?? false) })
   }
   const deleteChat = (targetId: string) => {
-    deleteSessionApi(targetId)
-    if (openChatId === targetId) closeChat()
+    // 확인 창, 열려 있던 대화면 프로젝트 첫 화면으로 이동, 실패 알림은 훅이 맡는다.
+    const target = chats.find((c) => c.id === targetId)
+    confirmDeleteChat({ id: targetId, title: target?.title, projectId: id })
   }
 
   const submitRename = () => {
@@ -231,14 +348,7 @@ export default function ProjectPage() {
               setNameDraft(project.name)
               setRenaming(true)
             }}
-            onDelete={() => {
-              const ok = window.confirm(
-                `'${project.name}' 프로젝트를 삭제하시겠습니까?\n\n하위 대화와 메시지, 업로드한 참고 파일이 모두 함께 삭제되며 되돌릴 수 없습니다.`,
-              )
-              if (!ok) return
-              deleteProjectApi(project.id)
-              navigate('/chat')
-            }}
+            onDelete={() => confirmDeleteProject({ id: project.id, name: project.name })}
           />
           <span className="ml-auto">
             <IconButton label="컨텍스트 접기" onClick={() => setPanelOpen(false)}>
@@ -275,20 +385,23 @@ export default function ProjectPage() {
               className="hidden"
               onChange={(e) => handleUploadFiles(e.target.files)}
             />
-            {documents.length === 0 ? (
+            {documents.length === 0 && !isUploading ? (
               <button type="button" onClick={handlePickFile} className="w-full text-left">
                 <EmptyFiles />
               </button>
             ) : (
               <div className="-mx-2">
+                {isUploading && uploadingFile && (
+                  <UploadingDocRow name={uploadingFile.name} size={uploadingFile.size} />
+                )}
                 {documents.map((d) => (
                   <PollingDocRow
                     key={d.document_id}
                     projectId={id ?? ''}
                     doc={d}
                     onRetry={() => handleRetryDoc(d.document_id)}
-                    onDelete={() => deleteDoc(d.document_id)}
-                    deleting={isDeletingDoc}
+                    onDelete={() => handleDeleteDoc(d.document_id)}
+                    deleting={isDeletingRow(d.document_id)}
                   />
                 ))}
               </div>
@@ -343,13 +456,21 @@ export default function ProjectPage() {
           </div>
         </header>
 
-        {openChatId ? (
+        {openChatId && activeConnectError ? (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6">
+            <p className="text-text-secondary">{activeConnectError}</p>
+            <button type="button" onClick={retryConnect} className="text-sm text-brand hover:underline">
+              다시 시도
+            </button>
+          </div>
+        ) : openChatId ? (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex-1 min-h-0">
               <MessageList title={project.name} isLoading={isConnecting} hideHeader />
             </div>
             <div className="shrink-0 bg-surface px-4 pb-2">
               <ChatInput isConnecting={isConnecting} hideDomain />
+              <p className="text-xs text-center text-text-muted pt-2">{AI_NOTICE}</p>
             </div>
           </div>
         ) : (
@@ -358,7 +479,7 @@ export default function ProjectPage() {
               <p className="mb-6 text-center text-[14px] text-text-muted">
                 MARS는 이 프로젝트에서 대화할 때마다 동일한 지침과 파일을 참조합니다.
               </p>
-              <ChatInput projectId={project.id} hideDomain />
+              <ChatInput projectId={project.id} hideDomain notice={AI_NOTICE} />
             </div>
           </div>
         )}
@@ -375,9 +496,9 @@ export default function ProjectPage() {
         documents={documents}
         onClose={() => setFilesOpen(false)}
         onUpload={(file) => tryUpload(file)}
-        onDelete={(docId) => deleteDoc(docId)}
+        onDelete={handleDeleteDoc}
         onRetry={handleRetryDoc}
-        deleting={isDeletingDoc}
+        deletingIds={deletingIds}
       />
     </div>
   )

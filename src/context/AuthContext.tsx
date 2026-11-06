@@ -4,6 +4,7 @@ import { LOCAL_STORAGE_KEY } from '../constants/key';
 import { login as loginApi, logout as logoutApi } from '../api/services/auth';
 import { logError } from '../utils/logError';
 import { scheduleTokenRefresh } from '../api/lib/axios';
+import { clearStoredChatData } from '../utils/chatStorage';
 import type { LoginRequest } from '../types/auth';
 
 interface AuthContextType {
@@ -59,6 +60,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     }
     removeAccessTokenFromStorage();
     removeRefreshTokenFromStorage();
+    clearStoredChatData();
     setAccessToken(null);
     setRefreshToken(null);
     window.location.href = '/';

@@ -1,4 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query'
 import {
   uploadAdminDocument,
   getAdminDocuments,
@@ -9,17 +15,30 @@ import type { GetAdminDocumentsParams, UploadDocumentFields } from '../types/adm
 import { normalizeDocStatus } from '../utils/document'
 import { useAuth } from '../context/AuthContext'
 
-export const useAdminDocuments = (params?: GetAdminDocumentsParams) => {
+const ADMIN_DOC_LIMIT = 20
+
+export const useInfiniteAdminDocuments = (
+  params?: Omit<GetAdminDocumentsParams, 'offset' | 'limit'>,
+) => {
   const { accessToken } = useAuth()
-  return useQuery({
-    queryKey: ['admin', 'documents', params],
-    queryFn: () => getAdminDocuments(params),
+  return useInfiniteQuery({
+    queryKey: ['admin', 'documents', params ?? {}],
+    queryFn: ({ pageParam }) =>
+      getAdminDocuments({ ...params, offset: pageParam, limit: ADMIN_DOC_LIMIT }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage.data.data.has_more) return undefined
+      return allPages.reduce((acc, p) => acc + p.data.data.documents.length, 0)
+    },
     enabled: !!accessToken,
     retry: 1,
+    placeholderData: keepPreviousData,
     refetchInterval: (query) => {
       if (query.state.status === 'error') return false
-      const docs = query.state.data?.data.data.documents ?? []
-      const hasProcessing = docs.some((d) => normalizeDocStatus(d.status) === 'processing')
+      const pages = query.state.data?.pages ?? []
+      const hasProcessing = pages.some((p) =>
+        p.data.data.documents.some((d) => normalizeDocStatus(d.status) === 'processing'),
+      )
       return hasProcessing ? 5000 : false
     },
   })

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import type { ApiError } from '../../../utils/error';
-import { useChatStore, saveInflight, clearInflight, clearCache } from '../../../api/store/chatStore';
+import { useChatStore, saveInflight } from '../../../api/store/chatStore';
 import type { DomainSelection } from '../../../api/store/chatStore';
 import { logError } from '../../../utils/logError';
 import { useCreateSession } from '../../../hooks/useSession';
@@ -73,8 +73,10 @@ export default function ChatInput({
 }: ChatInputProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams();
-  const draftKey = id ?? NEW_CHAT_KEY;
+  const { id, chatId } = useParams();
+  // 프로젝트 라우트(/projects/:id/:chatId)에서 id는 프로젝트 ID이므로 세션 키로 쓰면
+  // 같은 프로젝트의 모든 대화가 초안을 공유한다. 프로젝트 첫 화면은 별도 키를 쓴다.
+  const draftKey = projectId ? `project:${projectId}` : (chatId ?? id ?? NEW_CHAT_KEY);
   const sendMessage = useChatStore((s) => s.sendMessage);
   const sendImageMessage = useChatStore((s) => s.sendImageMessage);
   const isStreaming = useChatStore((s) => s.isStreaming);
@@ -151,18 +153,14 @@ export default function ChatInput({
     } else if (isNewChat) {
       clearDraft();
       resetTextarea();
-      if (isStreaming) abortStream();
-      const prevSessionId = useChatStore.getState().sessionId;
-      if (prevSessionId) {
-        clearInflight(prevSessionId);
-        clearCache(prevSessionId);
-      }
+      // 이전 대화의 스트림은 건드리지 않는다. 진행 중이던 답변은 백그라운드에서 끝까지 받아지고,
+      // 다시 열면 이어서 보인다(예전에는 여기서 중단하고 캐시까지 지워 답변이 사라졌다).
       try {
         const res = await createSession({ title: toSessionTitle(text), ...(projectId ? { project_id: projectId } : {}) });
         const sessionId = res.data.data.session_id;
         saveInflight(sessionId, text, domain ?? undefined);
         if (domain) domainDrafts.set(sessionId, domain);
-        domainDrafts.delete(NEW_CHAT_KEY);
+        domainDrafts.delete(draftKey);
         const path = projectId ? `/projects/${projectId}/${sessionId}` : `/chat/${sessionId}`;
         navigate(path, { state: { initialMessage: text } });
       } catch (e: unknown) {

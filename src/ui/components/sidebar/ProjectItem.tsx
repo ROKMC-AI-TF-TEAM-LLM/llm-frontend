@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { Project } from '../../../features/projects/mock'
+import type { ProjectView } from '../../../hooks/useProject'
 import { EditIcon, LayersIcon, StarIcon, TrashIcon } from '../../../features/projects/icons'
 
 const HOVER_BG = '#fdedf2'
 
 interface ProjectItemProps {
-  project: Project
+  project: ProjectView
   onToggleFavorite: (id: string) => void
   onRename: (id: string, next: string) => void
   onDelete: (id: string) => void

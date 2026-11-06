@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Streamdown } from 'streamdown';
 import type { Components } from 'streamdown';
 import type { MessageRole, StatusStep } from '../../../types';
@@ -158,67 +157,19 @@ function ReasoningTimeline({ steps, live = false }: { steps: StatusStep[]; live?
   );
 }
 
-function ReasoningBlock({
-  steps,
-  statusText,
-  done = false,
-  seconds,
-}: {
-  steps?: StatusStep[];
-  statusText?: string | null;
-  done?: boolean;
-  seconds?: number;
-}) {
-  const list = steps && steps.length > 0 ? steps : [{ message: statusText || DEFAULT_STATUS }];
-  const current = list[list.length - 1];
-  const [open, setOpen] = useState(false);
-  const hasDetail = !done || list.length > 1 || list.some((s) => s.thought);
-
-  const headerLabel = done
-    ? seconds != null
-      ? `${seconds}초 동안 생각함`
-      : '추론 과정'
-    : current.message;
+// 답변 생성 중 사고 과정은 접지 않고 항상 펼쳐서 보여준다.
+function ReasoningBlock({ steps, statusText }: { steps?: StatusStep[]; statusText?: string | null }) {
+  const hasSteps = !!steps && steps.length > 0;
+  // 단계 목록이 보일 땐 마지막 단계가 곧 현재 상태이므로 헤더는 고정 문구로 둔다(중복 표시 방지).
+  const headerLabel = hasSteps ? DEFAULT_STATUS : statusText || DEFAULT_STATUS;
 
   return (
     <div className="animate-fade-in select-none">
-      <button
-        type="button"
-        onClick={() => hasDetail && setOpen((v) => !v)}
-        className={`flex items-center gap-2 text-[13.5px] ${hasDetail ? 'cursor-pointer' : 'cursor-default'}`}
-      >
-        {!done && (
-          <span className="h-3.5 w-3.5 shrink-0 rounded-full border-[1.5px] border-brand border-t-transparent animate-spin" />
-        )}
-        <span className={done ? 'font-medium text-text-muted' : 'font-semibold status-blink'}>
-          {headerLabel}
-        </span>
-        {hasDetail && (
-          <svg
-            width={13}
-            height={13}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={`shrink-0 text-text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        )}
-      </button>
-      {hasDetail && (
-        <div
-          className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(.32,.72,0,1)]"
-          style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
-        >
-          <div className="overflow-hidden">
-            <ReasoningTimeline steps={list} live={!done} />
-          </div>
-        </div>
-      )}
+      <div className="flex items-center gap-2 text-[13.5px]">
+        <span className="h-3.5 w-3.5 shrink-0 rounded-full border-[1.5px] border-brand border-t-transparent animate-spin" />
+        <span className="font-semibold status-blink">{headerLabel}</span>
+      </div>
+      {hasSteps && <ReasoningTimeline steps={steps} live />}
     </div>
   );
 }

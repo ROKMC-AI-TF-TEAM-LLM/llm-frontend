@@ -8,6 +8,14 @@ import { queryClient } from '../queryClient';
 import { logError } from '../../utils/logError';
 import { uuid } from '../../utils/uuid';
 import { getDomainLabel } from '../../utils/document';
+import { CHAT_CACHE_PREFIX, CHAT_INFLIGHT_KEY, isChatStorageLocked } from '../../utils/chatStorage';
+
+// 세션 목록은 전역(['sessions'])과 프로젝트별(['projects','sessions',id]) 두 캐시에 있다.
+// 세션이 바뀌면 둘 다 갱신해야 프로젝트 패널이 사이드바와 어긋나지 않는다.
+const invalidateSessionLists = () => {
+  queryClient.invalidateQueries({ queryKey: ['sessions'] });
+  queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] });
+};
 
 export interface DomainSelection {
   code: string;
@@ -42,62 +50,73 @@ interface ChatStore {
 const isAbortError = (e: unknown) =>
   (e instanceof DOMException && e.name === 'AbortError') || axios.isCancel(e)
 
-const extractContent = (raw: string, _depth = 0): string => {
-  if (_depth > 5) return raw
-  try {
-    const parsed = JSON.parse(raw)
-    if (typeof parsed.content === 'string') return extractContent(parsed.content, _depth + 1)
-    if (typeof parsed.answer === 'string') return extractContent(parsed.answer, _depth + 1)
-    if (typeof parsed.text === 'string') return extractContent(parsed.text, _depth + 1)
-    return raw
-  } catch {
-    const parts: string[] = []
-    let i = 0
-    while (i < raw.length) {
-      if (raw[i] !== '{') {
-        let j = i
-        while (j < raw.length && raw[j] !== '{') j++
-        const plainText = raw.slice(i, j)
-        if (plainText) parts.push(plainText)
-        i = j
-        continue
-      }
-      let j = i + 1
-      let braceDepth = 1
-      while (j < raw.length && braceDepth > 0) {
-        if (raw[j] === '"') {
-          j++
-          while (j < raw.length && raw[j] !== '"') {
-            if (raw[j] === '\\') j++
-            j++
-          }
-        } else if (raw[j] === '{') {
-          braceDepth++
-        } else if (raw[j] === '}') {
-          braceDepth--
-        }
-        j++
-      }
-      if (braceDepth === 0) {
-        try {
-          const obj = JSON.parse(raw.slice(i, j))
-          if (typeof obj.content === 'string') parts.push(extractContent(obj.content, _depth + 1))
-          else if (typeof obj.answer === 'string') parts.push(extractContent(obj.answer, _depth + 1))
-          else if (typeof obj.text === 'string') parts.push(extractContent(obj.text, _depth + 1))
-        } catch {
-          parts.push(raw.slice(i, j))
-        }
-        i = j
-      } else {
-        parts.push(raw.slice(i))
-        break
-      }
-    }
-    return parts.length > 0 ? parts.join('') : raw
+// 스트림 조각이 직렬화된 채({"content":"..."} 또는 그 연속) 저장된 옛 데이터를 풀어낸다.
+// 본문 전체가 '{'로 시작할 때만 시도하고, 텍스트 키가 없는 객체는 원문 그대로 둔다.
+// (예전에는 본문 어디든 JSON 객체를 찾아 해석해, 답변 속 JSON 예시가 통째로 지워졌다.)
+const pickText = (v: unknown): string | undefined => {
+  if (!v || typeof v !== 'object') return undefined
+  const o = v as Record<string, unknown>
+  for (const k of ['content', 'answer', 'text']) {
+    if (typeof o[k] === 'string') return o[k] as string
   }
+  return undefined
+}
+
+const extractContent = (raw: string, _depth = 0): string => {
+  if (_depth > 5 || !raw.trimStart().startsWith('{')) return raw
+  try {
+    const text = pickText(JSON.parse(raw))
+    return text !== undefined ? extractContent(text, _depth + 1) : raw
+  } catch {
+    // 객체 여러 개가 이어 붙은 형태일 수 있다. 아래에서 하나씩 푼다.
+  }
+  const parts: string[] = []
+  let i = 0
+  while (i < raw.length) {
+    if (raw[i] !== '{') {
+      let j = i
+      while (j < raw.length && raw[j] !== '{') j++
+      parts.push(raw.slice(i, j))
+      i = j
+      continue
+    }
+    let j = i + 1
+    let braceDepth = 1
+    while (j < raw.length && braceDepth > 0) {
+      if (raw[j] === '"') {
+        j++
+        while (j < raw.length && raw[j] !== '"') {
+          if (raw[j] === '\\') j++
+          j++
+        }
+      } else if (raw[j] === '{') {
+        braceDepth++
+      } else if (raw[j] === '}') {
+        braceDepth--
+      }
+      j++
+    }
+    if (braceDepth !== 0) {
+      parts.push(raw.slice(i))
+      break
+    }
+    const slice = raw.slice(i, j)
+    let text: string | undefined
+    try { text = pickText(JSON.parse(slice)) } catch { text = undefined }
+    parts.push(text !== undefined ? extractContent(text, _depth + 1) : slice)
+    i = j
+  }
+  return parts.join('')
 }
 
 const streamRegistry = new Map<string, Message[]>();
+
+// 스트림 중단 핸들은 세션별로 둔다. 스토어의 abortController는 '지금 보고 있는 세션'의 것만 가리켜야
+// 다른 대화를 다녀온 뒤에도 중지 버튼이 올바른 스트림을 멈춘다.
+const streamControllers = new Map<string, AbortController>();
+const releaseController = (sessionId: string, controller: AbortController) => {
+  if (streamControllers.get(sessionId) === controller) streamControllers.delete(sessionId);
+};
 
 const messageCache = new Map<string, Message[]>();
 
@@ -154,10 +173,11 @@ export const peekSessionMessages = (sessionId: string): Message[] => {
   return messageCache.get(sessionId) ?? [];
 };
 
-const CACHE_KEY = (id: string) => `rokm_cache_${id}`
+const CACHE_KEY = (id: string) => `${CHAT_CACHE_PREFIX}${id}`
 
 const saveCache = (sessionId: string, messages: Message[]) => {
-  if (!sessionId || messages.length === 0) return
+  // 로그아웃으로 정리된 뒤에는 다시 쓰지 않는다(페이지를 떠날 때 beforeunload가 호출).
+  if (!sessionId || messages.length === 0 || isChatStorageLocked()) return
   try {
     const cacheable = messages.filter(
       (m) => !(m.type === 'text' && m.role === 'assistant' && m.status === 'streaming')
@@ -189,7 +209,7 @@ if (typeof window !== 'undefined') {
   })
 }
 
-const INFLIGHT_KEY = 'rokm_inflight'
+const INFLIGHT_KEY = CHAT_INFLIGHT_KEY
 
 export const saveInflight = (sessionId: string, question: string, domain?: DomainSelection) =>
   sessionStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, question, domain }))
@@ -334,18 +354,20 @@ export const useChatStore = create<ChatStore>((set, get) => {
     } catch (e) {
       logError('executeStream', e)
       writer.flushNow()
+      // 레지스트리는 '읽은 뒤에' 지운다. 먼저 지우면 다른 대화를 보고 있을 때
+      // 그 대화의 메시지를 이 세션의 것으로 착각한다.
+      const viewing = get().sessionId === sessionId
+      const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? [])
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
       if (signal.aborted) return
-      const viewing = get().sessionId === sessionId
-      const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? get().messages)
 
       if (isFirstMessage) {
         clearCache(sessionId)
         messageCache.delete(sessionId)
         streamRegistry.delete(sessionId)
         deleteSession(sessionId)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .then(invalidateSessionLists)
           .catch((e) => logError('deleteSession', e))
         if (viewing) set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, isDeleted: true })
         return
@@ -354,17 +376,27 @@ export const useChatStore = create<ChatStore>((set, get) => {
       const interrupted = liveMsgs.map((m) =>
         m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
       )
-      messageCache.set(sessionId, interrupted)
+      if (interrupted.length > 0) messageCache.set(sessionId, interrupted)
       if (viewing) {
         set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, messages: interrupted })
       }
       return
     }
 
+    const viewing = get().sessionId === sessionId
+    const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? [])
     streamRegistry.delete(sessionId)
 
-    const viewing = get().sessionId === sessionId
-    const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? get().messages)
+    // 다른 대화를 보는 사이 끝났는데 메시지 사본이 없으면 결과를 판단할 수 없다.
+    // 빈 응답으로 오판해 세션을 지우지 않도록, 목록만 갱신하고 끝낸다(다시 열면 서버에서 불러온다).
+    if (!viewing && liveMsgs.length === 0) {
+      logError('executeStream.noSnapshot', '백그라운드 스트림 종료 시 메시지 사본 없음', { sessionId })
+      clearInflight(sessionId)
+      messageCache.delete(sessionId)
+      invalidateSessionLists()
+      return
+    }
+
     const finalMsg = liveMsgs.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
@@ -376,7 +408,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         messageCache.delete(sessionId)
         streamRegistry.delete(sessionId)
         deleteSession(sessionId)
-          .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+          .then(invalidateSessionLists)
           .catch((e) => logError('deleteSession', e))
         if (viewing) set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.', isStreaming: false, abortController: null, isDeleted: true })
         return
@@ -396,7 +428,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     const doneMsgs = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
     streamRegistry.delete(sessionId)
     messageCache.set(sessionId, doneMsgs)
-    queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    invalidateSessionLists()
     if (get().sessionId === sessionId) {
       set({ isStreaming: false, abortController: null, messages: doneMsgs })
     }
@@ -407,6 +439,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     assistantId: string,
     serverId: string,
     signal: AbortSignal,
+    domain?: string,
   ): Promise<void> => {
     const writer = createWriter(sessionId, assistantId)
 
@@ -425,7 +458,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice, writer.setThought)
+      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice, writer.setThought, domain)
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
@@ -435,7 +468,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
       return
     }
 
-    const liveMsgs = get().sessionId === sessionId ? get().messages : (streamRegistry.get(sessionId) ?? get().messages)
+    const liveMsgs = get().sessionId === sessionId ? get().messages : (streamRegistry.get(sessionId) ?? [])
+    if (liveMsgs.length === 0) {
+      // 다른 대화를 보는 사이 끝났는데 사본이 없다: 다음에 열 때 서버에서 불러오게 한다.
+      streamRegistry.delete(sessionId)
+      messageCache.delete(sessionId)
+      invalidateSessionLists()
+      return
+    }
     const finalMsg = liveMsgs.find((m) => m.id === assistantId)
     const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
@@ -446,9 +486,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
     if (get().sessionId !== sessionId) {
       const done = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
-      streamRegistry.set(sessionId, done)
+      // 레지스트리에 남겨 두면 다시 열 때 connect가 '스트리밍 중'으로 복원해 입력이 막힌다.
+      streamRegistry.delete(sessionId)
       messageCache.set(sessionId, done)
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      invalidateSessionLists()
       return
     }
 
@@ -463,7 +504,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       ),
     }))
     messageCache.set(sessionId, get().messages)
-    queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    invalidateSessionLists()
   }
 
   return {
@@ -504,14 +545,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
       connectAbortController = new AbortController();
       const { signal } = connectAbortController;
 
-      set({ nextCursor: null, hasMore: false, isLoadingMore: false });
+      set({ nextCursor: null, hasMore: false, isLoadingMore: false, isDeleted: false });
 
       const streaming = streamRegistry.get(sessionId);
       if (streaming) {
-        set({ sessionId, messages: streaming, isStreaming: true, isConnecting: false });
+        set({ sessionId, messages: streaming, isStreaming: true, isConnecting: false, abortController: streamControllers.get(sessionId) ?? null });
         return;
       }
-      set({ sessionId, messages: [], isStreaming: false, isConnecting: true, error: null });
+      set({ sessionId, messages: [], isStreaming: false, isConnecting: true, error: null, abortController: null });
 
       let res;
       try {
@@ -621,7 +662,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         if (stillEmpty) {
           clearCache(sessionId);
           deleteSession(sessionId)
-            .then(() => queryClient.invalidateQueries({ queryKey: ['sessions'] }))
+            .then(invalidateSessionLists)
             .catch((e) => logError('deleteSession', e));
           set({ isDeleted: true });
         }
@@ -681,9 +722,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ],
       }))
       streamRegistry.set(sessionId, get().messages)
+      streamControllers.set(sessionId, controller)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, domain?.code)
+      try {
+        await executeStream(sessionId, assistantId, content, isFirstMessage, controller.signal, domain?.code)
+      } finally {
+        releaseController(sessionId, controller)
+      }
     },
 
     retryLastMessage: async () => {
@@ -713,9 +759,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ],
       }))
       streamRegistry.set(sessionId, get().messages)
+      streamControllers.set(sessionId, controller)
       saveCache(sessionId, get().messages)
 
-      await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, domainCode)
+      try {
+        await executeStream(sessionId, assistantId, last.content, isFirstMessage, controller.signal, domainCode)
+      } finally {
+        releaseController(sessionId, controller)
+      }
     },
 
     sendImageMessage: (filename: string, caption?: string) => {
@@ -826,8 +877,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
         ),
       }));
       streamRegistry.set(sessionId, get().messages);
+      streamControllers.set(sessionId, controller);
 
-      await executeRegenerate(sessionId, assistantId, serverId, controller.signal);
+      try {
+        // 원래 질문에 지정했던 분야로 다시 답하게 한다.
+        await executeRegenerate(sessionId, assistantId, serverId, controller.signal, prevDomain?.code);
+      } finally {
+        releaseController(sessionId, controller);
+      }
     },
   }
 });
