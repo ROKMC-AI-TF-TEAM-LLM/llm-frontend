@@ -3,6 +3,7 @@
 
 import type { AdminDocumentItem } from '../types/adminDocument'
 import type { MessageItem } from '../types/chat'
+import type { DocGenMockJob } from './handlers/docgen'
 import type { ProjectData, ProjectDocument } from '../types/project'
 import type { SessionData } from '../types/session'
 import type { UserData } from '../types/user'
@@ -76,4 +77,6 @@ export const db = {
   messages: { ...messages, ...generatedSessions.messages },
   projectDocuments: { ...projectDocuments, ...seedProjectDocuments(generatedProjects) },
   libraryDocuments: [...libraryDocuments, ...seedLibraryDocuments().sort(latestFirst)],
+  /** 문서 생성 작업. 처음에는 비어 있다 */
+  docgenJobs: [] as DocGenMockJob[],
 }

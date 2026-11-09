@@ -5,6 +5,7 @@
 
 import { backendApi } from '../api/lib/axios'
 import { authRoutes } from './handlers/auth'
+import { docgenRoutes } from './handlers/docgen'
 import { documentRoutes } from './handlers/documents'
 import { miscRoutes } from './handlers/misc'
 import { projectRoutes } from './handlers/projects'
@@ -18,6 +19,7 @@ const handle = createServer([
   ...sessionRoutes,
   ...projectRoutes,
   ...documentRoutes,
+  ...docgenRoutes,
   ...miscRoutes,
 ])
 
