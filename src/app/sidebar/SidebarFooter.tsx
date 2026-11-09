@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@/features/chat/types';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@/features/auth/useAuth';
 import { TUTORIALS } from '@/features/tutorials/tutorials';
 // import { showDevToast } from '../DevToast';
 

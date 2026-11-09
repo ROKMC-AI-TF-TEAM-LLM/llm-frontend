@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { useTranslate } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'
@@ -91,11 +91,11 @@ export default function TranslatePage() {
     )
   }, [input, source, target, style, translateApi])
 
-  useEffect(() => {
-    if (!input.trim()) {
-      setResult('')
-      }
-  }, [input, source, target, runTranslate])
+  // 입력을 다 지우면 번역 결과도 비운다
+  const changeInput = (next: string) => {
+    setInput(next)
+    if (!next.trim()) setResult('')
+  }
 
   const copyResult = () => {
     if (result) copyText(result).catch(() => {})
@@ -165,7 +165,7 @@ export default function TranslatePage() {
           <div className="flex min-h-[460px] flex-col rounded-[18px] border border-[#f0e6e8] bg-white">
             <textarea
               value={input}
-              onChange={(e) => setInput(e.target.value.slice(0, MAX))}
+              onChange={(e) => changeInput(e.target.value.slice(0, MAX))}
               placeholder="번역할 내용을 입력하세요"
               spellCheck={false}
               style={{ fontSize }}

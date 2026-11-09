@@ -2,7 +2,7 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient, type InfiniteD
 import type { AxiosResponse } from 'axios'
 import { getSessions, createSession, searchSessions, updateSession, setFavorite, deleteSession } from './api'
 import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest, GetSessionsResponse } from './types'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from '@/features/auth/useAuth'
 
 const SESSIONS_INFINITE_KEY = ['sessions', 'infinite'] as const
 

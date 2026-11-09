@@ -14,6 +14,7 @@ export const tryReloadOnce = (): boolean => {
       return true
     }
   } catch {
+    // 저장소를 못 쓰면 무한 새로고침을 막을 수 없으므로 새로고침하지 않는다
   }
   return false
 }

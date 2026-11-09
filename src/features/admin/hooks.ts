@@ -7,7 +7,7 @@ import {
 } from './api'
 import type { GetAdminDocumentsParams, UploadDocumentFields } from './types'
 import { normalizeDocStatus } from '@/features/documents/utils'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from '@/features/auth/useAuth'
 
 export const useAdminDocuments = (params?: GetAdminDocumentsParams) => {
   const { accessToken } = useAuth()

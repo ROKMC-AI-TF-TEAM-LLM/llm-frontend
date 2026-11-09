@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MessageList from '../components/MessageList';
 import ChatInput from '../components/ChatInput';
@@ -51,24 +51,18 @@ export default function ChatPage() {
     }
   }, [isDeleted, error, resetDeleted, clearError, navigate]);
 
-  useLayoutEffect(() => {
-    const initialMessage = location.state?.initialMessage as string | undefined;
-    let cancelled = false;
-
-    connect(sessionId)
-      .then(() => {
-        if (cancelled) return;
-        if (initialMessage) {
-          navigate(location.pathname, { replace: true, state: {} });
-        }
-      })
-      .catch((error) => {
-        if (cancelled) return;
+  // 연결은 대화(sessionId)가 바뀌거나 다시 시도할 때만 한다.
+  // 주소·이동 함수는 바뀌어도 다시 연결하지 않도록 effect event로 그때의 최신 값을 읽는다.
+  const readInitialMessage = useEffectEvent(() => location.state?.initialMessage as string | undefined);
+  const clearInitialMessage = useEffectEvent(() => {
+    navigate(location.pathname, { replace: true, state: {} });
+  });
+  const handleConnectError = useEffectEvent((error: { response?: { status?: number; data?: { error?: { code?: string; detail?: string } } } }) => {
         logError('ChatPage.connect', error, { sessionId });
 
         const code = error?.response?.data?.error?.code;
         const status = (error?.response?.status ?? 0) as number;
-        const knownMessage = SESSION_ERRORS[code];
+        const knownMessage = SESSION_ERRORS[code ?? ''];
         if (knownMessage) {
           setCanRetry(false);
           setSessionError(knownMessage);
@@ -86,10 +80,24 @@ export default function ChatPage() {
         } else {
           navigate('/chat', { replace: true, state: { toastError: '채팅을 불러오는 중 오류가 발생했습니다.' } });
         }
+  });
+
+  useLayoutEffect(() => {
+    const initialMessage = readInitialMessage();
+    let cancelled = false;
+
+    connect(sessionId)
+      .then(() => {
+        if (cancelled) return;
+        if (initialMessage) clearInitialMessage();
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        handleConnectError(error);
       });
 
     return () => { cancelled = true; };
-  }, [sessionId, retryKey]);
+  }, [sessionId, retryKey, connect]);
 
   if (sessionError) {
     const isServerError = canRetry;

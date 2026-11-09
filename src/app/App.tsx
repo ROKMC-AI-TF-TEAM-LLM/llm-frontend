@@ -11,7 +11,7 @@ import ChatPage from '@/features/chat/pages/ChatPage';
 import AuthLayout from './layouts/AuthLayout';
 import NewChatPage from '@/features/chat/pages/NewChatPage';
 import ErrorPage from './ErrorPage';
-import { AuthProvider } from '@/features/auth/AuthContext';
+import { AuthProvider } from '@/features/auth/AuthProvider';
 import ToastHost from '@/shared/components/ToastHost';
 import ProtectedLayout from './layouts/ProtectedLayout';
 import AdminLayout from './layouts/AdminLayout';

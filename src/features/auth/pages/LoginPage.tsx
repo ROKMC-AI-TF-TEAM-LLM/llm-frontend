@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
-import { useForm as useHookForm, type SubmitHandler } from 'react-hook-form'
+import { useForm as useHookForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useAuth } from '../AuthContext'
+import { useAuth } from '../useAuth'
 import { useSignup } from '@/features/users/hooks'
 import MarsPlanet from '@/features/landing/components/MarsPlanet'
 import { showToast } from '@/shared/store/toastStore'
@@ -97,17 +97,17 @@ const LoginPage = () => {
   const featuresRef = useRef<HTMLDivElement>(null)
 
   const {
-    register: registerLogin, handleSubmit: handleLoginSubmit, reset: resetLogin, watch: watchLogin,
+    register: registerLogin, handleSubmit: handleLoginSubmit, reset: resetLogin, control: loginControl,
     formState: { errors: loginErrors, isSubmitting: isLoginSubmitting },
   } = useHookForm<LoginFields>({ defaultValues: { email: '', password: '' }, resolver: zodResolver(loginSchema), mode: 'onBlur' })
-  const loginValues = watchLogin()
+  const loginValues = useWatch({ control: loginControl })
   const isLoginDisabled = isLoginSubmitting || Object.values(loginValues).some((v) => v === '')
 
   const {
-    register: registerSignup, handleSubmit: handleSignupSubmit, reset: resetSignup, watch: watchSignup,
+    register: registerSignup, handleSubmit: handleSignupSubmit, reset: resetSignup, control: signupControl,
     formState: { errors: signupErrors, isSubmitting: isSignupSubmitting },
   } = useHookForm<SignupFields>({ defaultValues: { name: '', email: '', password: '', passwordCheck: '' }, resolver: zodResolver(signupSchema), mode: 'onBlur' })
-  const signupValues = watchSignup()
+  const signupValues = useWatch({ control: signupControl })
   const isSignupDisabled = isSignupSubmitting || Object.values(signupValues).some((v) => v === '')
 
   const handleLogin: SubmitHandler<LoginFields> = async (data) => {
@@ -129,16 +129,23 @@ const LoginPage = () => {
     }
   }
 
+  // 로그인 창을 열 때마다 빈 로그인 폼에서 시작한다
+  const showAuth = () => {
+    resetLogin()
+    resetSignup()
+    setMode('login')
+    setView('auth')
+  }
   const openAuth = () => {
     const el = introRef.current
-    if (!el || el.scrollTop <= 4) { setView('auth'); return }
+    if (!el || el.scrollTop <= 4) { showAuth(); return }
     let done = false
     const finish = () => {
       if (done) return
       done = true
       clearTimeout(t)
       el.removeEventListener('scroll', onScroll)
-      setView('auth')
+      showAuth()
     }
     const onScroll = () => { if (el.scrollTop <= 4) finish() }
     const t = window.setTimeout(finish, 1000)
@@ -147,13 +154,6 @@ const LoginPage = () => {
   }
   const closeAuth = () => { setView('intro'); requestAnimationFrame(() => introRef.current?.scrollTo({ top: 0, behavior: 'smooth' })) }
   const scrollToFeatures = () => featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
-
-  useLayoutEffect(() => {
-    if (view !== 'auth') return
-    resetLogin()
-    resetSignup()
-    setMode('login')
-  }, [view, resetLogin, resetSignup])
 
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {

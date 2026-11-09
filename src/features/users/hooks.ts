@@ -3,7 +3,7 @@ import { getMeUsers, getUsers, deleteUsers, inquiryUsers, approveUser, rejectUse
 import { signup } from '@/features/auth/api'
 import type { UserRole, UserStatus, GetAdminUsersParams } from './types'
 import type { SignupRequest } from '@/features/auth/types'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from '@/features/auth/useAuth'
 
 export const useGetMe = () => {
   const { accessToken } = useAuth()

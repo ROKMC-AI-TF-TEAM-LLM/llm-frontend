@@ -27,6 +27,7 @@ const domainDrafts = {
     try {
       sessionStorage.setItem(DOMAIN_DRAFT_KEY, JSON.stringify(map));
     } catch {
+      // 저장소를 못 쓰면 분야 임시 저장만 건너뛴다
     }
   },
   get(key: string): DomainSelection | null {
@@ -103,9 +104,16 @@ export default function ChatInput({
     }
   };
 
-  useEffect(() => {
+  // 다른 대화로 옮기면 그 대화의 임시 입력·분야를 불러온다.
+  // effect에서 setState하면 한 번 더 그려지므로, 렌더 중에 바로 맞춘다 (react.dev: You Might Not Need an Effect)
+  const [loadedKey, setLoadedKey] = useState(draftKey);
+  if (loadedKey !== draftKey) {
+    setLoadedKey(draftKey);
     setValue(inputDrafts.get(draftKey) ?? '');
     setDomainState(domainDrafts.get(draftKey) ?? null);
+  }
+  // 입력창 높이는 DOM이 바뀐 뒤에 맞춘다
+  useEffect(() => {
     requestAnimationFrame(resizeTextarea);
   }, [draftKey]);
 

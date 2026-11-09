@@ -7,7 +7,7 @@ import {
 } from './api'
 import type { CreateProjectRequest, GetProjectSessionsParams } from './types'
 import { useProjectStore } from './store'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from '@/features/auth/useAuth'
 
 export const useInfiniteProjects = (isFavorite?: boolean) => {
   const { accessToken } = useAuth()

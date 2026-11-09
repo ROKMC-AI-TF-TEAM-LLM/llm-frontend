@@ -10,7 +10,7 @@ import {
 } from './api'
 import type { CreateDocGenJobFields, DocGenJob, DocGenOutputFormat } from './types'
 import { isJobActive } from './utils'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from '@/features/auth/useAuth'
 import { useDomainCapabilities } from '@/features/domains/hooks'
 import { showToast } from '@/shared/store/toastStore'
 

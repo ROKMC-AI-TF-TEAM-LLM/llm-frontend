@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth } from '@/features/auth/useAuth';
 import { useGetUsers } from '@/features/users/hooks';
 import { Skeleton, AdminRowSkeleton } from '@/shared/components/Skeleton';
 import type { ApiError } from '@/shared/utils/error';

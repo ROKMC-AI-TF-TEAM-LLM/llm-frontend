@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getCapabilities } from './api'
 import { useDocumentLookup } from '@/features/documents/hooks'
-import { useAuth } from '@/features/auth/AuthContext'
+import { useAuth } from '@/features/auth/useAuth'
 import type { DomainCapability } from './types'
 
 export const useDomainCapabilities = (enabled = true) => {

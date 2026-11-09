@@ -5,6 +5,7 @@ export function setPostLoginRedirect(path: string) {
     if (!path.startsWith('/') || path.startsWith('//')) return
     sessionStorage.setItem(KEY, path)
   } catch {
+    // 저장소를 못 쓰면(사생활 보호 모드 등) 로그인 후 이동만 건너뛴다
   }
 }
 

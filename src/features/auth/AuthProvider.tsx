@@ -1,19 +1,11 @@
-import { createContext, useState, useContext, useEffect, useCallback, useMemo, type PropsWithChildren } from 'react';
+import { useState, useEffect, useCallback, useMemo, type PropsWithChildren } from 'react';
 import { useLocalStorage } from '@/shared/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY } from '@/lib/storageKeys';
 import { login as loginApi, logout as logoutApi } from './api';
 import { logError } from '@/shared/utils/logError';
 import { scheduleTokenRefresh } from '@/lib/axios';
 import type { LoginRequest } from './types';
-
-interface AuthContextType {
-  accessToken: string | null;
-  refreshToken: string | null;
-  login: (signInData: LoginRequest) => Promise<void>;
-  logout: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext } from './useAuth';
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const {
@@ -74,12 +66,4 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('authcontext를 찾을 수 없습니다.');
-  }
-  return context;
 };

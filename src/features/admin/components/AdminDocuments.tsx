@@ -161,8 +161,8 @@ export default function AdminDocuments() {
     });
   };
 
-  const handleRetry = (_doc: AdminDocumentItem) => {
-  };
+  // TODO(백엔드): 자료실 문서 재처리 API가 아직 없다. 생기면 여기서 호출한다 (지금은 버튼을 눌러도 아무 일 없음)
+  const handleRetry = () => {};
 
   return (
     <div>

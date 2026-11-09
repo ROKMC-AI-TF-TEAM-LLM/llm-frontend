@@ -158,6 +158,7 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
+        // 끝 신호. 할 일은 없고, 아래 본문 처리로 떨어지지 않게 여기서 받는다
       } else if (evt.type === 'notice') {
         const fromCode = noticeFromCode(evt.code)
         if (fromCode) onNotice?.(fromCode)
