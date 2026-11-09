@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser, useInquiryUsers } from '../hooks/useUser';
 import type { AdminUserItem } from '../types/user';
 import { AdminRowSkeleton, Skeleton } from '../ui/components/Skeleton';
-import { showToast } from '../api/store/toastStore';
+import { showToast } from '../store/toastStore';
 import { getApiError } from '../utils/error';
 import { logError } from '../utils/logError';
 import { copyText } from '../utils/clipboard';

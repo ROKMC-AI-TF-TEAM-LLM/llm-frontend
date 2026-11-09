@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useServerStatus } from '../../../hooks/useServerStatus'
-import { useChatStore } from '../../../api/store/chatStore'
+import { useChatStore } from '../../../store/chatStore'
 import FilesDrawer from './FilesDrawer'
 import type { FileAttachment } from '../../../types'
 

@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message, Source, FileAttachment, Notice, StatusStep } from '../../types';
-import { noticeFromCode } from '../../types';
-import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
-import { deleteSession } from '../services/session';
-import { queryClient } from '../queryClient';
-import { logError } from '../../utils/logError';
-import { uuid } from '../../utils/uuid';
-import { getDomainLabel } from '../../utils/document';
+import type { Message, Source, FileAttachment, Notice, StatusStep } from '../types';
+import { noticeFromCode } from '../types';
+import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../api/services/chat';
+import { deleteSession } from '../api/services/session';
+import { queryClient } from '../api/queryClient';
+import { logError } from '../utils/logError';
+import { uuid } from '../utils/uuid';
+import { getDomainLabel } from '../utils/document';
 
 export interface DomainSelection {
   code: string;

@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react'
 import type { DocGenJob, DocGenOutputFormat } from '../../types/docgen'
 import { useCreateDocGenJob, useDocGenTemplates } from '../../hooks/useDocGen'
 import { useDomainCapabilities } from '../../hooks/useCapabilities'
-import { showToast } from '../../api/store/toastStore'
+import { showToast } from '../../store/toastStore'
 
 /** 입력창 값과 보내기. 분야는 capabilities, 양식은 서버 양식 목록에서 고른다 */
 export const useComposer = () => {

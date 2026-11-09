@@ -12,7 +12,7 @@ import {
 } from '../../utils/docgen'
 import { getDomainLabel, getDomainStyle } from '../../utils/document'
 import { useCancelDocGenJob, useDeleteDocGenJob, useRetryDocGenJob } from '../../hooks/useDocGen'
-import { showToast } from '../../api/store/toastStore'
+import { showToast } from '../../store/toastStore'
 import DomainIcon from '../../ui/components/chat/DomainIcon'
 import { AlertIcon, CheckIcon, ChevronIcon, DocIcon, DownloadIcon, RetryIcon, StopIcon, TrashIcon } from './icons'
 import type { Composer } from './hooks'

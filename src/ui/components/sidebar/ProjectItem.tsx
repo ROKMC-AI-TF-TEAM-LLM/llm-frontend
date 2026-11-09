@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { Project } from '../../../features/projects/mock'
+import type { Project } from '../../../features/projects/types'
 import { EditIcon, LayersIcon, StarIcon, TrashIcon } from '../../../features/projects/icons'
 
 const HOVER_BG = '#fdedf2'

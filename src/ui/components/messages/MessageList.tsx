@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useChatStore } from '../../../api/store/chatStore';
+import { useChatStore } from '../../../store/chatStore';
 import { logError } from '../../../utils/logError';
 import { copyText } from '../../../utils/clipboard';
-import { showToast } from '../../../api/store/toastStore';
+import { showToast } from '../../../store/toastStore';
 import type { Message } from '../../../types';
 import ChatHeader from './ChatHeader';
 import MessageRow from './MessageRow';

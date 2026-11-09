@@ -1,4 +1,4 @@
-import { useToastStore } from '../../api/store/toastStore'
+import { useToastStore } from '../../store/toastStore'
 import Toast from './Toast'
 
 export default function ToastHost() {

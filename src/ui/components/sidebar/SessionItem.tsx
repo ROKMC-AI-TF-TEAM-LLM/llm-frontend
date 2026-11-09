@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from '../../../types'
 import type { ApiError } from '../../../utils/error'
 import { useDeleteSession, useUpdateSession, useToggleFavorite } from '../../../hooks/useSession'
-import { clearCache } from '../../../api/store/chatStore'
+import { clearCache } from '../../../store/chatStore'
 import { displaySessionTitle } from '../../../utils/sessionTitle'
 
 const SESSION_ERRORS: Record<string, string> = {

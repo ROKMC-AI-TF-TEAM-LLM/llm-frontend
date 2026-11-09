@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Project } from './mock'
+import type { Project } from './types'
 import type { ProjectListItem, ProjectData } from '../../types/project'
 
 const toProject = (p: ProjectListItem | ProjectData): Project => {

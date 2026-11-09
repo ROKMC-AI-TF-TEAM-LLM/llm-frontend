@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import type { ChatItem } from '../../../types'
 import SessionItem from './SessionItem'
 import { SessionItemSkeleton } from '../Skeleton'
-import { showToast } from '../../../api/store/toastStore'
+import { showToast } from '../../../store/toastStore'
 import ProjectChatItem from './ProjectChatItem'
 import { useProjectStore } from '../../../features/projects/projectStore'
 
