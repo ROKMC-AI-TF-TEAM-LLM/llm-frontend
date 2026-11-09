@@ -1,5 +1,7 @@
 # MARS Frontend
 
+폴더 구조와 코드 배치 규칙은 [ARCHITECTURE.md](ARCHITECTURE.md)를 참고하세요.
+
 ## 실행
 
 ```sh

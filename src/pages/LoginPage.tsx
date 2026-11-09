@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { useForm as useHookForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../context/AuthContext'
-import { signup } from '../api/services/auth'
+import { useSignup } from '../hooks/useUser'
 import MarsPlanet from '../ui/components/MarsPlanet'
 import { showToast } from '../store/toastStore'
 import RotatingWord from '../ui/components/landing/RotatingWord'
@@ -118,12 +118,12 @@ const LoginPage = () => {
       showToast(getApiError(error, LOGIN_ERRORS, DEFAULT_STATUS_ERRORS, '로그인 중 오류가 발생했습니다.'))
     }
   }
+  const signupMutation = useSignup()
   const handleSignup: SubmitHandler<SignupFields> = async (data) => {
     const { passwordCheck: _pw, ...rest } = data
     void _pw
-    try { await signup(rest); showToast('회원가입이 완료되었습니다.', 'success'); setMode('login') }
+    try { await signupMutation.mutateAsync(rest); showToast('회원가입이 완료되었습니다.', 'success'); setMode('login') }
     catch (error) {
-      logError('signup', error)
       if (isNetworkError(error)) { showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.'); return }
       showToast(getApiError(error, SIGNUP_ERRORS, {}, '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.'))
     }
