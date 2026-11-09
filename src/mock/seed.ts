@@ -1,12 +1,12 @@
 // 목록 스크롤·검색·필터·날짜 묶음을 확인하기 위한 대량 가짜 데이터.
 // 고정 시드 난수를 쓰므로 새로고침해도 같은 데이터가 만들어진다. 개수는 COUNT에서 조절한다.
 
-import type { AdminDocumentItem } from '../types/adminDocument'
-import type { MessageItem } from '../types/chat'
-import type { ProjectData, ProjectDocument } from '../types/project'
-import type { SessionData } from '../types/session'
-import type { UserData, UserStatus } from '../types/user'
-import { DOMAINS } from '../utils/document'
+import type { AdminDocumentItem } from '@/features/admin/types'
+import type { MessageItem } from '@/features/chat/types'
+import type { ProjectData, ProjectDocument } from '@/features/projects/types'
+import type { SessionData } from '@/features/sessions/types'
+import type { UserData, UserStatus } from '@/features/users/types'
+import { DOMAINS } from '@/features/domains/utils'
 
 const COUNT = {
   users: 80,
@@ -43,7 +43,7 @@ const recentMinutes = () => Math.floor(random() ** 2.2 * 90 * DAY)
 const FAMILY_NAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '홍']
 const GIVEN_NAMES = ['민준', '서연', '도윤', '하은', '지호', '수아', '현우', '지민', '준서', '예은', '건우', '채원', '우진', '다은', '선우', '유진', '태현', '소율', '재원', '시우']
 const DEPARTMENTS = ['인사과', '군수과', '작전과', '정보통신과', '교육훈련과', '재정과', '법무실', '의무실']
-// 분야 코드는 프론트 정의(utils/document.ts)를 그대로 쓴다. 분야가 늘면 TOPICS에도 추가할 것.
+// 분야 코드는 프론트 정의(features/domains/utils.ts)를 그대로 쓴다. 분야가 늘면 TOPICS에도 추가할 것.
 const DOMAIN_CODES = DOMAINS.map((domain) => domain.code)
 
 const TOPICS: Record<string, string[]> = {

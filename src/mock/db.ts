@@ -1,12 +1,12 @@
 // mock 서버의 메모리 저장소. 새로고침하면 아래 초기 데이터로 돌아간다.
 // 직접 적은 예시 데이터 뒤에 seed.ts가 만든 대량 데이터를 붙인다.
 
-import type { AdminDocumentItem } from '../types/adminDocument'
-import type { MessageItem } from '../types/chat'
+import type { AdminDocumentItem } from '@/features/admin/types'
+import type { MessageItem } from '@/features/chat/types'
 import type { DocGenMockJob } from './handlers/docgen'
-import type { ProjectData, ProjectDocument } from '../types/project'
-import type { SessionData } from '../types/session'
-import type { UserData } from '../types/user'
+import type { ProjectData, ProjectDocument } from '@/features/projects/types'
+import type { SessionData } from '@/features/sessions/types'
+import type { UserData } from '@/features/users/types'
 import { minutesAgo, seedLibraryDocuments, seedProjectDocuments, seedProjects, seedSessions, seedUsers } from './seed'
 
 export const now = () => new Date().toISOString()

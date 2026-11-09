@@ -1,5 +1,5 @@
-import type { TranslateRequest } from '../../types/translate'
-import { DOMAINS } from '../../utils/document'
+import type { TranslateRequest } from '@/features/translate/types'
+import { DOMAINS } from '@/features/domains/utils'
 import { get, ok, post, type MockRoute } from '../server'
 
 export const miscRoutes: MockRoute[] = [

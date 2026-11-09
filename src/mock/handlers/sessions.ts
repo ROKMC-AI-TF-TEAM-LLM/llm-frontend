@@ -1,5 +1,5 @@
-import type { MessageItem, StreamMessageRequest } from '../../types/chat'
-import type { CreateSessionRequest, SessionData } from '../../types/session'
+import type { MessageItem, StreamMessageRequest } from '@/features/chat/types'
+import type { CreateSessionRequest, SessionData } from '@/features/sessions/types'
 import { db, newId, now } from '../db'
 import { cursorPage, del, fail, get, ok, patch, post, sleep, sse, type MockRoute } from '../server'
 

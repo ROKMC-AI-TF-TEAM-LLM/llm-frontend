@@ -1,40 +1,81 @@
 # 구조와 규칙
 
-새 기능을 넣을 때 "무엇을 어디에 두는가"의 기준입니다. ✅ 표시는 ESLint가 검사합니다(`npm run lint`).
+코드는 **기능별**로 모읍니다. 한 기능을 이해하려면 `src/features/<기능>/` 한 폴더만 보면 됩니다.
+✅ 표시는 ESLint가 검사합니다(`npm run lint`).
 
-## 폴더
+## 큰 틀
 
-| 위치 | 두는 것 |
-| --- | --- |
-| `src/App.tsx`, `src/main.tsx` | 라우트, 앱 시작(React Query 공급자, mock 설치) |
-| `src/api/lib/axios.ts` | HTTP 클라이언트: 서버 주소, 토큰 붙이기·갱신 |
-| `src/api/queryClient.ts` | React Query 전역 설정 |
-| `src/api/services/<도메인>.ts` | **서버 엔드포인트 하나당 함수 하나.** 요청만 보내고 화면 로직·mock 분기는 두지 않는다 |
-| `src/hooks/use<도메인>.ts` | 서비스를 감싼 React Query 훅(조회·변경·캐시 무효화). 화면은 이 훅으로만 서버를 쓴다 |
-| `src/store/` | zustand 앱 상태. 서버 데이터 캐시가 아니라 화면 간 공유 상태(채팅 스트리밍, 알림) |
-| `src/context/` | React Context (로그인 상태) |
-| `src/types/<도메인>.ts` | 서버 요청·응답 타입 |
-| `src/utils/` | 순수 함수(포맷, 응답 정규화, 상태 해석) |
-| `src/mock/` | `npm run dev:mock`용 가짜 백엔드. 새 API의 가짜 응답은 `mock/handlers/<도메인>.ts`에 |
-| `src/pages/` | 라우트 화면. 훅과 컴포넌트를 조립한다 |
-| `src/ui/components/` | 여러 화면이 쓰는 컴포넌트 |
-| `src/ui/layouts/` | 로그인·보호·관리자 레이아웃 |
-| `src/features/<기능>/` | 한 기능에서만 쓰는 화면 조각·훅·타입 |
+```
+src/
+  main.tsx          앱 시작 (React Query 공급자, mock 모드면 가짜 서버 설치)
+  app/              앱 뼈대: 라우트(App.tsx), 레이아웃, 사이드바, 오류 화면
+  lib/              기반: axios(토큰 갱신 포함), queryClient, 저장소 키
+  shared/           어느 기능에도 기대지 않는 공용 코드: 토스트, 스켈레톤, 범용 훅·유틸, 전역 CSS
+  features/<기능>/  기능 하나의 모든 것 (아래)
+  mock/             `npm run dev:mock`용 가짜 백엔드. API마다 handlers/<도메인>.ts
+```
+
+의존 방향은 한쪽으로만 흐릅니다: `app → features → shared·lib`.
+기능끼리는 서로 가져다 써도 됩니다(예: 채팅이 분야(`domains`)의 아이콘을 씀).
+
+## 기능 폴더 하나의 모양
+
+```
+features/<기능>/
+  api.ts         서버 엔드포인트 하나당 함수 하나. 요청만 보낸다
+  hooks.ts       React Query 훅(조회·변경·캐시 무효화)과 그 기능의 화면 훅
+  types.ts       서버 요청·응답 타입과 화면에서 쓰는 모양
+  utils.ts       순수 함수 (포맷, 상태 해석, 응답 정리)
+  store.ts       zustand 상태 — 서버 데이터가 아닌 것만 (필요할 때만)
+  components/    그 기능의 화면 조각
+  pages/         라우트 화면. App.tsx가 여기서 가져간다
+```
+
+없는 파일은 만들지 않습니다. 파일이 너무 커지면 같은 이름의 폴더로 나눕니다(`hooks.ts` → `hooks/`).
+
+## 기능 목록
+
+| 폴더 | 내용 | 주소 |
+| --- | --- | --- |
+| `auth` | 로그인·회원가입 화면, 로그인 상태(`AuthContext`), 로그인 후 이동 | `/` |
+| `users` | 내 정보, 사용자 목록·승인 | — |
+| `admin` | 관리자 화면(사용자·자료실 관리) | `/admin` |
+| `chat` | 채팅 화면, 메시지 스트리밍(`store.ts`), 입력창·말풍선·출처 | `/chat`, `/chat/:id` |
+| `sessions` | 대화 목록 API, 대화 검색 화면 | `/search` |
+| `documents` | 문서 검색(자료실) 화면, 문서 서랍 | `/rag` |
+| `domains` | 분야 목록·라벨·색·아이콘 | — |
+| `projects` | 프로젝트 화면 | `/projects/:id` |
+| `docgen` | 문서 제작 | `/docgen` |
+| `translate` | 번역 | `/translate` |
+| `system` | 서버 상태, 숨은 진단 화면 | — |
+| `landing`·`team`·`tutorials` | 소개·이용 안내·팀·튜토리얼 페이지 | `/guide`, `/team`, `/tutorials` |
+
+## import 쓰는 법
+
+- 같은 기능(또는 같은 `app`·`shared`·`lib`) 안: 상대 경로 `./api`, `../hooks`
+- 영역을 넘을 때: `@/features/chat/types`, `@/shared/utils/logError` (`@` = `src`)
 
 ## 규칙
 
-1. ✅ **화면(`pages`·`ui`·`features`)은 `api/services`를 직접 import하지 않는다.** `hooks/`의 훅을 거친다.
-   서비스 파일에 있던 순수 함수가 필요하면 `utils/`로 옮긴다.
-2. ✅ **mock 코드는 `src/mock` 안과 `main.tsx`에서만 쓴다.** 서비스에 `USE_MOCK` 같은 분기를 두지 않는다.
-   mock은 fetch를 가로채므로 서비스 코드는 mock인지 모른다.
-3. ✅ **라우터는 `react-router-dom`에서 가져온다.**
-4. 서버 데이터는 React Query 캐시 한 곳에만 둔다. zustand에 복사해 두지 않는다.
-5. 한 기능에서만 쓰면 `features/<기능>`, 두 기능 이상이 쓰면 `ui/components`·`hooks`·`utils`로 올린다.
+1. ✅ **화면 코드(`app`, `shared`, 기능의 `components`·`pages`)는 `api`를 직접 import하지 않는다.**
+   서버는 기능의 `hooks.ts`로만 쓴다. `api.ts`에 있던 순수 함수가 필요하면 `utils.ts`로 옮긴다.
+2. ✅ **`shared`는 `features`·`app`을 import하지 않는다.** 기능 코드가 필요하다면 그건 공용이 아니다.
+3. ✅ **mock 코드는 `src/mock` 안과 `main.tsx`에서만 쓴다.** 서비스에 `USE_MOCK` 같은 분기를 두지 않는다.
+4. ✅ **라우터는 `react-router-dom`에서 가져온다.**
+5. 서버 데이터는 React Query 캐시 한 곳에만 둔다. zustand에 복사해 두지 않는다.
+6. 한 기능에서만 쓰면 그 기능 폴더에, 여러 기능이 쓰는 범용 코드는 `shared`에 둔다.
+
+## 새 기능을 넣을 때
+
+1. `features/<기능>/`을 만들고 `types.ts` → `api.ts` → `hooks.ts` → `components/`·`pages/` 순서로 채운다.
+2. `app/App.tsx`에 라우트, 필요하면 `app/sidebar/SidebarMenu.tsx`에 메뉴를 단다.
+3. `src/mock/handlers/<기능>.ts`에 가짜 응답을 만들고 `src/mock/index.ts`에 등록한다.
 
 ## 아직 규칙과 다른 곳 (정리 예정)
 
-- `features/projects/projectStore.ts`: 서버의 프로젝트 목록을 zustand에 한 번 더 복사한다(규칙 4 위반).
+- `features/projects/store.ts`: 서버의 프로젝트 목록을 zustand에 한 번 더 복사한다(규칙 5 위반).
   사이드바·프로젝트 화면을 React Query 캐시로 바꾸면서 없앨 예정.
-- 채팅·문서 검색의 화면 조각은 `features`가 아니라 `ui/components/chat`·`messages`·`rag`에 있다.
+- `features/chat/store.ts`: 스트리밍 상태와 함께 지난 메시지 불러오기(서버 데이터)도 들고 있다.
+- `lib/axios.ts`가 `features/auth/types.ts`의 토큰 갱신 응답 타입을 가져다 쓴다.
 - 코드 스타일(세미콜론·따옴표)이 파일마다 다르다. Prettier는 거의 모든 파일을 바꾸므로 열린 브랜치를 병합한 뒤 한 번에 적용한다.
 - 하드코딩 색(`#fdedf2` 등)과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 새 코드는 토큰을 쓴다.

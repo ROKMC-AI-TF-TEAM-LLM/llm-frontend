@@ -1,4 +1,4 @@
-import type { CreateProjectRequest, ProjectData, ProjectDocument } from '../../types/project'
+import type { CreateProjectRequest, ProjectData, ProjectDocument } from '@/features/projects/types'
 import { db, newId, now } from '../db'
 import { cursorPage, del, fail, get, offsetPage, ok, patch, post, type MockRoute } from '../server'
 

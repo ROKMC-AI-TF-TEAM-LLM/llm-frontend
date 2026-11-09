@@ -3,7 +3,7 @@
 // 브라우저의 fetch를 가로채 `/api/v1/*` 요청을 메모리 안의 가짜 서버로 보낸다.
 // axios·SSE 스트리밍·파일 다운로드가 모두 fetch를 거치므로, 서비스 코드에는 mock 분기가 필요 없다.
 
-import { backendApi } from '../api/lib/axios'
+import { backendApi } from '@/lib/axios'
 import { authRoutes } from './handlers/auth'
 import { docgenRoutes } from './handlers/docgen'
 import { documentRoutes } from './handlers/documents'

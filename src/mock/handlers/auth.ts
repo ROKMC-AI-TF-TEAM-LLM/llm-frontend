@@ -1,4 +1,4 @@
-import type { LoginRequest, SignupRequest } from '../../types/auth'
+import type { LoginRequest, SignupRequest } from '@/features/auth/types'
 import { db, ME_ID, newId, now } from '../db'
 import { fail, ok, post, type MockRoute } from '../server'
 

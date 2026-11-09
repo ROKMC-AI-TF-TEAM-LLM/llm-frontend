@@ -1,5 +1,5 @@
-import type { AdminDocumentItem } from '../../types/adminDocument'
-import type { DocumentItem } from '../../types/document'
+import type { AdminDocumentItem } from '@/features/admin/types'
+import type { DocumentItem } from '@/features/documents/types'
 import { db, newId, now } from '../db'
 import { del, fail, file, get, offsetPage, ok, post, type MockRoute } from '../server'
 

@@ -1,4 +1,4 @@
-import type { AdminUserItem, UserData, UserStatus } from '../../types/user'
+import type { AdminUserItem, UserData, UserStatus } from '@/features/users/types'
 import { db, ME_ID, now } from '../db'
 import { cursorPage, del, fail, get, ok, patch, type MockRoute } from '../server'
 

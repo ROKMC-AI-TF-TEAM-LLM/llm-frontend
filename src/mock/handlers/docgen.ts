@@ -5,7 +5,7 @@
 //   프롬프트에 '실패'가 들어가면 반드시 실패, '취소'가 들어가면 반드시 취소된다.
 // - 다른 mock 데이터처럼 메모리(db.docgenJobs)에만 두므로 새로고침하면 비워진다.
 
-import type { CreateDocGenJobFields, DocGenErrorCode, DocGenJob, DocGenTemplate } from '../../types/docgen'
+import type { CreateDocGenJobFields, DocGenErrorCode, DocGenJob, DocGenTemplate } from '@/features/docgen/types'
 import { db } from '../db'
 import { del, fail, get, ok, post, type MockRoute } from '../server'
 

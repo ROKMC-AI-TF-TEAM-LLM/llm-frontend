@@ -17,7 +17,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* 영역을 넘는 import는 '@/...' (ARCHITECTURE.md) */
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"]
 }

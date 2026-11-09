@@ -1,0 +1,125 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import SearchInput from '../components/SearchInput'
+import SearchResults from '../components/SearchResults'
+import type { SearchResult } from '../components/SearchResultItem'
+import { useSearchSessions, useInfiniteSessions } from '../hooks'
+import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
+import { SearchSessionCardSkeleton } from '@/shared/components/Skeleton'
+import { showToast } from '@/shared/store/toastStore'
+
+const SearchPage = () => {
+  const navigate = useNavigate()
+  useDocumentTitle('Search')
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query), 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  const { data: searchData, isFetching: isSearching, isError: isSearchError } = useSearchSessions({ q: debouncedQuery })
+  const { data: sessionsData, isLoading: isSessionsLoading, isError: isSessionsError } = useInfiniteSessions()
+
+  const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map((s) => ({
+    id: s.session_id,
+    title: s.title,
+    preview: new Date(s.updated_at).toLocaleString('ko-KR'),
+  }))
+
+  const recentSessions = (sessionsData?.pages ?? []).flatMap((p) => p.data.data.items)
+
+  const goToSession = (id: string, projectId?: string | null) => {
+    navigate(projectId ? `/projects/${projectId}/${id}` : `/chat/${id}`)
+  }
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id)
+    const found = (searchData?.data?.data ?? []).find((s) => s.session_id === id)
+    goToSession(id, found?.project_id)
+  }
+
+  useEffect(() => {
+    if (isSearchError || isSessionsError) showToast('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+  }, [isSearchError, isSessionsError])
+
+  return (
+    <div className="h-full overflow-y-auto custom-scroll px-6 pt-16 pb-6">
+      <div className="max-w-3xl w-full mx-auto flex flex-col animate-page-in">
+
+        <h1 className="mars-display text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
+          대화 검색
+        </h1>
+
+        <div className="shrink-0">
+          <SearchInput value={query} onChange={setQuery} />
+        </div>
+
+        {debouncedQuery ? (
+          <SearchResults
+            results={searchResults}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+            isLoading={isSearching}
+          />
+        ) : (
+          <div className="mt-8">
+            <h2 className="text-sm font-medium text-text-muted mb-4 mars-brand-serif shrink-0">최근 대화</h2>
+
+            {isSessionsLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[...Array(6)].map((_, i) => <SearchSessionCardSkeleton key={i} />)}
+              </div>
+            ) : recentSessions.length === 0 ? (
+              <p className="text-sm text-text-muted mars-brand-serif text-center py-8">대화 내역이 없습니다.</p>
+            ) : (
+              <div>
+                <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">
+                  {recentSessions.map((session) => (
+                    <button
+                      key={session.session_id}
+                      onClick={() => goToSession(session.session_id, session.project_id)}
+                      style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 10px 24px rgba(40,30,35,0.05)' }}
+                      className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          style={{ background: 'linear-gradient(135deg,#fff0f3,#fde3e8)', border: '1px solid #f7d7de', color: '#e4002b' }}
+                          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px]"
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                        </div>
+                        <span className="text-[15px] font-bold text-text-primary truncate">
+                          {session.title}
+                        </span>
+                      </div>
+                      <span className="text-xs text-[#a89aa0] ml-[46px]">
+                        {new Date(session.updated_at).toLocaleString('ko-KR')}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
+}
+
+export default SearchPage
