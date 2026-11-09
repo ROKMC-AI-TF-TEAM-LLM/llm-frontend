@@ -17,4 +17,5 @@ export function DownloadIcon(p: IconProps) { return <Svg {...p}><path d="M12 3v1
 export function ChevronIcon(p: IconProps) { return <Svg {...p}><path d="m6 9 6 6 6-6" /></Svg> }
 export function StopIcon(p: IconProps) { return <Svg {...p}><rect x="6" y="6" width="12" height="12" rx="2" /></Svg> }
 export function ArrowUpIcon(p: IconProps) { return <Svg {...p}><path d="M12 19V5M5 12l7-7 7 7" /></Svg> }
+export function TrashIcon(p: IconProps) { return <Svg {...p}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></Svg> }
 export function AlertIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></Svg> }

@@ -1,6 +1,6 @@
 import { useState, type KeyboardEvent } from 'react'
 import type { DocGenJob, DocGenOutputFormat } from '../../types/docgen'
-import { useCreateDocGenJob, useDocGenJobs, useDocGenTemplates } from '../../hooks/useDocGen'
+import { useCreateDocGenJob, useDocGenTemplates } from '../../hooks/useDocGen'
 import { useDomainCapabilities } from '../../hooks/useCapabilities'
 import { showToast } from '../../api/store/toastStore'
 
@@ -48,13 +48,6 @@ export const useComposer = () => {
 }
 export type Composer = ReturnType<typeof useComposer>
 
-/** 목록에서 고른 작업. 목록이 갱신되면 같은 id의 최신 상태를 돌려준다 */
-export const useJobSelection = (jobs: DocGenJob[]) => {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const selected = jobs.find((j) => j.job_id === selectedId) ?? null
-  return { selected, select: setSelectedId, close: () => setSelectedId(null) }
-}
-
 /**
  * 화면을 연 뒤 새로 생긴 작업인지. 처음 받아 온 목록을 기준으로 삼고,
  * 그 뒤에 나타난 줄에만 등장 움직임을 준다.
@@ -63,26 +56,6 @@ export const useFreshIds = (ids: string[], ready: boolean) => {
   const [baseline, setBaseline] = useState<Set<string> | null>(null)
   if (ready && baseline === null) setBaseline(new Set(ids))
   return (id: string) => baseline !== null && !baseline.has(id)
-}
-
-/** 문서 생성 화면 한 벌: 작업 목록 + 입력창 + 고른 작업 + 새 줄 표시 */
-export const useDocGenPage = () => {
-  const { jobs, isLoading } = useDocGenJobs()
-  const c = useComposer()
-  const { selected, select, close } = useJobSelection(jobs)
-  const isFresh = useFreshIds(jobs.map((j) => j.job_id), !isLoading)
-
-  /** 보내고, 만들어진 작업을 미리보기로 고른 뒤 입력창을 비운다 */
-  const send = async () => {
-    const job = await c.submit()
-    if (job) {
-      select(job.job_id)
-      c.setPrompt('')
-    }
-    return job
-  }
-
-  return { jobs, isLoading, c, selected, select, close, isFresh, send }
 }
 
 /** 진행 상황 목록에서 누를 수 있는 줄 */
