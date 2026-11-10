@@ -7,7 +7,6 @@ import {
 } from 'react-router-dom';
 import { isMetricPath } from '@/features/system/telemetry';
 import LoginPage from '@/features/auth/pages/LoginPage';
-import ChatPage from '@/features/chat/pages/ChatPage';
 import AuthLayout from './layouts/AuthLayout';
 import NewChatPage from '@/features/chat/pages/NewChatPage';
 import ErrorPage from './ErrorPage';
@@ -15,8 +14,10 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 import ToastHost from '@/shared/components/ToastHost';
 import ProtectedLayout from './layouts/ProtectedLayout';
 import AdminLayout from './layouts/AdminLayout';
-import { SearchPageSkeleton, RagPageSkeleton, AdminPageSkeleton } from '@/shared/components/Skeleton';
+import { SearchPageSkeleton, RagPageSkeleton, AdminPageSkeleton, MessagesSkeleton } from '@/shared/components/Skeleton';
 
+// 채팅 화면은 마크다운 렌더러(streamdown)를 끌고 와 첫 화면(로그인) 번들을 1MB 넘게 키우므로 따로 불러온다
+const ChatPage = lazy(() => import('@/features/chat/pages/ChatPage'));
 const SearchPage = lazy(() => import('@/features/sessions/pages/SearchPage'));
 const RAGPage = lazy(() => import('@/features/documents/pages/RagPage'));
 const AdminPage = lazy(() => import('@/features/admin/pages/AdminPage'));
@@ -82,7 +83,14 @@ const protectedRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
     children: [
       { path: '/chat', element: <NewChatPage /> },
-      { path: '/chat/:id', element: <ChatPage /> },
+      {
+        path: '/chat/:id',
+        element: (
+          <Suspense fallback={<div className="h-full px-4 pt-6"><MessagesSkeleton /></div>}>
+            <ChatPage />
+          </Suspense>
+        )
+      },
       {
         path: '/search',
         element: (
