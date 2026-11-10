@@ -270,6 +270,8 @@ import { getDomainLabel } from '@/features/domains/utils'
 - [ ] **문서 제작:** 생성·취소·재시도·삭제, 첫 화면 입력창 위치, 삭제 확인
 - [ ] **나머지 화면:** 프로젝트, 관리자, 문서 검색, 대화 검색, 이용 안내, 팀, 튜토리얼이 열리는가
 - [ ] **사이드바:** 메뉴 강조, 즐겨찾기, 최근 대화
+- [ ] **채팅 첫 진입:** `/chat/:id`를 처음 열 때 메시지 스켈레톤이 잠깐 보이고 화면이 정상으로 뜨는가 (지연 로드로 바꿈)
+- [ ] **숨은 진단 화면:** 입장, 걷기(WASD·방향키), 문·안내판·가구 [E], ESC 닫기 (`hall/`로 나눔)
 
 ### 7-2. 알고 있어야 할 동작 변화
 
@@ -282,9 +284,10 @@ import { getDomainLabel } from '@/features/domains/utils'
 - `features/chat/store.ts`가 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있습니다.
 - 프로젝트 데이터의 이중 저장(`projects/store.ts`)은 이 브랜치에는 남아 있습니다. `fix/sidebar-state`의 수정을 가져오면 해결됩니다.
 - `lib/axios.ts`가 `features/auth/types.ts`를 가져다 씁니다(기반 → 기능 방향).
-- 큰 파일: `features/system/pages/SystemDiagnostics.tsx` 1708줄, `shared/styles/global.css` 1553줄. `projects/components/parts.tsx` 953줄은 `code-cleanup`의 분할을 가져오면 해결됩니다.
+- 큰 파일: `shared/styles/global.css` 1553줄. `projects/components/parts.tsx` 953줄은 `code-cleanup`의 분할을 가져오면 해결됩니다.
+  (`SystemDiagnostics.tsx` 1708줄은 `system/components/hall/`로 나눴습니다. 다른 브랜치가 건드리지 않는 파일입니다.)
 - 코드 스타일(세미콜론·따옴표)과 하드코딩 색. Prettier는 거의 모든 파일을 바꾸므로 병합이 끝난 뒤 한 번에 적용합니다.
-- 빌드에 500kB 넘는 청크 경고가 있습니다.
+- ~~빌드에 500kB 넘는 청크 경고~~: 채팅 화면 지연 로드와 라이브러리 청크 분리로 해소했습니다(첫 화면 JS 약 1,130kB → 약 620kB).
 - git 이력: 작은 서비스 파일 2개(`capability.ts` → `domains/api.ts`, `translate.ts` → `translate/api.ts`)는 이름 바꾸기로 인식되지 않아 `git log --follow`로 이전 이력이 이어지지 않습니다.
 
 ---
