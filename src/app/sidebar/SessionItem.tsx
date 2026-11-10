@@ -1,35 +1,22 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from '@/features/chat/types'
-import type { ApiError } from '@/shared/utils/error'
-import { useDeleteSession, useUpdateSession, useToggleFavorite } from '@/features/sessions/hooks'
-import { clearCache } from '@/features/chat/store'
+import { useConfirmDeleteSession, useUpdateSession, useToggleFavorite } from '@/features/sessions/hooks'
 import { displaySessionTitle } from '@/features/sessions/utils'
-
-const SESSION_ERRORS: Record<string, string> = {
-  SESSION_NOT_FOUND: '세션을 찾을 수 없습니다.',
-  SESSION_ACCESS_DENIED: '접근 권한이 없습니다.',
-  UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
-}
-
-const getSessionError = (error: unknown): string => {
-  const code = (error as ApiError)?.response?.data?.error?.code
-  return (code ? SESSION_ERRORS[code] : undefined) ?? '오류가 발생했습니다.'
-}
 
 const HOVER_BG = '#fdedf2'
 
 interface SessionItemProps {
   chat: ChatItem
-  onError: (msg: string) => void
 }
 
-export default function SessionItem({ chat, onError }: SessionItemProps) {
+// 실패 알림은 각 mutation 훅에서 띄운다(행이 언마운트돼도 알림이 남도록).
+export default function SessionItem({ chat }: SessionItemProps) {
   const navigate = useNavigate()
   const { id: routeId, chatId: routeChatId } = useParams()
   const currentId = routeChatId ?? routeId
   const { mutate: updateSession } = useUpdateSession()
-  const { mutate: deleteSession } = useDeleteSession()
+  const confirmDelete = useConfirmDeleteSession()
   const { mutate: toggleFavorite } = useToggleFavorite()
 
   const [isEditing, setIsEditing] = useState(false)
@@ -41,23 +28,14 @@ export default function SessionItem({ chat, onError }: SessionItemProps) {
   const submitEdit = () => {
     const next = draft.trim()
     if (next && next !== chat.title) {
-      updateSession(
-        { sessionId: chat.id, data: { title: next } },
-        { onError: (e) => onError(getSessionError(e)) },
-      )
+      updateSession({ sessionId: chat.id, data: { title: next } })
     }
     setIsEditing(false)
   }
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    deleteSession(chat.id, {
-      onSuccess: () => {
-        clearCache(chat.id)
-        if (chat.id === currentId) navigate('/chat')
-      },
-      onError: (e) => onError(getSessionError(e)),
-    })
+    confirmDelete({ id: chat.id, title: chat.title, projectId: chat.projectId })
   }
 
   if (isEditing) {

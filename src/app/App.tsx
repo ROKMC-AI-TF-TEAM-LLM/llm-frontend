@@ -22,7 +22,8 @@ const SearchPage = lazy(() => import('@/features/sessions/pages/SearchPage'));
 const RAGPage = lazy(() => import('@/features/documents/pages/RagPage'));
 const AdminPage = lazy(() => import('@/features/admin/pages/AdminPage'));
 const GuidePage = lazy(() => import('@/features/landing/pages/GuidePage'));
-const TranslatePage = lazy(() => import('@/features/translate/pages/TranslatePage'));
+// TODO: 번역 기능 미완성 — 완성 후 주석 해제
+// const TranslatePage = lazy(() => import('@/features/translate/pages/TranslatePage'));
 const TutorialsPage = lazy(() => import('@/features/tutorials/pages/TutorialsPage'));
 const TutorialPage = lazy(() => import('@/features/tutorials/pages/TutorialPage'));
 const TeamPage = lazy(() => import('@/features/team/pages/TeamPage'));
@@ -107,14 +108,15 @@ const protectedRoutes: RouteObject[] = [
           </Suspense>
         )
       },
-      {
-        path: '/translate',
-        element: (
-          <Suspense fallback={null}>
-            <TranslatePage />
-          </Suspense>
-        )
-      },
+      // TODO: 번역 기능 미완성 — 완성 후 주석 해제
+      // {
+      //   path: '/translate',
+      //   element: (
+      //     <Suspense fallback={null}>
+      //       <TranslatePage />
+      //     </Suspense>
+      //   )
+      // },
       {
         path: '/projects/:id',
         element: (

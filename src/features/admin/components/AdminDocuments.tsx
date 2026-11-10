@@ -1,15 +1,16 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import {
-  useAdminDocuments,
+  useInfiniteAdminDocuments,
   useUploadDocument,
   useDeleteDocument,
+  useRetryDocument,
   useAdminDocumentStatus,
 } from '../hooks';
 import { DOMAINS, getDomainLabel, getDomainStyle } from '@/features/domains/utils';
 import { normalizeDocStatus } from '@/features/documents/utils';
 import DomainIcon from '@/features/domains/components/DomainIcon';
 import { showToast } from '@/shared/store/toastStore';
-import { getApiError, DEFAULT_STATUS_ERRORS } from '@/shared/utils/error';
+import { getApiError, DEFAULT_STATUS_ERRORS, type ApiError } from '@/shared/utils/error';
 import type { AdminDocumentItem, AdminDocStatus } from '../types';
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
@@ -40,11 +41,13 @@ function DocumentRow({
   onDelete,
   onRetry,
   deleting,
+  retrying,
 }: {
   doc: AdminDocumentItem;
   onDelete: (doc: AdminDocumentItem) => void;
   onRetry: (doc: AdminDocumentItem) => void;
   deleting: boolean;
+  retrying: boolean;
 }) {
   const listStatus = normalizeDocStatus(doc.status);
   const isProcessing = listStatus === 'processing';
@@ -93,7 +96,8 @@ function DocumentRow({
           {isFailed && (
             <button
               onClick={() => onRetry(doc)}
-              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
+              disabled={retrying}
+              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
             >
               재시도
             </button>
@@ -123,24 +127,56 @@ const ACCEPT = '.pdf,.docx,.hwp,.md,.txt';
 export default function AdminDocuments() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [uploadDomain, setUploadDomain] = useState(DOMAINS[0]);
   const [domainMenuOpen, setDomainMenuOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, isError, error } = useAdminDocuments();
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteAdminDocuments(debouncedSearch ? { search: debouncedSearch } : undefined);
   const uploadMut = useUploadDocument();
   const deleteMut = useDeleteDocument();
+  const retryMut = useRetryDocument();
 
-  const documentsData = data?.data?.data?.documents;
+  const documents = useMemo<AdminDocumentItem[]>(
+    () => (data?.pages ?? []).flatMap((p) => p.data.data.documents ?? []),
+    [data],
+  );
 
   const filtered = useMemo(() => {
-    const documents: AdminDocumentItem[] = documentsData ?? [];
     const q = search.trim().toLowerCase();
     return documents.filter(
       (d) => matchesFilter(d.status, statusFilter) && (!q || d.name.toLowerCase().includes(q)),
     );
-  }, [documentsData, statusFilter, search]);
+  }, [documents, statusFilter, search]);
+
+  // sentinel은 항상 마운트해 두어 ref가 가리키는 요소가 바뀌지 않게 한다 (RagPage의 재관측 누락 버그 방지).
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasNextPage || isFetchingNextPage || isError) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) fetchNextPage();
+      },
+      { rootMargin: '200px 0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, isError, fetchNextPage]);
 
   const handleFiles = (files: FileList | null) => {
     const file = files?.[0];
@@ -161,8 +197,15 @@ export default function AdminDocuments() {
     });
   };
 
-  // TODO(백엔드): 자료실 문서 재처리 API가 아직 없다. 생기면 여기서 호출한다 (지금은 버튼을 눌러도 아무 일 없음)
-  const handleRetry = () => {};
+  const handleRetry = (doc: AdminDocumentItem) => {
+    retryMut.mutate(doc.document_id, {
+      onSuccess: () => showToast(`'${doc.name}' 색인을 다시 시작했습니다.`, 'success'),
+      onError: (e) => {
+        const detail = (e as ApiError)?.response?.data?.error?.detail;
+        showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      },
+    });
+  };
 
   return (
     <div>
@@ -312,12 +355,17 @@ export default function AdminDocuments() {
                   onDelete={handleDelete}
                   onRetry={handleRetry}
                   deleting={deleteMut.isPending}
+                  retrying={retryMut.isPending && retryMut.variables === doc.document_id}
                 />
               ))
             )}
           </tbody>
         </table>
+        {isFetchingNextPage && (
+          <p className="py-4 text-sm text-center text-text-muted border-t border-surface-border">불러오는 중...</p>
+        )}
       </div>
+      <div ref={sentinelRef} className="h-px" aria-hidden />
     </div>
   );
 }

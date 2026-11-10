@@ -1,9 +1,10 @@
 import type { FileAttachment } from '../types/attachment';
 import { getValidAccessToken } from '@/lib/axios';
 import { logError } from './logError';
+import { API_BASE_URL } from '@/lib/api';
 
 export const resolveAttachmentUrl = (att: FileAttachment): string => {
-  const base = import.meta.env.VITE_SERVER_API_URL ?? '';
+  const base = API_BASE_URL;
   const path = att.url ?? `/api/v1/files/${att.attachment_id}`;
   if (/^https?:\/\//i.test(path)) return path;
   return `${base}${path.startsWith('/') ? '' : '/'}${path}`;

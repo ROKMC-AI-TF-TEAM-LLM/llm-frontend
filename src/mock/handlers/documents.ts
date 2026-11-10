@@ -74,6 +74,15 @@ export const documentRoutes: MockRoute[] = [
     })
   }),
 
+  // 색인 재시도: 실제 서버처럼 202와 상태 조회와 같은 응답을 준다.
+  post('/admin/documents/:documentId/retry', ({ params }) => {
+    const doc = findDocument(params.documentId)
+    if (!doc) return documentNotFound()
+    doc.status = 'PROCESSING'
+    setTimeout(() => { doc.status = 'COMPLETED' }, PROCESSING_MS)
+    return ok({ document_id: doc.document_id, status: doc.status, chunks_indexed: 0, error: null }, 202)
+  }),
+
   del('/admin/documents/:documentId', ({ params }) => {
     const doc = findDocument(params.documentId)
     if (!doc) return documentNotFound()

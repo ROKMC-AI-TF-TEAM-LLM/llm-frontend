@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { LOCAL_STORAGE_KEY } from './storageKeys'
+import { API_BASE_URL } from './api'
 import { logError } from '@/shared/utils/logError'
+import { clearStoredChatData } from '@/shared/utils/chatStorage'
 
 // 토큰 갱신(/auth/refresh) 응답. 갱신은 모든 요청이 기대는 기반이라 auth 기능이 아니라 여기서 다룬다
 interface RefreshResponse {
@@ -11,7 +13,7 @@ interface RefreshResponse {
 }
 
 export const backendApi = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -119,13 +121,14 @@ backendApi.interceptors.response.use(
         logError('axios.response.refresh', refreshError)
         sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
         localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+        clearStoredChatData()
         window.location.href = '/'
         return Promise.reject(refreshError)
       }
     }
 
     if (!error?.response) {
-      const baseUrl = import.meta.env.VITE_SERVER_API_URL ?? '(VITE_SERVER_API_URL 미설정)'
+      const baseUrl = API_BASE_URL || '(VITE_SERVER_API_URL 미설정 — 같은 도메인 /api)'
       logError(
         `axios.response:${requestUrl || '(요청 전 실패)'}`,
         error,

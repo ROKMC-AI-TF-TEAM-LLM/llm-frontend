@@ -1,35 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useProjectStore } from '@/features/projects/store'
-import { useInfiniteProjects, useCreateProject, useUpdateProject, useToggleProjectFavorite } from '@/features/projects/hooks'
+import { useNavigate } from 'react-router-dom'
+import { useProjectList, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '@/features/projects/hooks'
 import ProjectItem from './ProjectItem'
 import { CreateProjectModal } from '@/features/projects/components/parts'
 
 export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const navigate = useNavigate()
-  const location = useLocation()
   const [expanded, setExpanded] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
-  const projects = useProjectStore((s) => s.projects)
-  const setFromServer = useProjectStore((s) => s.setFromServer)
-  const addCreated = useProjectStore((s) => s.addCreated)
-  const remove = useProjectStore((s) => s.remove)
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteProjects()
+  const { projects, hasNextPage, fetchNextPage, isFetchingNextPage } = useProjectList()
   const { mutateAsync: createProjectApi } = useCreateProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
+  const confirmDelete = useConfirmDeleteProject()
   const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
     toggleFavoriteApi({ projectId: id, next: !cur })
   }
-
-  useEffect(() => {
-    if (!data) return
-    const serverItems = data.pages.flatMap((p) => p.data.data.items)
-    setFromServer(serverItems)
-  }, [data, setFromServer])
 
   const sentinelRef = useRef<HTMLLIElement>(null)
   useEffect(() => {
@@ -40,13 +29,13 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
     }, { threshold: 0.1 })
     io.observe(el)
     return () => io.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, expanded])
 
   const items = projects.filter((p) => !p.isFavorite)
 
   const handleDelete = (id: string) => {
-    remove(id)
-    if (location.pathname.startsWith(`/projects/${id}`)) navigate('/chat')
+    const target = projects.find((p) => p.id === id)
+    if (target) confirmDelete({ id, name: target.name })
   }
 
   return (
@@ -118,7 +107,7 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
         onClose={() => setCreateOpen(false)}
         onSubmit={async (name, instructions) => {
           const res = await createProjectApi({ title: name, instructions })
-          const newId = addCreated(res.data.data)
+          const newId = res.data.data.project_id
           navigate(`/projects/${newId}`)
         }}
       />

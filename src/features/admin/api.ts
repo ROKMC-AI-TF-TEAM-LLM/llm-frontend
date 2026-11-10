@@ -6,6 +6,7 @@ import type {
   GetAdminDocumentsResponse,
   GetDocumentStatusResponse,
   DeleteDocumentResponse,
+  RetryDocumentResponse,
 } from './types'
 
 export const uploadAdminDocument = (file: File, fields: UploadDocumentFields) => {
@@ -30,3 +31,6 @@ export const getAdminDocumentStatus = (documentId: string) =>
 
 export const deleteAdminDocument = (documentId: string) =>
   backendApi.delete<DeleteDocumentResponse>(`/api/v1/admin/documents/${documentId}`)
+
+export const retryAdminDocument = (documentId: string) =>
+  backendApi.post<RetryDocumentResponse>(`/api/v1/admin/documents/${documentId}/retry`)

@@ -61,7 +61,8 @@ const RagPage = () => {
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  // query 포함: 검색 중엔 sentinel이 언마운트되므로, 검색어를 지워 다시 마운트되면 새 요소를 관측해야 한다.
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, query])
 
   const tabs = [ALL, ...domains]
 

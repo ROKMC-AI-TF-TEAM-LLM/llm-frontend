@@ -235,31 +235,46 @@ export function ProjectDocRow({
   const dot = doc.name.lastIndexOf('.')
   const ext = dot > 0 ? doc.name.slice(dot + 1).toUpperCase() : '문서'
   const size = formatFileSize(doc.size)
+  // 삭제 중이면 색인 상태보다 삭제 진행을 우선 표시한다.
+  const failedLook = isFailed && !deleting
 
   return (
     <div
       className={`group flex items-center gap-2.5 rounded-[10px] px-2 py-2 transition-colors ${
-        isFailed ? 'bg-red-50/70' : 'hover:bg-[#fdf6f7]'
-      } ${isBusy ? 'opacity-60' : ''}`}
+        failedLook ? 'bg-red-50/70' : deleting ? '' : 'hover:bg-[#fdf6f7]'
+      } ${isBusy || deleting ? 'opacity-60' : ''}`}
+      aria-busy={deleting || undefined}
     >
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] ${
-          isFailed ? 'bg-red-100 text-red-500' : 'bg-brand-subtle text-brand'
+          deleting ? 'bg-red-50 text-red-400' : failedLook ? 'bg-red-100 text-red-500' : 'bg-brand-subtle text-brand'
         }`}
       >
-        {isBusy ? (
+        {isBusy || deleting ? (
           <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
         ) : (
           <FileIcon className="h-3.5 w-3.5" />
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-medium text-text-primary">{doc.name}</span>
-        <span className="mt-0.5 block text-[11px] text-text-muted">
-          {isBusy ? '색인 중...' : isFailed ? '색인 실패' : `${ext}${size ? ` · ${size}` : ''}`}
+        <span
+          className={`block truncate text-[13px] font-medium ${deleting ? 'text-text-muted line-through' : 'text-text-primary'}`}
+        >
+          {doc.name}
+        </span>
+        <span className="mt-0.5 block text-[11px] text-text-muted" aria-live="polite">
+          {deleting ? (
+            <DeletingStatus />
+          ) : isBusy ? (
+            '색인 중...'
+          ) : isFailed ? (
+            '색인 실패'
+          ) : (
+            `${ext}${size ? ` · ${size}` : ''}`
+          )}
         </span>
       </span>
-      {isFailed && onRetry && (
+      {failedLook && onRetry && (
         <button
           type="button"
           onClick={onRetry}
@@ -273,6 +288,36 @@ export function ProjectDocRow({
           <CloseIcon className="h-3.5 w-3.5" />
         </IconButton>
       )}
+    </div>
+  )
+}
+
+// 삭제가 오래 걸릴 수 있어, 경과 시간을 보여 멈춘 것이 아님을 알린다.
+function DeletingStatus() {
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const started = Date.now()
+    const t = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000)
+    return () => window.clearInterval(t)
+  }, [])
+  if (elapsed < 3) return <>삭제 중...</>
+  return <>삭제 중... {elapsed}초</>
+}
+
+// 서버 응답 전(전송 중)인 파일. 응답 후에는 목록에 실제 행(색인 중)이 나타난다.
+export function UploadingDocRow({ name, size }: { name: string; size: number }) {
+  const sizeText = formatFileSize(size)
+  return (
+    <div className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 opacity-60" aria-live="polite">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-brand-subtle text-brand">
+        <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] font-medium text-text-primary">{name}</span>
+        <span className="mt-0.5 block text-[11px] text-text-muted">
+          업로드 중...{sizeText ? ` · ${sizeText}` : ''}
+        </span>
+      </span>
     </div>
   )
 }
@@ -723,7 +768,7 @@ export function FilesModal({
   onUpload,
   onDelete,
   onRetry,
-  deleting = false,
+  deletingIds = [],
 }: {
   open: boolean
   documents: ProjectDocument[]
@@ -731,7 +776,7 @@ export function FilesModal({
   onUpload?: (file: File) => void
   onDelete?: (documentId: string) => void
   onRetry?: (documentId: string) => void
-  deleting?: boolean
+  deletingIds?: string[]
 }) {
   if (!open) return null
   return (
@@ -741,7 +786,7 @@ export function FilesModal({
       onUpload={onUpload}
       onDelete={onDelete}
       onRetry={onRetry}
-      deleting={deleting}
+      deletingIds={deletingIds}
     />
   )
 }
@@ -752,14 +797,14 @@ function FilesModalBody({
   onUpload,
   onDelete,
   onRetry,
-  deleting,
+  deletingIds = [],
 }: {
   documents: ProjectDocument[]
   onClose: () => void
   onUpload?: (file: File) => void
   onDelete?: (documentId: string) => void
   onRetry?: (documentId: string) => void
-  deleting?: boolean
+  deletingIds?: string[]
 }) {
   const [query, setQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -837,7 +882,7 @@ function FilesModalBody({
                   doc={d}
                   onRetry={onRetry ? () => onRetry(d.document_id) : undefined}
                   onDelete={onDelete ? () => onDelete(d.document_id) : undefined}
-                  deleting={deleting}
+                  deleting={deletingIds.includes(d.document_id)}
                 />
               ))}
             </div>

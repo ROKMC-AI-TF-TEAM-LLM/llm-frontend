@@ -27,3 +27,7 @@ dist-ssr
 study/
 개발일지/
 front/
+# 환경 변수 (예시 파일만 추적)
+.env
+.env.*
+!.env.example
