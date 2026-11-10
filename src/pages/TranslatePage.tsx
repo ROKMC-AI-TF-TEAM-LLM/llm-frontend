@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useTranslate } from '../hooks/useTranslate'
-import { showToast } from '../api/store/toastStore'
+import { showToast } from '../store/toastStore'
 import { copyText } from '../utils/clipboard'
 
 const LANGS = ['한국어', '영어'] as const

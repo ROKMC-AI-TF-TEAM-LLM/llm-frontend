@@ -45,6 +45,7 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
             <FooterBtn onClick={() => goAuth('/chat')}>대화 시작하기</FooterBtn>
             <FooterBtn onClick={() => goAuth('/search')}>문서 검색</FooterBtn>
             <FooterBtn onClick={() => goAuth('/rag')}>문서함 열람</FooterBtn>
+            <FooterBtn onClick={() => goAuth('/docgen')}>문서 제작</FooterBtn>
           </FooterCol>
 
           <FooterCol title="이용법">

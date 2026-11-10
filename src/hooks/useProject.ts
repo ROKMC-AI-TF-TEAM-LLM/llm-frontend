@@ -12,7 +12,7 @@ import type {
   GetProjectsResponse, GetProjectResponse, ProjectData,
 } from '../types/project'
 import { useAuth } from '../context/AuthContext'
-import { showToast } from '../api/store/toastStore'
+import { showToast } from '../store/toastStore'
 
 // 프로젝트 목록·상세의 단일 출처는 React Query 캐시다.
 // (예전에는 zustand 스토어에 복사해 썼는데, 서버 응답이 올 때마다 스토어를 통째로 덮어써

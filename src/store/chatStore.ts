@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import type { Message, Source, FileAttachment, Notice, StatusStep } from '../../types';
-import { noticeFromCode } from '../../types';
-import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../services/chat';
-import { deleteSession } from '../services/session';
-import { queryClient } from '../queryClient';
-import { logError } from '../../utils/logError';
-import { uuid } from '../../utils/uuid';
-import { getDomainLabel } from '../../utils/document';
-import { CHAT_CACHE_PREFIX, CHAT_INFLIGHT_KEY, isChatStorageLocked } from '../../utils/chatStorage';
+import type { Message, Source, FileAttachment, Notice, StatusStep } from '../types';
+import { noticeFromCode } from '../types';
+import { streamMessage, getMessages, deleteMessage as deleteMessageApi, regenerateMessageStream, normalizeSource } from '../api/services/chat';
+import { deleteSession } from '../api/services/session';
+import { queryClient } from '../api/queryClient';
+import { logError } from '../utils/logError';
+import { uuid } from '../utils/uuid';
+import { getDomainLabel } from '../utils/document';
+import { CHAT_CACHE_PREFIX, CHAT_INFLIGHT_KEY, isChatStorageLocked } from '../utils/chatStorage';
 
 // 세션 목록은 전역(['sessions'])과 프로젝트별(['projects','sessions',id]) 두 캐시에 있다.
 // 세션이 바뀌면 둘 다 갱신해야 프로젝트 패널이 사이드바와 어긋나지 않는다.

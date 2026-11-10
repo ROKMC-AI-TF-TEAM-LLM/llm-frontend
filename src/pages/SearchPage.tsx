@@ -6,7 +6,7 @@ import type { SearchResult } from '../ui/components/search/SearchResultItem'
 import { useSearchSessions, useInfiniteSessions } from '../hooks/useSession'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { SearchSessionCardSkeleton } from '../ui/components/Skeleton'
-import { showToast } from '../api/store/toastStore'
+import { showToast } from '../store/toastStore'
 
 const SearchPage = () => {
   const navigate = useNavigate()

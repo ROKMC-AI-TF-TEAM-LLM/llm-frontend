@@ -29,6 +29,7 @@ const TeamPage = lazy(() => import('./pages/TeamPage'));
 const SystemDiagnostics = lazy(() => import('./pages/SystemDiagnostics'));
 
 const ProjectPage = lazy(() => import('./pages/projects/ProjectPage'));
+const DocGenPage = lazy(() => import('./pages/docgen/DocGenPage'));
 
 const publicRoutes: RouteObject[] = [
   {
@@ -121,6 +122,14 @@ const protectedRoutes: RouteObject[] = [
         element: (
           <Suspense fallback={null}>
             <ProjectPage />
+          </Suspense>
+        )
+      },
+      {
+        path: '/docgen',
+        element: (
+          <Suspense fallback={null}>
+            <DocGenPage />
           </Suspense>
         )
       },

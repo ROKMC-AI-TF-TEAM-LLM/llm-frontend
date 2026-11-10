@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDomainCapabilities } from '../../../hooks/useCapabilities';
-import type { DomainSelection } from '../../../api/store/chatStore';
+import type { DomainSelection } from '../../../store/chatStore';
 import DomainIcon from './DomainIcon';
 
 interface DomainPickerProps {

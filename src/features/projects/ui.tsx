@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ProjectChat, ProjectFile } from './mock'
+import type { ProjectChat, ProjectFile } from './types'
 import type { ProjectDocument } from '../../types/project'
 import { displaySessionTitle } from '../../utils/sessionTitle'
 import { formatFileSize } from '../../utils/downloadAttachment'

@@ -6,8 +6,7 @@ import { RagListSkeleton } from '../ui/components/Skeleton'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useInfiniteDocuments } from '../hooks/useDocument'
 import { useDocumentDrawer } from '../hooks/useDocumentDrawer'
-import { pickDocuments } from '../api/services/document'
-import { extractDomains, getDomainLabel } from '../utils/document'
+import { extractDomains, getDomainLabel, pickDocuments } from '../utils/document'
 
 const ALL = '__ALL__'
 

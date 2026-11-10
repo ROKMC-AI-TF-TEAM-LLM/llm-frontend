@@ -4,8 +4,8 @@ import { getSessions, createSession, searchSessions, updateSession, setFavorite,
 import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest, GetSessionsResponse } from '../types/session'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { clearCache } from '../api/store/chatStore'
-import { showToast } from '../api/store/toastStore'
+import { clearCache } from '../store/chatStore'
+import { showToast } from '../store/toastStore'
 import { displaySessionTitle } from '../utils/sessionTitle'
 
 const SESSIONS_INFINITE_KEY = ['sessions', 'infinite'] as const

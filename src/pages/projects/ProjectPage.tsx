@@ -1,13 +1,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useChatStore } from '../../api/store/chatStore'
-import type { ProjectChat } from '../../features/projects/mock'
+import { useChatStore } from '../../store/chatStore'
+import type { ProjectChat } from '../../features/projects/types'
 import { useProjectView, useUpdateProject, useToggleProjectFavorite, useSetProjectInstruction, useProjectSessions, useProjectDocuments, useUploadProjectDocument, useDeleteProjectDocument, useProjectDocumentStatus, useConfirmDeleteProject, useRetryProjectDocument, projectDocumentDeleteKey } from '../../hooks/useProject'
 import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useConfirmDeleteSession } from '../../hooks/useSession'
 import type { ProjectDocument as ProjectDocumentType } from '../../types/project'
 import ChatInput from '../../ui/components/chat/ChatInput'
 import MessageList from '../../ui/components/messages/MessageList'
-import { showToast } from '../../api/store/toastStore'
+import { showToast } from '../../store/toastStore'
 import {
   Block,
   ChatRow,

@@ -1,5 +1,12 @@
 import type { DocumentItem } from '../types/document'
 
+/** 문서 목록 응답에서 문서 배열만 꺼낸다 (배열·items·documents 어느 모양이든) */
+export const pickDocuments = (data: unknown): DocumentItem[] => {
+  if (Array.isArray(data)) return data as DocumentItem[]
+  const d = data as { items?: DocumentItem[]; documents?: DocumentItem[] } | null | undefined
+  return d?.items ?? d?.documents ?? []
+}
+
 export interface DomainStyle {
   bar: string
   badgeBg: string

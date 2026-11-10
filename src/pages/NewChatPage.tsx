@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import ChatInput from "../ui/components/chat/ChatInput"
-import { showToast } from "../api/store/toastStore"
+import { showToast } from "../store/toastStore"
 import { useGetMe } from "../hooks/useUser"
 import { useDocumentTitle } from "../hooks/useDocumentTitle"
 

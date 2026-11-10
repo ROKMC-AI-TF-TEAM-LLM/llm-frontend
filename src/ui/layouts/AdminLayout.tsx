@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useGetUsers } from '../../hooks/useUser';
 import { Skeleton, AdminRowSkeleton } from '../components/Skeleton';
