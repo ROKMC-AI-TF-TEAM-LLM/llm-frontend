@@ -4,6 +4,7 @@ export type ApiError = {
     data?: {
       error?: {
         code?: string
+        detail?: string
       }
     }
   }

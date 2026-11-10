@@ -95,3 +95,21 @@ export interface DeleteDocumentResponse {
   data: DeleteDocumentData
   error: { code: DeleteDocumentErrorCode; detail: string } | null
 }
+
+// 색인 재시도: POST /api/v1/admin/documents/{document_id}/retry (202, 응답은 상태 조회와 동일)
+export type RetryDocumentErrorCode =
+  | 'BAD_REQUEST'
+  | 'UNAUTHORIZED'
+  | 'ADMIN_REQUIRED'
+  | 'DOCUMENT_NOT_FOUND'
+  | 'CONFLICT'
+  | 'FILE_TOO_LARGE'
+  | 'VALIDATION_ERROR'
+  | 'LLM_SERVER_ERROR'
+
+export interface RetryDocumentResponse {
+  success: boolean
+  status_code: number
+  data: DocumentStatusData
+  error: { code: RetryDocumentErrorCode; detail: string } | null
+}
