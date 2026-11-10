@@ -16,6 +16,10 @@ const SHARED_RULE = {
   group: ['@/features/*', '@/features/**', '@/app/*', '@/app/**'],
   message: 'shared는 어느 기능에도 기대지 않는 공용 코드만 둡니다. 기능 코드가 필요하면 그 기능 폴더로 옮기세요.',
 }
+const LIB_RULE = {
+  group: ['@/features/*', '@/features/**', '@/app/*', '@/app/**'],
+  message: 'lib는 모든 기능이 기대는 기반입니다. 기능·app 코드를 가져오지 말고, 필요한 타입은 lib에 두세요.',
+}
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -49,6 +53,12 @@ export default defineConfig([
     files: ['src/shared/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', { paths: [ROUTER_RULE], patterns: [MOCK_RULE, API_RULE, SHARED_RULE] }],
+    },
+  },
+  {
+    files: ['src/lib/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [ROUTER_RULE], patterns: [MOCK_RULE, LIB_RULE] }],
     },
   },
 ])

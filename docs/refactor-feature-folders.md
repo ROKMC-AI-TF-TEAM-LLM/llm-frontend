@@ -193,7 +193,7 @@ mock/handlers/docgen.ts
 | 규칙 | 검사 |
 | --- | --- |
 | 화면 코드(`app`, `shared`, 기능의 `components`·`pages`)는 `api`를 직접 import하지 않는다 | ESLint ✅ |
-| `shared`는 `features`·`app`을 import하지 않는다 | ESLint ✅ |
+| `shared`·`lib`는 `features`·`app`을 import하지 않는다 | ESLint ✅ |
 | mock 코드는 `src/mock`과 `main.tsx`에서만 쓴다 | ESLint ✅ |
 | 라우터는 `react-router-dom`에서만 가져온다 | ESLint ✅ |
 | 서버 데이터는 React Query 캐시 한 곳에만 둔다 | 문서 (리뷰로 확인) |
@@ -283,7 +283,7 @@ import { getDomainLabel } from '@/features/domains/utils'
 
 - `features/chat/store.ts`가 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있습니다.
 - 프로젝트 데이터의 이중 저장(`projects/store.ts`)은 이 브랜치에는 남아 있습니다. `fix/sidebar-state`의 수정을 가져오면 해결됩니다.
-- `lib/axios.ts`가 `features/auth/types.ts`를 가져다 씁니다(기반 → 기능 방향).
+- ~~`lib/axios.ts`가 `features/auth/types.ts`를 가져다 씁니다~~: 갱신 응답 타입을 `lib/axios.ts`로 옮기고, 쓰이지 않던 `auth/api.ts`의 `refresh`를 지웠습니다. `lib`에도 ESLint 경계를 걸었습니다.
 - 큰 파일: `shared/styles/global.css` 1553줄. `projects/components/parts.tsx` 953줄은 `code-cleanup`의 분할을 가져오면 해결됩니다.
   (`SystemDiagnostics.tsx` 1708줄은 `system/components/hall/`로 나눴습니다. 다른 브랜치가 건드리지 않는 파일입니다.)
 - 코드 스타일(세미콜론·따옴표)과 하드코딩 색. Prettier는 거의 모든 파일을 바꾸므로 병합이 끝난 뒤 한 번에 적용합니다.

@@ -31,18 +31,6 @@ export interface LoginResponse {
   error: { code: LoginErrorCode; detail: string } | null
 }
 
-export interface RefreshRequest {
-  refresh_token: string
-}
-export type RefreshErrorCode = 'TOKEN_INVALID' | 'VALIDATION_ERROR'
-
-export interface RefreshResponse {
-  success: boolean
-  status_code: number
-  data: TokenData
-  error: { code: RefreshErrorCode; detail: string } | null
-}
-
 export interface LogoutRequest {
   refresh_token: string
 }

@@ -59,7 +59,7 @@ features/<기능>/
 
 1. ✅ **화면 코드(`app`, `shared`, 기능의 `components`·`pages`)는 `api`를 직접 import하지 않는다.**
    서버는 기능의 `hooks.ts`로만 쓴다. `api.ts`에 있던 순수 함수가 필요하면 `utils.ts`로 옮긴다.
-2. ✅ **`shared`는 `features`·`app`을 import하지 않는다.** 기능 코드가 필요하다면 그건 공용이 아니다.
+2. ✅ **`shared`와 `lib`는 `features`·`app`을 import하지 않는다.** 기능 코드가 필요하다면 그건 공용이 아니다.
 3. ✅ **mock 코드는 `src/mock` 안과 `main.tsx`에서만 쓴다.** 서비스에 `USE_MOCK` 같은 분기를 두지 않는다.
 4. ✅ **라우터는 `react-router-dom`에서 가져온다.**
 5. 서버 데이터는 React Query 캐시 한 곳에만 둔다. zustand에 복사해 두지 않는다.
@@ -76,6 +76,5 @@ features/<기능>/
 - `features/projects/store.ts`: 서버의 프로젝트 목록을 zustand에 한 번 더 복사한다(규칙 5 위반).
   사이드바·프로젝트 화면을 React Query 캐시로 바꾸면서 없앨 예정.
 - `features/chat/store.ts`: 스트리밍 상태와 함께 지난 메시지 불러오기(서버 데이터)도 들고 있다.
-- `lib/axios.ts`가 `features/auth/types.ts`의 토큰 갱신 응답 타입을 가져다 쓴다.
 - 코드 스타일(세미콜론·따옴표)이 파일마다 다르다. Prettier는 거의 모든 파일을 바꾸므로 열린 브랜치를 병합한 뒤 한 번에 적용한다.
 - 하드코딩 색(`#fdedf2` 등)과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 새 코드는 토큰을 쓴다.

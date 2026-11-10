@@ -1,7 +1,14 @@
 import axios from 'axios'
 import { LOCAL_STORAGE_KEY } from './storageKeys'
-import type { RefreshResponse } from '@/features/auth/types'
 import { logError } from '@/shared/utils/logError'
+
+// 토큰 갱신(/auth/refresh) 응답. 갱신은 모든 요청이 기대는 기반이라 auth 기능이 아니라 여기서 다룬다
+interface RefreshResponse {
+  success: boolean
+  status_code: number
+  data: { access_token: string; refresh_token: string; token_type: string }
+  error: { code: 'TOKEN_INVALID' | 'VALIDATION_ERROR'; detail: string } | null
+}
 
 export const backendApi = axios.create({
   baseURL: import.meta.env.VITE_SERVER_API_URL,
