@@ -8,7 +8,7 @@ import { logError } from '@/shared/utils/logError';
 import { copyText } from '@/shared/utils/clipboard';
 import { formatDate, formatDateTimeLong } from '@/shared/utils/date';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
-import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
+import Modal from '@/shared/components/Modal';
 import AdminDocuments from '../components/AdminDocuments';
 import { CheckIcon, CloseIcon, SearchAltIcon } from '@/shared/components/icons';
 
@@ -54,13 +54,6 @@ const USER_PAGE_SIZE = 10;
 
 function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
   const { data, isLoading, isError } = useInquiryUsers(userId);
-  useEscapeKey(onClose);
-
-  useEffect(() => {
-    document.body.classList.add('modal-open');
-    return () => document.body.classList.remove('modal-open');
-  }, []);
-
   const user = data?.data?.data;
 
 
@@ -83,14 +76,7 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
   ] : [];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="bg-surface rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal onClose={onClose} backdrop="blur" className="bg-surface rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-surface-border">
           <h2 className="text-base font-semibold text-text-primary">사용자 상세 정보</h2>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors" aria-label="닫기">
@@ -116,8 +102,7 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
             ))}
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   );
 }
 

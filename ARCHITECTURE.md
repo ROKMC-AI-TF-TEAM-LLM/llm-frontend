@@ -61,6 +61,7 @@ features/<기능>/
 - `shared/hooks/useEscapeKey.ts`·`useClickOutside.ts` — ESC·바깥 클릭으로 닫기
 - `shared/components/icons` — UI 아이콘(닫기·삭제·편집·별·검색·화살표 등)과 공통 틀 `Icon`. 화면에 `<svg>`를 직접 쓰지 않는다(일러스트·로고·차트 제외). 한 기능에서만 쓰는 아이콘은 그 기능의 `components/icons.tsx`
 - `shared/components/Button.tsx` — 글자 버튼(`primary`·`ghost`·`link`). `IconButton.tsx` — 아이콘만 있는 버튼(`label` 필수)
+- `shared/components/Modal.tsx`·`Drawer.tsx` — 가운데 대화상자와 오른쪽 서랍. 배경, ESC·바깥 클릭 닫기, 포커스 가두기(`useFocusTrap`), 스크롤 잠금(`useBodyScrollLock`)을 맡는다. 화면에서 `fixed inset-0`을 직접 쓰지 않는다
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
 
 ## import 쓰는 법

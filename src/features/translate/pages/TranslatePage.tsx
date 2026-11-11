@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { useTranslate } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'
@@ -11,8 +12,10 @@ const MAX = 200
 
 function LangSelect({ value, onChange }: { value: Lang; onChange: (l: Lang) => void }) {
   const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useClickOutside(ref, () => setOpen(false), { enabled: open })
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -25,7 +28,6 @@ function LangSelect({ value, onChange }: { value: Lang; onChange: (l: Lang) => v
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-full z-20 mt-1.5 w-[140px] overflow-hidden rounded-[12px] border border-[#f0e6e8] bg-white py-1 shadow-[0_12px_30px_rgba(60,20,30,0.12)]">
             {LANGS.map((l) => (
               <button

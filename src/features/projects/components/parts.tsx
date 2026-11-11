@@ -5,6 +5,7 @@ import { formatFileSize } from '@/shared/utils/fileSize'
 import { normalizeDocStatus } from '@/features/documents/utils'
 import Button from '@/shared/components/Button'
 import IconButton from '@/shared/components/IconButton'
+import Modal from '@/shared/components/Modal'
 import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
 import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { LayersIcon } from './icons'
@@ -449,13 +450,6 @@ function CreateProjectBody({
   const [name, setName] = useState('')
   const [instructions, setInstructions] = useState('')
 
-  useEscapeKey(onClose)
-
-  useEffect(() => {
-    document.body.classList.add('modal-open')
-    return () => document.body.classList.remove('modal-open')
-  }, [])
-
   const canSubmit = name.trim().length > 0
   const submit = () => {
     if (!canSubmit) return
@@ -464,12 +458,11 @@ function CreateProjectBody({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-      <div className="absolute inset-0 animate-fade-in bg-[rgba(26,25,23,0.28)]" onClick={onClose} />
-      <div
-        style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
-        className="relative z-10 flex w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
-      >
+    <Modal
+      onClose={onClose}
+      style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
+      className="flex w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
+    >
         <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-1">
           <div className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-brand-subtle text-brand">
@@ -526,8 +519,7 @@ function CreateProjectBody({
             만들기
           </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -579,23 +571,15 @@ function FilesModalBody({
   const [query, setQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEscapeKey(onClose)
-
-  useEffect(() => {
-    document.body.classList.add('modal-open')
-    return () => document.body.classList.remove('modal-open')
-  }, [])
-
   const q = query.trim().toLowerCase()
   const shown = q ? documents.filter((d) => d.name.toLowerCase().includes(q)) : documents
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-      <div className="absolute inset-0 animate-fade-in bg-[rgba(26,25,23,0.28)]" onClick={onClose} />
-      <div
-        style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
-        className="relative z-10 flex max-h-[80vh] w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
-      >
+    <Modal
+      onClose={onClose}
+      style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
+      className="flex max-h-[80vh] w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
+    >
         <div className="flex items-start justify-between gap-4 px-6 pt-5">
           <div>
             <h2 className="text-[16px] font-bold tracking-[-0.01em] text-text-primary">파일</h2>
@@ -664,8 +648,7 @@ function FilesModalBody({
             저장
           </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -688,20 +671,12 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
   const [draft, setDraft] = useState(initial)
   const save = () => { onSave?.(draft); onClose() }
 
-  useEscapeKey(onClose)
-
-  useEffect(() => {
-    document.body.classList.add('modal-open')
-    return () => document.body.classList.remove('modal-open')
-  }, [])
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-      <div className="absolute inset-0 animate-fade-in bg-[rgba(26,25,23,0.28)]" onClick={onClose} />
-      <div
-        style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
-        className="relative z-10 flex max-h-[80vh] w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
-      >
+    <Modal
+      onClose={onClose}
+      style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
+      className="flex max-h-[80vh] w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
+    >
         <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4">
           <h2 className="text-[16px] font-bold tracking-[-0.01em] text-text-primary">프로젝트 지침</h2>
           <IconButton label="닫기" onClick={onClose}>
@@ -735,8 +710,7 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
             저장
           </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

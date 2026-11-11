@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
+import Drawer from '@/shared/components/Drawer';
 import type { FileAttachment } from '@/shared/types/attachment';
 import { downloadAttachment, fileExtOf } from '@/shared/utils/downloadAttachment';
 import { formatFileSize } from '@/shared/utils/fileSize';
@@ -17,8 +17,6 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
 
   const close = useCallback(() => onClose(), [onClose]);
 
-  useEscapeKey(close, open);
-
   const download = async (att: FileAttachment) => {
     if (busyId) return;
     setBusyId(att.attachment_id);
@@ -29,16 +27,7 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
   };
 
   return (
-    <>
-      <div
-        onClick={close}
-        className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-      />
-      <aside
-        className={`fixed right-0 top-0 z-50 h-full w-full max-w-md bg-surface shadow-[-24px_0_60px_rgba(40,30,35,0.14)] transition-transform duration-300 ease-[cubic-bezier(.6,.02,.2,1)] ${open ? 'translate-x-0' : 'translate-x-full'}`}
-        role="dialog"
-        aria-modal="true"
-      >
+    <Drawer open={open} onClose={close}>
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-14 px-5 shrink-0 border-b border-surface-border">
             <div className="flex items-center gap-2">
@@ -90,7 +79,6 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
             )}
           </div>
         </div>
-      </aside>
-    </>
+    </Drawer>
   );
 }
