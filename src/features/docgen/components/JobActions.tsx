@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
 import type { DocGenJob } from '../types'
 import { normalizeJobStatus } from '../utils'
 import {
@@ -7,6 +6,7 @@ import {
   useRetryDocGenJob,
 } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'
+import { confirm } from '@/shared/store/confirmStore'
 import {
   DownloadIcon,
   RetryIcon,
@@ -41,8 +41,7 @@ export function DownloadButton({
 const REQUEST_FAILED = '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'
 
 /**
- * 삭제 버튼. 되돌릴 수 없으므로 그 자리에서 한 번 더 묻는다
- * (휴지통 → "삭제" 확인 + 취소). 4초 동안 고르지 않거나 Esc를 누르면 원래대로 돌아간다.
+ * 삭제 버튼. 되돌릴 수 없으므로 다른 화면의 삭제와 같이 확인 창으로 한 번 더 묻는다.
  * onDeleted는 삭제가 끝난 뒤 부른다. 목록이 다시 그려져 이 버튼이 사라진 뒤에도 불린다.
  */
 export function DeleteButton({
@@ -55,70 +54,36 @@ export function DeleteButton({
   large?: boolean
 }) {
   const remove = useDeleteDocGenJob()
-  const [confirming, setConfirming] = useState(false)
-  const confirmRef = useRef<HTMLButtonElement>(null)
 
-  useEffect(() => {
-    if (!confirming) return
-    confirmRef.current?.focus()
-    const id = window.setTimeout(() => setConfirming(false), 4000)
-    return () => window.clearTimeout(id)
-  }, [confirming])
-
-  const size = large ? 'h-10 px-4 text-[13.5px]' : 'h-8 px-2.5 text-[12.5px]'
-  if (!confirming)
-    return (
-      <button
-        type="button"
-        aria-label={`${job.title} 삭제`}
-        title="삭제"
-        disabled={remove.isPending}
-        onClick={() => setConfirming(true)}
-        className={`inline-flex shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error disabled:opacity-50 ${large ? 'h-10 w-10' : 'h-8 w-8'}`}
-      >
-        <TrashIcon className={large ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
-      </button>
-    )
-
-  const doDelete = () => {
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: `'${job.title}'을(를) 삭제하시겠습니까?`,
+      message: '삭제한 문서는 되돌릴 수 없습니다.',
+      danger: true,
+    })
+    if (!ok) return
     remove.mutateAsync(job.job_id).then(
       () => onDeleted?.(job.job_id),
-      () => {
-        setConfirming(false)
-        showToast(REQUEST_FAILED)
-      },
+      () => showToast(REQUEST_FAILED),
     )
   }
+
+  const iconSize = large ? 'h-4 w-4' : 'h-3.5 w-3.5'
   return (
-    <span
-      className="inline-flex items-center gap-1"
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') setConfirming(false)
-      }}
+    <button
+      type="button"
+      aria-label={`${job.title} 삭제`}
+      title="삭제"
+      disabled={remove.isPending}
+      onClick={handleDelete}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error disabled:opacity-50 ${large ? 'h-10 w-10' : 'h-8 w-8'}`}
     >
-      <button
-        ref={confirmRef}
-        type="button"
-        disabled={remove.isPending}
-        onClick={doDelete}
-        className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-status-error font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 ${size}`}
-      >
-        {remove.isPending ? (
-          <Spinner className="h-3 w-3" />
-        ) : (
-          <TrashIcon className="h-3.5 w-3.5" />
-        )}{' '}
-        삭제
-      </button>
-      <button
-        type="button"
-        disabled={remove.isPending}
-        onClick={() => setConfirming(false)}
-        className={`whitespace-nowrap rounded-full font-semibold text-text-secondary transition-colors hover:bg-surface-subtle ${size}`}
-      >
-        취소
-      </button>
-    </span>
+      {remove.isPending ? (
+        <Spinner className={iconSize} />
+      ) : (
+        <TrashIcon className={iconSize} />
+      )}
+    </button>
   )
 }
 

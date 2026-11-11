@@ -8,6 +8,7 @@ import {
 } from '@/features/users/hooks'
 import { AdminRowSkeleton } from '@/shared/components/Skeleton'
 import { showToast } from '@/shared/store/toastStore'
+import { confirm } from '@/shared/store/confirmStore'
 import { logError } from '@/shared/utils/logError'
 import { copyText } from '@/shared/utils/clipboard'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
@@ -89,8 +90,18 @@ export default function AdminPage() {
   const handleReject = (userId: string) =>
     rejectUser(userId, { onError: (e) => showToast(getAdminMutationError(e)) })
 
-  const handleDelete = (userId: string) =>
-    deleteUser(userId, { onError: (e) => showToast(getAdminMutationError(e)) })
+  const handleDelete = async (userId: string) => {
+    const name = allItems.find((u) => u.user_id === userId)?.name
+    const ok = await confirm({
+      title: `${name ? `'${name}'` : '이'} 사용자를 삭제하시겠습니까?`,
+      message: '계정이 삭제되며 되돌릴 수 없습니다.',
+      danger: true,
+    })
+    if (ok)
+      deleteUser(userId, {
+        onError: (e) => showToast(getAdminMutationError(e)),
+      })
+  }
 
   const handleCopyId = (userId: string) =>
     copyText(userId)
