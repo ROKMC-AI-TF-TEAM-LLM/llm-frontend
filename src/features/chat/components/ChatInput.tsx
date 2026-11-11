@@ -206,8 +206,8 @@ export default function ChatInput({
   return (
     <div className="w-full max-w-210 mx-auto">
       <div
-        style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }}
-        className="bg-surface rounded-[30px] focus-within:border-[#e4002b] focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)] transition-all duration-200 overflow-hidden cursor-text"
+        style={{ border: '1px solid var(--color-rose-border-alt)', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }}
+        className="bg-surface rounded-[30px] focus-within:border-brand-vivid focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)] transition-all duration-200 overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}
       >
         <input
@@ -284,7 +284,7 @@ export default function ChatInput({
           {isStreaming && !isNewChat ? (
             <button
               onClick={(e) => { e.stopPropagation(); abortStream(); }}
-              style={{ background: 'linear-gradient(135deg,#e4002b,#ff2d55)', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
+              style={{ background: 'linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="중단"
             >
@@ -293,7 +293,7 @@ export default function ChatInput({
           ) : (value.trim() || pendingFile) ? (
             <button
               onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
-              style={{ background: 'linear-gradient(135deg,#e4002b,#ff2d55)', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
+              style={{ background: 'linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="전송"
             >

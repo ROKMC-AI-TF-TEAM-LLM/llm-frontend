@@ -53,7 +53,7 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
                 type="button"
                 disabled={!matched}
                 onClick={() => matched && openDoc(matched)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border border-[#f0e6e8] bg-white text-left transition-colors ${
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border border-rose-border bg-white text-left transition-colors ${
                   matched ? 'hover:bg-surface-subtle hover:border-brand-soft cursor-pointer' : 'cursor-default'
                 }`}
               >

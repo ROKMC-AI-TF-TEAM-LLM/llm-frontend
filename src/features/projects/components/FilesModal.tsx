@@ -80,7 +80,7 @@ function FilesModalBody({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="파일 검색"
-            className="min-w-0 flex-1 rounded-[10px] border border-[#f0e6e8] px-3.5 py-2.5 text-[13.5px] text-text-primary outline-none transition-colors placeholder:text-[#b8a7ac] focus:border-brand"
+            className="min-w-0 flex-1 rounded-[10px] border border-rose-border px-3.5 py-2.5 text-[13.5px] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
           />
           <input
             ref={fileInputRef}
@@ -96,14 +96,14 @@ function FilesModalBody({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-[10px] border border-[#f0e6e8] px-3.5 py-2.5 text-[13.5px] font-semibold text-text-secondary transition-colors hover:border-brand-soft hover:bg-brand-subtle hover:text-brand"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-[10px] border border-rose-border px-3.5 py-2.5 text-[13.5px] font-semibold text-text-secondary transition-colors hover:border-brand-soft hover:bg-brand-subtle hover:text-brand"
           >
             <PlusIcon className="h-4 w-4" strokeWidth={2.2} />
             첨부
           </button>
         </div>
 
-        <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-[#f4eced] px-6 py-4">
+        <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-rose-divider px-6 py-4">
           {shown.length === 0 ? (
             <p className="py-10 text-center text-[13px] text-text-muted">
               {q ? '검색 결과가 없습니다' : '아직 업로드된 파일이 없습니다'}
@@ -123,7 +123,7 @@ function FilesModalBody({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-[#f4eced] px-6 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-rose-divider px-6 py-4">
           <Button variant="ghost" onClick={onClose}>
             취소
           </Button>

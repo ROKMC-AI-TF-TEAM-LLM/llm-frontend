@@ -25,7 +25,7 @@ export function KebabMenu({
       {open && (
         <div
           style={{ boxShadow: '0 16px 40px rgba(60,30,38,0.13)' }}
-          className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-[#f0e6e8] bg-white p-1.5"
+          className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-rose-border bg-white p-1.5"
         >
           <button
             type="button"

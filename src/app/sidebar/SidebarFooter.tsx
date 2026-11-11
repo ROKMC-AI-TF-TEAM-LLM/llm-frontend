@@ -107,7 +107,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label="프로필"
-          className={`min-w-0 flex-1 flex items-center gap-2 p-0.5 rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-[#fdedf2]' : 'hover:bg-[#fdedf2]'}`}
+          className={`min-w-0 flex-1 flex items-center gap-2 p-0.5 rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-brand-tint' : 'hover:bg-brand-tint'}`}
         >
           <Avatar />
           <div
@@ -145,7 +145,7 @@ function Avatar() {
     <div
       style={{
         width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-        background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
+        background: 'linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >

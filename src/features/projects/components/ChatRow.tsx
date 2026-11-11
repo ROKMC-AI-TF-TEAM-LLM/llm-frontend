@@ -22,7 +22,7 @@ export function ChatRow({
   const [draft, setDraft] = useState(chat.title)
   const { text, isUntitled } = displaySessionTitle(chat.title)
 
-  const hoverBg = active ? '#fdedf2' : '#fdf6f7'
+  const hoverBg = active ? 'var(--color-brand-tint)' : 'var(--color-rose-hover)'
 
   const submit = () => {
     const next = draft.trim()
@@ -43,7 +43,7 @@ export function ChatRow({
             if (e.key === 'Enter') submit()
             if (e.key === 'Escape') setEditing(false)
           }}
-          className="w-full rounded-[8px] border border-[#f0e6e8] bg-white px-2.5 py-2 text-[13px] text-text-primary outline-none focus:border-brand"
+          className="w-full rounded-[8px] border border-rose-border bg-white px-2.5 py-2 text-[13px] text-text-primary outline-none focus:border-brand"
         />
       </div>
     )
@@ -54,9 +54,9 @@ export function ChatRow({
       <button
         type="button"
         onClick={onClick}
-        style={active ? { background: '#fdedf2' } : {}}
+        style={active ? { background: 'var(--color-brand-tint)' } : {}}
         className={`flex w-full items-center gap-3 rounded-[10px] px-2.5 py-2.5 text-left transition-colors ${
-          active ? '' : 'hover:bg-[#fdf6f7]'
+          active ? '' : 'hover:bg-rose-hover'
         }`}
       >
         <span
@@ -64,7 +64,7 @@ export function ChatRow({
             isUntitled
               ? 'text-text-muted'
               : active
-                ? 'font-bold text-[#c0002a]'
+                ? 'font-bold text-brand-deep'
                 : 'font-medium text-text-primary'
           }`}
         >

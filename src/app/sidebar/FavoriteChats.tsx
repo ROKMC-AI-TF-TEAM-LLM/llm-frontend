@@ -42,12 +42,12 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-[#fdedf2]"
+        className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-brand-tint"
       >
-        <span className="text-[10.5px] font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
+        <span className="text-[10.5px] font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-rose-muted whitespace-nowrap">
           즐겨찾기
         </span>
-        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-[#c9aab2] transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`} strokeWidth={2.6} />
+        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-rose-muted transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`} strokeWidth={2.6} />
       </button>
 
       {expanded && (

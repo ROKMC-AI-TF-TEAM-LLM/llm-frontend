@@ -30,7 +30,7 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
       >
         <span
           className="mars-brand-serif"
-          style={{ fontSize: 22, color: '#e4002b', whiteSpace: 'nowrap' }}
+          style={{ fontSize: 22, color: 'var(--color-brand-vivid)', whiteSpace: 'nowrap' }}
         >
           MARS
         </span>
@@ -41,7 +41,7 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
         style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0 }}
-        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-[#fdedf2] hover:text-[#c0002a] transition-colors cursor-pointer"
+        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-brand-tint hover:text-brand-deep transition-colors cursor-pointer"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
         <ChevronsLeftIcon width={18} height={18} className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`} strokeWidth={2.2} />

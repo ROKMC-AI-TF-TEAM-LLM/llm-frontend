@@ -108,7 +108,7 @@ export default function ProjectPage() {
     <div className="flex h-full w-full bg-white">
       <aside
         style={{
-          borderRightColor: panelOpen ? '#f4eced' : 'transparent',
+          borderRightColor: panelOpen ? 'var(--color-rose-divider)' : 'transparent',
         }}
         className={`h-full shrink-0 overflow-hidden border-r transition-[width,border-color] duration-[420ms] ease-[cubic-bezier(.32,.72,0,1)] ${
           panelOpen ? 'w-[336px]' : 'w-0'
@@ -133,7 +133,7 @@ export default function ProjectPage() {
                 if (e.key === 'Enter') submitRename()
                 if (e.key === 'Escape') setRenaming(false)
               }}
-              className="ml-1 min-w-0 flex-1 rounded-[8px] border border-[#f0e6e8] px-2 py-1 text-[14px] font-bold text-text-primary outline-none focus:border-brand"
+              className="ml-1 min-w-0 flex-1 rounded-[8px] border border-rose-border px-2 py-1 text-[14px] font-bold text-text-primary outline-none focus:border-brand"
             />
           ) : (
             <p className="ml-1 min-w-0 max-w-[136px] truncate text-[14px] font-bold text-text-primary">

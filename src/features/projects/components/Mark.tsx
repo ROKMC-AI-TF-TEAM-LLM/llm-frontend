@@ -8,7 +8,7 @@ export function Mark({ size = 34, active = false }: { size?: number; active?: bo
         height: size,
         borderRadius: Math.round(size * 0.29),
         background: active ? 'var(--color-brand)' : 'var(--color-brand-subtle)',
-        color: active ? '#fff' : 'var(--color-brand)',
+        color: active ? 'var(--color-surface)' : 'var(--color-brand)',
         border: active ? 'none' : '1px solid #f7dfe4',
       }}
       className="inline-flex shrink-0 items-center justify-center"

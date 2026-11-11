@@ -72,7 +72,7 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
         <div
           ref={menuRef}
           className="fixed min-w-[184px] rounded-2xl border border-surface-border shadow-[0_10px_30px_rgba(40,30,35,0.10)] p-1.5 z-50 animate-fade-in"
-          style={{ background: '#fff', left: pos.left, bottom: pos.bottom }}
+          style={{ background: 'var(--color-surface)', left: pos.left, bottom: pos.bottom }}
         >
           {domains.map((d) => {
             const active = value?.code === d.code;

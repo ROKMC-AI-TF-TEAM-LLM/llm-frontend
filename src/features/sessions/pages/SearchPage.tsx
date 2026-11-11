@@ -83,12 +83,12 @@ const SearchPage = () => {
                     <button
                       key={session.session_id}
                       onClick={() => goToSession(session.session_id, session.project_id)}
-                      style={{ background: '#fff', border: '1px solid #f0e3e6', boxShadow: '0 10px 24px rgba(40,30,35,0.05)' }}
+                      style={{ background: 'var(--color-surface)', border: '1px solid var(--color-rose-border-alt)', boxShadow: '0 10px 24px rgba(40,30,35,0.05)' }}
                       className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer"
                     >
                       <div className="flex items-center gap-2.5">
                         <div
-                          style={{ background: 'linear-gradient(135deg,#fff0f3,#fde3e8)', border: '1px solid #f7d7de', color: '#e4002b' }}
+                          style={{ background: 'linear-gradient(135deg,#fff0f3,#fde3e8)', border: '1px solid #f7d7de', color: 'var(--color-brand-vivid)' }}
                           className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px]"
                         >
                           <ChatAltIcon width="16" height="16" />

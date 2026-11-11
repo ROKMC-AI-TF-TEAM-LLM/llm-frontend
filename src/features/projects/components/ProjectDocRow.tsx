@@ -28,7 +28,7 @@ export function ProjectDocRow({
   return (
     <div
       className={`group flex items-center gap-2.5 rounded-[10px] px-2 py-2 transition-colors ${
-        failedLook ? 'bg-red-50/70' : deleting ? '' : 'hover:bg-[#fdf6f7]'
+        failedLook ? 'bg-red-50/70' : deleting ? '' : 'hover:bg-rose-hover'
       } ${isBusy || deleting ? 'opacity-60' : ''}`}
       aria-busy={deleting || undefined}
     >

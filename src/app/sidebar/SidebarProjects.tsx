@@ -46,12 +46,12 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-[#fdedf2]"
+        className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-brand-tint"
       >
-        <span className="text-[10.5px] mars-brand-serif font-extrabold uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
+        <span className="text-[10.5px] mars-brand-serif font-extrabold uppercase tracking-[0.12em] text-rose-muted whitespace-nowrap">
           프로젝트
         </span>
-        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-[#c9aab2] transition-transform duration-200 ${ expanded ? '' : '-rotate-90' }`} strokeWidth={2.6} />
+        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-rose-muted transition-transform duration-200 ${ expanded ? '' : '-rotate-90' }`} strokeWidth={2.6} />
       </button>
 
       {expanded && (
@@ -59,7 +59,7 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
           <li>
             <button
               onClick={() => setCreateOpen(true)}
-              className="flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-[13px] font-normal text-[#b3aab0] transition-colors hover:bg-[#fdedf2] hover:text-[#c0002a]"
+              className="flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-[13px] font-normal text-[#b3aab0] transition-colors hover:bg-brand-tint hover:text-brand-deep"
             >
               <PlusIcon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate  mars-brand-serif">새 프로젝트</span>

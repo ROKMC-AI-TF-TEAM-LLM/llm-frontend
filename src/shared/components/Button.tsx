@@ -22,7 +22,7 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'cla
 
 export default function Button({ variant, type = 'button', disabled, children, ...props }: ButtonProps) {
   const isPrimary = variant === 'primary'
-  const state = !isPrimary ? '' : disabled ? ' bg-[#f4eced] text-[#cbbcc0]' : ' text-white hover:bg-[var(--color-brand-hover)]'
+  const state = !isPrimary ? '' : disabled ? ' bg-rose-divider text-[#cbbcc0]' : ' text-white hover:bg-[var(--color-brand-hover)]'
   return (
     <button
       type={type}
