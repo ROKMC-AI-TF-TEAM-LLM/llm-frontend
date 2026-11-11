@@ -12,9 +12,10 @@ import { formatFileSize } from '@/shared/utils/fileSize'
 import { getDomainStyle } from '@/features/domains/utils'
 import { useDocGenJobs, selectable, useComposer, useFreshIds } from '../hooks'
 import { ArrowUpIcon, CloseIcon, DocumentIcon, DownloadIcon } from '@/shared/components/icons'
-import {
-  ComposerOptions, DeleteButton, JobActions, JobMeta, JobProgressText, PreviewBody, ProgressBar, Spinner, StatusBadge, StatusDot,
-} from '../components/parts'
+import { ComposerOptions } from '../components/Picker'
+import { DeleteButton, JobActions } from '../components/JobActions'
+import { JobMeta, JobProgressText, ProgressBar, Spinner, StatusBadge, StatusDot } from '../components/JobStatus'
+import { PreviewBody } from '../components/Preview'
 
 const motion = 'duration-500 ease-[cubic-bezier(.4,0,.2,1)] motion-reduce:transition-none'
 

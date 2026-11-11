@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useProjectList, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '@/features/projects/hooks'
 import ProjectItem from './ProjectItem'
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
-import { CreateProjectModal } from '@/features/projects/components/parts'
+import { CreateProjectModal } from '@/features/projects/components/CreateProjectModal'
 import { ChevronDownIcon, PlusIcon } from '@/shared/components/icons'
 
 export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {

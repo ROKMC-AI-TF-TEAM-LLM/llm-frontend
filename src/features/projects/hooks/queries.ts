@@ -4,13 +4,13 @@ import {
   getProjects, getProject, createProject, updateProject,
   setProjectFavorite, setProjectInstruction, getProjectSessions, deleteProject,
   uploadProjectDocument, getProjectDocuments, getProjectDocumentStatus, deleteProjectDocument, retryProjectDocument,
-} from './api'
+} from '../api'
 import type { AxiosResponse } from 'axios'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type {
   CreateProjectRequest, GetProjectSessionsParams, GetProjectDocumentStatusResponse, GetProjectDocumentsResponse,
   GetProjectsResponse, GetProjectResponse, ProjectData,
-} from './types'
+} from '../types'
 import { useAuth } from '@/features/auth/useAuth'
 import { showToast } from '@/shared/store/toastStore'
 import { confirm } from '@/shared/store/confirmStore'
