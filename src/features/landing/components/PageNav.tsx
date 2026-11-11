@@ -18,10 +18,7 @@ export default function PageNav({ current }: { current: NavKey }) {
   }
 
   return (
-    <div
-      style={{ padding: '14px clamp(20px, 6vw, 64px)' }}
-      className="sticky top-0 z-40 flex items-center border-b border-[#f2e2e6] bg-white/[0.82] backdrop-blur-md"
-    >
+    <div className="py-[14px] px-[clamp(20px,6vw,64px)] sticky top-0 z-40 flex items-center border-b border-[#f2e2e6] bg-white/[0.82] backdrop-blur-md">
       <button onClick={() => navigate('/')} className="mars-nav-brand">
         MARS
       </button>

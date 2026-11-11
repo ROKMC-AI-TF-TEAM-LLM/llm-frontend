@@ -78,10 +78,7 @@ const HomePage = () => {
       <LandingNav onStart={openAuth} />
       <div ref={introRef} className="mars-intro ">
         <section className="mars-hero mars-section relative flex items-center min-h-screen px-[6vw] pt-20">
-          <div
-            className="mars-glow-bg"
-            style={{ width: 620, height: 620, right: '-6%', top: '2%' }}
-          />
+          <div className="mars-glow-bg w-[620px] h-[620px] right-[-6%] top-[2%]" />
           <div className="max-w-[640px] relative z-[1]">
             <div className="mars-reveal mars-eyebrow mars-eyebrow-full mb-5">
               Marine Artificial Intelligence Reasoning System
@@ -89,10 +86,7 @@ const HomePage = () => {
             <h1 className="mars-reveal mars-wordmark mars-display mars-brand-serif -ml-1 m-0 text-brand text-glow-brand">
               MARS
             </h1>
-            <p
-              className="mars-reveal mars-display mt-1 text-text-primary"
-              style={{ fontSize: 'clamp(26px,3vw,38px)' }}
-            >
+            <p className="mars-reveal mars-display mt-1 text-text-primary text-[length:clamp(26px,3vw,38px)]">
               해병대의 모든 규정을,
               <br />
               한 번에 <RotatingWord words={HERO_VERBS} />
@@ -188,7 +182,7 @@ const HomePage = () => {
                 strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ animation: 'marsBob 1.7s ease-in-out infinite' }}
+                className="animate-[marsBob_1.7s_ease-in-out_infinite]"
               >
                 <path d="M6 9l6 6 6-6" />
               </svg>

@@ -29,9 +29,7 @@ export function GuideHero({ onNext }: { onNext: () => void }) {
           GUIDE
         </Reveal>
         <Reveal delay={70}>
-          <h1
-            className="mars-display m-0 font-black leading-[1.18] tracking-tight text-[length:clamp(38px,5.2vw,60px)]"
-          >
+          <h1 className="mars-display m-0 font-black leading-[1.18] tracking-tight text-[length:clamp(38px,5.2vw,60px)]">
             <span className="text-brand">MARS</span> 이용법
           </h1>
         </Reveal>
@@ -316,9 +314,7 @@ export function GuideCta() {
       className="relative px-[6vw] min-h-screen flex flex-col items-center justify-center text-center overflow-hidden"
     >
       <Reveal className="relative z-[2]">
-        <h2
-          className="mars-display m-0 mb-5 font-black tracking-tight text-[length:clamp(36px,5vw,60px)]"
-        >
+        <h2 className="mars-display m-0 mb-5 font-black tracking-tight text-[length:clamp(36px,5vw,60px)]">
           지금 <span className="text-brand">시작</span>해보세요
         </h2>
         <p className="mx-auto max-w-[460px] text-[17px] font-semibold text-text-secondary leading-relaxed">

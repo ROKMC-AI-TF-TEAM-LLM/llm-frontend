@@ -28,8 +28,7 @@ export default function TutorialPage() {
         <button
           type="button"
           onClick={() => navigate('/tutorials')}
-          style={{ background: 'var(--color-brand)' }}
-          className="mt-6 rounded-full px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
+          className="mt-6 rounded-full bg-brand px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-hover"
         >
           튜토리얼 목록
         </button>
@@ -40,13 +39,7 @@ export default function TutorialPage() {
   const related = TUTORIALS.filter((t) => t.slug !== tutorial.slug).slice(0, 3)
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background:
-          'linear-gradient(180deg,#fdf6f8 0%,#ffffff 20%,#ffffff 100%)',
-      }}
-    >
+    <div className="min-h-screen bg-[linear-gradient(180deg,#fdf6f8_0%,#ffffff_20%,#ffffff_100%)]">
       <TutorialHeader />
 
       <div className="flex items-center gap-2 border-b border-rose-divider px-[6vw] py-3.5 text-[13px]">
@@ -62,10 +55,7 @@ export default function TutorialPage() {
       </div>
 
       <div className="relative overflow-hidden">
-        <div
-          className="mars-glow-bg"
-          style={{ width: 560, height: 560, top: -330, right: -80 }}
-        />
+        <div className="mars-glow-bg w-[560px] h-[560px] top-[-330px] right-[-80px]" />
         <div className="relative mx-auto max-w-[1160px] px-[6vw] pt-16 pb-12 lg:px-8">
           <Reveal>
             <div className="flex flex-wrap items-start justify-between gap-x-16 gap-y-8">
@@ -129,12 +119,7 @@ export default function TutorialPage() {
         </ol>
 
         <Reveal delay={80}>
-          <div
-            style={{
-              background: 'linear-gradient(160deg,#fdf3f5 0%,#fffdfd 100%)',
-            }}
-            className="mt-14 rounded-[18px] border border-[#f2e2e6] px-8 py-9 text-center"
-          >
+          <div className="mt-14 bg-[linear-gradient(160deg,#fdf3f5_0%,#fffdfd_100%)] rounded-[18px] border border-[#f2e2e6] px-8 py-9 text-center">
             <p className="text-[19px] font-bold tracking-[-0.01em] mars-brand-serif text-text-primary break-keep">
               직접 해보는 게 가장 빠릅니다
             </p>

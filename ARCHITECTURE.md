@@ -9,7 +9,7 @@
 src/
   main.tsx          앱 시작 (React Query 공급자, mock 모드면 가짜 서버 설치)
   app/              앱 뼈대: 라우트(App.tsx), 레이아웃, 사이드바, 오류 화면
-  lib/              기반: axios(토큰 갱신 포함), queryClient, 저장소 키
+  lib/              기반: axios(토큰 갱신 포함), queryClient, 여러 기능이 같이 쓰는 캐시 키(queryKeys), 저장소 키
   shared/           어느 기능에도 기대지 않는 공용 코드: 토스트, 스켈레톤, 범용 훅·유틸, 전역 CSS
   features/<기능>/  기능 하나의 모든 것 (아래)
   mock/             `npm run dev:mock`용 가짜 백엔드. API마다 handlers/<도메인>.ts
@@ -61,7 +61,7 @@ features/<기능>/
 | `docgen` | 문서 제작 | `/docgen` |
 | `translate` | 번역 | `/translate` |
 | `system` | 서버 상태, 숨은 진단 화면 | — |
-| `landing` | 소개 화면들의 공통 상단·바닥글, 이용 안내, 튜토리얼 | `/guide`, `/tutorials`, `/tutorials/:slug` |
+| `landing` | 소개 화면들의 공통 상단·바닥글, 이용 안내(`components/guide/`: 문구 `content`, 화면 예시 `mocks`, 구역 `sections`), 튜토리얼 | `/guide`, `/tutorials`, `/tutorials/:slug` |
 | `team` | 팀 소개 | `/team` |
 
 ## 공용 코드 (shared)
@@ -82,6 +82,11 @@ features/<기능>/
 - `shared/utils/postLoginRedirect.ts` — 로그인 후 돌아갈 주소 기억. `shared/utils/chatStorage.ts` — 대화 캐시 키와 지우기(`clearChatCache`·`clearStoredChatData`)
 - `shared/styles/global.css` — 토큰(`@theme`: 색, 글자 크기 `text-10`~`text-16`), 리셋, 여러 화면이 쓰는 규칙, 키프레임만 둔다. 소개성 화면의 스타일은 `shared/styles/intro.css`, 한 기능만 쓰는 스타일은 그 기능의 `styles.css`(사이드바는 `app/sidebar/sidebar.css`)
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
+
+## 캐시 키
+
+- 한 기능 안에서만 쓰는 React Query 키는 그 기능의 `hooks`에 둔다(예: `projects/hooks/cache.ts`).
+- 여러 기능이 같은 캐시를 고치면 `lib/queryKeys.ts`에 둔다. 지금은 대화 목록: 전역(`SESSIONS_KEY`)과 프로젝트별(`projectSessionsKey`)이 함께 바뀌어야 해서 `invalidateSessionLists`·`cancelSessionLists`로만 다룬다.
 
 ## import 쓰는 법
 
@@ -112,4 +117,5 @@ Prettier가 맡습니다(세미콜론 없음, 작은따옴표, 나머지 기본�
 ## 아직 규칙과 다른 곳 (정리 예정)
 
 - `features/chat/store/`: 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있다. 불러오기 코드는 `history.ts`로 떼어 두었지만 데이터는 아직 스토어에 있다. 스트리밍·다시 생성·끊긴 답변 복구가 같은 `messages` 배열을 고치므로, React Query로 옮기기 전에 이 흐름의 테스트부터 만든다.
-- 하드코딩 색과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 3회 이상 쓰이던 색은 `global.css`의 `@theme`에 토큰(`brand-tint`·`rose-border` 등)으로 올렸다. 새 코드는 토큰을 쓴다. 한두 번 쓰인 색과 소개성 화면의 색은 아직 hex로 남아 있다.
+- 하드코딩 색과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 3회 이상 쓰이던 색은 `global.css`의 `@theme`에 토큰(`brand-tint`·`rose-border`·`rose-line`·`brand-deep`·`ink-soft` 등)으로 올렸다. 새 코드는 토큰을 쓴다. 한두 번 쓰인 색, 분야별 색표(`domains/utils.ts`), 그림(진단 화면의 `hall/`, `MarsPlanet`)의 색은 hex로 남겨 둔다.
+- 인라인 `style`은 값이 상태에 따라 바뀌는 곳(너비·위치·분야 색)과 그림에만 남기고, 고정 값은 클래스로 옮겼다. `ChatInput`·`RagSearchInput`·`SearchInput`의 테두리는 인라인 `style`이라 `focus-within:` 테두리 클래스를 덮어쓰고 있다(포커스 테두리가 안 보임). 의도인지 확인 후 정리한다.

@@ -59,14 +59,7 @@ export default function GuidePage() {
   }
 
   return (
-    <div
-      className="min-h-screen select-none"
-      style={{
-        color: '#1f1f22',
-        background:
-          'linear-gradient(180deg,#ffeef1 0%,#fdf3f5 9%,#ffffff 26%,#ffffff 100%)',
-      }}
-    >
+    <div className="min-h-screen select-none text-[#1f1f22] bg-[linear-gradient(180deg,#ffeef1_0%,#fdf3f5_9%,#ffffff_26%,#ffffff_100%)]">
       <style>{`
         @keyframes marsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
         @keyframes marsSpin { to { transform: rotate(360deg); } }

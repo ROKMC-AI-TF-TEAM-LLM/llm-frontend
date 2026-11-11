@@ -136,10 +136,7 @@ export function IntroSections({
       >
         <div className="max-w-[1180px] mx-auto w-full">
           <div className="mars-reveal mars-eyebrow mb-4">가장 큰 특징</div>
-          <h2
-            className="mars-reveal mars-display max-w-[820px]"
-            style={{ fontSize: 'clamp(27px,3.2vw,42px)' }}
-          >
+          <h2 className="mars-reveal mars-display max-w-[820px] text-[length:clamp(27px,3.2vw,42px)]">
             법령, 규정, 규칙을
             <br />
             <span className="text-brand">인공지능</span>이 찾아냅니다.
@@ -170,10 +167,7 @@ export function IntroSections({
         <div className="max-w-[1280px] mx-auto w-full flex flex-col lg:flex-row gap-14 items-center">
           <div className="flex-1 min-w-0">
             <div className="mars-reveal mars-eyebrow mb-5">동작 방식</div>
-            <h2
-              className="mars-reveal mars-display mb-6"
-              style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}
-            >
+            <h2 className="mars-reveal mars-display mb-6 text-[length:clamp(30px,3.6vw,48px)]">
               추측하지 않고,
               <br />
               <span className="text-brand">찾아서</span> 답합니다.
@@ -422,10 +416,7 @@ export function IntroSections({
         <div className="max-w-[1280px] mx-auto w-full grid items-center gap-14 lg:grid-cols-[.85fr_1.15fr]">
           <div className="min-w-0">
             <div className="mars-reveal mars-eyebrow mb-5">WHAT WE COVER</div>
-            <h2
-              className="mars-reveal mars-display mb-12 leading-[1.25]"
-              style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}
-            >
+            <h2 className="mars-reveal mars-display mb-12 leading-[1.25] text-[length:clamp(30px,3.6vw,48px)]">
               흩어진 규정을
               <br />
               <span className="text-brand">하나의 답</span>으로
@@ -483,10 +474,7 @@ export function IntroSections({
         <div className="relative z-[1] max-w-[1280px] mx-auto w-full">
           <div className="max-w-[760px]">
             <div className="mars-reveal mars-eyebrow mb-5">FOR THE CORPS</div>
-            <h2
-              className="mars-reveal mars-display leading-[1.22]"
-              style={{ fontSize: 'clamp(30px,3.6vw,48px)' }}
-            >
+            <h2 className="mars-reveal mars-display leading-[1.22] text-[length:clamp(30px,3.6vw,48px)]">
               다른 누구도 아닌,
               <br />
               <span className="text-brand">해병대</span>를 위해 만들었습니다.
@@ -547,10 +535,7 @@ export function IntroSections({
           }}
         />
         <div className="relative z-[1]">
-          <h2
-            className="mars-reveal mars-display m-0 mb-6"
-            style={{ fontSize: 'clamp(36px,5vw,62px)' }}
-          >
+          <h2 className="mars-reveal mars-display m-0 mb-6 text-[length:clamp(36px,5vw,62px)]">
             지금 <span className="text-brand">시작</span>해보세요
           </h2>
           <p className="mars-reveal mx-auto max-w-[460px] text-[17px] text-text-secondary font-semibold leading-relaxed break-keep">

@@ -13,26 +13,11 @@ export default function TutorialsPage() {
   const navigate = useNavigate()
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background:
-          'linear-gradient(180deg,#fdf6f8 0%,#ffffff 22%,#ffffff 100%)',
-      }}
-    >
+    <div className="min-h-screen bg-[linear-gradient(180deg,#fdf6f8_0%,#ffffff_22%,#ffffff_100%)]">
       <TutorialHeader />
 
       <div className="relative overflow-hidden">
-        <div
-          className="mars-glow-bg"
-          style={{
-            width: 520,
-            height: 520,
-            top: -260,
-            left: '50%',
-            marginLeft: -260,
-          }}
-        />
+        <div className="mars-glow-bg w-[520px] h-[520px] top-[-260px] left-1/2 ml-[-260px]" />
         <div className="relative mx-auto max-w-[820px] px-[6vw] pt-20 pb-16 text-center">
           <Reveal>
             <p className="text-brand font-bold justify-center">TUTORIALS</p>
