@@ -10,7 +10,7 @@ import { DOMAINS, getDomainLabel, getDomainStyle } from '@/features/domains/util
 import { normalizeDocStatus } from '@/features/documents/utils';
 import DomainIcon from '@/features/domains/components/DomainIcon';
 import { showToast } from '@/shared/store/toastStore';
-import { getApiError, DEFAULT_STATUS_ERRORS, type ApiError } from '@/shared/utils/error';
+import { getApiError, readApiError, DEFAULT_STATUS_ERRORS } from '@/shared/utils/error';
 import { formatDate } from '@/shared/utils/date';
 import { formatFileSize } from '@/shared/utils/fileSize';
 import type { AdminDocumentItem, AdminDocStatus } from '../types';
@@ -196,7 +196,7 @@ export default function AdminDocuments() {
     retryMut.mutate(doc.document_id, {
       onSuccess: () => showToast(`'${doc.name}' 색인을 다시 시작했습니다.`, 'success'),
       onError: (e) => {
-        const detail = (e as ApiError)?.response?.data?.error?.detail;
+        const { detail } = readApiError(e);
         showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해주세요.');
       },
     });
@@ -334,7 +334,7 @@ export default function AdminDocuments() {
                 문서를 불러오지 못했습니다.
                 <span className="block mt-1 text-[12px] text-text-muted/80">
                   {(() => {
-                    const status = (error as { response?: { status?: number } })?.response?.status;
+                    const { status } = readApiError(error);
                     const msg = getApiError(error, {}, DEFAULT_STATUS_ERRORS, '서버에 연결할 수 없습니다.');
                     return status ? `[${status}] ${msg}` : msg;
                   })()}

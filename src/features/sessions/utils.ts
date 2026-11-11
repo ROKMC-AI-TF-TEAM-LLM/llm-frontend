@@ -4,3 +4,23 @@ export const displaySessionTitle = (title?: string | null): { text: string; isUn
   const trimmed = (title ?? '').trim()
   return trimmed ? { text: trimmed, isUntitled: false } : { text: UNTITLED, isUntitled: true }
 }
+
+// 세션 오류 코드별 문구. 같은 코드라도 쓰이는 자리마다 문구가 달라 표를 따로 둔다 (합치지 않음).
+export const SESSION_ERRORS = {
+  /** 채팅 화면(/chat/:id)에서 대화를 열 때 */
+  chat: {
+    SESSION_NOT_FOUND: '존재하지 않는 세션입니다.',
+    SESSION_ACCESS_DENIED: '접근 권한이 없는 세션입니다.',
+  },
+  /** 프로젝트 화면에서 대화를 열 때 */
+  project: {
+    SESSION_NOT_FOUND: '존재하지 않는 대화입니다.',
+    SESSION_ACCESS_DENIED: '접근 권한이 없는 대화입니다.',
+  },
+  /** 이름 변경·즐겨찾기·삭제 */
+  mutation: {
+    SESSION_NOT_FOUND: '이미 삭제된 대화입니다.',
+    SESSION_ACCESS_DENIED: '접근 권한이 없습니다.',
+    UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
+  },
+} satisfies Record<string, Record<string, string>>

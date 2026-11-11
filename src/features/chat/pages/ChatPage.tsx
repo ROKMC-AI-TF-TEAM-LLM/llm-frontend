@@ -6,15 +6,11 @@ import { showToast } from '@/shared/store/toastStore';
 import { useChatStore } from '../store';
 import { useInfiniteSessions } from '@/features/sessions/hooks';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
-import { isNetworkError } from '@/shared/utils/error';
+import { isNetworkError, readApiError } from '@/shared/utils/error';
+import { SESSION_ERRORS } from '@/features/sessions/utils';
 import { logError } from '@/shared/utils/logError';
 import { AI_NOTICE } from '@/shared/constants';
 import type { SessionData } from '@/features/sessions/types';
-
-const SESSION_ERRORS: Record<string, string> = {
-  SESSION_NOT_FOUND: '존재하지 않는 세션입니다.',
-  SESSION_ACCESS_DENIED: '접근 권한이 없는 세션입니다.',
-};
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -58,17 +54,15 @@ export default function ChatPage() {
   const clearInitialMessage = useEffectEvent(() => {
     navigate(location.pathname, { replace: true, state: {} });
   });
-  const handleConnectError = useEffectEvent((error: { response?: { status?: number; data?: { error?: { code?: string; detail?: string } } } }) => {
+  const handleConnectError = useEffectEvent((error: unknown) => {
         logError('ChatPage.connect', error, { sessionId });
 
-        const code = error?.response?.data?.error?.code;
-        const status = (error?.response?.status ?? 0) as number;
-        const knownMessage = SESSION_ERRORS[code ?? ''];
+        const { code, detail, status = 0 } = readApiError(error);
+        const knownMessage = (SESSION_ERRORS.chat as Record<string, string>)[code ?? ''];
         if (knownMessage) {
           setCanRetry(false);
           setSessionError(knownMessage);
         } else if (status >= 500) {
-          const detail = error?.response?.data?.error?.detail;
           setCanRetry(true);
           setSessionError(
             detail

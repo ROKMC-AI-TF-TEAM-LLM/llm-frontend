@@ -56,6 +56,7 @@ features/<기능>/
 
 - `shared/utils/date.ts` — 날짜·시간 표시(`formatDate`·`formatDateTime`·`formatDateTimeLong`·`formatClock`). `toLocale*` 호출은 여기에만 둔다
 - `shared/utils/fileSize.ts` — 파일 크기 표시(`formatFileSize`)
+- `shared/utils/error.ts` — 서버 오류 해석(`getApiError`·`readApiError`·`isNetworkError`, `ApiError` 타입). `response.data.error`를 직접 꺼내지 않는다
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
 
 ## import 쓰는 법

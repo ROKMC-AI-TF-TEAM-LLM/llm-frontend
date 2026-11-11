@@ -6,7 +6,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { clearCache } from '@/features/chat/store'
 import { showToast } from '@/shared/store/toastStore'
-import { displaySessionTitle } from './utils'
+import { getApiError } from '@/shared/utils/error'
+import { displaySessionTitle, SESSION_ERRORS } from './utils'
 
 const SESSIONS_INFINITE_KEY = ['sessions', 'infinite'] as const
 
@@ -14,16 +15,8 @@ const SESSIONS_INFINITE_KEY = ['sessions', 'infinite'] as const
 // 마지막으로 끝난 것만 목록을 다시 받아, 중간 상태 응답이 화면을 되돌리지 않게 한다.
 const SESSION_MUTATION_PREFIX = ['sessions', 'mutate'] as const
 
-const SESSION_ERRORS: Record<string, string> = {
-  SESSION_NOT_FOUND: '이미 삭제된 대화입니다.',
-  SESSION_ACCESS_DENIED: '접근 권한이 없습니다.',
-  UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
-}
-
-export const getSessionErrorMessage = (error: unknown, fallback = '오류가 발생했습니다.'): string => {
-  const code = (error as { response?: { data?: { error?: { code?: string } } } })?.response?.data?.error?.code
-  return (code ? SESSION_ERRORS[code] : undefined) ?? fallback
-}
+export const getSessionErrorMessage = (error: unknown, fallback = '오류가 발생했습니다.'): string =>
+  getApiError(error, SESSION_ERRORS.mutation, {}, fallback)
 
 // onSettled 시점의 mutation은 아직 pending으로 집계되므로 1이면 '내가 마지막'이다. 실패 시(force)엔 항상 다시 받는다.
 const settleSessions = (queryClient: ReturnType<typeof useQueryClient>, force = false) => {

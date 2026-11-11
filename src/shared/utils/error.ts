@@ -1,4 +1,6 @@
 export type ApiError = {
+  /** axios가 붙이는 코드 (예: 시간 초과 'ECONNABORTED'). 서버 오류 코드와 다르다 */
+  code?: string
   response?: {
     status?: number
     data?: {
@@ -10,15 +12,19 @@ export type ApiError = {
   }
 }
 
+/** 서버 응답에서 오류 코드·설명·HTTP 상태를 꺼낸다. 응답이 없으면(네트워크 오류) 모두 undefined */
+export const readApiError = (error: unknown): { code?: string; detail?: string; status?: number } => {
+  const response = (error as ApiError)?.response
+  return { code: response?.data?.error?.code, detail: response?.data?.error?.detail, status: response?.status }
+}
+
 export const getApiError = (
   error: unknown,
   codeMap: Record<string, string> = {},
   statusMap: Record<number, string> = {},
   fallback = '오류가 발생했습니다.',
 ): string => {
-  const err = error as ApiError
-  const code = err?.response?.data?.error?.code
-  const status = err?.response?.status
+  const { code, status } = readApiError(error)
 
   if (code && codeMap[code]) return codeMap[code]
   if (status && statusMap[status]) return statusMap[status]

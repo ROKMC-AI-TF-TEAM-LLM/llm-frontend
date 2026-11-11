@@ -13,6 +13,7 @@ import type {
 } from './types'
 import { useAuth } from '@/features/auth/useAuth'
 import { showToast } from '@/shared/store/toastStore'
+import { isNetworkError, readApiError, type ApiError } from '@/shared/utils/error'
 
 // 프로젝트 목록·상세의 단일 출처는 React Query 캐시다.
 // (예전에는 zustand 스토어에 복사해 썼는데, 서버 응답이 올 때마다 스토어를 통째로 덮어써
@@ -257,7 +258,7 @@ export const useDeleteProject = () => {
     onError: (e, _projectId, ctx) => {
       rollback(queryClient, ctx?.snapshots)
       // 삭제 요청 직후 화면을 떠나므로 실패를 알리지 않으면 사용자는 알 수 없다.
-      const detail = (e as { response?: { data?: { error?: { detail?: string } } } })?.response?.data?.error?.detail
+      const { detail } = readApiError(e)
       showToast(detail ? `프로젝트를 삭제하지 못했습니다. (${detail})` : '프로젝트를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.')
     },
     onSettled: (_d, e) => {
@@ -318,9 +319,7 @@ export const useUploadProjectDocument = (projectId: string) => {
     },
     // 훅 레벨 콜백이라 업로드 중 페이지를 떠나도 실패를 알린다.
     onError: (e, file) => {
-      const err = e as { code?: string; response?: { data?: { error?: { code?: string; detail?: string } } } }
-      const code = err?.response?.data?.error?.code
-      const detail = err?.response?.data?.error?.detail
+      const { code, detail } = readApiError(e)
       const fallback =
         code === 'FILE_TOO_LARGE'
           ? '파일이 너무 커서 업로드할 수 없습니다. (최대 50MB)'
@@ -328,9 +327,9 @@ export const useUploadProjectDocument = (projectId: string) => {
             ? '지원하지 않는 파일입니다. (.md, .txt, .pdf)'
             : code === 'LLM_SERVER_ERROR'
               ? '문서 처리 서버에 일시적인 오류가 발생했습니다.'
-              : err?.code === 'ECONNABORTED'
+              : (e as ApiError)?.code === 'ECONNABORTED'
                 ? '업로드 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.'
-                : !err?.response
+                : isNetworkError(e)
                   ? '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
                   : '업로드에 실패했습니다. 잠시 후 다시 시도해주세요.'
       showToast(`'${file.name}' ${detail ?? fallback}`)
@@ -365,9 +364,7 @@ export const useDeleteProjectDocument = (projectId: string) => {
       queryClient.invalidateQueries({ queryKey: ['projects', 'documents', projectId] })
     },
     onError: (e) => {
-      const err = e as { response?: { data?: { error?: { code?: string; detail?: string } } } }
-      const code = err?.response?.data?.error?.code
-      const detail = err?.response?.data?.error?.detail
+      const { code, detail } = readApiError(e)
       if (code === 'DOCUMENT_NOT_FOUND') {
         // 이미 지워진 파일: 목록만 맞춘다.
         showToast('이미 삭제된 파일입니다.')
@@ -379,7 +376,7 @@ export const useDeleteProjectDocument = (projectId: string) => {
           ? '파일을 처리(색인)하는 중이라 삭제할 수 없습니다. 처리가 끝난 뒤 다시 시도해주세요.'
           : code === 'LLM_SERVER_ERROR'
             ? '문서 처리 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-            : !err?.response
+            : isNetworkError(e)
               ? '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
               : '파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.'
       showToast(detail ? `파일을 삭제하지 못했습니다. (${detail})` : fallback)

@@ -28,15 +28,11 @@ import {
 } from '../components/parts'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { useMutationState, useQueryClient } from '@tanstack/react-query'
-import { isNetworkError } from '@/shared/utils/error'
+import { isNetworkError, readApiError } from '@/shared/utils/error'
+import { SESSION_ERRORS } from '@/features/sessions/utils'
 import { logError } from '@/shared/utils/logError'
 import { AI_NOTICE } from '@/shared/constants'
 import { formatClock } from '@/shared/utils/date'
-
-const SESSION_ERRORS: Record<string, string> = {
-  SESSION_NOT_FOUND: '존재하지 않는 대화입니다.',
-  SESSION_ACCESS_DENIED: '접근 권한이 없는 대화입니다.',
-}
 
 function PollingDocRow({
   projectId,
@@ -104,16 +100,14 @@ export default function ProjectPage() {
       .catch((e) => {
         if (cancelled) return
         logError('ProjectPage.connect', e, { projectId: id, chatId })
-        const code = e?.response?.data?.error?.code as string | undefined
-        const status = (e?.response?.status ?? 0) as number
-        const known = code ? SESSION_ERRORS[code] : undefined
+        const { code, detail, status = 0 } = readApiError(e)
+        const known = code ? (SESSION_ERRORS.project as Record<string, string>)[code] : undefined
         if (known) {
           // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
           showToast(known)
           queryClient.invalidateQueries({ queryKey: ['projects', 'sessions', id] })
           navigate(`/projects/${id}`, { replace: true })
         } else if (status >= 500) {
-          const detail = e?.response?.data?.error?.detail as string | undefined
           setConnectError({
             chatId,
             message: detail
@@ -226,8 +220,7 @@ export default function ProjectPage() {
   const handleRetryDoc = (documentId: string) => {
     retryDoc(documentId, {
       onError: (e) => {
-        const err = e as { response?: { data?: { error?: { detail?: string } } } }
-        const detail = err?.response?.data?.error?.detail
+        const { detail } = readApiError(e)
         window.alert(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해 주세요.')
       },
     })
