@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
+import { AI_NOTICE } from '@/shared/constants'
 import DomainIcon from '@/features/domains/components/DomainIcon'
 import LandingFooter from '../components/LandingFooter'
 import PageNav from '../components/PageNav'
@@ -202,7 +203,7 @@ function Step01Mock() {
           </div>
         </div>
         <div className="mt-3.5 text-center text-[11.5px] text-[#c2b5ba]">
-          MARS v1.0.0은 AI이므로 실수를 할 수 있습니다.
+          {AI_NOTICE}
         </div>
       </div>
     </div>

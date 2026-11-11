@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, GUIDE_EXTRAS } from './guideSections'
 import { setPostLoginRedirect } from '@/shared/utils/postLoginRedirect'
+import { APP_VERSION } from '@/shared/constants'
 import { TUTORIALS } from '@/features/tutorials/tutorials'
 
 export default function LandingFooter({ onStart }: { onStart?: () => void }) {
@@ -83,7 +84,7 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
       </div>
 
       <div className="mars-footer-bottom">
-        <span className="mars-footer-ver">MARS v1.0.0</span>
+        <span className="mars-footer-ver">MARS v{APP_VERSION}</span>
         <span className="mars-footer-disclaim">
           본 시스템은 군 내부 업무 참고용 인공지능이며, 생성된 답변에 오류가
           있을 수 있습니다.

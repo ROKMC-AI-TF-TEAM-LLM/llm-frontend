@@ -15,6 +15,7 @@ import {
   DEFAULT_STATUS_ERRORS,
 } from '@/shared/utils/error'
 import { logError } from '@/shared/utils/logError'
+import { APP_VERSION } from '@/shared/constants'
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i
 
@@ -308,7 +309,7 @@ export function AuthPanel({
             해병대사 지휘통신참모처 지능정보화발전과 AI DATA TF
           </p>
           <p className="mt-2 text-[11px] tracking-wide mars-brand-serif text-text-muted">
-            MARS v1.0.0
+            MARS v{APP_VERSION}
           </p>
         </div>
       </div>

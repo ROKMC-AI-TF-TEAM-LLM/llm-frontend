@@ -1,4 +1,5 @@
 import type { Ref } from 'react'
+import { AI_NOTICE } from '@/shared/constants'
 import KeywordConstellation from '@/features/team/components/KeywordConstellation'
 import { DOMAIN_ROWS } from '@/features/team/teamContent'
 
@@ -410,8 +411,7 @@ export function IntroSections({
                 </div>
               </div>
               <div className="text-center pb-5 text-[13px] text-text-muted">
-                MARS는 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차
-                확인하십시오.
+                {AI_NOTICE}
               </div>
             </div>
           </div>
