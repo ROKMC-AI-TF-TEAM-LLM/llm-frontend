@@ -1,0 +1,5 @@
+# 코드 의미를 바꾸지 않는 대량 포맷 커밋. git blame에서 건너뛴다.
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Prettier 전체 포맷 적용
+4604372a279879acad1fe8cbd8d2cc11ce21c004
