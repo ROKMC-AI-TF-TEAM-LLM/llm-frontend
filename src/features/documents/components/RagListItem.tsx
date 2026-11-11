@@ -25,14 +25,22 @@ const RagListItem = ({ doc, onClick }: RagListItemProps) => {
 
       <div
         className="shrink-0 flex items-center justify-center"
-        style={{ width: 40, height: 40, borderRadius: 11, background: style.badgeBg, color: style.bar }}
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 11,
+          background: style.badgeBg,
+          color: style.bar,
+        }}
       >
         <DocumentIcon width="19" height="19" />
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="min-w-0 truncate text-15 font-bold text-text-primary">{doc.name}</span>
+          <span className="min-w-0 truncate text-15 font-bold text-text-primary">
+            {doc.name}
+          </span>
           {doc.type && (
             <span className="shrink-0 text-11 font-medium px-2 py-0.5 rounded-md bg-surface-subtle text-text-secondary">
               {doc.type}
@@ -48,7 +56,9 @@ const RagListItem = ({ doc, onClick }: RagListItemProps) => {
           )}
         </div>
         {doc.owning_department && (
-          <p className="mt-1 text-13 text-text-secondary truncate">{doc.owning_department}</p>
+          <p className="mt-1 text-13 text-text-secondary truncate">
+            {doc.owning_department}
+          </p>
         )}
       </div>
 

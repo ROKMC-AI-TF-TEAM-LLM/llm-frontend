@@ -1,13 +1,39 @@
-import type { AdminUserItem, UserData, UserStatus } from '@/features/users/types'
+import type {
+  AdminUserItem,
+  UserData,
+  UserStatus,
+} from '@/features/users/types'
 import { db, ME_ID, now } from '../db'
-import { cursorPage, del, fail, get, ok, patch, type MockRoute } from '../server'
+import {
+  cursorPage,
+  del,
+  fail,
+  get,
+  ok,
+  patch,
+  type MockRoute,
+} from '../server'
 
-const findUser = (userId: string) => db.users.find((user) => user.user_id === userId)
+const findUser = (userId: string) =>
+  db.users.find((user) => user.user_id === userId)
 
 const notFound = () => fail(404, 'USER_NOT_FOUND', '사용자를 찾을 수 없습니다.')
 
-const toListItem = ({ user_id, name, email, role, status, created_at }: UserData): AdminUserItem =>
-  ({ user_id, name, email, role, status, created_at })
+const toListItem = ({
+  user_id,
+  name,
+  email,
+  role,
+  status,
+  created_at,
+}: UserData): AdminUserItem => ({
+  user_id,
+  name,
+  email,
+  role,
+  status,
+  created_at,
+})
 
 const setStatus = (userId: string, status: UserStatus) => {
   const user = findUser(userId)
@@ -26,10 +52,12 @@ export const userRoutes: MockRoute[] = [
     const role = query.get('role')
     const status = query.get('status')
     const search = query.get('search') ?? ''
-    const users = db.users.filter((user) =>
-      (!role || user.role === role) &&
-      (!status || user.status === status) &&
-      (user.name.includes(search) || user.email.includes(search)))
+    const users = db.users.filter(
+      (user) =>
+        (!role || user.role === role) &&
+        (!status || user.status === status) &&
+        (user.name.includes(search) || user.email.includes(search)),
+    )
     return ok(cursorPage(users.map(toListItem), query))
   }),
 
@@ -38,8 +66,12 @@ export const userRoutes: MockRoute[] = [
     return user ? ok(user) : notFound()
   }),
 
-  patch('/admin/users/:userId/approve', ({ params }) => setStatus(params.userId, 'approved')),
-  patch('/admin/users/:userId/reject', ({ params }) => setStatus(params.userId, 'rejected')),
+  patch('/admin/users/:userId/approve', ({ params }) =>
+    setStatus(params.userId, 'approved'),
+  ),
+  patch('/admin/users/:userId/reject', ({ params }) =>
+    setStatus(params.userId, 'rejected'),
+  ),
 
   del('/admin/users/:userId', ({ params }) => {
     const index = db.users.findIndex((user) => user.user_id === params.userId)

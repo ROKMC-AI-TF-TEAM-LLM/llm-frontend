@@ -34,7 +34,11 @@ export function ProjectDocRow({
     >
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] ${
-          deleting ? 'bg-red-50 text-red-400' : failedLook ? 'bg-red-100 text-red-500' : 'bg-brand-subtle text-brand'
+          deleting
+            ? 'bg-red-50 text-red-400'
+            : failedLook
+              ? 'bg-red-100 text-red-500'
+              : 'bg-brand-subtle text-brand'
         }`}
       >
         {isBusy || deleting ? (
@@ -49,7 +53,10 @@ export function ProjectDocRow({
         >
           {doc.name}
         </span>
-        <span className="mt-0.5 block text-11 text-text-muted" aria-live="polite">
+        <span
+          className="mt-0.5 block text-11 text-text-muted"
+          aria-live="polite"
+        >
           {deleting ? (
             <DeletingStatus />
           ) : isBusy ? (
@@ -71,7 +78,12 @@ export function ProjectDocRow({
         </button>
       )}
       {onDelete && (
-        <IconButton label="파일 제거" danger onClick={onDelete} disabled={deleting}>
+        <IconButton
+          label="파일 제거"
+          danger
+          onClick={onDelete}
+          disabled={deleting}
+        >
           <CloseIcon className="h-3.5 w-3.5" strokeWidth={2.2} />
         </IconButton>
       )}
@@ -84,7 +96,10 @@ function DeletingStatus() {
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     const started = Date.now()
-    const t = window.setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000)
+    const t = window.setInterval(
+      () => setElapsed(Math.floor((Date.now() - started) / 1000)),
+      1000,
+    )
     return () => window.clearInterval(t)
   }, [])
   if (elapsed < 3) return <>삭제 중...</>
@@ -92,15 +107,26 @@ function DeletingStatus() {
 }
 
 // 서버 응답 전(전송 중)인 파일. 응답 후에는 목록에 실제 행(색인 중)이 나타난다.
-export function UploadingDocRow({ name, size }: { name: string; size: number }) {
+export function UploadingDocRow({
+  name,
+  size,
+}: {
+  name: string
+  size: number
+}) {
   const sizeText = formatFileSize(size)
   return (
-    <div className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 opacity-60" aria-live="polite">
+    <div
+      className="flex items-center gap-2.5 rounded-[10px] px-2 py-2 opacity-60"
+      aria-live="polite"
+    >
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-brand-subtle text-brand">
         <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-13 font-medium text-text-primary">{name}</span>
+        <span className="block truncate text-13 font-medium text-text-primary">
+          {name}
+        </span>
         <span className="mt-0.5 block text-11 text-text-muted">
           업로드 중...{sizeText ? ` · ${sizeText}` : ''}
         </span>

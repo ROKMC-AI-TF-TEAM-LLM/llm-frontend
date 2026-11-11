@@ -16,10 +16,14 @@ export const useDocumentLookup = (enabled: boolean) => {
   const { accessToken } = useAuth()
   const query = useInfiniteQuery({
     queryKey: ['document-lookup'],
-    queryFn: ({ pageParam }) => getDocuments({ offset: pageParam as number, limit: LOOKUP_LIMIT }),
+    queryFn: ({ pageParam }) =>
+      getDocuments({ offset: pageParam as number, limit: LOOKUP_LIMIT }),
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce((acc, p) => acc + pickDocuments(p.data.data).length, 0)
+      return allPages.reduce(
+        (acc, p) => acc + pickDocuments(p.data.data).length,
+        0,
+      )
     },
     initialPageParam: 0,
     enabled: enabled && !!accessToken,
@@ -49,10 +53,17 @@ export const useInfiniteDocuments = (domain?: string) => {
   return useInfiniteQuery({
     queryKey: ['documents', domain ?? 'all'],
     queryFn: ({ pageParam }) =>
-      getDocuments({ offset: pageParam as number, limit: LIMIT, ...(domain ? { domain } : {}) }),
+      getDocuments({
+        offset: pageParam as number,
+        limit: LIMIT,
+        ...(domain ? { domain } : {}),
+      }),
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce((acc, p) => acc + pickDocuments(p.data.data).length, 0)
+      return allPages.reduce(
+        (acc, p) => acc + pickDocuments(p.data.data).length,
+        0,
+      )
     },
     initialPageParam: 0,
     enabled: !!accessToken,
@@ -73,13 +84,16 @@ export const useDomainCapabilities = (enabled = true) => {
 
   const { documents, isLoading: docsLoading } = useDocumentLookup(enabled)
 
-  const allDomains: DomainCapability[] | undefined = capQuery.data?.data.data.domains
+  const allDomains: DomainCapability[] | undefined =
+    capQuery.data?.data.data.domains
 
   const domains = useMemo(() => {
     const caps = allDomains ?? []
     if (caps.length === 0) return []
     if (documents.length === 0) return []
-    const present = new Set(documents.map((d) => d.domain).filter((v): v is string => !!v))
+    const present = new Set(
+      documents.map((d) => d.domain).filter((v): v is string => !!v),
+    )
     return caps.filter((d) => present.has(d.code))
   }, [allDomains, documents])
 

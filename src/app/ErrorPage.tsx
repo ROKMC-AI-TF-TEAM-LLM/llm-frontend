@@ -5,10 +5,14 @@ const ErrorPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-10">
-      <h1 className="mars-display text-3xl font-semibold text-text-primary">페이지를 찾을 수 없습니다.</h1>
+      <h1 className="mars-display text-3xl font-semibold text-text-primary">
+        페이지를 찾을 수 없습니다.
+      </h1>
       <div className="flex gap-8">
         <button
-          onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')}
+          onClick={() =>
+            window.history.length > 1 ? navigate(-1) : navigate('/')
+          }
           className="w-32 py-3 rounded-xl border border-brand text-brand font-medium hover:bg-brand/5 transition-colors"
         >
           이전

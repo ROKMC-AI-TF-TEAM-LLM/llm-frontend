@@ -13,9 +13,15 @@ export type ApiError = {
 }
 
 /** 서버 응답에서 오류 코드·설명·HTTP 상태를 꺼낸다. 응답이 없으면(네트워크 오류) 모두 undefined */
-export const readApiError = (error: unknown): { code?: string; detail?: string; status?: number } => {
+export const readApiError = (
+  error: unknown,
+): { code?: string; detail?: string; status?: number } => {
   const response = (error as ApiError)?.response
-  return { code: response?.data?.error?.code, detail: response?.data?.error?.detail, status: response?.status }
+  return {
+    code: response?.data?.error?.code,
+    detail: response?.data?.error?.detail,
+    status: response?.status,
+  }
 }
 
 export const getApiError = (

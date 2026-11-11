@@ -12,5 +12,4 @@ export interface HealthResponse {
   error: { code: string; detail: string } | null
 }
 
-export const getHealth = () =>
-  backendApi.get<HealthResponse>('/api/v1/health')
+export const getHealth = () => backendApi.get<HealthResponse>('/api/v1/health')

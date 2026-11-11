@@ -24,7 +24,10 @@ const handle = createServer([
 ])
 
 const urlOf = (input: RequestInfo | URL) =>
-  new URL(input instanceof Request ? input.url : String(input), window.location.href)
+  new URL(
+    input instanceof Request ? input.url : String(input),
+    window.location.href,
+  )
 
 export function installMock() {
   const realFetch = window.fetch.bind(window)
@@ -37,5 +40,7 @@ export function installMock() {
   // axios 기본 어댑터(XHR)는 fetch를 거치지 않으므로 fetch 어댑터로 바꾼다.
   backendApi.defaults.adapter = 'fetch'
 
-  console.info('[mock] 백엔드 없이 실행 중입니다. 응답은 src/mock/handlers에서 수정할 수 있습니다.')
+  console.info(
+    '[mock] 백엔드 없이 실행 중입니다. 응답은 src/mock/handlers에서 수정할 수 있습니다.',
+  )
 }

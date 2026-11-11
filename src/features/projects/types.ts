@@ -83,7 +83,8 @@ export interface SetProjectFavoriteRequest {
 }
 export type SetProjectFavoriteResponse = ProjectMutationResponse
 
-export type ProjectLlmMutationErrorCode = ProjectMutationErrorCode | 'CONFLICT' | 'LLM_SERVER_ERROR'
+export type ProjectLlmMutationErrorCode =
+  ProjectMutationErrorCode | 'CONFLICT' | 'LLM_SERVER_ERROR'
 
 export interface SetProjectInstructionRequest {
   instructions: string | null
@@ -125,7 +126,8 @@ export interface GetProjectSessionsResponse {
   error: { code: ProjectMutationErrorCode; detail: string } | null
 }
 
-export type ProjectDocStatus = 'not_indexed' | 'pending' | 'queued' | 'running' | 'done' | 'error'
+export type ProjectDocStatus =
+  'not_indexed' | 'pending' | 'queued' | 'running' | 'done' | 'error'
 
 export interface ProjectDocument {
   document_id: string

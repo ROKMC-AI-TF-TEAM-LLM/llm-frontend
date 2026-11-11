@@ -18,7 +18,9 @@ export default function TutorialPage() {
   if (!tutorial) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6">
-        <p className="text-[15px] font-semibold text-text-primary">튜토리얼을 찾을 수 없습니다.</p>
+        <p className="text-[15px] font-semibold text-text-primary">
+          튜토리얼을 찾을 수 없습니다.
+        </p>
         <button
           type="button"
           onClick={() => navigate('/tutorials')}
@@ -36,7 +38,10 @@ export default function TutorialPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(180deg,#fdf6f8 0%,#ffffff 20%,#ffffff 100%)' }}
+      style={{
+        background:
+          'linear-gradient(180deg,#fdf6f8 0%,#ffffff 20%,#ffffff 100%)',
+      }}
     >
       <TutorialHeader />
 
@@ -79,10 +84,15 @@ export default function TutorialPage() {
       </div>
 
       <div className="mx-auto max-w-[1160px] px-[6vw] pb-20 lg:px-8">
-        <VideoSlot title={tutorial.title} tint={tutorial.tint} videoUrl={tutorial.videoUrl} />
+        <VideoSlot
+          title={tutorial.title}
+          tint={tutorial.tint}
+          videoUrl={tutorial.videoUrl}
+        />
         <p className="mt-4 text-[12px] leading-[1.7] text-text-muted">
-          본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는 부대·문서·상황은
-          실제와 무관하며, 예시로 나오는 규정 내용은 실제 규정을 대신할 수 없습니다.
+          본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는
+          부대·문서·상황은 실제와 무관하며, 예시로 나오는 규정 내용은 실제
+          규정을 대신할 수 없습니다.
         </p>
       </div>
 
@@ -102,7 +112,9 @@ export default function TutorialPage() {
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[15.5px] font-bold text-text-primary">{c.title}</p>
+                  <p className="text-[15.5px] font-bold text-text-primary">
+                    {c.title}
+                  </p>
                   <p className="mt-1.5 text-[13.5px] leading-[1.75] text-text-secondary break-keep">
                     {c.desc}
                   </p>
@@ -114,16 +126,23 @@ export default function TutorialPage() {
 
         <Reveal delay={80}>
           <div
-            style={{ background: 'linear-gradient(160deg,#fdf3f5 0%,#fffdfd 100%)' }}
+            style={{
+              background: 'linear-gradient(160deg,#fdf3f5 0%,#fffdfd 100%)',
+            }}
             className="mt-14 rounded-[18px] border border-[#f2e2e6] px-8 py-9 text-center"
           >
             <p className="text-[19px] font-bold tracking-[-0.01em] mars-brand-serif text-text-primary break-keep">
               직접 해보는 게 가장 빠릅니다
             </p>
             <p className="mx-auto mt-3 max-w-[420px] text-[13.5px] leading-[1.7] text-text-secondary break-keep">
-              지금 MARS에서 방금 본 내용을 그대로 따라 해보세요. 몇 분이면 충분합니다.
+              지금 MARS에서 방금 본 내용을 그대로 따라 해보세요. 몇 분이면
+              충분합니다.
             </p>
-            <button type="button" onClick={() => navigate('/')} className="mars-pill mars-pill-brand mt-6">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="mars-pill mars-pill-brand mt-6"
+            >
               MARS 시작하기 <span aria-hidden>→</span>
             </button>
           </div>
@@ -140,7 +159,10 @@ export default function TutorialPage() {
           <div className="mx-auto mt-11 grid max-w-[1100px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((t, i) => (
               <Reveal key={t.slug} delay={i * 70} className="flex">
-                <TutorialCard tutorial={t} onOpen={() => navigate(`/tutorials/${t.slug}`)} />
+                <TutorialCard
+                  tutorial={t}
+                  onOpen={() => navigate(`/tutorials/${t.slug}`)}
+                />
               </Reveal>
             ))}
           </div>
@@ -158,7 +180,9 @@ function MetaItem({ label, value }: { label: string; value: string }) {
       <dt className="text-[11.5px] font-extrabold uppercase tracking-[0.12em] text-[#c9aab2]">
         {label}
       </dt>
-      <dd className="mt-1.5 text-[14.5px] font-semibold text-text-primary">{value}</dd>
+      <dd className="mt-1.5 text-[14.5px] font-semibold text-text-primary">
+        {value}
+      </dd>
     </div>
   )
 }
@@ -199,12 +223,20 @@ function VideoSlot({
       className="tut-slot group flex w-full flex-col items-center justify-center rounded-[20px]"
     >
       <span className="tut-play flex h-[74px] w-[74px] items-center justify-center rounded-full bg-white/90 shadow-[0_10px_30px_rgba(60,20,30,0.12)]">
-        <svg className="ml-1 h-7 w-7 text-brand" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          className="ml-1 h-7 w-7 text-brand"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M8 5.5v13l11-6.5z" />
         </svg>
       </span>
-      <p className="mt-6 text-[15px] font-bold text-text-primary">영상 준비 중입니다</p>
-      <p className="mt-1.5 text-[13px] text-text-secondary">제작이 끝나면 이 자리에 바로 올라갑니다.</p>
+      <p className="mt-6 text-[15px] font-bold text-text-primary">
+        영상 준비 중입니다
+      </p>
+      <p className="mt-1.5 text-[13px] text-text-secondary">
+        제작이 끝나면 이 자리에 바로 올라갑니다.
+      </p>
     </div>
   )
 }

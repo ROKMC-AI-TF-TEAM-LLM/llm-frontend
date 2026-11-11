@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { type Message, type Source, noticeFromCode } from './types';
-import type { FileAttachment } from '@/shared/types/attachment';
-import { normalizeSource } from './api';
-import { uuid } from '@/shared/utils/uuid';
-import { getDomainLabel } from '@/features/domains/utils';
+import axios from 'axios'
+import { type Message, type Source, noticeFromCode } from './types'
+import type { FileAttachment } from '@/shared/types/attachment'
+import { normalizeSource } from './api'
+import { uuid } from '@/shared/utils/uuid'
+import { getDomainLabel } from '@/features/domains/utils'
 
 export const isAbortError = (e: unknown) =>
   (e instanceof DOMException && e.name === 'AbortError') || axios.isCancel(e)
@@ -60,7 +60,11 @@ const extractContent = (raw: string, _depth = 0): string => {
     }
     const slice = raw.slice(i, j)
     let text: string | undefined
-    try { text = pickText(JSON.parse(slice)) } catch { text = undefined }
+    try {
+      text = pickText(JSON.parse(slice))
+    } catch {
+      text = undefined
+    }
     parts.push(text !== undefined ? extractContent(text, _depth + 1) : slice)
     i = j
   }
@@ -68,14 +72,19 @@ const extractContent = (raw: string, _depth = 0): string => {
 }
 
 type ServerMessage = {
-  message_id?: string; role: 'human' | 'ai'; content: string; created_at?: string;
-  domain?: string | null; sources?: Source[]; attachments?: FileAttachment[];
-  notice_code?: string | null;
-};
+  message_id?: string
+  role: 'human' | 'ai'
+  content: string
+  created_at?: string
+  domain?: string | null
+  sources?: Source[]
+  attachments?: FileAttachment[]
+  notice_code?: string | null
+}
 
 export const mapServerMessages = (items: ServerMessage[]): Message[] => {
   const mapped: Message[] = items.map((m) => {
-    const domainCode = m.role === 'human' && m.domain ? m.domain : undefined;
+    const domainCode = m.role === 'human' && m.domain ? m.domain : undefined
     return {
       id: m.message_id || uuid(),
       role: m.role === 'human' ? 'user' : 'assistant',
@@ -83,34 +92,51 @@ export const mapServerMessages = (items: ServerMessage[]): Message[] => {
       content: extractContent(m.content),
       status: 'done' as const,
       createdAt: m.created_at,
-      ...(domainCode ? { domainCode, domainLabel: getDomainLabel(domainCode) } : {}),
+      ...(domainCode
+        ? { domainCode, domainLabel: getDomainLabel(domainCode) }
+        : {}),
       ...(m.sources && m.sources.length > 0
         ? { sources: m.sources.map(normalizeSource) }
         : {}),
-      ...(m.attachments && m.attachments.length > 0 ? { attachments: m.attachments } : {}),
-      ...(m.role === 'ai' && m.notice_code ? { notice: noticeFromCode(m.notice_code) } : {}),
-    };
-  });
+      ...(m.attachments && m.attachments.length > 0
+        ? { attachments: m.attachments }
+        : {}),
+      ...(m.role === 'ai' && m.notice_code
+        ? { notice: noticeFromCode(m.notice_code) }
+        : {}),
+    }
+  })
 
-  const timeOf = (s?: string) => { const n = s ? Date.parse(s) : NaN; return Number.isNaN(n) ? 0 : n; };
-  const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1);
+  const timeOf = (s?: string) => {
+    const n = s ? Date.parse(s) : NaN
+    return Number.isNaN(n) ? 0 : n
+  }
+  const roleRank = (r: 'user' | 'assistant') => (r === 'user' ? 0 : 1)
   const ordered = [...mapped].sort((a, b) => {
-    const ta = timeOf(a.createdAt), tb = timeOf(b.createdAt);
-    if (ta !== tb) return ta - tb;
-    return roleRank(a.role) - roleRank(b.role);
-  });
+    const ta = timeOf(a.createdAt),
+      tb = timeOf(b.createdAt)
+    if (ta !== tb) return ta - tb
+    return roleRank(a.role) - roleRank(b.role)
+  })
 
   const deduped = ordered.filter((msg, i) => {
-    if (i === 0) return true;
-    const prev = ordered[i - 1];
+    if (i === 0) return true
+    const prev = ordered[i - 1]
     return !(
       msg.role === prev.role &&
-      msg.type === 'text' && prev.type === 'text' &&
-      msg.content === prev.content && msg.createdAt === prev.createdAt
-    );
-  });
+      msg.type === 'text' &&
+      prev.type === 'text' &&
+      msg.content === prev.content &&
+      msg.createdAt === prev.createdAt
+    )
+  })
 
   return deduped.filter(
-    (msg) => !(msg.role === 'assistant' && msg.type === 'text' && msg.content.trim() === '')
-  );
-};
+    (msg) =>
+      !(
+        msg.role === 'assistant' &&
+        msg.type === 'text' &&
+        msg.content.trim() === ''
+      ),
+  )
+}

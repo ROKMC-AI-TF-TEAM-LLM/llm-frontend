@@ -11,14 +11,23 @@ export default function TutorialsPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(180deg,#fdf6f8 0%,#ffffff 22%,#ffffff 100%)' }}
+      style={{
+        background:
+          'linear-gradient(180deg,#fdf6f8 0%,#ffffff 22%,#ffffff 100%)',
+      }}
     >
       <TutorialHeader />
 
       <div className="relative overflow-hidden">
         <div
           className="mars-glow-bg"
-          style={{ width: 520, height: 520, top: -260, left: '50%', marginLeft: -260 }}
+          style={{
+            width: 520,
+            height: 520,
+            top: -260,
+            left: '50%',
+            marginLeft: -260,
+          }}
         />
         <div className="relative mx-auto max-w-[820px] px-[6vw] pt-20 pb-16 text-center">
           <Reveal>
@@ -27,8 +36,8 @@ export default function TutorialsPage() {
               MARS <span className="text-brand">튜토리얼</span>
             </h1>
             <p className="mx-auto mt-6  font-semibold max-w-[1560px] text-[clamp(16px,1.6vw,19px)] leading-[1.7] text-text-secondary break-keep">
-              기능별 사용법을 짧은 영상으로 하나씩 익혀보세요.
-              필요한 것만 골라 봐도 됩니다.
+              기능별 사용법을 짧은 영상으로 하나씩 익혀보세요. 필요한 것만 골라
+              봐도 됩니다.
             </p>
           </Reveal>
         </div>
@@ -38,7 +47,10 @@ export default function TutorialsPage() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           {TUTORIALS.map((t, i) => (
             <Reveal key={t.slug} delay={i * 70} className="flex">
-              <TutorialCard tutorial={t} onOpen={() => navigate(`/tutorials/${t.slug}`)} />
+              <TutorialCard
+                tutorial={t}
+                onOpen={() => navigate(`/tutorials/${t.slug}`)}
+              />
             </Reveal>
           ))}
         </div>

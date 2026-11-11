@@ -1,5 +1,7 @@
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded bg-gray-200 ${className ?? ''}`} />;
+  return (
+    <div className={`animate-pulse rounded bg-gray-200 ${className ?? ''}`} />
+  )
 }
 
 export function SessionItemSkeleton() {
@@ -8,7 +10,7 @@ export function SessionItemSkeleton() {
       <Skeleton className="w-1.5 h-1.5 rounded-full shrink-0" />
       <Skeleton className="h-4 flex-1" />
     </div>
-  );
+  )
 }
 
 export function SidebarSkeleton() {
@@ -19,19 +21,23 @@ export function SidebarSkeleton() {
         <Skeleton className="h-6 w-6" />
       </div>
       <div className="px-3 space-y-1 mt-1">
-        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-9 w-full rounded-lg" />)}
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-9 w-full rounded-lg" />
+        ))}
       </div>
       <div className="px-6 mt-4 mb-2">
         <Skeleton className="h-3 w-16" />
       </div>
       <div className="flex-1 px-3 space-y-0.5 overflow-hidden">
-        {[...Array(7)].map((_, i) => <SessionItemSkeleton key={i} />)}
+        {[...Array(7)].map((_, i) => (
+          <SessionItemSkeleton key={i} />
+        ))}
       </div>
       <div className="px-3 pb-4">
         <Skeleton className="h-10 w-full rounded-xl" />
       </div>
     </div>
-  );
+  )
 }
 
 export function MessagesSkeleton() {
@@ -68,7 +74,7 @@ export function MessagesSkeleton() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function SearchSessionCardSkeleton() {
@@ -80,7 +86,7 @@ export function SearchSessionCardSkeleton() {
       </div>
       <Skeleton className="h-3 w-2/5 ml-10" />
     </div>
-  );
+  )
 }
 
 export function SearchResultSkeleton() {
@@ -92,20 +98,32 @@ export function SearchResultSkeleton() {
         <Skeleton className="h-3 w-2/5" />
       </div>
     </div>
-  );
+  )
 }
 
 export function AdminRowSkeleton() {
   return (
     <tr className="border-b">
-      <td className="px-4 py-3"><Skeleton className="h-4 w-14" /></td>
-      <td className="px-4 py-3"><Skeleton className="h-4 w-36" /></td>
-      <td className="px-4 py-3"><Skeleton className="h-4 w-48" /></td>
-      <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
-      <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
-      <td className="px-4 py-3"><Skeleton className="h-6 w-12 rounded" /></td>
+      <td className="px-4 py-3">
+        <Skeleton className="h-4 w-14" />
+      </td>
+      <td className="px-4 py-3">
+        <Skeleton className="h-4 w-36" />
+      </td>
+      <td className="px-4 py-3">
+        <Skeleton className="h-4 w-48" />
+      </td>
+      <td className="px-4 py-3">
+        <Skeleton className="h-5 w-14 rounded-full" />
+      </td>
+      <td className="px-4 py-3">
+        <Skeleton className="h-4 w-20" />
+      </td>
+      <td className="px-4 py-3">
+        <Skeleton className="h-6 w-12 rounded" />
+      </td>
     </tr>
-  );
+  )
 }
 
 export function SearchPageSkeleton() {
@@ -117,7 +135,10 @@ export function SearchPageSkeleton() {
         <Skeleton className="h-4 w-16 mb-4" />
         <div className="grid grid-cols-2 gap-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex flex-col gap-2 p-4 rounded-2xl border border-surface-border">
+            <div
+              key={i}
+              className="flex flex-col gap-2 p-4 rounded-2xl border border-surface-border"
+            >
               <div className="flex items-center gap-2">
                 <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
                 <Skeleton className="h-4 flex-1" />
@@ -128,7 +149,7 @@ export function SearchPageSkeleton() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function RagRowSkeleton() {
@@ -142,15 +163,17 @@ function RagRowSkeleton() {
       </div>
       <Skeleton className="shrink-0 h-3.5 w-16 rounded" />
     </div>
-  );
+  )
 }
 
 export function RagListSkeleton() {
   return (
     <div className="flex flex-col mt-1">
-      {[...Array(8)].map((_, i) => <RagRowSkeleton key={i} />)}
+      {[...Array(8)].map((_, i) => (
+        <RagRowSkeleton key={i} />
+      ))}
     </div>
-  );
+  )
 }
 
 export function RagPageSkeleton() {
@@ -172,7 +195,7 @@ export function RagPageSkeleton() {
 
       <RagListSkeleton />
     </div>
-  );
+  )
 }
 
 export function AdminPageSkeleton() {
@@ -185,7 +208,9 @@ export function AdminPageSkeleton() {
         <div className="rounded-xl border border-surface-border overflow-hidden">
           <table className="w-full table-fixed text-sm">
             <tbody>
-              {[...Array(2)].map((_, i) => <AdminRowSkeleton key={i} />)}
+              {[...Array(2)].map((_, i) => (
+                <AdminRowSkeleton key={i} />
+              ))}
             </tbody>
           </table>
         </div>
@@ -194,16 +219,20 @@ export function AdminPageSkeleton() {
       <div>
         <Skeleton className="h-5 w-16 mb-3" />
         <div className="flex gap-2 mb-4">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-8 w-16 rounded-full" />)}
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-8 w-16 rounded-full" />
+          ))}
         </div>
         <div className="rounded-xl border border-surface-border overflow-hidden">
           <table className="w-full table-fixed text-sm">
             <tbody>
-              {[...Array(5)].map((_, i) => <AdminRowSkeleton key={i} />)}
+              {[...Array(5)].map((_, i) => (
+                <AdminRowSkeleton key={i} />
+              ))}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  );
+  )
 }

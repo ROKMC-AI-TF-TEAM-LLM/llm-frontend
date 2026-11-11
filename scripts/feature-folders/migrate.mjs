@@ -63,7 +63,8 @@ const MAP = {
   'types/index.ts': 'features/chat/types.ts', // MERGE
   'store/chatStore.ts': 'features/chat/store.ts',
   'ui/components/chat/ChatInput.tsx': 'features/chat/components/ChatInput.tsx',
-  'ui/components/chat/DomainPicker.tsx': 'features/chat/components/DomainPicker.tsx',
+  'ui/components/chat/DomainPicker.tsx':
+    'features/chat/components/DomainPicker.tsx',
   'pages/ChatPage.tsx': 'features/chat/pages/ChatPage.tsx',
   'pages/NewChatPage.tsx': 'features/chat/pages/NewChatPage.tsx',
   // 대화 목록·검색
@@ -83,7 +84,8 @@ const MAP = {
   'api/services/capability.ts': 'features/domains/api.ts',
   'hooks/useCapabilities.ts': 'features/domains/hooks.ts',
   'types/capability.ts': 'features/domains/types.ts',
-  'ui/components/chat/DomainIcon.tsx': 'features/domains/components/DomainIcon.tsx',
+  'ui/components/chat/DomainIcon.tsx':
+    'features/domains/components/DomainIcon.tsx',
   // 프로젝트
   'api/services/project.ts': 'features/projects/api.ts',
   'hooks/useProject.ts': 'features/projects/hooks.ts',
@@ -117,7 +119,8 @@ const MAP = {
   'pages/GuidePage.tsx': 'features/landing/pages/GuidePage.tsx',
   // 팀·튜토리얼
   'features/team/AnchorMark.tsx': 'features/team/components/AnchorMark.tsx',
-  'features/team/KeywordConstellation.tsx': 'features/team/components/KeywordConstellation.tsx',
+  'features/team/KeywordConstellation.tsx':
+    'features/team/components/KeywordConstellation.tsx',
   'features/team/ScrollFade.tsx': 'features/team/components/ScrollFade.tsx',
   'pages/TeamPage.tsx': 'features/team/pages/TeamPage.tsx',
   'features/tutorials/parts.tsx': 'features/tutorials/components/parts.tsx',
@@ -136,7 +139,14 @@ const DIRS = {
 
 /** 기호 단위로 나누는 파일: { 옛 파일: { 새 파일: [기호들] } }. 나머지 기호는 MAP 위치로 */
 const SPLIT = {
-  'utils/document.ts': { 'features/domains/utils.ts': ['DomainStyle', 'getDomainStyle', 'DOMAINS', 'getDomainLabel'] },
+  'utils/document.ts': {
+    'features/domains/utils.ts': [
+      'DomainStyle',
+      'getDomainStyle',
+      'DOMAINS',
+      'getDomainLabel',
+    ],
+  },
   'types/index.ts': { 'shared/types/attachment.ts': ['FileAttachment'] },
 }
 
@@ -161,7 +171,8 @@ walk(SRC)
 
 const target = (old) => {
   if (MAP[old]) return MAP[old]
-  for (const [from, to] of Object.entries(DIRS)) if (old.startsWith(from)) return to + old.slice(from.length)
+  for (const [from, to] of Object.entries(DIRS))
+    if (old.startsWith(from)) return to + old.slice(from.length)
   return old
 }
 const place = (old) => MERGE_TEMP[old] ?? target(old)
@@ -202,41 +213,68 @@ const specFor = (fromNew, toNew) => {
 
 /** `type A, B as C, type D` → [{name:'A', text:'A', type:false}, …] */
 const parseNames = (inner) =>
-  inner.split(',').map((s) => s.trim()).filter(Boolean).map((text) => {
-    const isType = text.startsWith('type ')
-    const name = text.replace(/^type\s+/, '').split(/\s+as\s+/)[0].trim()
-    return { text, name, isType }
-  })
+  inner
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((text) => {
+      const isType = text.startsWith('type ')
+      const name = text
+        .replace(/^type\s+/, '')
+        .split(/\s+as\s+/)[0]
+        .trim()
+      return { text, name, isType }
+    })
 
-const STMT = /(^|\n)([ \t]*)(import|export)(\s+type)?\s+(\{[^}]*\}|[\w$]+(?:\s*,\s*\{[^}]*\})?|\*\s+as\s+[\w$]+|\*)\s+from\s+(['"])([^'"]+)\6(;?)/g
+const STMT =
+  /(^|\n)([ \t]*)(import|export)(\s+type)?\s+(\{[^}]*\}|[\w$]+(?:\s*,\s*\{[^}]*\})?|\*\s+as\s+[\w$]+|\*)\s+from\s+(['"])([^'"]+)\6(;?)/g
 const SIDE = /(^|\n)([ \t]*)import\s+(['"])([^'"]+)\3(;?)/g
 const DYN = /import\(\s*(['"])([^'"]+)\1\s*\)/g
 
 const rewrite = (old, src) => {
   const fromNew = target(old)
-  const fix = (spec) => (spec.startsWith('.') ? specFor(fromNew, target(resolveOld(old, spec))) : spec)
+  const fix = (spec) =>
+    spec.startsWith('.')
+      ? specFor(fromNew, target(resolveOld(old, spec)))
+      : spec
 
-  src = src.replace(STMT, (m, lead, indent, kw, typeKw, clause, q, spec, semi) => {
-    if (!spec.startsWith('.')) return m
-    const oldTarget = resolveOld(old, spec)
-    const split = SPLIT[oldTarget]
-    if (!split || !clause.startsWith('{')) {
-      if (split && !clause.startsWith('{')) throw new Error(`나누는 파일을 기본/전체 import: ${old}`)
-      return `${lead}${indent}${kw}${typeKw ?? ''} ${clause} from ${q}${fix(spec)}${q}${semi}`
-    }
-    // 기호별로 새 파일을 정해 import를 나눈다
-    const groups = new Map()
-    for (const n of parseNames(clause.slice(1, -1))) {
-      const dest = Object.entries(split).find(([, names]) => names.includes(n.name))?.[0] ?? target(oldTarget)
-      if (!groups.has(dest)) groups.set(dest, [])
-      groups.get(dest).push(n.text)
-    }
-    return [...groups.entries()]
-      .map(([dest, names], i) => `${i === 0 ? lead : '\n'}${indent}${kw}${typeKw ?? ''} { ${names.join(', ')} } from ${q}${specFor(fromNew, dest)}${q}${semi}`)
-      .join('')
-  })
-  src = src.replace(SIDE, (m, lead, indent, q, spec, semi) => (spec.startsWith('.') ? `${lead}${indent}import ${q}${fix(spec)}${q}${semi}` : m))
-  src = src.replace(DYN, (m, q, spec) => (spec.startsWith('.') ? `import(${q}${fix(spec)}${q})` : m))
+  src = src.replace(
+    STMT,
+    (m, lead, indent, kw, typeKw, clause, q, spec, semi) => {
+      if (!spec.startsWith('.')) return m
+      const oldTarget = resolveOld(old, spec)
+      const split = SPLIT[oldTarget]
+      if (!split || !clause.startsWith('{')) {
+        if (split && !clause.startsWith('{'))
+          throw new Error(`나누는 파일을 기본/전체 import: ${old}`)
+        return `${lead}${indent}${kw}${typeKw ?? ''} ${clause} from ${q}${fix(spec)}${q}${semi}`
+      }
+      // 기호별로 새 파일을 정해 import를 나눈다
+      const groups = new Map()
+      for (const n of parseNames(clause.slice(1, -1))) {
+        const dest =
+          Object.entries(split).find(([, names]) =>
+            names.includes(n.name),
+          )?.[0] ?? target(oldTarget)
+        if (!groups.has(dest)) groups.set(dest, [])
+        groups.get(dest).push(n.text)
+      }
+      return [...groups.entries()]
+        .map(
+          ([dest, names], i) =>
+            `${i === 0 ? lead : '\n'}${indent}${kw}${typeKw ?? ''} { ${names.join(', ')} } from ${q}${specFor(fromNew, dest)}${q}${semi}`,
+        )
+        .join('')
+    },
+  )
+  src = src.replace(SIDE, (m, lead, indent, q, spec, semi) =>
+    spec.startsWith('.')
+      ? `${lead}${indent}import ${q}${fix(spec)}${q}${semi}`
+      : m,
+  )
+  src = src.replace(DYN, (m, q, spec) =>
+    spec.startsWith('.') ? `import(${q}${fix(spec)}${q})` : m,
+  )
   return src
 }
 
@@ -259,11 +297,13 @@ for (const f of moves) {
   fs.mkdirSync(path.dirname(to), { recursive: true })
   git('mv', path.join('src', f), path.join('src', place(f)))
 }
-for (const [f, text] of Object.entries(out)) fs.writeFileSync(path.join(SRC, place(f)), text)
+for (const [f, text] of Object.entries(out))
+  fs.writeFileSync(path.join(SRC, place(f)), text)
 
 // 빈 폴더 정리
 const prune = (d) => {
-  for (const e of fs.readdirSync(d, { withFileTypes: true })) if (e.isDirectory()) prune(path.join(d, e.name))
+  for (const e of fs.readdirSync(d, { withFileTypes: true }))
+    if (e.isDirectory()) prune(path.join(d, e.name))
   if (d !== SRC && fs.readdirSync(d).length === 0) fs.rmdirSync(d)
 }
 prune(SRC)

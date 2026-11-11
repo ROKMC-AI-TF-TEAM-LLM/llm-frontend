@@ -7,7 +7,13 @@ import { InstructionModal } from './InstructionModal'
 import { SparkIcon } from './icons'
 
 /** 프로젝트 화면 왼쪽 패널의 지침 영역과 편집 모달 */
-export function ProjectInstructionBlock({ instructions, onSave }: { instructions: string; onSave: (instructions: string) => void }) {
+export function ProjectInstructionBlock({
+  instructions,
+  onSave,
+}: {
+  instructions: string
+  onSave: (instructions: string) => void
+}) {
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
@@ -21,9 +27,18 @@ export function ProjectInstructionBlock({ instructions, onSave }: { instructions
           </IconButton>
         }
       >
-        <InstructionBody text={instructions} onEdit={() => setModalOpen(true)} clamp={6} />
+        <InstructionBody
+          text={instructions}
+          onEdit={() => setModalOpen(true)}
+          clamp={6}
+        />
       </Block>
-      <InstructionModal open={modalOpen} initial={instructions} onClose={() => setModalOpen(false)} onSave={onSave} />
+      <InstructionModal
+        open={modalOpen}
+        initial={instructions}
+        onClose={() => setModalOpen(false)}
+        onSave={onSave}
+      />
     </>
   )
 }

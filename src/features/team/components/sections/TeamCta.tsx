@@ -6,7 +6,16 @@ import Placeholder from './Placeholder'
 export default function TeamCta() {
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-[6vw] py-20 text-center">
-      <div className="mars-glow-bg" style={{ width: 560, height: 560, left: '50%', bottom: '-14%', transform: 'translateX(-50%)' }} />
+      <div
+        className="mars-glow-bg"
+        style={{
+          width: 560,
+          height: 560,
+          left: '50%',
+          bottom: '-14%',
+          transform: 'translateX(-50%)',
+        }}
+      />
 
       <AnchorMark
         size={440}

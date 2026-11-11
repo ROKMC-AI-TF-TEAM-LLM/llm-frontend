@@ -1,5 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import { EditIcon, StarAltIcon, StarIcon, TrashIcon } from '@/shared/components/icons'
+import {
+  EditIcon,
+  StarAltIcon,
+  StarIcon,
+  TrashIcon,
+} from '@/shared/components/icons'
 
 // 대화와 프로젝트는 별 모양·색과 아이콘 선 굵기가 조금 다르다. 모양을 바꾸지 않으려고 값만 나눠 둔다 (합칠 후보).
 const LOOK = {
@@ -75,7 +80,11 @@ export default function SidebarItem({
           spellCheck={false}
           value={draft}
           maxLength={maxLength}
-          onChange={(e) => setDraft(maxLength ? e.target.value.slice(0, maxLength) : e.target.value)}
+          onChange={(e) =>
+            setDraft(
+              maxLength ? e.target.value.slice(0, maxLength) : e.target.value,
+            )
+          }
           onBlur={submit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') submit()
@@ -95,7 +104,9 @@ export default function SidebarItem({
         onClick={onOpen}
         title={tooltip}
         className={`flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-13 transition-colors ${
-          isActive ? 'bg-brand-tint font-bold text-brand-deep' : 'font-medium text-text-primary hover:bg-brand-tint hover:text-brand-deep'
+          isActive
+            ? 'bg-brand-tint font-bold text-brand-deep'
+            : 'font-medium text-text-primary hover:bg-brand-tint hover:text-brand-deep'
         }`}
       >
         {icon}
@@ -117,7 +128,11 @@ export default function SidebarItem({
           aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
           className={`${actionClass} hover:bg-brand-subtle ${isFavorite ? look.starOn : look.starOff}`}
         >
-          <look.Star className="h-3 w-3" fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={look.strokeWidth} />
+          <look.Star
+            className="h-3 w-3"
+            fill={isFavorite ? 'currentColor' : 'none'}
+            strokeWidth={look.strokeWidth}
+          />
         </button>
 
         <button

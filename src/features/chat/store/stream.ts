@@ -11,7 +11,10 @@ import { messageCache, clearCache, clearInflight } from '../storage'
 import { invalidateSessionLists, streamRegistry } from './runtime'
 import type { ChatStore } from './types'
 
-export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: StoreApi<ChatStore>['getState']) => {
+export const createStreamRunners = (
+  set: StoreApi<ChatStore>['setState'],
+  get: StoreApi<ChatStore>['getState'],
+) => {
   const createWriter = (sessionId: string, assistantId: string) => {
     let buffer = ''
     let flushTimer: ReturnType<typeof setTimeout> | null = null
@@ -19,15 +22,22 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
       if (get().sessionId !== sessionId) {
         const reg = streamRegistry.get(sessionId)
         if (reg) {
-          streamRegistry.set(sessionId, reg.map((m) =>
-            m.id === assistantId && m.type === 'text' ? { ...m, content: m.content + chunk } : m
-          ))
+          streamRegistry.set(
+            sessionId,
+            reg.map((m) =>
+              m.id === assistantId && m.type === 'text'
+                ? { ...m, content: m.content + chunk }
+                : m,
+            ),
+          )
         }
         return
       }
       set((state) => ({
         messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text' ? { ...m, content: m.content + chunk } : m
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, content: m.content + chunk }
+            : m,
         ),
       }))
       streamRegistry.set(sessionId, get().messages)
@@ -54,27 +64,36 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
         if (!flushTimer) flushTimer = setTimeout(flush, 130)
       },
       flushNow: () => {
-        if (flushTimer) { clearTimeout(flushTimer); flushTimer = null }
-        if (buffer) { const c = buffer; buffer = ''; applyChunk(c) }
+        if (flushTimer) {
+          clearTimeout(flushTimer)
+          flushTimer = null
+        }
+        if (buffer) {
+          const c = buffer
+          buffer = ''
+          applyChunk(c)
+        }
       },
       setSources: (sources: Source[]) => {
         set((state) => ({
           messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m
+            m.id === assistantId && m.type === 'text' ? { ...m, sources } : m,
           ),
         }))
       },
       setAttachments: (attachments: FileAttachment[]) => {
         set((state) => ({
           messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text' ? { ...m, attachments } : m
+            m.id === assistantId && m.type === 'text'
+              ? { ...m, attachments }
+              : m,
           ),
         }))
       },
       setNotice: (notice: Notice) => {
         set((state) => ({
           messages: state.messages.map((m) =>
-            m.id === assistantId && m.type === 'text' ? { ...m, notice } : m
+            m.id === assistantId && m.type === 'text' ? { ...m, notice } : m,
           ),
         }))
       },
@@ -84,7 +103,10 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
           const last = state.statusSteps[state.statusSteps.length - 1]
           return {
             statusText: message,
-            statusSteps: last?.message === message ? state.statusSteps : [...state.statusSteps, { message }],
+            statusSteps:
+              last?.message === message
+                ? state.statusSteps
+                : [...state.statusSteps, { message }],
           }
         })
       },
@@ -92,7 +114,8 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
         if (get().sessionId !== sessionId) return
         set((state) => {
           const steps = state.statusSteps
-          if (steps.length === 0) return { statusSteps: [{ message: '생각하는 중', thought }] }
+          if (steps.length === 0)
+            return { statusSteps: [{ message: '생각하는 중', thought }] }
           const next = steps.slice()
           next[next.length - 1] = { ...next[next.length - 1], thought }
           return { statusSteps: next }
@@ -130,7 +153,9 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
       // 레지스트리는 '읽은 뒤에' 지운다. 먼저 지우면 다른 대화를 보고 있을 때
       // 그 대화의 메시지를 이 세션의 것으로 착각한다.
       const viewing = get().sessionId === sessionId
-      const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? [])
+      const liveMsgs = viewing
+        ? get().messages
+        : (streamRegistry.get(sessionId) ?? [])
       streamRegistry.delete(sessionId)
       clearInflight(sessionId)
       if (signal.aborted) return
@@ -142,28 +167,47 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
         deleteSession(sessionId)
           .then(invalidateSessionLists)
           .catch((e) => logError('deleteSession', e))
-        if (viewing) set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, isDeleted: true })
+        if (viewing)
+          set({
+            error: '응답 중 오류가 발생했습니다.',
+            isStreaming: false,
+            abortController: null,
+            isDeleted: true,
+          })
         return
       }
 
       const interrupted = liveMsgs.map((m) =>
-        m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
+        m.id === assistantId && m.type === 'text'
+          ? { ...m, status: 'interrupted' as const }
+          : m,
       )
       if (interrupted.length > 0) messageCache.set(sessionId, interrupted)
       if (viewing) {
-        set({ error: '응답 중 오류가 발생했습니다.', isStreaming: false, abortController: null, messages: interrupted })
+        set({
+          error: '응답 중 오류가 발생했습니다.',
+          isStreaming: false,
+          abortController: null,
+          messages: interrupted,
+        })
       }
       return
     }
 
     const viewing = get().sessionId === sessionId
-    const liveMsgs = viewing ? get().messages : (streamRegistry.get(sessionId) ?? [])
+    const liveMsgs = viewing
+      ? get().messages
+      : (streamRegistry.get(sessionId) ?? [])
     streamRegistry.delete(sessionId)
 
     // 다른 대화를 보는 사이 끝났는데 메시지 사본이 없으면 결과를 판단할 수 없다.
     // 빈 응답으로 오판해 세션을 지우지 않도록, 목록만 갱신하고 끝낸다(다시 열면 서버에서 불러온다).
     if (!viewing && liveMsgs.length === 0) {
-      logError('executeStream.noSnapshot', '백그라운드 스트림 종료 시 메시지 사본 없음', { sessionId })
+      logError(
+        'executeStream.noSnapshot',
+        '백그라운드 스트림 종료 시 메시지 사본 없음',
+        { sessionId },
+      )
       clearInflight(sessionId)
       messageCache.delete(sessionId)
       invalidateSessionLists()
@@ -171,9 +215,14 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
     }
 
     const finalMsg = liveMsgs.find((m) => m.id === assistantId)
-    const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
+    const hasContent =
+      finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
-      logError('executeStream.emptyResponse', 'AI 응답에 내용이 없음(빈 응답 — 백엔드 LLM 생성 실패/스킵)', { sessionId, isFirstMessage, viewing })
+      logError(
+        'executeStream.emptyResponse',
+        'AI 응답에 내용이 없음(빈 응답 — 백엔드 LLM 생성 실패/스킵)',
+        { sessionId, isFirstMessage, viewing },
+      )
       clearInflight(sessionId)
 
       if (isFirstMessage) {
@@ -183,22 +232,37 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
         deleteSession(sessionId)
           .then(invalidateSessionLists)
           .catch((e) => logError('deleteSession', e))
-        if (viewing) set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.', isStreaming: false, abortController: null, isDeleted: true })
+        if (viewing)
+          set({
+            error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
+            isStreaming: false,
+            abortController: null,
+            isDeleted: true,
+          })
         return
       }
 
       const interrupted = liveMsgs.map((m) =>
-        m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
+        m.id === assistantId && m.type === 'text'
+          ? { ...m, status: 'interrupted' as const }
+          : m,
       )
       streamRegistry.delete(sessionId)
       messageCache.set(sessionId, interrupted)
       if (viewing) {
-        set({ error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.', isStreaming: false, abortController: null, messages: interrupted })
+        set({
+          error: '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
+          isStreaming: false,
+          abortController: null,
+          messages: interrupted,
+        })
       }
       return
     }
     clearInflight(sessionId)
-    const doneMsgs = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
+    const doneMsgs = liveMsgs.map((m) =>
+      m.id === assistantId ? { ...m, status: 'done' as const } : m,
+    )
     streamRegistry.delete(sessionId)
     messageCache.set(sessionId, doneMsgs)
     invalidateSessionLists()
@@ -224,24 +288,47 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
         isStreaming: false,
         abortController: null,
         messages: state.messages.map((m) =>
-          m.id === assistantId && m.type === 'text' ? { ...m, status: 'interrupted' as const } : m
+          m.id === assistantId && m.type === 'text'
+            ? { ...m, status: 'interrupted' as const }
+            : m,
         ),
       }))
       messageCache.set(sessionId, get().messages)
     }
 
     try {
-      await regenerateMessageStream(sessionId, serverId, writer.push, signal, writer.setSources, writer.setStatus, writer.setAttachments, writer.setNotice, writer.setThought, domain)
+      await regenerateMessageStream(
+        sessionId,
+        serverId,
+        writer.push,
+        signal,
+        writer.setSources,
+        writer.setStatus,
+        writer.setAttachments,
+        writer.setNotice,
+        writer.setThought,
+        domain,
+      )
       writer.flushNow()
     } catch (e) {
       logError('executeRegenerate', e)
       writer.flushNow()
-      if (signal.aborted) { markInterrupted(); return }
-      markInterrupted(isAbortError(e) ? undefined : ((e as Error)?.message || '재생성 중 오류가 발생했습니다.'))
+      if (signal.aborted) {
+        markInterrupted()
+        return
+      }
+      markInterrupted(
+        isAbortError(e)
+          ? undefined
+          : (e as Error)?.message || '재생성 중 오류가 발생했습니다.',
+      )
       return
     }
 
-    const liveMsgs = get().sessionId === sessionId ? get().messages : (streamRegistry.get(sessionId) ?? [])
+    const liveMsgs =
+      get().sessionId === sessionId
+        ? get().messages
+        : (streamRegistry.get(sessionId) ?? [])
     if (liveMsgs.length === 0) {
       // 다른 대화를 보는 사이 끝났는데 사본이 없다: 다음에 열 때 서버에서 불러오게 한다.
       streamRegistry.delete(sessionId)
@@ -250,15 +337,22 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
       return
     }
     const finalMsg = liveMsgs.find((m) => m.id === assistantId)
-    const hasContent = finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
+    const hasContent =
+      finalMsg?.type === 'text' && finalMsg.content.trim().length > 0
     if (!hasContent) {
-      logError('executeRegenerate.emptyResponse', 'AI 재생성 응답에 내용이 없음(빈 응답)', { sessionId })
+      logError(
+        'executeRegenerate.emptyResponse',
+        'AI 재생성 응답에 내용이 없음(빈 응답)',
+        { sessionId },
+      )
       markInterrupted('응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.')
       return
     }
 
     if (get().sessionId !== sessionId) {
-      const done = liveMsgs.map((m) => m.id === assistantId ? { ...m, status: 'done' as const } : m)
+      const done = liveMsgs.map((m) =>
+        m.id === assistantId ? { ...m, status: 'done' as const } : m,
+      )
       // 레지스트리에 남겨 두면 다시 열 때 connect가 '스트리밍 중'으로 복원해 입력이 막힌다.
       streamRegistry.delete(sessionId)
       messageCache.set(sessionId, done)
@@ -273,7 +367,7 @@ export const createStreamRunners = (set: StoreApi<ChatStore>['setState'], get: S
       isStreaming: false,
       abortController: null,
       messages: state.messages.map((m) =>
-        m.id === assistantId ? { ...m, status: 'done' as const } : m
+        m.id === assistantId ? { ...m, status: 'done' as const } : m,
       ),
     }))
     messageCache.set(sessionId, get().messages)

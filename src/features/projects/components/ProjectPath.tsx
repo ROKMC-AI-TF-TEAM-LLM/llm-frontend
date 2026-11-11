@@ -12,11 +12,15 @@ export function ProjectPath({
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <span className="shrink-0 text-13 font-medium text-text-muted">{projectName}</span>
+      <span className="shrink-0 text-13 font-medium text-text-muted">
+        {projectName}
+      </span>
       {hasSession && (
         <>
           <span className="shrink-0 text-13 text-text-hint">/</span>
-          <span className={`truncate text-15 ${isUntitled ? 'text-text-muted' : 'font-bold text-text-primary'}`}>
+          <span
+            className={`truncate text-15 ${isUntitled ? 'text-text-muted' : 'font-bold text-text-primary'}`}
+          >
             {text}
           </span>
         </>

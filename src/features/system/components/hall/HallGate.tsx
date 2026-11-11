@@ -23,7 +23,15 @@ interface HallGateProps {
 }
 
 // 입장 화면: 기수(ID)와 이름(PW)을 대야 들어갈 수 있다
-export function HallGate({ id, pw, onIdChange, onPwChange, booting, authErr, onSubmit }: HallGateProps) {
+export function HallGate({
+  id,
+  pw,
+  onIdChange,
+  onPwChange,
+  booting,
+  authErr,
+  onSubmit,
+}: HallGateProps) {
   return (
     <div
       style={{
@@ -51,7 +59,14 @@ export function HallGate({ id, pw, onIdChange, onPwChange, booting, authErr, onS
         }}
       />
 
-      <p style={{ fontSize: 12, letterSpacing: '.3em', color: '#7a8a5f', fontWeight: 700 }}>
+      <p
+        style={{
+          fontSize: 12,
+          letterSpacing: '.3em',
+          color: '#7a8a5f',
+          fontWeight: 700,
+        }}
+      >
         ROKMC · RESTRICTED TERMINAL
       </p>
 
@@ -69,12 +84,30 @@ export function HallGate({ id, pw, onIdChange, onPwChange, booting, authErr, onS
         명예의 전당
       </h1>
 
-      <p style={{ marginTop: 18, fontSize: 13.5, lineHeight: 2, color: '#8fa374', maxWidth: 380 }}>
-        여기서부턴 근무 외 구역이다.<br />
+      <p
+        style={{
+          marginTop: 18,
+          fontSize: 13.5,
+          lineHeight: 2,
+          color: '#8fa374',
+          maxWidth: 380,
+        }}
+      >
+        여기서부턴 근무 외 구역이다.
+        <br />
         군번과 이름을 대라.
       </p>
 
-      <form onSubmit={onSubmit} style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 10, width: 240 }}>
+      <form
+        onSubmit={onSubmit}
+        style={{
+          marginTop: 32,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          width: 240,
+        }}
+      >
         <input
           value={id}
           onChange={(e) => onIdChange(e.target.value)}
@@ -110,12 +143,27 @@ export function HallGate({ id, pw, onIdChange, onPwChange, booting, authErr, onS
       </form>
 
       {authErr && (
-        <p style={{ marginTop: 14, fontSize: 12.5, color: '#e4002b', fontWeight: 700 }}>
+        <p
+          style={{
+            marginTop: 14,
+            fontSize: 12.5,
+            color: '#e4002b',
+            fontWeight: 700,
+          }}
+        >
           넌 누구냐
         </p>
       )}
 
-      <p className="hof-blink" style={{ marginTop: 24, fontSize: 11, color: '#5c6b4a', letterSpacing: '.15em' }}>
+      <p
+        className="hof-blink"
+        style={{
+          marginTop: 24,
+          fontSize: 11,
+          color: '#5c6b4a',
+          letterSpacing: '.15em',
+        }}
+      >
         PRESS TO ENTER
       </p>
     </div>

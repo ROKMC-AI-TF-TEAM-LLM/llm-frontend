@@ -9,7 +9,7 @@ export const miscRoutes: MockRoute[] = [
   get('/capabilities', () => ok({ domains: DOMAINS, tools: [] })),
 
   post('/translate', async ({ request }) => {
-    const { text, target } = await request.json() as TranslateRequest
+    const { text, target } = (await request.json()) as TranslateRequest
     const prefix = target === 'en' ? '[Mock translation]' : '[예시 번역]'
     return ok({
       translation: `${prefix}\n\n${text}`,

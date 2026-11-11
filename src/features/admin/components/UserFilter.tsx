@@ -1,15 +1,20 @@
-import { CloseIcon, SearchAltIcon } from '@/shared/components/icons';
-import { USER_TABS, type UserStatusTab } from '../utils';
+import { CloseIcon, SearchAltIcon } from '@/shared/components/icons'
+import { USER_TABS, type UserStatusTab } from '../utils'
 
 interface UserFilterProps {
-  status: UserStatusTab;
-  onStatusChange: (status: UserStatusTab) => void;
-  query: string;
-  onQueryChange: (query: string) => void;
+  status: UserStatusTab
+  onStatusChange: (status: UserStatusTab) => void
+  query: string
+  onQueryChange: (query: string) => void
 }
 
 /** 사용자 목록 위의 상태 탭과 이름·이메일 검색 */
-export function UserFilter({ status, onStatusChange, query, onQueryChange }: UserFilterProps) {
+export function UserFilter({
+  status,
+  onStatusChange,
+  query,
+  onQueryChange,
+}: UserFilterProps) {
   return (
     <div className="flex items-center gap-3 mb-4">
       <div className="flex gap-2">
@@ -48,5 +53,5 @@ export function UserFilter({ status, onStatusChange, query, onQueryChange }: Use
         )}
       </div>
     </div>
-  );
+  )
 }

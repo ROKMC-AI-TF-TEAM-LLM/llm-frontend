@@ -3,15 +3,11 @@
 
 /** 서버가 내려주는 작업 상태 문자열. 해석은 utils.ts의 normalizeJobStatus 한 곳에서만 한다. */
 export type DocGenServerStatus =
-  | 'QUEUED'
-  | 'RUNNING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'CANCELLED'
-  | (string & {})
+  'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | (string & {})
 
 /** 생성 중 세부 단계 */
-export type DocGenStage = 'ANALYZING' | 'DRAFTING' | 'FORMATTING' | (string & {})
+export type DocGenStage =
+  'ANALYZING' | 'DRAFTING' | 'FORMATTING' | (string & {})
 
 export type DocGenOutputFormat = 'HWPX' | 'PDF'
 export type DocGenLength = 'SHORT' | 'NORMAL' | 'LONG'
@@ -89,7 +85,9 @@ interface ApiEnvelope<T> {
   error: { code: string; detail: string } | null
 }
 
-export type GetDocGenTemplatesResponse = ApiEnvelope<{ templates: DocGenTemplate[] }>
+export type GetDocGenTemplatesResponse = ApiEnvelope<{
+  templates: DocGenTemplate[]
+}>
 export type GetDocGenJobsResponse = ApiEnvelope<{ jobs: DocGenJob[] }>
 export type GetDocGenJobResponse = ApiEnvelope<DocGenJob>
 export type CreateDocGenJobResponse = ApiEnvelope<DocGenJob>

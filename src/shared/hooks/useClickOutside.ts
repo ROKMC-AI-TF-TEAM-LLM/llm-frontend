@@ -13,10 +13,16 @@ interface Options {
  * ref(여러 개면 그중 어느 것) 바깥을 누르면 onOutside를 부른다. 메뉴·팝오버를 닫을 때 쓴다.
  * 버튼과 떨어져 그려지는 메뉴(포털)는 두 요소의 ref를 배열로 넘긴다.
  */
-export function useClickOutside(refs: ElementRef | ElementRef[], onOutside: () => void, { enabled = true, event = 'mousedown' }: Options = {}) {
+export function useClickOutside(
+  refs: ElementRef | ElementRef[],
+  onOutside: () => void,
+  { enabled = true, event = 'mousedown' }: Options = {},
+) {
   const handle = useEffectEvent((e: Event) => {
     const target = e.target as Node
-    const inside = (Array.isArray(refs) ? refs : [refs]).some((ref) => ref.current?.contains(target))
+    const inside = (Array.isArray(refs) ? refs : [refs]).some((ref) =>
+      ref.current?.contains(target),
+    )
     if (!inside) onOutside()
   })
 

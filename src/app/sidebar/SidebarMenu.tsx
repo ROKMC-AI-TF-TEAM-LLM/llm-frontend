@@ -1,31 +1,51 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { DocumentAltIcon, FolderIcon, PlusIcon, SearchIcon } from "@/shared/components/icons";
+import { useNavigate, useLocation } from 'react-router-dom'
+import {
+  DocumentAltIcon,
+  FolderIcon,
+  PlusIcon,
+  SearchIcon,
+} from '@/shared/components/icons'
 
 interface SidebarMenuProps {
-  isOpen: boolean;
-  activeLabel?: string;
+  isOpen: boolean
+  activeLabel?: string
 }
 
 const navItems = [
   {
-    label: "대화 검색",
-    path: "/search",
+    label: '대화 검색',
+    path: '/search',
     icon: (
-      <SearchIcon className="sb-icon sb-icon-search" width="16" height="16" strokeWidth={2.2} />
+      <SearchIcon
+        className="sb-icon sb-icon-search"
+        width="16"
+        height="16"
+        strokeWidth={2.2}
+      />
     ),
   },
   {
-    label: "문서 검색",
-    path: "/rag",
+    label: '문서 검색',
+    path: '/rag',
     icon: (
-      <FolderIcon className="sb-icon sb-icon-folder" width="16" height="16" strokeWidth={2.2} />
+      <FolderIcon
+        className="sb-icon sb-icon-folder"
+        width="16"
+        height="16"
+        strokeWidth={2.2}
+      />
     ),
   },
   {
-    label: "문서 제작",
-    path: "/docgen",
+    label: '문서 제작',
+    path: '/docgen',
     icon: (
-      <DocumentAltIcon className="sb-icon sb-icon-docgen" width="16" height="16" strokeWidth={2.2} />
+      <DocumentAltIcon
+        className="sb-icon sb-icon-docgen"
+        width="16"
+        height="16"
+        strokeWidth={2.2}
+      />
     ),
   },
   // TODO: 번역 기능 미완성 — 완성 후 주석 해제
@@ -39,39 +59,47 @@ const navItems = [
   //     </svg>
   //   ),
   // },
-];
+]
 
 export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const isNewChatActive = location.pathname === "/chat";
-  const isItemActive = (path: string) => location.pathname === path;
+  const isNewChatActive = location.pathname === '/chat'
+  const isItemActive = (path: string) => location.pathname === path
 
   const labelCls = `overflow-hidden whitespace-nowrap transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${
     isOpen ? 'opacity-100 max-w-[140px]' : 'opacity-0 max-w-0'
-  }`;
+  }`
 
   return (
     <nav className="flex-none px-[10px] pt-[14px] pb-[6px] flex flex-col gap-1">
       <button
-        onClick={() => navigate("/chat")}
+        onClick={() => navigate('/chat')}
         title="새 채팅"
         style={
           isNewChatActive
-            ? { background: 'var(--color-brand-tint)', color: 'var(--color-brand-deep)' }
+            ? {
+                background: 'var(--color-brand-tint)',
+                color: 'var(--color-brand-deep)',
+              }
             : { color: 'var(--color-text-primary)' }
         }
         className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
       >
         <span className="w-[18px] flex justify-center shrink-0">
-          <PlusIcon className="sb-icon sb-icon-plus" width="17" height="17" strokeWidth={2.2} />
+          <PlusIcon
+            className="sb-icon sb-icon-plus"
+            width="17"
+            height="17"
+            strokeWidth={2.2}
+          />
         </span>
         <span className={labelCls}>새 채팅</span>
       </button>
 
       {navItems.map((item) => {
-        const isActive = isItemActive(item.path);
+        const isActive = isItemActive(item.path)
         return (
           <button
             key={item.label}
@@ -79,16 +107,21 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             title={item.label}
             style={
               isActive
-                ? { background: 'var(--color-brand-tint)', color: 'var(--color-brand-deep)' }
+                ? {
+                    background: 'var(--color-brand-tint)',
+                    color: 'var(--color-brand-deep)',
+                  }
                 : { color: 'var(--color-text-primary)' }
             }
             className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
           >
-            <span className="w-[18px] flex justify-center shrink-0">{item.icon}</span>
+            <span className="w-[18px] flex justify-center shrink-0">
+              {item.icon}
+            </span>
             <span className={labelCls}>{item.label}</span>
           </button>
-        );
+        )
       })}
     </nav>
-  );
+  )
 }

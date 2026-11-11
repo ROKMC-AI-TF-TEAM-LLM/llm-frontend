@@ -5,7 +5,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .status-dot-blink { animation: none; }
+  .status-dot-blink {
+    animation: none;
+  }
 }
 
 .status-blink {
@@ -14,5 +16,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .status-blink { animation: none; color: var(--color-text-secondary); }
+  .status-blink {
+    animation: none;
+    color: var(--color-text-secondary);
+  }
 }

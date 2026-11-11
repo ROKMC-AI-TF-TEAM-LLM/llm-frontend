@@ -4,7 +4,11 @@ interface MarsPlanetProps {
   style?: React.CSSProperties
 }
 
-export default function MarsPlanet({ className = '', glow = false, style }: MarsPlanetProps) {
+export default function MarsPlanet({
+  className = '',
+  glow = false,
+  style,
+}: MarsPlanetProps) {
   return (
     <div
       className={`relative rounded-full overflow-hidden ${className}`}
@@ -35,7 +39,8 @@ export default function MarsPlanet({ className = '', glow = false, style }: Mars
           width: '40%',
           height: '34%',
           borderRadius: '50%',
-          background: 'radial-gradient(circle at 40% 40%, rgba(255,224,214,0.6), transparent 70%)',
+          background:
+            'radial-gradient(circle at 40% 40%, rgba(255,224,214,0.6), transparent 70%)',
           filter: 'blur(5px)',
         }}
       />
@@ -47,7 +52,8 @@ export default function MarsPlanet({ className = '', glow = false, style }: Mars
           width: '32%',
           height: '13%',
           borderRadius: '50%',
-          background: 'radial-gradient(ellipse at 50% 80%, rgba(255,232,226,0.5), transparent 72%)',
+          background:
+            'radial-gradient(ellipse at 50% 80%, rgba(255,232,226,0.5), transparent 72%)',
           filter: 'blur(6px)',
         }}
       />

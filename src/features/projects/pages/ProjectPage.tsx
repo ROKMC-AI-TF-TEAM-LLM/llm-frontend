@@ -26,21 +26,30 @@ import { ProjectInstructionBlock } from '../components/ProjectInstructionBlock'
 import { ProjectPath } from '../components/ProjectPath'
 import { PanelIcon } from '../components/icons'
 
-
 export default function ProjectPage() {
   const { id, chatId } = useParams()
   const navigate = useNavigate()
-  const { project, isLoading: isDetailLoading, isError: isDetailError } = useProjectView(id)
+  const {
+    project,
+    isLoading: isDetailLoading,
+    isError: isDetailError,
+  } = useProjectView(id)
   const confirmDeleteProject = useConfirmDeleteProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
   const { mutate: setInstructionApi } = useSetProjectInstruction()
-  const renameProject = (pid: string, next: string) => updateProject({ projectId: pid, title: next })
-  const toggleFavorite = (pid: string) => toggleFavoriteApi({ projectId: pid, next: !(project?.isFavorite ?? false) })
+  const renameProject = (pid: string, next: string) =>
+    updateProject({ projectId: pid, title: next })
+  const toggleFavorite = (pid: string) =>
+    toggleFavoriteApi({ projectId: pid, next: !(project?.isFavorite ?? false) })
 
   const queryClient = useQueryClient()
   const backToProject = () => navigate(`/projects/${id}`, { replace: true })
-  const { isConnecting, connectError, retry: retryConnect } = useChatSession(chatId, {
+  const {
+    isConnecting,
+    connectError,
+    retry: retryConnect,
+  } = useChatSession(chatId, {
     knownErrors: SESSION_ERRORS.project,
     logLabel: 'ProjectPage.connect',
     logContext: { projectId: id, chatId },
@@ -64,21 +73,27 @@ export default function ProjectPage() {
   const [renaming, setRenaming] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
   const openChatId = chatId ?? null
-  const openProjectChat = (nextId: string) => navigate(`/projects/${id}/${nextId}`)
+  const openProjectChat = (nextId: string) =>
+    navigate(`/projects/${id}/${nextId}`)
   const closeChat = () => navigate(`/projects/${id}`)
   const [panelOpen, setPanelOpen] = useState(true)
 
   const files = useProjectFiles(id)
-  const { documents, deletingIds, tryUpload, handleDeleteDoc, handleRetryDoc } = files
+  const { documents, deletingIds, tryUpload, handleDeleteDoc, handleRetryDoc } =
+    files
 
-  const { chats, renameChat, toggleChatFavorite, deleteChat } = useProjectChats(id)
-  const openChatTitle = chatId ? chats.find((c) => c.id === chatId)?.title : undefined
+  const { chats, renameChat, toggleChatFavorite, deleteChat } =
+    useProjectChats(id)
+  const openChatTitle = chatId
+    ? chats.find((c) => c.id === chatId)?.title
+    : undefined
   // ChatPage와 같이 대화를 열면 탭 제목을 대화 제목으로 바꾼다.
   useDocumentTitle(openChatTitle ?? (project ? project.name : '프로젝트'))
 
   const submitRename = () => {
     const next = nameDraft.trim()
-    if (project && next && next !== project.name) renameProject(project.id, next)
+    if (project && next && next !== project.name)
+      renameProject(project.id, next)
     setRenaming(false)
   }
 
@@ -93,7 +108,9 @@ export default function ProjectPage() {
     return (
       <div className="flex h-full flex-col items-center justify-center px-6">
         <p className="text-15 font-semibold text-text-primary">
-          {isDetailError ? '프로젝트에 접근할 수 없습니다.' : '프로젝트를 찾을 수 없습니다.'}
+          {isDetailError
+            ? '프로젝트에 접근할 수 없습니다.'
+            : '프로젝트를 찾을 수 없습니다.'}
         </p>
         <p className="mt-1.5 text-13 text-text-secondary">
           삭제되었거나 주소가 잘못되었을 수 있습니다.
@@ -108,7 +125,9 @@ export default function ProjectPage() {
     <div className="flex h-full w-full bg-white">
       <aside
         style={{
-          borderRightColor: panelOpen ? 'var(--color-rose-divider)' : 'transparent',
+          borderRightColor: panelOpen
+            ? 'var(--color-rose-divider)'
+            : 'transparent',
         }}
         className={`h-full shrink-0 overflow-hidden border-r transition-[width,border-color] duration-[420ms] ease-[cubic-bezier(.32,.72,0,1)] ${
           panelOpen ? 'w-[336px]' : 'w-0'
@@ -119,60 +138,70 @@ export default function ProjectPage() {
             panelOpen ? 'translate-x-0' : '-translate-x-[336px]'
           }`}
         >
-        <div className="flex items-center gap-1 px-1">
-          <Mark size={28} />
-          {renaming ? (
-            <input
-              autoFocus
-              spellCheck={false}
-              value={nameDraft}
-              maxLength={255}
-              onChange={(e) => setNameDraft(e.target.value.slice(0, 255))}
-              onBlur={submitRename}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') submitRename()
-                if (e.key === 'Escape') setRenaming(false)
-              }}
-              className="ml-1 min-w-0 flex-1 rounded-[8px] border border-rose-border px-2 py-1 text-14 font-bold text-text-primary outline-none focus:border-brand"
+          <div className="flex items-center gap-1 px-1">
+            <Mark size={28} />
+            {renaming ? (
+              <input
+                autoFocus
+                spellCheck={false}
+                value={nameDraft}
+                maxLength={255}
+                onChange={(e) => setNameDraft(e.target.value.slice(0, 255))}
+                onBlur={submitRename}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') submitRename()
+                  if (e.key === 'Escape') setRenaming(false)
+                }}
+                className="ml-1 min-w-0 flex-1 rounded-[8px] border border-rose-border px-2 py-1 text-14 font-bold text-text-primary outline-none focus:border-brand"
+              />
+            ) : (
+              <p className="ml-1 min-w-0 max-w-[136px] truncate text-14 font-bold text-text-primary">
+                {project.name}
+              </p>
+            )}
+            <FavStar
+              active={project.isFavorite}
+              onToggle={() => toggleFavorite(project.id)}
             />
-          ) : (
-            <p className="ml-1 min-w-0 max-w-[136px] truncate text-14 font-bold text-text-primary">
-              {project.name}
-            </p>
-          )}
-          <FavStar active={project.isFavorite} onToggle={() => toggleFavorite(project.id)} />
-          <KebabMenu
-            onRename={() => {
-              setNameDraft(project.name)
-              setRenaming(true)
-            }}
-            onDelete={() => confirmDeleteProject({ id: project.id, name: project.name })}
-          />
-          <span className="ml-auto">
-            <IconButton label="컨텍스트 접기" onClick={() => setPanelOpen(false)}>
-              <PanelIcon className="h-[17px] w-[17px]" />
-            </IconButton>
-          </span>
-        </div>
+            <KebabMenu
+              onRename={() => {
+                setNameDraft(project.name)
+                setRenaming(true)
+              }}
+              onDelete={() =>
+                confirmDeleteProject({ id: project.id, name: project.name })
+              }
+            />
+            <span className="ml-auto">
+              <IconButton
+                label="컨텍스트 접기"
+                onClick={() => setPanelOpen(false)}
+              >
+                <PanelIcon className="h-[17px] w-[17px]" />
+              </IconButton>
+            </span>
+          </div>
 
-        <div className="mt-5 space-y-3">
-          <ProjectInstructionBlock
-            instructions={project.instructions}
-            onSave={(instructions) => setInstructionApi({ projectId: project.id, instructions })}
-          />
+          <div className="mt-5 space-y-3">
+            <ProjectInstructionBlock
+              instructions={project.instructions}
+              onSave={(instructions) =>
+                setInstructionApi({ projectId: project.id, instructions })
+              }
+            />
 
-          <ProjectFilesBlock projectId={id ?? ''} files={files} />
+            <ProjectFilesBlock projectId={id ?? ''} files={files} />
 
-          <ProjectChatsBlock
-            chats={chats}
-            openChatId={openChatId}
-            onOpen={openProjectChat}
-            onNew={closeChat}
-            onToggleFavorite={toggleChatFavorite}
-            onRename={renameChat}
-            onDelete={deleteChat}
-          />
-        </div>
+            <ProjectChatsBlock
+              chats={chats}
+              openChatId={openChatId}
+              onOpen={openProjectChat}
+              onNew={closeChat}
+              onToggleFavorite={toggleChatFavorite}
+              onRename={renameChat}
+              onDelete={deleteChat}
+            />
+          </div>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -191,7 +220,10 @@ export default function ProjectPage() {
             </IconButton>
           </div>
           <div className="ml-3 min-w-0">
-            <ProjectPath projectName={project.name} sessionTitle={openChat ? openChat.title : undefined} />
+            <ProjectPath
+              projectName={project.name}
+              sessionTitle={openChat ? openChat.title : undefined}
+            />
           </div>
         </header>
 

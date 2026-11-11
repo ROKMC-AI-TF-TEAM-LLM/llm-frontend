@@ -19,8 +19,15 @@ function PollingDocRow({
   onDelete: () => void
   deleting: boolean
 }) {
-  const inProgress = doc.status === 'pending' || doc.status === 'queued' || doc.status === 'running'
-  const { data } = useProjectDocumentStatus(projectId, doc.document_id, inProgress)
+  const inProgress =
+    doc.status === 'pending' ||
+    doc.status === 'queued' ||
+    doc.status === 'running'
+  const { data } = useProjectDocumentStatus(
+    projectId,
+    doc.document_id,
+    inProgress,
+  )
   const liveStatus = data?.data?.data?.status ?? doc.status
   return (
     <ProjectDocRow
@@ -33,7 +40,13 @@ function PollingDocRow({
 }
 
 /** 프로젝트 화면 왼쪽 패널의 파일 영역: 목록, 올리기, 삭제, 재시도 */
-export function ProjectFilesBlock({ projectId, files }: { projectId: string; files: ReturnType<typeof useProjectFiles> }) {
+export function ProjectFilesBlock({
+  projectId,
+  files,
+}: {
+  projectId: string
+  files: ReturnType<typeof useProjectFiles>
+}) {
   const {
     documents,
     isUploading,
@@ -63,13 +76,20 @@ export function ProjectFilesBlock({ projectId, files }: { projectId: string; fil
         onChange={(e) => handleUploadFiles(e.target.files)}
       />
       {documents.length === 0 && !isUploading ? (
-        <button type="button" onClick={handlePickFile} className="w-full text-left">
+        <button
+          type="button"
+          onClick={handlePickFile}
+          className="w-full text-left"
+        >
           <EmptyFiles />
         </button>
       ) : (
         <div className="-mx-2">
           {isUploading && uploadingFile && (
-            <UploadingDocRow name={uploadingFile.name} size={uploadingFile.size} />
+            <UploadingDocRow
+              name={uploadingFile.name}
+              size={uploadingFile.size}
+            />
           )}
           {documents.map((d) => (
             <PollingDocRow

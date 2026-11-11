@@ -18,7 +18,9 @@ export default function TeamValues() {
 
       <div className="relative z-[1] mx-auto w-full max-w-[1100px]">
         <ScrollFade className="text-center">
-          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">GOALS</p>
+          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">
+            GOALS
+          </p>
           <h2
             className="mars-display mx-auto mt-5 font-extrabold tracking-tight text-text-primary break-keep"
             style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}

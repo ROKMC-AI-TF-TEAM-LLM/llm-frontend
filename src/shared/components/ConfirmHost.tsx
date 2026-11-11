@@ -12,7 +12,13 @@ export default function ConfirmHost() {
   useEscapeKey(() => close(false), !!current, { exclusive: true })
 
   if (!current) return null
-  const { title, message, danger, confirmLabel = danger ? '삭제' : '확인', cancelLabel = '취소' } = current
+  const {
+    title,
+    message,
+    danger,
+    confirmLabel = danger ? '삭제' : '확인',
+    cancelLabel = '취소',
+  } = current
 
   return (
     <Modal
@@ -20,8 +26,14 @@ export default function ConfirmHost() {
       className="flex w-full max-w-[420px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_28px_70px_rgba(60,20,30,0.20)]"
     >
       <div className="px-6 pt-6 pb-2">
-        <h2 className="text-16 font-bold leading-snug tracking-[-0.01em] text-text-primary break-words">{title}</h2>
-        {message && <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-text-secondary">{message}</p>}
+        <h2 className="text-16 font-bold leading-snug tracking-[-0.01em] text-text-primary break-words">
+          {title}
+        </h2>
+        {message && (
+          <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-text-secondary">
+            {message}
+          </p>
+        )}
       </div>
       <div className="flex items-center justify-end gap-2 px-6 py-4">
         <Button variant="ghost" onClick={() => close(false)}>

@@ -18,7 +18,8 @@ export const useToastStore = create<ToastState>((set) => ({
   toasts: [],
   show: (message, type = 'error') =>
     set((s) => ({ toasts: [...s.toasts, { id: nextId++, message, type }] })),
-  dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  dismiss: (id) =>
+    set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 }))
 
 export const showToast = (message: string, type: ToastItem['type'] = 'error') =>

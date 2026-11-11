@@ -23,16 +23,28 @@ const SearchPage = () => {
     return () => clearTimeout(timer)
   }, [query])
 
-  const { data: searchData, isFetching: isSearching, isError: isSearchError } = useSearchSessions({ q: debouncedQuery })
-  const { data: sessionsData, isLoading: isSessionsLoading, isError: isSessionsError } = useInfiniteSessions()
+  const {
+    data: searchData,
+    isFetching: isSearching,
+    isError: isSearchError,
+  } = useSearchSessions({ q: debouncedQuery })
+  const {
+    data: sessionsData,
+    isLoading: isSessionsLoading,
+    isError: isSessionsError,
+  } = useInfiniteSessions()
 
-  const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map((s) => ({
-    id: s.session_id,
-    title: s.title,
-    preview: formatDateTime(s.updated_at),
-  }))
+  const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map(
+    (s) => ({
+      id: s.session_id,
+      title: s.title,
+      preview: formatDateTime(s.updated_at),
+    }),
+  )
 
-  const recentSessions = (sessionsData?.pages ?? []).flatMap((p) => p.data.data.items)
+  const recentSessions = (sessionsData?.pages ?? []).flatMap(
+    (p) => p.data.data.items,
+  )
 
   const goToSession = (id: string, projectId?: string | null) => {
     navigate(projectId ? `/projects/${projectId}/${id}` : `/chat/${id}`)
@@ -40,18 +52,20 @@ const SearchPage = () => {
 
   const handleSelect = (id: string) => {
     setSelectedId(id)
-    const found = (searchData?.data?.data ?? []).find((s) => s.session_id === id)
+    const found = (searchData?.data?.data ?? []).find(
+      (s) => s.session_id === id,
+    )
     goToSession(id, found?.project_id)
   }
 
   useEffect(() => {
-    if (isSearchError || isSessionsError) showToast('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+    if (isSearchError || isSessionsError)
+      showToast('데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
   }, [isSearchError, isSessionsError])
 
   return (
     <div className="h-full overflow-y-auto custom-scroll px-6 pt-16 pb-6">
       <div className="max-w-3xl w-full mx-auto flex flex-col animate-page-in">
-
         <h1 className="mars-display text-2xl font-semibold text-text-primary text-center mb-8 shrink-0">
           대화 검색
         </h1>
@@ -69,27 +83,33 @@ const SearchPage = () => {
           />
         ) : (
           <div className="mt-8">
-            <h2 className="text-sm font-medium text-text-muted mb-4 mars-brand-serif shrink-0">최근 대화</h2>
+            <h2 className="text-sm font-medium text-text-muted mb-4 mars-brand-serif shrink-0">
+              최근 대화
+            </h2>
 
             {isSessionsLoading ? (
               <div className="grid grid-cols-2 gap-3">
-                {[...Array(6)].map((_, i) => <SearchSessionCardSkeleton key={i} />)}
+                {[...Array(6)].map((_, i) => (
+                  <SearchSessionCardSkeleton key={i} />
+                ))}
               </div>
             ) : recentSessions.length === 0 ? (
-              <p className="text-sm text-text-muted mars-brand-serif text-center py-8">대화 내역이 없습니다.</p>
+              <p className="text-sm text-text-muted mars-brand-serif text-center py-8">
+                대화 내역이 없습니다.
+              </p>
             ) : (
               <div>
                 <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">
                   {recentSessions.map((session) => (
                     <button
                       key={session.session_id}
-                      onClick={() => goToSession(session.session_id, session.project_id)}
+                      onClick={() =>
+                        goToSession(session.session_id, session.project_id)
+                      }
                       className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer bg-surface border border-rose-border-alt shadow-[0_10px_24px_rgba(40,30,35,0.05)]"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div
-                          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px] bg-[linear-gradient(135deg,#fff0f3,#fde3e8)] border border-[#f7d7de] text-brand-vivid"
-                        >
+                        <div className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px] bg-[linear-gradient(135deg,#fff0f3,#fde3e8)] border border-[#f7d7de] text-brand-vivid">
                           <ChatAltIcon width="16" height="16" />
                         </div>
                         <span className="text-15 font-bold text-text-primary truncate">
@@ -106,7 +126,6 @@ const SearchPage = () => {
             )}
           </div>
         )}
-
       </div>
     </div>
   )

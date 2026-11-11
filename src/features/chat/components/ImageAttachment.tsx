@@ -1,14 +1,16 @@
-import { FileIcon } from '@/shared/components/icons';
+import { FileIcon } from '@/shared/components/icons'
 interface ImageAttachmentProps {
-  filename?: string;
-  caption?: string;
+  filename?: string
+  caption?: string
 }
 
 export default function ImageAttachment({
   filename = 'unknown',
   caption,
 }: ImageAttachmentProps) {
-  const ext = filename.includes('.') ? filename.split('.').pop()?.toUpperCase() : null;
+  const ext = filename.includes('.')
+    ? filename.split('.').pop()?.toUpperCase()
+    : null
 
   return (
     <div className="flex justify-end mb-1">
@@ -19,7 +21,11 @@ export default function ImageAttachment({
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium truncate">{filename}</span>
-            {ext && <span className="text-xs text-white/70 uppercase tracking-wide">{ext}</span>}
+            {ext && (
+              <span className="text-xs text-white/70 uppercase tracking-wide">
+                {ext}
+              </span>
+            )}
           </div>
         </div>
         {caption && (
@@ -32,5 +38,5 @@ export default function ImageAttachment({
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { CloseIcon, Icon } from './icons';
+import { useEffect, useRef, useState } from 'react'
+import { CloseIcon, Icon } from './icons'
 
 interface ToastProps {
-  message: string;
-  onClose: () => void;
-  type?: 'error' | 'success';
-  stackIndex?: number;
+  message: string
+  onClose: () => void
+  type?: 'error' | 'success'
+  stackIndex?: number
 }
 
 const STYLES = {
@@ -19,28 +19,35 @@ const STYLES = {
     icon: 'text-green-400 hover:text-green-600',
     path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
   },
-};
+}
 
-const TOTAL_MS = 5000;
-const FADE_MS = 400;
+const TOTAL_MS = 5000
+const FADE_MS = 400
 
-export default function Toast({ message, onClose, type = 'error', stackIndex = 0 }: ToastProps) {
-  const [visible, setVisible] = useState(false);
-  const onCloseRef = useRef(onClose);
-  useEffect(() => { onCloseRef.current = onClose; });
+export default function Toast({
+  message,
+  onClose,
+  type = 'error',
+  stackIndex = 0,
+}: ToastProps) {
+  const [visible, setVisible] = useState(false)
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
-    const show = requestAnimationFrame(() => setVisible(true));
-    const fadeOut = setTimeout(() => setVisible(false), TOTAL_MS - FADE_MS);
-    const close = setTimeout(() => onCloseRef.current(), TOTAL_MS);
+    const show = requestAnimationFrame(() => setVisible(true))
+    const fadeOut = setTimeout(() => setVisible(false), TOTAL_MS - FADE_MS)
+    const close = setTimeout(() => onCloseRef.current(), TOTAL_MS)
     return () => {
-      cancelAnimationFrame(show);
-      clearTimeout(fadeOut);
-      clearTimeout(close);
-    };
-  }, []);
+      cancelAnimationFrame(show)
+      clearTimeout(fadeOut)
+      clearTimeout(close)
+    }
+  }, [])
 
-  const style = STYLES[type];
+  const style = STYLES[type]
 
   return (
     <div
@@ -50,11 +57,17 @@ export default function Toast({ message, onClose, type = 'error', stackIndex = 0
       style={{ bottom: `calc(7rem + ${stackIndex} * 3.25rem)` }}
       className={`fixed left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 border px-4 py-3 rounded-xl shadow-lg text-sm whitespace-nowrap transition-opacity duration-[400ms] ${visible ? 'opacity-100' : 'opacity-0'} ${style.container}`}
     >
-      <Icon className="w-4 h-4 shrink-0"><path d={style.path} /></Icon>
+      <Icon className="w-4 h-4 shrink-0">
+        <path d={style.path} />
+      </Icon>
       {message}
-      <button onClick={() => onCloseRef.current()} aria-label="닫기" className={`ml-1 ${style.icon}`}>
+      <button
+        onClick={() => onCloseRef.current()}
+        aria-label="닫기"
+        className={`ml-1 ${style.icon}`}
+      >
         <CloseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
       </button>
     </div>
-  );
+  )
 }

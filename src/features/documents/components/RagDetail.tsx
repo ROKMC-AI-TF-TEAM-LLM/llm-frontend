@@ -3,7 +3,12 @@ import type { DocumentItem } from '../types'
 import { getDomainStyle, getDomainLabel } from '@/features/domains/utils'
 import { formatAppliedAt } from '../utils'
 import { downloadDocument } from '@/shared/utils/downloadAttachment'
-import { CloseIcon, DocumentIcon, DownloadIcon, SpinnerIcon } from '@/shared/components/icons'
+import {
+  CloseIcon,
+  DocumentIcon,
+  DownloadIcon,
+  SpinnerIcon,
+} from '@/shared/components/icons'
 
 interface RagDetailProps {
   doc: DocumentItem
@@ -57,19 +62,34 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
         <div className="flex items-center gap-3.5 mt-4">
           <div
             className="shrink-0 flex items-center justify-center"
-            style={{ width: 48, height: 48, borderRadius: 13, background: style.badgeBg, color: style.bar }}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 13,
+              background: style.badgeBg,
+              color: style.bar,
+            }}
           >
             <DocumentIcon width="22" height="22" />
           </div>
-          <h1 className="text-lg font-bold text-text-primary break-all leading-snug">{doc.name}</h1>
+          <h1 className="text-lg font-bold text-text-primary break-all leading-snug">
+            {doc.name}
+          </h1>
         </div>
 
         {rows.length > 0 && (
           <dl className="mt-7 rounded-2xl bg-surface-subtle overflow-hidden divide-y divide-surface-border">
             {rows.map((r) => (
-              <div key={r.label} className="flex items-center justify-between gap-4 px-5 py-4">
-                <dt className="text-[12.5px] text-text-muted shrink-0">{r.label}</dt>
-                <dd className="text-14 font-semibold text-text-primary text-right break-all">{r.value}</dd>
+              <div
+                key={r.label}
+                className="flex items-center justify-between gap-4 px-5 py-4"
+              >
+                <dt className="text-[12.5px] text-text-muted shrink-0">
+                  {r.label}
+                </dt>
+                <dd className="text-14 font-semibold text-text-primary text-right break-all">
+                  {r.value}
+                </dd>
               </div>
             ))}
           </dl>
@@ -88,7 +108,11 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           )}
           {downloading ? '내려받는 중...' : '원본 다운로드'}
         </button>
-        {downloadErr && <p className="mt-2 text-[12.5px] text-status-error text-center">{downloadErr}</p>}
+        {downloadErr && (
+          <p className="mt-2 text-[12.5px] text-status-error text-center">
+            {downloadErr}
+          </p>
+        )}
       </div>
     </div>
   )

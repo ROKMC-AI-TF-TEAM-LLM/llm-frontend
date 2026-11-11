@@ -1,7 +1,25 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
-import { getSessions, createSession, searchSessions, updateSession, setFavorite, deleteSession } from './api'
-import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest, GetSessionsResponse } from './types'
+import {
+  getSessions,
+  createSession,
+  searchSessions,
+  updateSession,
+  setFavorite,
+  deleteSession,
+} from './api'
+import type {
+  CreateSessionRequest,
+  SearchSessionsRequest,
+  UpdateSessionRequest,
+  GetSessionsResponse,
+} from './types'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { clearChatCache } from '@/shared/utils/chatStorage'
@@ -16,17 +34,29 @@ const SESSIONS_INFINITE_KEY = ['sessions', 'infinite'] as const
 // 마지막으로 끝난 것만 목록을 다시 받아, 중간 상태 응답이 화면을 되돌리지 않게 한다.
 const SESSION_MUTATION_PREFIX = ['sessions', 'mutate'] as const
 
-export const getSessionErrorMessage = (error: unknown, fallback = '오류가 발생했습니다.'): string =>
-  getApiError(error, SESSION_ERRORS.mutation, {}, fallback)
+export const getSessionErrorMessage = (
+  error: unknown,
+  fallback = '오류가 발생했습니다.',
+): string => getApiError(error, SESSION_ERRORS.mutation, {}, fallback)
 
 // onSettled 시점의 mutation은 아직 pending으로 집계되므로 1이면 '내가 마지막'이다. 실패 시(force)엔 항상 다시 받는다.
-const settleSessions = (queryClient: ReturnType<typeof useQueryClient>, force = false) => {
-  if (!force && queryClient.isMutating({ mutationKey: SESSION_MUTATION_PREFIX }) > 1) return
+const settleSessions = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  force = false,
+) => {
+  if (
+    !force &&
+    queryClient.isMutating({ mutationKey: SESSION_MUTATION_PREFIX }) > 1
+  )
+    return
   queryClient.invalidateQueries({ queryKey: ['sessions'] })
   queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
 }
 
-type SessionsInfinite = InfiniteData<AxiosResponse<GetSessionsResponse>, string | undefined>
+type SessionsInfinite = InfiniteData<
+  AxiosResponse<GetSessionsResponse>,
+  string | undefined
+>
 
 export const useInfiniteSessions = () => {
   const { accessToken } = useAuth()
@@ -65,16 +95,25 @@ export const useUpdateSession = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationKey: [...SESSION_MUTATION_PREFIX, 'update'],
-    mutationFn: ({ sessionId, data }: { sessionId: string; data: UpdateSessionRequest }) =>
-      updateSession(sessionId, data),
+    mutationFn: ({
+      sessionId,
+      data,
+    }: {
+      sessionId: string
+      data: UpdateSessionRequest
+    }) => updateSession(sessionId, data),
     onMutate: async ({ sessionId, data }) => {
       if (data.title === undefined) return { snapshots: undefined }
       await queryClient.cancelQueries({ queryKey: ['sessions'] })
       await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
-      const snapshots = optimisticallyPatchSession(queryClient, sessionId, (s) => ({
-        ...s,
-        title: data.title as string,
-      }))
+      const snapshots = optimisticallyPatchSession(
+        queryClient,
+        sessionId,
+        (s) => ({
+          ...s,
+          title: data.title as string,
+        }),
+      )
       return { snapshots }
     },
     onError: (err, _vars, context) => {
@@ -105,15 +144,23 @@ export const useDeleteSession = () => {
               ...page.data,
               data: {
                 ...page.data.data,
-                items: page.data.data.items.filter((s) => s.session_id !== sessionId),
+                items: page.data.data.items.filter(
+                  (s) => s.session_id !== sessionId,
+                ),
               },
             },
           })),
         }
       }
 
-      snapshots.push([SESSIONS_INFINITE_KEY, queryClient.getQueryData(SESSIONS_INFINITE_KEY)])
-      queryClient.setQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY, dropSession)
+      snapshots.push([
+        SESSIONS_INFINITE_KEY,
+        queryClient.getQueryData(SESSIONS_INFINITE_KEY),
+      ])
+      queryClient.setQueryData<SessionsInfinite>(
+        SESSIONS_INFINITE_KEY,
+        dropSession,
+      )
 
       for (const [key, data] of queryClient.getQueriesData<SessionsInfinite>({
         queryKey: ['projects', 'sessions'],
@@ -129,7 +176,12 @@ export const useDeleteSession = () => {
     onSuccess: (_d, sessionId) => clearChatCache(sessionId),
     onError: (err, _vars, context) => {
       rollbackSnapshots(queryClient, context?.snapshots)
-      showToast(getSessionErrorMessage(err, '대화를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.'))
+      showToast(
+        getSessionErrorMessage(
+          err,
+          '대화를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.',
+        ),
+      )
     },
     onSettled: (_d, e) => settleSessions(queryClient, !!e),
   })
@@ -141,7 +193,11 @@ export const useConfirmDeleteSession = () => {
   const { mutate } = useDeleteSession()
   const navigate = useNavigate()
   const location = useLocation()
-  return async (session: { id: string; title?: string | null; projectId?: string | null }) => {
+  return async (session: {
+    id: string
+    title?: string | null
+    projectId?: string | null
+  }) => {
     const { text, isUntitled } = displaySessionTitle(session.title)
     const label = isUntitled ? '이 대화' : `'${text}' 대화`
     const ok = await confirm({
@@ -151,8 +207,10 @@ export const useConfirmDeleteSession = () => {
     })
     if (!ok) return
     const path = location.pathname
-    const isOpen = path === `/chat/${session.id}` || path.endsWith(`/${session.id}`)
-    if (isOpen) navigate(session.projectId ? `/projects/${session.projectId}` : '/chat')
+    const isOpen =
+      path === `/chat/${session.id}` || path.endsWith(`/${session.id}`)
+    if (isOpen)
+      navigate(session.projectId ? `/projects/${session.projectId}` : '/chat')
     mutate(session.id)
   }
 }
@@ -162,7 +220,9 @@ export const useConfirmDeleteSession = () => {
 const patchSessionInPages = <T extends SessionsInfinite>(
   old: T | undefined,
   sessionId: string,
-  patch: (s: T['pages'][number]['data']['data']['items'][number]) => T['pages'][number]['data']['data']['items'][number],
+  patch: (
+    s: T['pages'][number]['data']['data']['items'][number],
+  ) => T['pages'][number]['data']['data']['items'][number],
 ): T | undefined => {
   if (!old) return old
   return {
@@ -173,7 +233,9 @@ const patchSessionInPages = <T extends SessionsInfinite>(
         ...page.data,
         data: {
           ...page.data.data,
-          items: page.data.data.items.map((s) => (s.session_id === sessionId ? patch(s) : s)),
+          items: page.data.data.items.map((s) =>
+            s.session_id === sessionId ? patch(s) : s,
+          ),
         },
       },
     })),
@@ -184,11 +246,15 @@ const patchSessionInPages = <T extends SessionsInfinite>(
 const optimisticallyPatchSession = (
   queryClient: ReturnType<typeof useQueryClient>,
   sessionId: string,
-  patch: (s: GetSessionsResponse['data']['items'][number]) => GetSessionsResponse['data']['items'][number],
+  patch: (
+    s: GetSessionsResponse['data']['items'][number],
+  ) => GetSessionsResponse['data']['items'][number],
 ) => {
   const snapshots: [readonly unknown[], SessionsInfinite | undefined][] = []
 
-  const global = queryClient.getQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY)
+  const global = queryClient.getQueryData<SessionsInfinite>(
+    SESSIONS_INFINITE_KEY,
+  )
   snapshots.push([SESSIONS_INFINITE_KEY, global])
   queryClient.setQueryData<SessionsInfinite>(SESSIONS_INFINITE_KEY, (old) =>
     patchSessionInPages(old, sessionId, patch),
@@ -226,10 +292,14 @@ export const useToggleFavorite = () => {
     onMutate: async ({ sessionId, next }) => {
       await queryClient.cancelQueries({ queryKey: ['sessions'] })
       await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
-      const snapshots = optimisticallyPatchSession(queryClient, sessionId, (s) => ({
-        ...s,
-        is_favorite: next,
-      }))
+      const snapshots = optimisticallyPatchSession(
+        queryClient,
+        sessionId,
+        (s) => ({
+          ...s,
+          is_favorite: next,
+        }),
+      )
       return { snapshots }
     },
 

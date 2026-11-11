@@ -1,9 +1,12 @@
 import { backendApi } from '@/lib/axios'
 import type {
-    LogoutRequest, LogoutResponse, 
-    SignupRequest, SignupResponse,
-    LoginRequest, LoginResponse
-    } from './types'
+  LogoutRequest,
+  LogoutResponse,
+  SignupRequest,
+  SignupResponse,
+  LoginRequest,
+  LoginResponse,
+} from './types'
 
 export const logout = (data: LogoutRequest) =>
   backendApi.post<LogoutResponse>('/api/v1/auth/logout', data)

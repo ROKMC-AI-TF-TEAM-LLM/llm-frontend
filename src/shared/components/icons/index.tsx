@@ -11,7 +11,10 @@ import type { ReactNode, SVGProps } from 'react'
 export type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'>
 
 /** 아이콘 공통 틀. 목록에 없는 모양을 그릴 때는 children으로 path를 넘긴다 */
-export function Icon({ children, ...props }: IconProps & { children: ReactNode }) {
+export function Icon({
+  children,
+  ...props
+}: IconProps & { children: ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -28,29 +31,101 @@ export function Icon({ children, ...props }: IconProps & { children: ReactNode }
   )
 }
 
-
 /* ───────── 닫기·확인·더하기 ───────── */
-export const CloseIcon = (props: IconProps) => <Icon {...props}><path d="M18 6L6 18M6 6l12 12" /></Icon>
-export const CheckIcon = (props: IconProps) => <Icon {...props}><path d="M20 6 9 17l-5-5" /></Icon>
-export const PlusIcon = (props: IconProps) => <Icon {...props}><path d="M12 5v14M5 12h14" /></Icon>
+export const CloseIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M18 6L6 18M6 6l12 12" />
+  </Icon>
+)
+export const CheckIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M20 6 9 17l-5-5" />
+  </Icon>
+)
+export const PlusIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+)
 
 /* ───────── 화살표 ───────── */
-export const ChevronDownIcon = (props: IconProps) => <Icon {...props}><path d="M6 9l6 6 6-6" /></Icon>
-export const ChevronRightIcon = (props: IconProps) => <Icon {...props}><path d="M9 6l6 6-6 6" /></Icon>
-export const ChevronsLeftIcon = (props: IconProps) => <Icon {...props}><path d="M17 6l-6 6 6 6" /><path d="M11 6l-6 6 6 6" /></Icon>
-export const ArrowUpIcon = (props: IconProps) => <Icon {...props}><path d="M12 19V5M5 12l7-7 7 7" /></Icon>
-export const ArrowDownIcon = (props: IconProps) => <Icon {...props}><path d="M12 5v14M19 12l-7 7-7-7" /></Icon>
-export const ArrowRightIcon = (props: IconProps) => <Icon {...props}><path d="M5 12h14M13 6l6 6-6 6" /></Icon>
+export const ChevronDownIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M6 9l6 6 6-6" />
+  </Icon>
+)
+export const ChevronRightIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 6l6 6-6 6" />
+  </Icon>
+)
+export const ChevronsLeftIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M17 6l-6 6 6 6" />
+    <path d="M11 6l-6 6 6 6" />
+  </Icon>
+)
+export const ArrowUpIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </Icon>
+)
+export const ArrowDownIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 5v14M19 12l-7 7-7-7" />
+  </Icon>
+)
+export const ArrowRightIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </Icon>
+)
 
 /* ───────── 편집 동작 ───────── */
-export const EditIcon = (props: IconProps) => <Icon {...props}><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></Icon>
-export const TrashIcon = (props: IconProps) => <Icon {...props}><path d="M19 7l-.9 12.1A2 2 0 0 1 16.1 21H7.9a2 2 0 0 1-2-1.9L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" /></Icon>
-export const TrashAltIcon = (props: IconProps) => <Icon {...props}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></Icon>
-export const CopyIcon = (props: IconProps) => <Icon {...props}><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></Icon>
-export const RegenerateIcon = (props: IconProps) => <Icon {...props}><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></Icon>
-export const RetryIcon = (props: IconProps) => <Icon {...props}><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" /><path d="M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16" /><path d="M3 21v-5h5" /></Icon>
-export const StarIcon = (props: IconProps) => <Icon {...props}><path d="M12 2.6l2.9 6.1 6.6.7-4.9 4.5 1.3 6.4L12 17l-5.9 3.3 1.3-6.4L2.5 9.4l6.6-.7z" /></Icon>
-export const StarAltIcon = (props: IconProps) => <Icon {...props}><path d="M12 2l2.9 6.26 6.6.72-4.9 4.6 1.35 6.42L12 16.9 6.05 20l1.35-6.42L2.5 8.98l6.6-.72L12 2z" /></Icon>
+export const EditIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </Icon>
+)
+export const TrashIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M19 7l-.9 12.1A2 2 0 0 1 16.1 21H7.9a2 2 0 0 1-2-1.9L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+  </Icon>
+)
+export const TrashAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+  </Icon>
+)
+export const CopyIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </Icon>
+)
+export const RegenerateIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+    <path d="M3 3v5h5" />
+  </Icon>
+)
+export const RetryIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+    <path d="M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+    <path d="M3 21v-5h5" />
+  </Icon>
+)
+export const StarIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 2.6l2.9 6.1 6.6.7-4.9 4.5 1.3 6.4L12 17l-5.9 3.3 1.3-6.4L2.5 9.4l6.6-.7z" />
+  </Icon>
+)
+export const StarAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 2l2.9 6.26 6.6.72-4.9 4.6 1.35 6.42L12 16.9 6.05 20l1.35-6.42L2.5 8.98l6.6-.72L12 2z" />
+  </Icon>
+)
 /** 세로 점 세 개 (더보기). 선이 아니라 채운 점이다 */
 export const MoreIcon = (props: IconProps) => (
   <Icon fill="currentColor" stroke="none" {...props}>
@@ -61,32 +136,122 @@ export const MoreIcon = (props: IconProps) => (
 )
 
 /* ───────── 검색·메뉴 ───────── */
-export const SearchIcon = (props: IconProps) => <Icon {...props}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></Icon>
-export const SearchAltIcon = (props: IconProps) => <Icon {...props}><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></Icon>
-export const SearchAlt2Icon = (props: IconProps) => <Icon {...props}><path d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></Icon>
-export const MenuIcon = (props: IconProps) => <Icon {...props}><path d="M3 7h18M3 12h18M3 17h18" /></Icon>
+export const SearchIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3" />
+  </Icon>
+)
+export const SearchAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="M21 21l-4.35-4.35" />
+  </Icon>
+)
+export const SearchAlt2Icon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </Icon>
+)
+export const MenuIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 7h18M3 12h18M3 17h18" />
+  </Icon>
+)
 
 /* ───────── 파일·문서 ───────── */
-export const FileIcon = (props: IconProps) => <Icon {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></Icon>
-export const DocumentIcon = (props: IconProps) => <Icon {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h5" /></Icon>
-export const DocumentAltIcon = (props: IconProps) => <Icon {...props}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></Icon>
-export const FolderIcon = (props: IconProps) => <Icon {...props}><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></Icon>
-export const DownloadIcon = (props: IconProps) => <Icon {...props}><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></Icon>
-export const UploadIcon = (props: IconProps) => <Icon {...props}><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></Icon>
-export const UploadAltIcon = (props: IconProps) => <Icon {...props}><path d="M12 3v12M7 8l5-5 5 5M5 21h14" /></Icon>
+export const FileIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+  </Icon>
+)
+export const DocumentIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6M8 13h8M8 17h5" />
+  </Icon>
+)
+export const DocumentAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5M9 13h6M9 17h4" />
+  </Icon>
+)
+export const FolderIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+  </Icon>
+)
+export const DownloadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+  </Icon>
+)
+export const UploadIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 16V4M7 9l5-5 5 5" />
+    <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+  </Icon>
+)
+export const UploadAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3v12M7 8l5-5 5 5M5 21h14" />
+  </Icon>
+)
 
 /* ───────── 대화·사용자 ───────── */
-export const ChatIcon = (props: IconProps) => <Icon {...props}><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.5-4.5A8 8 0 1 1 21 12z" /></Icon>
-export const ChatAltIcon = (props: IconProps) => <Icon {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></Icon>
-export const UserIcon = (props: IconProps) => <Icon {...props}><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></Icon>
-export const LogoutIcon = (props: IconProps) => <Icon {...props}><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></Icon>
-export const ExternalLinkIcon = (props: IconProps) => <Icon {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></Icon>
+export const ChatIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.5-4.5A8 8 0 1 1 21 12z" />
+  </Icon>
+)
+export const ChatAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </Icon>
+)
+export const UserIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+  </Icon>
+)
+export const LogoutIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+  </Icon>
+)
+export const ExternalLinkIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+  </Icon>
+)
 
 /* ───────── 상태 ───────── */
-export const InfoIcon = (props: IconProps) => <Icon {...props}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></Icon>
-export const AlertIcon = (props: IconProps) => <Icon {...props}><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></Icon>
-export const AlertAltIcon = (props: IconProps) => <Icon {...props}><circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" /></Icon>
-export const StopIcon = (props: IconProps) => <Icon {...props}><rect x="6" y="6" width="12" height="12" rx="2" /></Icon>
+export const InfoIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4M12 8h.01" />
+  </Icon>
+)
+export const AlertIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v5M12 16h.01" />
+  </Icon>
+)
+export const AlertAltIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4m0 4h.01" />
+  </Icon>
+)
+export const StopIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </Icon>
+)
 /** 채운 네모 (생성 중단 버튼) */
 export const StopFilledIcon = (props: IconProps) => (
   <Icon fill="currentColor" stroke="none" {...props}>
@@ -94,9 +259,18 @@ export const StopFilledIcon = (props: IconProps) => (
   </Icon>
 )
 /** 도는 고리. `animate-spin`과 함께 쓴다. trackOpacity는 바탕 고리의 진하기 */
-export const SpinnerIcon = ({ trackOpacity = 0.25, ...props }: IconProps & { trackOpacity?: number }) => (
+export const SpinnerIcon = ({
+  trackOpacity = 0.25,
+  ...props
+}: IconProps & { trackOpacity?: number }) => (
   <Icon strokeWidth={2.5} strokeLinejoin={undefined} {...props}>
-    <circle cx="12" cy="12" r="9" strokeOpacity={trackOpacity} strokeLinecap={undefined} />
+    <circle
+      cx="12"
+      cy="12"
+      r="9"
+      strokeOpacity={trackOpacity}
+      strokeLinecap={undefined}
+    />
     <path d="M21 12a9 9 0 0 0-9-9" />
   </Icon>
 )

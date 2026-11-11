@@ -1,45 +1,58 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react'
 import {
   useInfiniteAdminDocuments,
   useUploadDocument,
   useDeleteDocument,
   useRetryDocument,
   useAdminDocumentStatus,
-} from '../hooks';
-import { DOMAINS, getDomainLabel, getDomainStyle } from '@/features/domains/utils';
-import { normalizeDocStatus } from '@/features/documents/utils';
-import DomainIcon from '@/features/domains/components/DomainIcon';
-import { showToast } from '@/shared/store/toastStore';
-import { confirm } from '@/shared/store/confirmStore';
-import { getApiError, readApiError, DEFAULT_STATUS_ERRORS } from '@/shared/utils/error';
-import { formatDate } from '@/shared/utils/date';
-import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
-import { formatFileSize } from '@/shared/utils/fileSize';
-import type { AdminDocumentItem, AdminDocStatus } from '../types';
-import { ChevronDownIcon, CloseIcon, SearchAltIcon, UploadAltIcon } from '@/shared/components/icons';
+} from '../hooks'
+import {
+  DOMAINS,
+  getDomainLabel,
+  getDomainStyle,
+} from '@/features/domains/utils'
+import { normalizeDocStatus } from '@/features/documents/utils'
+import DomainIcon from '@/features/domains/components/DomainIcon'
+import { showToast } from '@/shared/store/toastStore'
+import { confirm } from '@/shared/store/confirmStore'
+import {
+  getApiError,
+  readApiError,
+  DEFAULT_STATUS_ERRORS,
+} from '@/shared/utils/error'
+import { formatDate } from '@/shared/utils/date'
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
+import { formatFileSize } from '@/shared/utils/fileSize'
+import type { AdminDocumentItem, AdminDocStatus } from '../types'
+import {
+  ChevronDownIcon,
+  CloseIcon,
+  SearchAltIcon,
+  UploadAltIcon,
+} from '@/shared/components/icons'
 
-type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
+type StatusFilter = 'all' | 'processing' | 'completed' | 'failed'
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: '전체', value: 'all' },
   { label: '완료', value: 'completed' },
   { label: '실패', value: 'failed' },
-];
+]
 
 const statusBadge = (status: AdminDocStatus) => {
   switch (normalizeDocStatus(status)) {
     case 'completed':
-      return { label: '완료', cls: 'bg-status-ok/12 text-status-ok' };
+      return { label: '완료', cls: 'bg-status-ok/12 text-status-ok' }
     case 'failed':
-      return { label: '실패', cls: 'bg-status-error/12 text-status-error' };
+      return { label: '실패', cls: 'bg-status-error/12 text-status-error' }
     default:
-      return { label: '처리 중', cls: 'bg-amber-100 text-amber-700' };
+      return { label: '처리 중', cls: 'bg-amber-100 text-amber-700' }
   }
-};
+}
 
 const matchesFilter = (status: AdminDocStatus, f: StatusFilter): boolean => {
-  if (f === 'all') return true;
-  return normalizeDocStatus(status) === f;
-};
+  if (f === 'all') return true
+  return normalizeDocStatus(status) === f
+}
 
 function DocumentRow({
   doc,
@@ -48,23 +61,25 @@ function DocumentRow({
   deleting,
   retrying,
 }: {
-  doc: AdminDocumentItem;
-  onDelete: (doc: AdminDocumentItem) => void;
-  onRetry: (doc: AdminDocumentItem) => void;
-  deleting: boolean;
-  retrying: boolean;
+  doc: AdminDocumentItem
+  onDelete: (doc: AdminDocumentItem) => void
+  onRetry: (doc: AdminDocumentItem) => void
+  deleting: boolean
+  retrying: boolean
 }) {
-  const listStatus = normalizeDocStatus(doc.status);
-  const isProcessing = listStatus === 'processing';
-  const { data: statusRes } = useAdminDocumentStatus(isProcessing ? doc.document_id : undefined);
+  const listStatus = normalizeDocStatus(doc.status)
+  const isProcessing = listStatus === 'processing'
+  const { data: statusRes } = useAdminDocumentStatus(
+    isProcessing ? doc.document_id : undefined,
+  )
 
-  const verifiedStatus = statusRes?.data.data.status ?? doc.status;
-  const state = normalizeDocStatus(verifiedStatus);
-  const badge = statusBadge(verifiedStatus);
-  const style = getDomainStyle(doc.domain);
+  const verifiedStatus = statusRes?.data.data.status ?? doc.status
+  const state = normalizeDocStatus(verifiedStatus)
+  const badge = statusBadge(verifiedStatus)
+  const style = getDomainStyle(doc.domain)
 
-  const isFailed = state === 'failed';
-  const isBusy = state === 'processing';
+  const isFailed = state === 'failed'
+  const isBusy = state === 'processing'
 
   return (
     <tr
@@ -74,22 +89,34 @@ function DocumentRow({
     >
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="shrink-0 w-1 h-8 rounded-full" style={{ background: style.bar }} />
+          <span
+            className="shrink-0 w-1 h-8 rounded-full"
+            style={{ background: style.bar }}
+          />
           <div className="min-w-0">
-            <p className="font-semibold text-text-primary truncate max-w-[360px]">{doc.name}</p>
-            <p className="text-[11.5px] text-text-muted">{doc.content_type || '문서'} · {formatFileSize(doc.size) ?? '-'}</p>
+            <p className="font-semibold text-text-primary truncate max-w-[360px]">
+              {doc.name}
+            </p>
+            <p className="text-[11.5px] text-text-muted">
+              {doc.content_type || '문서'} · {formatFileSize(doc.size) ?? '-'}
+            </p>
           </div>
         </div>
       </td>
       <td className="px-4 py-3.5">
-        <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold" style={{ color: style.badgeText }}>
+        <span
+          className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
+          style={{ color: style.badgeText }}
+        >
           <DomainIcon code={doc.domain} size={14} />
           {getDomainLabel(doc.domain)}
         </span>
       </td>
       <td className="px-4 py-3.5 text-text-secondary">해병대</td>
       <td className="px-4 py-3.5">
-        <span className={`inline-flex items-center whitespace-nowrap text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>
+        <span
+          className={`inline-flex items-center whitespace-nowrap text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}
+        >
           {badge.label}
         </span>
       </td>
@@ -117,24 +144,24 @@ function DocumentRow({
         </div>
       </td>
     </tr>
-  );
+  )
 }
 
-const ACCEPT = '.pdf,.docx,.hwp,.md,.txt';
+const ACCEPT = '.pdf,.docx,.hwp,.md,.txt'
 
 export default function AdminDocuments() {
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [uploadDomain, setUploadDomain] = useState(DOMAINS[0]);
-  const [domainMenuOpen, setDomainMenuOpen] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [uploadDomain, setUploadDomain] = useState(DOMAINS[0])
+  const [domainMenuOpen, setDomainMenuOpen] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const {
     data,
@@ -144,22 +171,26 @@ export default function AdminDocuments() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteAdminDocuments(debouncedSearch ? { search: debouncedSearch } : undefined);
-  const uploadMut = useUploadDocument();
-  const deleteMut = useDeleteDocument();
-  const retryMut = useRetryDocument();
+  } = useInfiniteAdminDocuments(
+    debouncedSearch ? { search: debouncedSearch } : undefined,
+  )
+  const uploadMut = useUploadDocument()
+  const deleteMut = useDeleteDocument()
+  const retryMut = useRetryDocument()
 
   const documents = useMemo<AdminDocumentItem[]>(
     () => (data?.pages ?? []).flatMap((p) => p.data.data.documents ?? []),
     [data],
-  );
+  )
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim().toLowerCase()
     return documents.filter(
-      (d) => matchesFilter(d.status, statusFilter) && (!q || d.name.toLowerCase().includes(q)),
-    );
-  }, [documents, statusFilter, search]);
+      (d) =>
+        matchesFilter(d.status, statusFilter) &&
+        (!q || d.name.toLowerCase().includes(q)),
+    )
+  }, [documents, statusFilter, search])
 
   const sentinelRef = useInfiniteScroll<HTMLDivElement>({
     hasMore: !!hasNextPage,
@@ -167,48 +198,68 @@ export default function AdminDocuments() {
     onLoadMore: fetchNextPage,
     enabled: !isError,
     rootMargin: '200px 0px',
-  });
+  })
 
   const handleFiles = (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file) return;
+    const file = files?.[0]
+    if (!file) return
     uploadMut.mutate(
       { file, fields: { name: file.name, domain: uploadDomain.code } },
       {
-        onSuccess: () => showToast(`'${file.name}' 업로드가 시작되었습니다.`, 'success'),
-        onError: () => showToast('업로드에 실패했습니다. 잠시 후 다시 시도해주세요.'),
+        onSuccess: () =>
+          showToast(`'${file.name}' 업로드가 시작되었습니다.`, 'success'),
+        onError: () =>
+          showToast('업로드에 실패했습니다. 잠시 후 다시 시도해주세요.'),
       },
-    );
-  };
+    )
+  }
 
   const handleDelete = async (doc: AdminDocumentItem) => {
-    if (!(await confirm({ title: `'${doc.name}' 문서를 삭제하시겠습니까?`, danger: true }))) return;
+    if (
+      !(await confirm({
+        title: `'${doc.name}' 문서를 삭제하시겠습니까?`,
+        danger: true,
+      }))
+    )
+      return
     deleteMut.mutate(doc.document_id, {
       onError: () => showToast('삭제에 실패했습니다.'),
-    });
-  };
+    })
+  }
 
   const handleRetry = (doc: AdminDocumentItem) => {
     retryMut.mutate(doc.document_id, {
-      onSuccess: () => showToast(`'${doc.name}' 색인을 다시 시작했습니다.`, 'success'),
+      onSuccess: () =>
+        showToast(`'${doc.name}' 색인을 다시 시작했습니다.`, 'success'),
       onError: (e) => {
-        const { detail } = readApiError(e);
-        showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        const { detail } = readApiError(e)
+        showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해주세요.')
       },
-    });
-  };
+    })
+  }
 
   return (
     <div>
-      <p className="text-sm text-text-muted mb-6">MARS가 답변 근거로 사용할 문서를 업로드하세요</p>
+      <p className="text-sm text-text-muted mb-6">
+        MARS가 답변 근거로 사용할 문서를 업로드하세요
+      </p>
 
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setDragOver(true)
+        }}
         onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+        onDrop={(e) => {
+          e.preventDefault()
+          setDragOver(false)
+          handleFiles(e.dataTransfer.files)
+        }}
         onClick={() => fileInputRef.current?.click()}
         className={`relative flex items-center justify-between gap-4 rounded-2xl border-2 border-dashed px-6 py-5 mb-6 cursor-pointer transition-colors ${
-          dragOver ? 'border-brand bg-brand-subtle' : 'border-brand-soft bg-brand-subtle/40 hover:bg-brand-subtle'
+          dragOver
+            ? 'border-brand bg-brand-subtle'
+            : 'border-brand-soft bg-brand-subtle/40 hover:bg-brand-subtle'
         }`}
       >
         <input
@@ -216,28 +267,43 @@ export default function AdminDocuments() {
           type="file"
           accept={ACCEPT}
           className="hidden"
-          onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
+          onChange={(e) => {
+            handleFiles(e.target.files)
+            e.target.value = ''
+          }}
         />
         <div className="flex items-center gap-4 min-w-0">
           <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-soft flex items-center justify-center">
             <UploadAltIcon className="w-5 h-5 text-brand" />
           </div>
           <div className="min-w-0">
-            <p className="text-15 font-bold text-text-primary">파일을 여기로 끌어다 놓거나 클릭해 업로드</p>
-            <p className="text-[12.5px] text-text-muted mt-0.5">PDF, DOCX, HWP · 최대 50MB</p>
+            <p className="text-15 font-bold text-text-primary">
+              파일을 여기로 끌어다 놓거나 클릭해 업로드
+            </p>
+            <p className="text-[12.5px] text-text-muted mt-0.5">
+              PDF, DOCX, HWP · 최대 50MB
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-3 shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="relative">
             <button
               type="button"
               onClick={() => setDomainMenuOpen((v) => !v)}
               className="inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-2 rounded-full bg-white border border-brand-soft text-13 font-semibold text-brand hover:bg-brand-subtle transition-colors"
             >
-              <span className="w-2 h-2 rounded-full" style={{ background: getDomainStyle(uploadDomain.code).bar }} />
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{ background: getDomainStyle(uploadDomain.code).bar }}
+              />
               {uploadDomain.label}
-              <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform ${domainMenuOpen ? 'rotate-180' : ''}`} />
+              <ChevronDownIcon
+                className={`w-3.5 h-3.5 transition-transform ${domainMenuOpen ? 'rotate-180' : ''}`}
+              />
             </button>
             {domainMenuOpen && (
               <div className="absolute right-0 top-full mt-2 min-w-[160px] rounded-2xl border border-surface-border bg-white shadow-[0_10px_30px_rgba(40,30,35,0.12)] p-1.5 z-20">
@@ -245,9 +311,14 @@ export default function AdminDocuments() {
                   <button
                     key={d.code}
                     type="button"
-                    onClick={() => { setUploadDomain(d); setDomainMenuOpen(false); }}
+                    onClick={() => {
+                      setUploadDomain(d)
+                      setDomainMenuOpen(false)
+                    }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-13 text-left transition-colors ${
-                      uploadDomain.code === d.code ? 'bg-brand-subtle text-brand font-semibold' : 'text-text-secondary hover:bg-surface-subtle'
+                      uploadDomain.code === d.code
+                        ? 'bg-brand-subtle text-brand font-semibold'
+                        : 'text-text-secondary hover:bg-surface-subtle'
                     }`}
                   >
                     <DomainIcon code={d.code} size={15} />
@@ -311,29 +382,65 @@ export default function AdminDocuments() {
           <thead>
             <tr className="bg-surface-subtle text-[12.5px] text-text-muted">
               <th className="text-left font-semibold px-5 py-3">파일명</th>
-              <th className="text-left font-semibold px-4 py-3 w-[130px]">도메인</th>
-              <th className="text-left font-semibold px-4 py-3 w-[90px]">업로더</th>
-              <th className="text-left font-semibold px-4 py-3 w-[100px]">상태</th>
-              <th className="text-left font-semibold px-4 py-3 w-[110px]">업로드일</th>
-              <th className="text-right font-semibold px-5 py-3 w-[90px]">처리</th>
+              <th className="text-left font-semibold px-4 py-3 w-[130px]">
+                도메인
+              </th>
+              <th className="text-left font-semibold px-4 py-3 w-[90px]">
+                업로더
+              </th>
+              <th className="text-left font-semibold px-4 py-3 w-[100px]">
+                상태
+              </th>
+              <th className="text-left font-semibold px-4 py-3 w-[110px]">
+                업로드일
+              </th>
+              <th className="text-right font-semibold px-5 py-3 w-[90px]">
+                처리
+              </th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} className="px-5 py-10 text-center text-text-muted">불러오는 중...</td></tr>
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-5 py-10 text-center text-text-muted"
+                >
+                  불러오는 중...
+                </td>
+              </tr>
             ) : isError ? (
-              <tr><td colSpan={6} className="px-5 py-10 text-center text-text-muted">
-                문서를 불러오지 못했습니다.
-                <span className="block mt-1 text-12 text-text-muted/80">
-                  {(() => {
-                    const { status } = readApiError(error);
-                    const msg = getApiError(error, {}, DEFAULT_STATUS_ERRORS, '서버에 연결할 수 없습니다.');
-                    return status ? `[${status}] ${msg}` : msg;
-                  })()}
-                </span>
-              </td></tr>
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-5 py-10 text-center text-text-muted"
+                >
+                  문서를 불러오지 못했습니다.
+                  <span className="block mt-1 text-12 text-text-muted/80">
+                    {(() => {
+                      const { status } = readApiError(error)
+                      const msg = getApiError(
+                        error,
+                        {},
+                        DEFAULT_STATUS_ERRORS,
+                        '서버에 연결할 수 없습니다.',
+                      )
+                      return status ? `[${status}] ${msg}` : msg
+                    })()}
+                  </span>
+                </td>
+              </tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} className="px-5 py-10 text-center text-text-muted">{search || statusFilter !== 'all' ? '조건에 맞는 문서가 없습니다.' : '업로드된 문서가 없습니다.'}</td></tr>
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-5 py-10 text-center text-text-muted"
+                >
+                  {search || statusFilter !== 'all'
+                    ? '조건에 맞는 문서가 없습니다.'
+                    : '업로드된 문서가 없습니다.'}
+                </td>
+              </tr>
             ) : (
               filtered.map((doc) => (
                 <DocumentRow
@@ -342,17 +449,21 @@ export default function AdminDocuments() {
                   onDelete={handleDelete}
                   onRetry={handleRetry}
                   deleting={deleteMut.isPending}
-                  retrying={retryMut.isPending && retryMut.variables === doc.document_id}
+                  retrying={
+                    retryMut.isPending && retryMut.variables === doc.document_id
+                  }
                 />
               ))
             )}
           </tbody>
         </table>
         {isFetchingNextPage && (
-          <p className="py-4 text-sm text-center text-text-muted border-t border-surface-border">불러오는 중...</p>
+          <p className="py-4 text-sm text-center text-text-muted border-t border-surface-border">
+            불러오는 중...
+          </p>
         )}
       </div>
       <div ref={sentinelRef} className="h-px" aria-hidden />
     </div>
-  );
+  )
 }

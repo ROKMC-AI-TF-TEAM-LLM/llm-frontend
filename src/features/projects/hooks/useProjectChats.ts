@@ -1,5 +1,9 @@
 import { useMemo } from 'react'
-import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useConfirmDeleteSession } from '@/features/sessions/hooks'
+import {
+  useUpdateSession,
+  useToggleFavorite as useToggleSessionFavorite,
+  useConfirmDeleteSession,
+} from '@/features/sessions/hooks'
 import { formatClock } from '@/shared/utils/date'
 import type { ProjectChat } from '../types'
 import { useProjectSessions } from './queries'
@@ -30,7 +34,10 @@ export function useProjectChats(id: string | undefined) {
   }
   const toggleChatFavorite = (targetId: string) => {
     const cur = chats.find((c) => c.id === targetId)
-    toggleSessionFavoriteApi({ sessionId: targetId, next: !(cur?.isFavorite ?? false) })
+    toggleSessionFavoriteApi({
+      sessionId: targetId,
+      next: !(cur?.isFavorite ?? false),
+    })
   }
   const deleteChat = (targetId: string) => {
     // 확인 창, 열려 있던 대화면 프로젝트 첫 화면으로 이동, 실패 알림은 훅이 맡는다.

@@ -1,19 +1,31 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/features/auth/useAuth";
-import Sidebar from "../sidebar/Sidebar";
-import { useState, useEffect, useCallback, useMemo, type CSSProperties } from "react";
-import { useGetMe } from "@/features/users/hooks";
-import { useInfiniteSessions } from "@/features/sessions/hooks";
-import { SidebarSkeleton } from "@/shared/components/Skeleton";
-import ErrorBoundary from "@/shared/components/ErrorBoundary";
-import type { ApiError } from "@/shared/utils/error";
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { useAuth } from '@/features/auth/useAuth'
+import Sidebar from '../sidebar/Sidebar'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type CSSProperties,
+} from 'react'
+import { useGetMe } from '@/features/users/hooks'
+import { useInfiniteSessions } from '@/features/sessions/hooks'
+import { SidebarSkeleton } from '@/shared/components/Skeleton'
+import ErrorBoundary from '@/shared/components/ErrorBoundary'
+import type { ApiError } from '@/shared/utils/error'
 
 const ProtectedLayout = () => {
-  const { accessToken, logout } = useAuth();
-  const location = useLocation();
-  const [isOpen, setIsOpen] = useState(true);
-  const { data: meData, isError, error: meError, isLoading } = useGetMe();
-  const { data: sessionsInfinite, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isSessionsLoading } = useInfiniteSessions();
+  const { accessToken, logout } = useAuth()
+  const location = useLocation()
+  const [isOpen, setIsOpen] = useState(true)
+  const { data: meData, isError, error: meError, isLoading } = useGetMe()
+  const {
+    data: sessionsInfinite,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isSessionsLoading,
+  } = useInfiniteSessions()
 
   useEffect(() => {
     if (isError) {
@@ -22,16 +34,22 @@ const ProtectedLayout = () => {
         logout()
       }
     }
-  }, [isError, meError, logout]);
+  }, [isError, meError, logout])
 
-  const userData = meData?.data?.data;
+  const userData = meData?.data?.data
   const user = useMemo(
     () =>
       userData
-        ? { id: '', name: userData.name, email: userData.email, role: userData.role, createdAt: userData.created_at }
+        ? {
+            id: '',
+            name: userData.name,
+            email: userData.email,
+            role: userData.role,
+            createdAt: userData.created_at,
+          }
         : { id: '', name: '사용자' },
     [userData],
-  );
+  )
 
   const chats = useMemo(
     () =>
@@ -44,12 +62,12 @@ const ProtectedLayout = () => {
           ...(s.project_id ? { projectId: s.project_id } : {}),
         })),
     [sessionsInfinite],
-  );
+  )
 
-  const handleToggle = useCallback(() => setIsOpen((v) => !v), []);
+  const handleToggle = useCallback(() => setIsOpen((v) => !v), [])
 
   if (!accessToken) {
-    return <Navigate to='/' replace />;
+    return <Navigate to="/" replace />
   }
 
   if (isLoading) {
@@ -58,24 +76,26 @@ const ProtectedLayout = () => {
         <SidebarSkeleton />
         <div className="flex-1 min-w-0" />
       </div>
-    );
+    )
   }
 
   if (isError) {
-    const status = (meError as ApiError)?.response?.status;
+    const status = (meError as ApiError)?.response?.status
     if (status === 401) {
       return (
         <div className="flex h-screen">
           <SidebarSkeleton />
           <div className="flex-1 min-w-0" />
         </div>
-      );
+      )
     }
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-sm text-text-secondary">서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+        <p className="text-sm text-text-secondary">
+          서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.
+        </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -91,7 +111,9 @@ const ProtectedLayout = () => {
         isLoadingMore={isFetchingNextPage}
       />
       <main
-        style={{ '--sidebar-width': isOpen ? '15rem' : '56px' } as CSSProperties}
+        style={
+          { '--sidebar-width': isOpen ? '15rem' : '56px' } as CSSProperties
+        }
         className={`h-screen overflow-hidden transition-[margin-left] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'ml-60' : 'ml-[56px]'}`}
       >
         <ErrorBoundary>
@@ -101,7 +123,7 @@ const ProtectedLayout = () => {
         </ErrorBoundary>
       </main>
     </>
-  );
+  )
 }
 
-export default ProtectedLayout;
+export default ProtectedLayout

@@ -18,9 +18,12 @@ export const useDocumentDrawer = () => {
     closeTimer.current = setTimeout(() => setDoc(null), DRAWER_MS)
   }, [])
 
-  useEffect(() => () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current)
-  }, [])
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+    },
+    [],
+  )
 
   return { doc, open, openDoc, closeDoc }
 }

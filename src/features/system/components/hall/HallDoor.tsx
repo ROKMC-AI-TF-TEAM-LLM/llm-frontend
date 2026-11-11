@@ -5,10 +5,28 @@ import type { DoorPos } from './constants'
 export function DoorSpotlight({ door: n }: { door: DoorPos }) {
   const spotStyle =
     n.wall === 'top'
-      ? { left: n.x - 60, top: n.y - 20, width: 120, height: 130, bg: 'radial-gradient(ellipse at 50% 0%, rgba(255,230,160,.16), transparent 70%)' }
+      ? {
+          left: n.x - 60,
+          top: n.y - 20,
+          width: 120,
+          height: 130,
+          bg: 'radial-gradient(ellipse at 50% 0%, rgba(255,230,160,.16), transparent 70%)',
+        }
       : n.wall === 'left'
-        ? { left: n.x - 20, top: n.y - 60, width: 130, height: 120, bg: 'radial-gradient(ellipse at 0% 50%, rgba(255,230,160,.16), transparent 70%)' }
-        : { left: n.x - 110, top: n.y - 60, width: 130, height: 120, bg: 'radial-gradient(ellipse at 100% 50%, rgba(255,230,160,.16), transparent 70%)' }
+        ? {
+            left: n.x - 20,
+            top: n.y - 60,
+            width: 130,
+            height: 120,
+            bg: 'radial-gradient(ellipse at 0% 50%, rgba(255,230,160,.16), transparent 70%)',
+          }
+        : {
+            left: n.x - 110,
+            top: n.y - 60,
+            width: 130,
+            height: 120,
+            bg: 'radial-gradient(ellipse at 100% 50%, rgba(255,230,160,.16), transparent 70%)',
+          }
   return (
     <div
       aria-hidden
@@ -39,13 +57,23 @@ interface HallDoorProps {
 }
 
 // 전시실 문 + 명패 + 미니맵 안내판
-export function HallDoor({ door: n, isSelf, isNear, isSignNear, isOpening, onEnter, onReadSign }: HallDoorProps) {
+export function HallDoor({
+  door: n,
+  isSelf,
+  isNear,
+  isSignNear,
+  isOpening,
+  onEnter,
+  onReadSign,
+}: HallDoorProps) {
   const house = houseOf(n.roles)
   const doorRotate = n.wall === 'left' ? 90 : n.wall === 'right' ? -90 : 0
-  const frameSide: 'up' | 'left' | 'right' = n.wall === 'top' ? 'up' : n.wall === 'left' ? 'left' : 'right'
+  const frameSide: 'up' | 'left' | 'right' =
+    n.wall === 'top' ? 'up' : n.wall === 'left' ? 'left' : 'right'
   const plateOffset = frameSide === 'up' ? { x: -42, y: 32 } : { x: -42, y: 40 }
   const signOffset = frameSide === 'up' ? { x: 54, y: 32 } : { x: -17, y: -62 }
-  const signPromptOffset = frameSide === 'up' ? { x: 46, y: 10 } : { x: -30, y: -84 }
+  const signPromptOffset =
+    frameSide === 'up' ? { x: 46, y: 10 } : { x: -30, y: -84 }
 
   return (
     <div style={{ position: 'absolute', left: n.x, top: n.y, zIndex: 5 }}>
@@ -57,7 +85,12 @@ export function HallDoor({ door: n, isSelf, isNear, isSignNear, isOpening, onEnt
           width: frameSide === 'up' ? 88 : 22,
           height: frameSide === 'up' ? 22 : 88,
           background: `linear-gradient(${frameSide === 'up' ? '' : frameSide === 'left' ? '90deg,' : '270deg,'}${house.primary}, ${house.dark})`,
-          borderRadius: frameSide === 'up' ? '12px 12px 0 0' : frameSide === 'left' ? '12px 0 0 12px' : '0 12px 12px 0',
+          borderRadius:
+            frameSide === 'up'
+              ? '12px 12px 0 0'
+              : frameSide === 'left'
+                ? '12px 0 0 12px'
+                : '0 12px 12px 0',
           border: '2px solid #1a1210',
           boxShadow: `0 0 10px ${house.glow}`,
         }}
@@ -95,7 +128,9 @@ export function HallDoor({ door: n, isSelf, isNear, isSignNear, isOpening, onEnt
             ? 'linear-gradient(#3a3430,#232019)'
             : `linear-gradient(${house.primary}, ${house.dark})`,
           border: `3px solid ${isSelf ? '#e4002b' : isNear ? '#ffe9c2' : '#c99a3f'}`,
-          boxShadow: isSelf ? '0 0 14px 2px rgba(228,0,43,.6)' : '0 8px 14px rgba(0,0,0,.45)',
+          boxShadow: isSelf
+            ? '0 0 14px 2px rgba(228,0,43,.6)'
+            : '0 8px 14px rgba(0,0,0,.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -106,7 +141,14 @@ export function HallDoor({ door: n, isSelf, isNear, isSignNear, isOpening, onEnt
           pointerEvents: isNear ? 'auto' : 'none',
         }}
       >
-        <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,.85)', transform: `rotate(${-doorRotate}deg)` }}>
+        <span
+          style={{
+            fontSize: 18,
+            fontWeight: 900,
+            color: 'rgba(255,255,255,.85)',
+            transform: `rotate(${-doorRotate}deg)`,
+          }}
+        >
           {n.name.charAt(0)}
         </span>
       </div>
@@ -144,9 +186,18 @@ export function HallDoor({ door: n, isSelf, isNear, isSignNear, isOpening, onEnt
           color: n.discharged ? '#7a6a55' : '#e6d9c4',
         }}
       >
-        <div>{n.name} · {n.discharged ? '예비역' : n.cohort}</div>
+        <div>
+          {n.name} · {n.discharged ? '예비역' : n.cohort}
+        </div>
         {!n.discharged && (
-          <div style={{ marginTop: 1, fontSize: 7, color: house.primary, fontWeight: 700 }}>
+          <div
+            style={{
+              marginTop: 1,
+              fontSize: 7,
+              color: house.primary,
+              fontWeight: 700,
+            }}
+          >
             {house.label}
           </div>
         )}
@@ -171,7 +222,12 @@ export function HallDoor({ door: n, isSelf, isNear, isSignNear, isOpening, onEnt
           pointerEvents: isSignNear ? 'auto' : 'none',
         }}
       >
-        <svg width="20" height="14" viewBox="0 0 20 14" shapeRendering="crispEdges">
+        <svg
+          width="20"
+          height="14"
+          viewBox="0 0 20 14"
+          shapeRendering="crispEdges"
+        >
           <rect x="0" y="0" width="20" height="14" fill="#8a5a34" />
           <rect x="2" y="2" width="6" height="4" fill="#5c7a4a" />
           <rect x="12" y="2" width="6" height="4" fill="#5c7a4a" />

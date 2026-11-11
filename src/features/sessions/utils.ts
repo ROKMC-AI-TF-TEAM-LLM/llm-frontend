@@ -1,8 +1,12 @@
 export const UNTITLED = '제목 없음'
 
-export const displaySessionTitle = (title?: string | null): { text: string; isUntitled: boolean } => {
+export const displaySessionTitle = (
+  title?: string | null,
+): { text: string; isUntitled: boolean } => {
   const trimmed = (title ?? '').trim()
-  return trimmed ? { text: trimmed, isUntitled: false } : { text: UNTITLED, isUntitled: true }
+  return trimmed
+    ? { text: trimmed, isUntitled: false }
+    : { text: UNTITLED, isUntitled: true }
 }
 
 // 세션 오류 코드별 문구. 같은 코드라도 쓰이는 자리마다 문구가 달라 표를 따로 둔다 (합치지 않음).

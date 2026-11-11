@@ -18,10 +18,13 @@ const exts = ['', '.ts', '.tsx', '.d.ts', '/index.ts', '/index.tsx']
 const resolve = (from, spec) => {
   if (!spec.startsWith('.')) return null
   const base = path.resolve(path.dirname(from), spec)
-  for (const e of exts) if (fs.existsSync(base + e) && fs.statSync(base + e).isFile()) return base + e
+  for (const e of exts)
+    if (fs.existsSync(base + e) && fs.statSync(base + e).isFile())
+      return base + e
   return 'UNRESOLVED:' + spec
 }
-const RE = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g
+const RE =
+  /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g
 
 const deps = {}
 const users = {}
@@ -40,7 +43,9 @@ for (const f of files) {
 
 const mode = process.argv[3]
 if (mode === 'users') {
-  for (const f of Object.keys(deps).sort()) console.log(`${f}  <=  ${(users[f] ?? []).join(', ') || '(none)'}`)
+  for (const f of Object.keys(deps).sort())
+    console.log(`${f}  <=  ${(users[f] ?? []).join(', ') || '(none)'}`)
 } else {
-  for (const f of Object.keys(deps).sort()) console.log(`${f}  =>  ${deps[f].join(', ')}`)
+  for (const f of Object.keys(deps).sort())
+    console.log(`${f}  =>  ${deps[f].join(', ')}`)
 }

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @source "../../../node_modules/streamdown/dist/index.js";
 
@@ -32,10 +32,13 @@
 }
 
 @theme {
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Helvetica Neue',
+    Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-serif: 'Pretendard', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+  --font-serif:
+    'Pretendard', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
     'Times New Roman', 'Nanum Myeongjo', 'Apple SD Gothic Neo', serif;
 
   /* 글자 크기 단계(px). text-13 처럼 쓴다. html 글자 크기(90%)와 무관한 고정 크기다 */
@@ -47,14 +50,14 @@
   --text-15: 15px;
   --text-16: 16px;
 
-  --color-brand: #DC143C;
-  --color-brand-hover: #C41230;
-  --color-brand-accent: #D9785C;
-  --color-cream: #FBF7F1;
+  --color-brand: #dc143c;
+  --color-brand-hover: #c41230;
+  --color-brand-accent: #d9785c;
+  --color-cream: #fbf7f1;
   --color-brand-dark: #8b0000;
-  --color-brand-light: #FF4560;
-  --color-brand-soft: #FCDCE3;
-  --color-brand-subtle: #FEF2F2;
+  --color-brand-light: #ff4560;
+  --color-brand-soft: #fcdce3;
+  --color-brand-subtle: #fef2f2;
 
   /* 화면에 흩어져 있던 색에 이름을 붙인 것. 값은 기존 hex 그대로다 */
   --color-brand-vivid: #e4002b;
@@ -68,23 +71,25 @@
   --color-rose-muted: #c9aab2;
   --color-rose-placeholder: #b8a7ac;
 
-  --color-surface: #FFFFFF;
-  --color-surface-subtle: #F3F2F0;
-  --color-surface-border: #E8E6E3;
-  --color-surface-card1: #F9F8F7;
-  --color-surface-card2: #FAFAF9;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f3f2f0;
+  --color-surface-border: #e8e6e3;
+  --color-surface-card1: #f9f8f7;
+  --color-surface-card2: #fafaf9;
 
-  --color-text-primary: #1A1917;
-  --color-text-secondary: #6B6864;
-  --color-text-muted: #A8A5A1;
-  --color-text-hint: #E5E3E0;
+  --color-text-primary: #1a1917;
+  --color-text-secondary: #6b6864;
+  --color-text-muted: #a8a5a1;
+  --color-text-hint: #e5e3e0;
 
   --color-status-ok: #22c55e;
   --color-status-error: #ef4444;
   --color-status-muted: #d1d5db;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -107,7 +112,7 @@ body {
     background-color: var(--color-surface);
     border-radius: 20px;
     border: 0.5px solid var(--color-surface-border);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -118,42 +123,78 @@ body {
 }
 
 @keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .animate-fade-in {
   animation: fade-in 0.22s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in { animation: none; }
+  .animate-fade-in {
+    animation: none;
+  }
 }
 
 @keyframes page-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .animate-page-in {
-  animation: page-in 0.34s cubic-bezier(.2,.7,.2,1);
+  animation: page-in 0.34s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .animate-page-in { animation: none; }
+  .animate-page-in {
+    animation: none;
+  }
 }
 
 /* 문서 생성 진행 상황에 새 줄이 들어올 때: 위에서 내려앉고 잠깐 강조된 뒤 원래 색으로 */
 @keyframes docgen-row-in {
-  0%   { opacity: 0; transform: translateY(-10px) scale(.98); background-color: var(--color-brand-subtle); }
-  35%  { opacity: 1; transform: none; background-color: var(--color-brand-subtle); }
-  100% { background-color: transparent; }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    background-color: var(--color-brand-subtle);
+  }
+  35% {
+    opacity: 1;
+    transform: none;
+    background-color: var(--color-brand-subtle);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 @keyframes chase {
-  0%, 100% { opacity: 0.15; transform: scale(0.7); }
-  50%       { opacity: 1;    transform: scale(1);   }
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .dot-chase {
   width: 9px;
@@ -164,13 +205,23 @@ body {
 }
 
 @keyframes status-dot-blink {
-  0%, 100% { background-color: var(--color-text-muted); }
-  50%       { background-color: #fff; }
+  0%,
+  100% {
+    background-color: var(--color-text-muted);
+  }
+  50% {
+    background-color: #fff;
+  }
 }
 
 @keyframes status-blink {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 body.modal-open main,
@@ -182,7 +233,9 @@ body.modal-open {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 
 * {
   scrollbar-width: thin;
@@ -210,26 +263,105 @@ body.modal-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-subtle) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface) 0%,
+    var(--color-brand-subtle) 100%
+  );
 }
 
-@keyframes marsFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-@keyframes marsSpin  { to { transform: rotate(360deg); } }
-@keyframes marsBob   { 0%,100% { transform: translateY(0); opacity:.55; } 50% { transform: translateY(6px); opacity:1; } }
-@keyframes marsReveal { from { opacity:0; transform: translateY(26px); filter: blur(4px); } to { opacity:1; transform:none; filter:none; } }
-.mars-planet-float { width:100%; height:100%; animation: marsFloat 7s ease-in-out infinite; }
+@keyframes marsFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+@keyframes marsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes marsBob {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+@keyframes marsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.mars-planet-float {
+  width: 100%;
+  height: 100%;
+  animation: marsFloat 7s ease-in-out infinite;
+}
 
-.mars-orbit { position:absolute; border-radius:50%; border:1.5px solid rgba(228,0,43,0.14); animation: marsSpin linear infinite; }
-.mars-orbit::after { content:''; position:absolute; border-radius:50%; background:#e4002b; }
-.mars-orbit.o1 { inset:-13%; animation-duration:32s; border-color:rgba(228,0,43,0.16); }
-.mars-orbit.o1::after { left:-5px; top:48%; width:10px; height:10px; box-shadow:0 0 12px 3px rgba(228,0,43,0.55); }
+.mars-orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(228, 0, 43, 0.14);
+  animation: marsSpin linear infinite;
+}
+.mars-orbit::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: #e4002b;
+}
+.mars-orbit.o1 {
+  inset: -13%;
+  animation-duration: 32s;
+  border-color: rgba(228, 0, 43, 0.16);
+}
+.mars-orbit.o1::after {
+  left: -5px;
+  top: 48%;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 12px 3px rgba(228, 0, 43, 0.55);
+}
 
-.mars-orbit.o2 { inset:-24%; animation-duration:52s; animation-direction:reverse; border-color:rgba(255,6,52,0.10); }
-.mars-orbit.o2::after { right:-5px; top:47%; width:9px; height:9px; background:#ff5a3c; box-shadow:0 0 9px 2px rgba(255,90,60,0.45); }
+.mars-orbit.o2 {
+  inset: -24%;
+  animation-duration: 52s;
+  animation-direction: reverse;
+  border-color: rgba(255, 6, 52, 0.1);
+}
+.mars-orbit.o2::after {
+  right: -5px;
+  top: 47%;
+  width: 9px;
+  height: 9px;
+  background: #ff5a3c;
+  box-shadow: 0 0 9px 2px rgba(255, 90, 60, 0.45);
+}
 @media (prefers-reduced-motion: reduce) {
-  .mars-planet-float, .mars-orbit { animation: none; }
+  .mars-planet-float,
+  .mars-orbit {
+    animation: none;
+  }
 }
-.s-ok     { color: #2fbe58; font-weight: 700; }
+.s-ok {
+  color: #2fbe58;
+  font-weight: 700;
+}
 
 .mars-display {
   font-family: 'MujeokHaebyeong', var(--font-sans);
@@ -239,66 +371,135 @@ body.modal-open {
 }
 
 .mars-glow-bg {
-  position: absolute; pointer-events: none; border-radius: 50%;
-  background: radial-gradient(circle, rgba(220,20,60,0.16) 0%, rgba(220,20,60,0.05) 45%, transparent 70%);
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(220, 20, 60, 0.16) 0%,
+    rgba(220, 20, 60, 0.05) 45%,
+    transparent 70%
+  );
   filter: blur(20px);
 }
 /* 드롭다운 그룹 안에서는 그룹이 배경을 담당 */
 @keyframes navprev-in {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes rotword-in {
-  from { opacity: 0; transform: translateY(0.42em); filter: blur(5px); }
-  to   { opacity: 1; transform: none; filter: none; }
+  from {
+    opacity: 0;
+    transform: translateY(0.42em);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }
 @keyframes rotword-out {
-  from { opacity: 1; transform: none; filter: none; }
-  to   { opacity: 0; transform: translateY(-0.36em); filter: blur(5px); }
+  from {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.36em);
+    filter: blur(5px);
+  }
 }
 
 @keyframes sb-plus-spin {
-  0%   { transform: rotate(0deg) scale(1); }
-  60%  { transform: rotate(115deg) scale(1.2); }
-  100% { transform: rotate(90deg) scale(1.1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  60% {
+    transform: rotate(115deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(90deg) scale(1.1);
+  }
 }
 
 @keyframes sb-search-sweep {
-  0%   { transform: translateX(0) rotate(0deg) scale(1); }
-  35%  { transform: translateX(-2.5px) rotate(-18deg) scale(1.12); }
-  70%  { transform: translateX(1.5px) rotate(8deg) scale(1.12); }
-  100% { transform: translateX(0) rotate(0deg) scale(1.12); }
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  35% {
+    transform: translateX(-2.5px) rotate(-18deg) scale(1.12);
+  }
+  70% {
+    transform: translateX(1.5px) rotate(8deg) scale(1.12);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1.12);
+  }
 }
 
 @keyframes sb-folder-hop {
-  0%   { transform: translateY(0) scale(1); }
-  40%  { transform: translateY(-4px) scale(1.1); }
-  70%  { transform: translateY(1px) scale(1.06); }
-  100% { transform: translateY(0) scale(1.08); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-4px) scale(1.1);
+  }
+  70% {
+    transform: translateY(1px) scale(1.06);
+  }
+  100% {
+    transform: translateY(0) scale(1.08);
+  }
 }
 
 @keyframes sb-translate-flip {
-  0%   { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); }
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
 }
 
 @keyframes sb-docgen-tilt {
-  0%   { transform: rotate(0deg) scale(1); }
-  40%  { transform: rotate(-10deg) scale(1.12); }
-  70%  { transform: rotate(5deg) scale(1.1); }
-  100% { transform: rotate(0deg) scale(1.08); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  40% {
+    transform: rotate(-10deg) scale(1.12);
+  }
+  70% {
+    transform: rotate(5deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1.08);
+  }
 }
 
 .mars-planet-float,
 .mars-orbit,
-.mars-glow-bg { will-change: transform; }
+.mars-glow-bg {
+  will-change: transform;
+}
 
-video { content-visibility: auto; }
+video {
+  content-visibility: auto;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .mars-planet-float,
-  .mars-orbit { animation: none !important; }
+  .mars-orbit {
+    animation: none !important;
+  }
   *,
   *::before,
   *::after {
@@ -308,6 +509,23 @@ video { content-visibility: auto; }
     scroll-behavior: auto !important;
   }
 }
-@keyframes ring-in { to { opacity: 1; } }
-@keyframes planet-in { to { opacity: 1; transform: scale(1); } }
-@keyframes planet-float { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-14px);} }
+@keyframes ring-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes planet-in {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes planet-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}

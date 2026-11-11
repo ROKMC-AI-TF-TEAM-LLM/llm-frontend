@@ -36,7 +36,9 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
             <span className="mars-footer-telsub">AI-DATA TF 사무실</span>
           </div>
 
-          <p className="mars-footer-copy">© {year} Republic of Korea Marine Corps</p>
+          <p className="mars-footer-copy">
+            © {year} Republic of Korea Marine Corps
+          </p>
         </div>
 
         <div className="mars-footer-cols">
@@ -65,9 +67,14 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
 
           <FooterCol title="알아보기">
             <FooterBtn onClick={() => goTop('/team')}>팀 소개</FooterBtn>
-            <FooterBtn onClick={() => goTop('/tutorials')}>튜토리얼 전체</FooterBtn>
+            <FooterBtn onClick={() => goTop('/tutorials')}>
+              튜토리얼 전체
+            </FooterBtn>
             {TUTORIALS.slice(0, 3).map((t) => (
-              <FooterBtn key={t.slug} onClick={() => goTop(`/tutorials/${t.slug}`)}>
+              <FooterBtn
+                key={t.slug}
+                onClick={() => goTop(`/tutorials/${t.slug}`)}
+              >
                 {t.title}
               </FooterBtn>
             ))}
@@ -78,14 +85,21 @@ export default function LandingFooter({ onStart }: { onStart?: () => void }) {
       <div className="mars-footer-bottom">
         <span className="mars-footer-ver">MARS v1.0.0</span>
         <span className="mars-footer-disclaim">
-          본 시스템은 군 내부 업무 참고용 인공지능이며, 생성된 답변에 오류가 있을 수 있습니다.
+          본 시스템은 군 내부 업무 참고용 인공지능이며, 생성된 답변에 오류가
+          있을 수 있습니다.
         </span>
       </div>
     </footer>
   )
 }
 
-function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
+function FooterCol({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
   return (
     <div className="mars-footer-col">
       <div className="mars-footer-coltitle">{title}</div>
@@ -94,7 +108,13 @@ function FooterCol({ title, children }: { title: string; children: React.ReactNo
   )
 }
 
-function FooterBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+function FooterBtn({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+}) {
   return (
     <button type="button" className="mars-footer-link" onClick={onClick}>
       {children}

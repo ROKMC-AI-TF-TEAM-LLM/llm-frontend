@@ -1,35 +1,38 @@
-import { useState } from 'react';
-import type { FileAttachment } from '@/shared/types/attachment';
-import { downloadAttachment, fileExtOf } from '@/shared/utils/downloadAttachment';
-import { formatFileSize } from '@/shared/utils/fileSize';
-import { DownloadIcon, FileIcon, SpinnerIcon } from '@/shared/components/icons';
+import { useState } from 'react'
+import type { FileAttachment } from '@/shared/types/attachment'
+import {
+  downloadAttachment,
+  fileExtOf,
+} from '@/shared/utils/downloadAttachment'
+import { formatFileSize } from '@/shared/utils/fileSize'
+import { DownloadIcon, FileIcon, SpinnerIcon } from '@/shared/components/icons'
 
 interface FileDownloadProps {
-  attachments?: FileAttachment[];
+  attachments?: FileAttachment[]
 }
 
 export default function FileDownload({ attachments }: FileDownloadProps) {
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [err, setErr] = useState<string | null>(null)
 
-  if (!attachments || attachments.length === 0) return null;
+  if (!attachments || attachments.length === 0) return null
 
   const download = async (att: FileAttachment) => {
-    if (busyId) return;
-    setBusyId(att.attachment_id);
-    setErr(null);
-    const msg = await downloadAttachment(att);
-    if (msg) setErr(msg);
-    setBusyId(null);
-  };
+    if (busyId) return
+    setBusyId(att.attachment_id)
+    setErr(null)
+    const msg = await downloadAttachment(att)
+    if (msg) setErr(msg)
+    setBusyId(null)
+  }
 
   return (
     <div className="ml-1 mb-3 mt-1 space-y-2">
       {attachments.map((att) => {
-        const ext = fileExtOf(att.name);
-        const sizeText = formatFileSize(att.size);
-        const busy = busyId === att.attachment_id;
-        const meta = [ext, sizeText].filter(Boolean).join(' · ');
+        const ext = fileExtOf(att.name)
+        const sizeText = formatFileSize(att.size)
+        const busy = busyId === att.attachment_id
+        const meta = [ext, sizeText].filter(Boolean).join(' · ')
         return (
           <button
             key={att.attachment_id}
@@ -42,9 +45,12 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
               <FileIcon width={18} height={18} stroke="white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-13 font-semibold text-text-primary truncate">{att.name}</p>
+              <p className="text-13 font-semibold text-text-primary truncate">
+                {att.name}
+              </p>
               <p className="text-[11.5px] text-brand-hover font-medium mt-0.5">
-                {meta ? `${meta} · ` : ''}{busy ? '내려받는 중...' : '다운로드'}
+                {meta ? `${meta} · ` : ''}
+                {busy ? '내려받는 중...' : '다운로드'}
               </p>
             </div>
             {busy ? (
@@ -53,9 +59,9 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
               <DownloadIcon className="shrink-0 w-5 h-5 text-brand transition-transform group-hover:translate-y-0.5" />
             )}
           </button>
-        );
+        )
       })}
       {err && <p className="text-12 text-status-error ml-1">{err}</p>}
     </div>
-  );
+  )
 }

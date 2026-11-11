@@ -5,9 +5,11 @@
 }
 
 .animate-docgen-row-in {
-  animation: docgen-row-in 1.6s cubic-bezier(.2,.7,.2,1);
+  animation: docgen-row-in 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-docgen-row-in { animation: none; }
+  .animate-docgen-row-in {
+    animation: none;
+  }
 }

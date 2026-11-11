@@ -41,13 +41,24 @@ const NODES: Node[] = [
 ]
 
 const EDGES: [string, string][] = [
-  ['core', 'hr'], ['core', 'sec'], ['core', 'life'], ['core', 'fin'],
-  ['core', 'dev'], ['core', 'duty'], ['core', 'cmd'], ['core', 'log'],
-  ['hr', 'vac'], ['hr', 'ord'],
-  ['sec', 'gd'], ['sec', 'pay'],
-  ['dev', 'rev'], ['dev', 'test'],
-  ['life', 'award'], ['life', 'edu'],
-  ['fin', 'bud'], ['fin', 'buy'],
+  ['core', 'hr'],
+  ['core', 'sec'],
+  ['core', 'life'],
+  ['core', 'fin'],
+  ['core', 'dev'],
+  ['core', 'duty'],
+  ['core', 'cmd'],
+  ['core', 'log'],
+  ['hr', 'vac'],
+  ['hr', 'ord'],
+  ['sec', 'gd'],
+  ['sec', 'pay'],
+  ['dev', 'rev'],
+  ['dev', 'test'],
+  ['life', 'award'],
+  ['life', 'edu'],
+  ['fin', 'bud'],
+  ['fin', 'buy'],
   ['log', 'out'],
 ]
 
@@ -138,7 +149,12 @@ export default function KeywordConstellation() {
 
   return (
     <div ref={ref} className="relative aspect-[5/4] w-full">
-      <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+      <svg
+        aria-hidden
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+      >
         {EDGES.map(([a, b], i) => {
           const na = NODES.find((n) => n.id === a)!
           const nb = NODES.find((n) => n.id === b)!
@@ -156,7 +172,9 @@ export default function KeywordConstellation() {
               stroke="#DC143C"
               strokeWidth={fromCore ? 0.11 : 0.08}
               opacity={shown ? (fromCore ? 0.3 : 0.2) : 0}
-              style={{ transition: `opacity .8s ease ${(fromCore ? 0 : 0.3) + i * 0.04}s` }}
+              style={{
+                transition: `opacity .8s ease ${(fromCore ? 0 : 0.3) + i * 0.04}s`,
+              }}
             />
           )
         })}

@@ -11,11 +11,11 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
   const closeTimer = useRef<number | undefined>(undefined)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const scroller = document.querySelector('.mars-intro')
-    const target: HTMLElement | Window = scroller instanceof HTMLElement ? scroller : window
+    const target: HTMLElement | Window =
+      scroller instanceof HTMLElement ? scroller : window
     const read = () =>
       target === window ? window.scrollY : (target as HTMLElement).scrollTop
     const onScroll = () => setScrolled(read() > 8)
@@ -56,7 +56,11 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
 
   return (
     <header className={`mars-nav ${scrolled ? 'is-scrolled' : ''}`}>
-      <button type="button" onClick={() => navigate('/')} className="mars-nav-brand">
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        className="mars-nav-brand"
+      >
         <span className="mars-brand-serif mars-nav-brand-text">MARS</span>
       </button>
 
@@ -75,10 +79,25 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
             onClick={() => (open ? goGuideTop() : setOpen(true))}
           >
             서비스 이용법
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mars-nav-caret"><path d="m6 9 6 6 6-6" /></svg>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mars-nav-caret"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
           </button>
 
-          <div className={`mars-nav-panel ${open ? 'is-open' : ''}`} role="menu">
+          <div
+            className={`mars-nav-panel ${open ? 'is-open' : ''}`}
+            role="menu"
+          >
             <div className="mars-nav-panel-inner">
               <div className="mars-nav-col">
                 {GUIDE_SECTIONS.map((s, i) => (
@@ -99,17 +118,29 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
           </div>
         </div>
 
-        <button type="button" onClick={() => navigate('/tutorials')} className="mars-nav-trigger">
+        <button
+          type="button"
+          onClick={() => navigate('/tutorials')}
+          className="mars-nav-trigger"
+        >
           튜토리얼
         </button>
 
-        <button type="button" onClick={() => navigate('/team')} className="mars-nav-trigger">
+        <button
+          type="button"
+          onClick={() => navigate('/team')}
+          className="mars-nav-trigger"
+        >
           팀 소개
         </button>
       </nav>
 
       <div className="mars-nav-actions">
-        <button type="button" onClick={onStart} className="mars-nav-cta-main mars-brand-serif">
+        <button
+          type="button"
+          onClick={onStart}
+          className="mars-nav-cta-main mars-brand-serif"
+        >
           시작하기
         </button>
       </div>
@@ -144,7 +175,19 @@ function MenuRow({
         <span className="mars-nav-rowlabel">{section.label}</span>
         <span className="mars-nav-rowdesc">{section.desc}</span>
       </span>
-      <svg className="mars-nav-rowarrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      <svg
+        className="mars-nav-rowarrow"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
     </button>
   )
 }

@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMeUsers, getUsers, deleteUsers, inquiryUsers, approveUser, rejectUser } from './api'
+import {
+  getMeUsers,
+  getUsers,
+  deleteUsers,
+  inquiryUsers,
+  approveUser,
+  rejectUser,
+} from './api'
 import type { GetAdminUsersParams } from './types'
 import { useAuth } from '@/features/auth/useAuth'
 
@@ -58,4 +65,3 @@ export const useRejectUser = () => {
     },
   })
 }
-

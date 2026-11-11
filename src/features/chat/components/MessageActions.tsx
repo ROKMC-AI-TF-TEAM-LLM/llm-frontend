@@ -1,48 +1,54 @@
-import { useState } from 'react';
-import { CheckIcon, CopyIcon, RegenerateIcon } from '@/shared/components/icons';
+import { useState } from 'react'
+import { CheckIcon, CopyIcon, RegenerateIcon } from '@/shared/components/icons'
 
 interface MessageActionsProps {
-  role?: 'user' | 'assistant';
-  onCopy?: () => void;
-  onRegenerate?: () => void;
-  regenerateDisabled?: boolean;
-  createdAt?: string;
+  role?: 'user' | 'assistant'
+  onCopy?: () => void
+  onRegenerate?: () => void
+  regenerateDisabled?: boolean
+  createdAt?: string
 }
 
 function formatTime(iso?: string): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const h = d.getHours();
-  const m = d.getMinutes().toString().padStart(2, '0');
-  return `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`;
+  if (!iso) return ''
+  const d = new Date(iso)
+  const h = d.getHours()
+  const m = d.getMinutes().toString().padStart(2, '0')
+  return `${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`
 }
 
 function formatFullDate(iso?: string): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const yyyy = d.getFullYear();
-  const mo = d.getMonth() + 1;
-  const dd = d.getDate();
-  const h = d.getHours();
-  const m = d.getMinutes().toString().padStart(2, '0');
-  return `${yyyy}년 ${mo}월 ${dd}일 ${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`;
+  if (!iso) return ''
+  const d = new Date(iso)
+  const yyyy = d.getFullYear()
+  const mo = d.getMonth() + 1
+  const dd = d.getDate()
+  const h = d.getHours()
+  const m = d.getMinutes().toString().padStart(2, '0')
+  return `${yyyy}년 ${mo}월 ${dd}일 ${h < 12 ? '오전' : '오후'} ${h % 12 || 12}:${m}`
 }
 
-export default function MessageActions({ role = 'assistant', onCopy, onRegenerate, regenerateDisabled = false, createdAt }: MessageActionsProps) {
-  const isUser = role === 'user';
-  const [copied, setCopied] = useState(false);
+export default function MessageActions({
+  role = 'assistant',
+  onCopy,
+  onRegenerate,
+  regenerateDisabled = false,
+  createdAt,
+}: MessageActionsProps) {
+  const isUser = role === 'user'
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    onCopy?.();
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+    onCopy?.()
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
-  const time = formatTime(createdAt);
-  const fullDate = formatFullDate(createdAt);
+  const time = formatTime(createdAt)
+  const fullDate = formatFullDate(createdAt)
 
   const iconBtn =
-    'flex items-center justify-center w-7 h-7 rounded-md text-text-muted hover:bg-surface-subtle hover:text-text-secondary transition-colors';
+    'flex items-center justify-center w-7 h-7 rounded-md text-text-muted hover:bg-surface-subtle hover:text-text-secondary transition-colors'
 
   return (
     <div
@@ -50,7 +56,9 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
     >
       {time && (
         <div className="relative group/time mr-1.5">
-          <span className="text-11 text-text-muted cursor-default tabular-nums">{time}</span>
+          <span className="text-11 text-text-muted cursor-default tabular-nums">
+            {time}
+          </span>
           <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-10 whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
             {fullDate}
           </span>
@@ -96,5 +104,5 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -29,7 +29,9 @@ export default function RotatingWord({
   useEffect(() => {
     const el = rootRef.current
     if (!el) return
-    const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), { threshold: 0 })
+    const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), {
+      threshold: 0,
+    })
     io.observe(el)
     return () => io.disconnect()
   }, [])

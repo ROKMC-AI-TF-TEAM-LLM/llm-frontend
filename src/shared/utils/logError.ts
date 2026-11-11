@@ -1,16 +1,27 @@
-
 export const SESSION_METRIC_KEY = 'bWU='
 
 interface AxiosLike {
-  response?: { status?: number; data?: { error?: { code?: string; detail?: string } } }
+  response?: {
+    status?: number
+    data?: { error?: { code?: string; detail?: string } }
+  }
   config?: { url?: string; method?: string }
   message?: string
 }
 
-export const logError = (context: string, error: unknown, extra?: unknown): void => {
+export const logError = (
+  context: string,
+  error: unknown,
+  extra?: unknown,
+): void => {
   const name = (error as Error)?.name
   const code = (error as { code?: string })?.code
-  if (name === 'AbortError' || name === 'CanceledError' || code === 'ERR_CANCELED') return
+  if (
+    name === 'AbortError' ||
+    name === 'CanceledError' ||
+    code === 'ERR_CANCELED'
+  )
+    return
 
   const e = error as AxiosLike | undefined
   const resp = e?.response
@@ -30,5 +41,9 @@ export const logError = (context: string, error: unknown, extra?: unknown): void
   }
 
   const msg = (error as Error)?.message ?? String(error)
-  console.error(`[${context}] ${name ? name + ': ' : ''}${msg}`, extra !== undefined ? extra : '', error)
+  console.error(
+    `[${context}] ${name ? name + ': ' : ''}${msg}`,
+    extra !== undefined ? extra : '',
+    error,
+  )
 }

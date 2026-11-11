@@ -47,7 +47,8 @@ export interface GetAdminUsersParams {
   cursor?: string | null
   size?: number
 }
-export type AdminUsersErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'VALIDATION_ERROR'
+export type AdminUsersErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'VALIDATION_ERROR'
 export interface AdminUsersResponse {
   success: boolean
   status_code: number
@@ -55,7 +56,8 @@ export interface AdminUsersResponse {
   error: { code: AdminUsersErrorCode; detail: string } | null
 }
 
-export type AdminUserInquiryErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
+export type AdminUserInquiryErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserInquiryResponse {
   success: boolean
   status_code: number
@@ -63,7 +65,8 @@ export interface AdminUserInquiryResponse {
   error: { code: AdminUserInquiryErrorCode; detail: string } | null
 }
 
-export type AdminUserDeleteErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
+export type AdminUserDeleteErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserDeleteResponse {
   success: boolean
   status_code: number
@@ -71,7 +74,8 @@ export interface AdminUserDeleteResponse {
   error: { code: AdminUserDeleteErrorCode; detail: string } | null
 }
 
-export type AdminUserApproveErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
+export type AdminUserApproveErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserApproveResponse {
   success: boolean
   status_code: number
@@ -79,7 +83,8 @@ export interface AdminUserApproveResponse {
   error: { code: AdminUserApproveErrorCode; detail: string } | null
 }
 
-export type AdminUserRejectErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
+export type AdminUserRejectErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'ADMIN_REQUIRED' | 'USER_NOT_FOUND'
 export interface AdminUserRejectResponse {
   success: boolean
   status_code: number

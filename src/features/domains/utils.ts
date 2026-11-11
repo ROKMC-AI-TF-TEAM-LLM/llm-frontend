@@ -13,7 +13,8 @@ const DOMAIN_LABEL: Record<string, string> = Object.fromEntries(
   DOMAINS.map((d) => [d.code, d.label]),
 )
 
-export const getDomainLabel = (domain: string): string => DOMAIN_LABEL[domain] ?? domain
+export const getDomainLabel = (domain: string): string =>
+  DOMAIN_LABEL[domain] ?? domain
 
 export interface DomainStyle {
   bar: string
@@ -32,7 +33,11 @@ const DOMAIN_PALETTE: DomainStyle[] = [
   { bar: '#64748b', badgeBg: '#eef1f5', badgeText: '#475569' },
 ]
 
-const NEUTRAL: DomainStyle = { bar: '#c9aab2', badgeBg: '#f6f0f2', badgeText: '#8a7a80' }
+const NEUTRAL: DomainStyle = {
+  bar: '#c9aab2',
+  badgeBg: '#f6f0f2',
+  badgeText: '#8a7a80',
+}
 
 const hashString = (s: string): number => {
   let h = 0

@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useProjectList, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '@/features/projects/hooks'
+import {
+  useProjectList,
+  useCreateProject,
+  useUpdateProject,
+  useToggleProjectFavorite,
+  useConfirmDeleteProject,
+} from '@/features/projects/hooks'
 import ProjectItem from './ProjectItem'
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
 import { CreateProjectModal } from '@/features/projects/components/CreateProjectModal'
@@ -11,12 +17,14 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
   const [expanded, setExpanded] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
 
-  const { projects, hasNextPage, fetchNextPage, isFetchingNextPage } = useProjectList()
+  const { projects, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useProjectList()
   const { mutateAsync: createProjectApi } = useCreateProject()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
   const confirmDelete = useConfirmDeleteProject()
-  const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
+  const rename = (id: string, next: string) =>
+    updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
     toggleFavoriteApi({ projectId: id, next: !cur })
@@ -51,7 +59,10 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
         <span className="text-[10.5px] mars-brand-serif font-extrabold uppercase tracking-[0.12em] text-rose-muted whitespace-nowrap">
           프로젝트
         </span>
-        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-rose-muted transition-transform duration-200 ${ expanded ? '' : '-rotate-90' }`} strokeWidth={2.6} />
+        <ChevronDownIcon
+          className={`h-3 w-3 shrink-0 text-rose-muted transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`}
+          strokeWidth={2.6}
+        />
       </button>
 
       {expanded && (

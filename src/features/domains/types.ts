@@ -14,7 +14,8 @@ export interface CapabilitiesData {
   tools: ToolCapability[]
 }
 
-export type GetCapabilitiesErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'LLM_SERVER_ERROR'
+export type GetCapabilitiesErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'LLM_SERVER_ERROR'
 
 export interface GetCapabilitiesResponse {
   success: boolean

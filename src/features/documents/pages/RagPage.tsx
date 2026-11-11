@@ -17,7 +17,12 @@ const RagPage = () => {
   const [query, setQuery] = useState('')
   const [activeDomain, setActiveDomain] = useState<string>(ALL)
 
-  const { doc: selectedDoc, open: drawerOpen, openDoc, closeDoc } = useDocumentDrawer()
+  const {
+    doc: selectedDoc,
+    open: drawerOpen,
+    openDoc,
+    closeDoc,
+  } = useDocumentDrawer()
 
   const {
     data,
@@ -35,7 +40,10 @@ const RagPage = () => {
 
   const { data: allData } = useInfiniteDocuments(undefined)
   const domains = useMemo(
-    () => extractDomains((allData?.pages ?? []).flatMap((p) => pickDocuments(p.data.data))),
+    () =>
+      extractDomains(
+        (allData?.pages ?? []).flatMap((p) => pickDocuments(p.data.data)),
+      ),
     [allData],
   )
 
@@ -64,13 +72,22 @@ const RagPage = () => {
       <div className="max-w-5xl mx-auto px-8 py-12 animate-page-in">
         <div className="flex items-center justify-between gap-6 mb-6">
           <div className="flex items-baseline gap-3">
-            <h1 className="mars-display text-2xl font-semibold text-text-primary">문서</h1>
+            <h1 className="mars-display text-2xl font-semibold text-text-primary">
+              문서
+            </h1>
             {!isLoading && !isError && (
-              <span className="text-sm font-medium text-text-muted">{filtered.length}건</span>
+              <span className="text-sm font-medium text-text-muted">
+                {filtered.length}건
+              </span>
             )}
           </div>
           <div className="w-full max-w-[300px] shrink-0">
-            <RagSearchInput value={query} onChange={setQuery} placeholder="문서 검색..." compact />
+            <RagSearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="문서 검색..."
+              compact
+            />
           </div>
         </div>
 
@@ -107,14 +124,20 @@ const RagPage = () => {
         ) : (
           <div className="flex flex-col mt-1">
             {filtered.map((doc) => (
-              <RagListItem key={doc.document_id} doc={doc} onClick={() => openDoc(doc)} />
+              <RagListItem
+                key={doc.document_id}
+                doc={doc}
+                onClick={() => openDoc(doc)}
+              />
             ))}
           </div>
         )}
 
         {!query && <div ref={sentinelRef} className="h-8" />}
         {isFetchingNextPage && (
-          <p className="py-4 text-sm text-center text-text-muted">불러오는 중...</p>
+          <p className="py-4 text-sm text-center text-text-muted">
+            불러오는 중...
+          </p>
         )}
       </div>
 

@@ -1,4 +1,9 @@
-import type { DocGenErrorCode, DocGenJob, DocGenLength, DocGenOutputFormat } from './types'
+import type {
+  DocGenErrorCode,
+  DocGenJob,
+  DocGenLength,
+  DocGenOutputFormat,
+} from './types'
 
 /**
  * 상태 흐름
@@ -11,7 +16,9 @@ import type { DocGenErrorCode, DocGenJob, DocGenLength, DocGenOutputFormat } fro
  */
 export type JobState = 'queued' | 'running' | 'completed' | 'failed'
 
-export const normalizeJobStatus = (status: string | null | undefined): JobState => {
+export const normalizeJobStatus = (
+  status: string | null | undefined,
+): JobState => {
   const s = String(status ?? '').toLowerCase()
   if (/(complete|success|done|ready)/.test(s)) return 'completed'
   if (/(fail|error|cancel|reject|timeout)/.test(s)) return 'failed'
@@ -44,18 +51,32 @@ export const LENGTHS: { code: DocGenLength; label: string }[] = [
 
 /** 오류 코드별 문구. TODO(백엔드 확인): 실제 오류 코드 목록 */
 const ERROR_MESSAGES: Record<string, string> = {
-  TEMPLATE_NOT_FOUND: '선택한 양식을 찾을 수 없습니다. 다른 양식을 골라 주세요.',
-  LLM_SERVER_ERROR: '생성 서버에 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.',
-  TIMEOUT: '생성 시간이 너무 오래 걸려 중단되었습니다. 분량을 줄여 다시 시도해 보세요.',
+  TEMPLATE_NOT_FOUND:
+    '선택한 양식을 찾을 수 없습니다. 다른 양식을 골라 주세요.',
+  LLM_SERVER_ERROR:
+    '생성 서버에 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.',
+  TIMEOUT:
+    '생성 시간이 너무 오래 걸려 중단되었습니다. 분량을 줄여 다시 시도해 보세요.',
   CANCELLED: '요청이 취소되었습니다.',
 }
 
-export const getJobErrorMessage = (code: DocGenErrorCode | null | undefined, fallback?: string): string =>
-  (code && ERROR_MESSAGES[code]) || fallback || '문서를 만들지 못했습니다. 다시 시도해 주세요.'
+export const getJobErrorMessage = (
+  code: DocGenErrorCode | null | undefined,
+  fallback?: string,
+): string =>
+  (code && ERROR_MESSAGES[code]) ||
+  fallback ||
+  '문서를 만들지 못했습니다. 다시 시도해 주세요.'
 
-export const formatDuration = (fromIso?: string | null, toIso?: string | null): string => {
+export const formatDuration = (
+  fromIso?: string | null,
+  toIso?: string | null,
+): string => {
   if (!fromIso || !toIso) return ''
-  const sec = Math.max(0, Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 1000))
+  const sec = Math.max(
+    0,
+    Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 1000),
+  )
   if (Number.isNaN(sec)) return ''
   return sec < 60 ? `${sec}초` : `${Math.floor(sec / 60)}분 ${sec % 60}초`
 }

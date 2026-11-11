@@ -35,7 +35,9 @@ class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
-          <p className="text-base font-semibold text-text-primary">페이지를 불러오지 못했습니다.</p>
+          <p className="text-base font-semibold text-text-primary">
+            페이지를 불러오지 못했습니다.
+          </p>
           <p className="text-sm text-text-muted">잠시 후 다시 시도해주세요.</p>
           <button
             onClick={() => window.location.reload()}

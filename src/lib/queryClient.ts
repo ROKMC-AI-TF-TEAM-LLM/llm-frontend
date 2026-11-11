@@ -3,11 +3,15 @@ import { logError } from '@/shared/utils/logError'
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (error, query) => logError(`query:${String(query.queryKey?.[0] ?? 'unknown')}`, error),
+    onError: (error, query) =>
+      logError(`query:${String(query.queryKey?.[0] ?? 'unknown')}`, error),
   }),
   mutationCache: new MutationCache({
     onError: (error, _vars, _ctx, mutation) =>
-      logError(`mutation:${String(mutation.options.mutationKey?.[0] ?? 'unknown')}`, error),
+      logError(
+        `mutation:${String(mutation.options.mutationKey?.[0] ?? 'unknown')}`,
+        error,
+      ),
   }),
   defaultOptions: {
     queries: {

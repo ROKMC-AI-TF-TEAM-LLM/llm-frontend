@@ -1,4 +1,5 @@
-export type AdminDocStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | (string & {})
+export type AdminDocStatus =
+  'PROCESSING' | 'COMPLETED' | 'FAILED' | (string & {})
 
 export type DocVisibility = 'ALL' | 'DEPT_ONLY'
 
@@ -19,7 +20,7 @@ export interface UploadDocumentData {
 }
 
 export type UploadDocumentErrorCode =
-  | 'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'VALIDATION_ERROR' | 'LLM_SERVER_ERROR'
+  'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'VALIDATION_ERROR' | 'LLM_SERVER_ERROR'
 
 export interface UploadDocumentResponse {
   success: boolean
@@ -55,7 +56,8 @@ export interface GetAdminDocumentsParams {
   search?: string
 }
 
-export type GetAdminDocumentsErrorCode = 'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'VALIDATION_ERROR'
+export type GetAdminDocumentsErrorCode =
+  'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'VALIDATION_ERROR'
 
 export interface GetAdminDocumentsResponse {
   success: boolean
@@ -72,7 +74,7 @@ export interface DocumentStatusData {
 }
 
 export type GetDocumentStatusErrorCode =
-  | 'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'DOCUMENT_NOT_FOUND'
+  'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'DOCUMENT_NOT_FOUND'
 
 export interface GetDocumentStatusResponse {
   success: boolean
@@ -87,7 +89,7 @@ export interface DeleteDocumentData {
 }
 
 export type DeleteDocumentErrorCode =
-  | 'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'DOCUMENT_NOT_FOUND'
+  'UNAUTHORIZED' | 'ADMIN_REQUIRED' | 'DOCUMENT_NOT_FOUND'
 
 export interface DeleteDocumentResponse {
   success: boolean

@@ -1,35 +1,49 @@
-import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
-import { ChevronsLeftIcon } from "@/shared/components/icons";
+import { useNavigate } from 'react-router-dom'
+import { useRef, useState } from 'react'
+import { ChevronsLeftIcon } from '@/shared/components/icons'
 
 interface SidebarHeaderProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  isOpen: boolean
+  onToggle: () => void
 }
 
-export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) {
-  const navigate = useNavigate();
-  const [showTip, setShowTip] = useState(false);
-  const tipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+export default function SidebarHeader({
+  isOpen,
+  onToggle,
+}: SidebarHeaderProps) {
+  const navigate = useNavigate()
+  const [showTip, setShowTip] = useState(false)
+  const tipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const clearTip = () => {
-    if (tipTimer.current) { clearTimeout(tipTimer.current); tipTimer.current = null; }
-  };
-  const onEnter = () => { clearTip(); tipTimer.current = setTimeout(() => setShowTip(true), 450); };
-  const onLeave = () => { clearTip(); setShowTip(false); };
-  const onClick = () => { clearTip(); setShowTip(false); onToggle(); };
+    if (tipTimer.current) {
+      clearTimeout(tipTimer.current)
+      tipTimer.current = null
+    }
+  }
+  const onEnter = () => {
+    clearTip()
+    tipTimer.current = setTimeout(() => setShowTip(true), 450)
+  }
+  const onLeave = () => {
+    clearTip()
+    setShowTip(false)
+  }
+  const onClick = () => {
+    clearTip()
+    setShowTip(false)
+    onToggle()
+  }
 
   return (
     <div
       className={`h-[60px] flex-none flex items-center justify-between transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'px-[20px]' : 'px-[13px]'}`}
     >
       <div
-        onClick={() => navigate("/chat")}
+        onClick={() => navigate('/chat')}
         className={`flex items-center cursor-pointer overflow-hidden transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100 max-w-[120px]' : 'opacity-0 max-w-0'}`}
       >
-        <span
-          className="mars-brand-serif text-[22px] text-brand-vivid whitespace-nowrap"
-        >
+        <span className="mars-brand-serif text-[22px] text-brand-vivid whitespace-nowrap">
           MARS
         </span>
       </div>
@@ -41,15 +55,18 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-brand-tint hover:text-brand-deep transition-colors cursor-pointer w-[30px] h-[30px] rounded-[9px] shrink-0"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
-        <ChevronsLeftIcon width={18} height={18} className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`} strokeWidth={2.2} />
+        <ChevronsLeftIcon
+          width={18}
+          height={18}
+          className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`}
+          strokeWidth={2.2}
+        />
         {showTip && (
-          <span
-            className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-11 font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in"
-          >
+          <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-11 font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in">
             {isOpen ? '사이드바 접기' : '사이드바 펴기'}
           </span>
         )}
       </button>
     </div>
-  );
+  )
 }

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DIRECTORY, type DirectoryEntry } from '@/features/team/directoryEntries'
+import {
+  DIRECTORY,
+  type DirectoryEntry,
+} from '@/features/team/directoryEntries'
 import {
   BARKS,
   DISCHARGE_LINE,
@@ -17,7 +20,11 @@ import {
 import { TopDownGuy } from '../components/hall/props'
 import { EntranceGate, HallScenery } from '../components/hall/HallScenery'
 import { DoorSpotlight, HallDoor } from '../components/hall/HallDoor'
-import { ExhibitRoom, PropDialog, RoomMapSign } from '../components/hall/overlays'
+import {
+  ExhibitRoom,
+  PropDialog,
+  RoomMapSign,
+} from '../components/hall/overlays'
 import { HallGate } from '../components/hall/HallGate'
 
 // 숨은 화면 "명예의 전당": 팀원 명부로 입장해 탑뷰 맵을 걸어 다니며 전시실 문을 연다.
@@ -57,7 +64,8 @@ export default function SystemDiagnostics() {
 
   useEffect(() => {
     if (!entered) return
-    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+    const onResize = () =>
+      setViewport({ w: window.innerWidth, h: window.innerHeight })
     onResize()
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
@@ -65,7 +73,9 @@ export default function SystemDiagnostics() {
 
   const enter = (e: FormEvent) => {
     e.preventDefault()
-    const match = DIRECTORY.find((m) => m.cohort.replace(/\D/g, '') === id.trim() && m.name === pw.trim())
+    const match = DIRECTORY.find(
+      (m) => m.cohort.replace(/\D/g, '') === id.trim() && m.name === pw.trim(),
+    )
     if (!match) {
       setAuthErr(true)
       return
@@ -74,7 +84,9 @@ export default function SystemDiagnostics() {
     setSelf(match)
     setBooting(true)
     window.setTimeout(() => {
-      const self0 = doors.find((d) => d.cohort === match.cohort && d.name === match.name)
+      const self0 = doors.find(
+        (d) => d.cohort === match.cohort && d.name === match.name,
+      )
       if (self0) {
         const p = { x: self0.x, y: self0.y + 90 }
         posRef.current = p
@@ -90,7 +102,11 @@ export default function SystemDiagnostics() {
     setOpeningDoor(key)
     window.setTimeout(() => {
       setActive(n)
-      setBark(n.discharged ? DISCHARGE_LINE : BARKS[Math.floor(Math.random() * BARKS.length)])
+      setBark(
+        n.discharged
+          ? DISCHARGE_LINE
+          : BARKS[Math.floor(Math.random() * BARKS.length)],
+      )
       setOpeningDoor(null)
     }, 360)
   }
@@ -168,25 +184,26 @@ export default function SystemDiagnostics() {
   }, [entered])
 
   const NEAR_DIST = 46
-  const nearby = doors
-    .map((n) => ({ n, d: Math.hypot(n.x - pos.x, n.y - pos.y) }))
-    .filter((v) => v.d <= NEAR_DIST)
-    .sort((a, b) => a.d - b.d)[0]?.n ?? null
+  const nearby =
+    doors
+      .map((n) => ({ n, d: Math.hypot(n.x - pos.x, n.y - pos.y) }))
+      .filter((v) => v.d <= NEAR_DIST)
+      .sort((a, b) => a.d - b.d)[0]?.n ?? null
 
   const SIGN_DIST = 44
   const mapSign = !nearby
-    ? doors
+    ? (doors
         .map((n) => ({ n, d: Math.hypot(n.x + 42 - pos.x, n.y - 10 - pos.y) }))
         .filter((v) => v.d <= SIGN_DIST)
-        .sort((a, b) => a.d - b.d)[0]?.n ?? null
+        .sort((a, b) => a.d - b.d)[0]?.n ?? null)
     : null
 
   const PROP_DIST = 54
   const nearProp =
     !nearby && !mapSign
-      ? PROP_SPOTS.map((p) => ({ p, d: Math.hypot(p.x - pos.x, p.y - pos.y) }))
+      ? (PROP_SPOTS.map((p) => ({ p, d: Math.hypot(p.x - pos.x, p.y - pos.y) }))
           .filter((v) => v.d <= PROP_DIST)
-          .sort((a, b) => a.d - b.d)[0]?.p ?? null
+          .sort((a, b) => a.d - b.d)[0]?.p ?? null)
       : null
 
   useEffect(() => {
@@ -243,20 +260,42 @@ export default function SystemDiagnostics() {
         .hof-idle { animation: hof-idle 1.8s ease-in-out infinite; }
       `}</style>
 
-      <div aria-hidden className="hof-scanlines" style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'none' }} />
+      <div
+        aria-hidden
+        className="hof-scanlines"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 30,
+          pointerEvents: 'none',
+        }}
+      />
 
       {!entered ? (
         <HallGate
           id={id}
           pw={pw}
-          onIdChange={(v) => { setId(v); setAuthErr(false) }}
-          onPwChange={(v) => { setPw(v); setAuthErr(false) }}
+          onIdChange={(v) => {
+            setId(v)
+            setAuthErr(false)
+          }}
+          onPwChange={(v) => {
+            setPw(v)
+            setAuthErr(false)
+          }}
           booting={booting}
           authErr={authErr}
           onSubmit={enter}
         />
       ) : (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10, animation: 'hof-glitch-in .5s steps(6) both' }}>
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10,
+            animation: 'hof-glitch-in .5s steps(6) both',
+          }}
+        >
           <button
             type="button"
             onClick={() => navigate('/')}
@@ -278,8 +317,24 @@ export default function SystemDiagnostics() {
             복귀하기
           </button>
 
-          <div ref={fieldRef} style={{ position: 'absolute', inset: 0, background: '#1a1410', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', left: -camX, top: -camY, width: MAP_W, height: MAP_H }}>
+          <div
+            ref={fieldRef}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: '#1a1410',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                left: -camX,
+                top: -camY,
+                width: MAP_W,
+                height: MAP_H,
+              }}
+            >
               <HallScenery />
 
               {doors.map((n) => (
@@ -293,9 +348,19 @@ export default function SystemDiagnostics() {
                   <HallDoor
                     key={doorKey}
                     door={n}
-                    isSelf={!!self && n.cohort === self.cohort && n.name === self.name}
-                    isNear={!!nearby && nearby.cohort === n.cohort && nearby.name === n.name}
-                    isSignNear={!!mapSign && mapSign.cohort === n.cohort && mapSign.name === n.name}
+                    isSelf={
+                      !!self && n.cohort === self.cohort && n.name === self.name
+                    }
+                    isNear={
+                      !!nearby &&
+                      nearby.cohort === n.cohort &&
+                      nearby.name === n.name
+                    }
+                    isSignNear={
+                      !!mapSign &&
+                      mapSign.cohort === n.cohort &&
+                      mapSign.name === n.name
+                    }
                     isOpening={openingDoor === doorKey}
                     onEnter={() => talkTo(n)}
                     onReadSign={() => setShowMap(n)}
@@ -341,21 +406,40 @@ export default function SystemDiagnostics() {
                   zIndex: 8,
                 }}
               >
-                <div style={{ animation: walking ? 'hof-walkbob .22s ease-in-out infinite' : undefined }}>
-                  <TopDownGuy tint="#e4002b" legPhase={walking ? legPhase : 0} />
+                <div
+                  style={{
+                    animation: walking
+                      ? 'hof-walkbob .22s ease-in-out infinite'
+                      : undefined,
+                  }}
+                >
+                  <TopDownGuy
+                    tint="#e4002b"
+                    legPhase={walking ? legPhase : 0}
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           {/* 장식 오브젝트 대화창 */}
-          {propMsg && <PropDialog spot={propMsg} onClose={() => setPropMsg(null)} />}
+          {propMsg && (
+            <PropDialog spot={propMsg} onClose={() => setPropMsg(null)} />
+          )}
 
           {/* 전시실 입장 오버레이 */}
-          {active && <ExhibitRoom door={active} bark={bark} onClose={() => setActive(null)} />}
+          {active && (
+            <ExhibitRoom
+              door={active}
+              bark={bark}
+              onClose={() => setActive(null)}
+            />
+          )}
 
           {/* 안내판(미니맵) 오버레이 */}
-          {showMap && <RoomMapSign door={showMap} onClose={() => setShowMap(null)} />}
+          {showMap && (
+            <RoomMapSign door={showMap} onClose={() => setShowMap(null)} />
+          )}
         </div>
       )}
     </div>

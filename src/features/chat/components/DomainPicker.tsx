@@ -1,81 +1,97 @@
-import { useEffect, useRef, useState } from 'react';
-import { useClickOutside } from '@/shared/hooks/useClickOutside';
-import { useDomainCapabilities } from '@/features/documents/hooks';
-import { type DomainSelection } from '../store/types';
-import DomainIcon from '@/features/domains/components/DomainIcon';
-import { CheckIcon, ChevronDownIcon, MenuIcon } from '@/shared/components/icons';
+import { useEffect, useRef, useState } from 'react'
+import { useClickOutside } from '@/shared/hooks/useClickOutside'
+import { useDomainCapabilities } from '@/features/documents/hooks'
+import { type DomainSelection } from '../store/types'
+import DomainIcon from '@/features/domains/components/DomainIcon'
+import { CheckIcon, ChevronDownIcon, MenuIcon } from '@/shared/components/icons'
 
 interface DomainPickerProps {
-  value: DomainSelection | null;
-  onChange: (domain: DomainSelection | null) => void;
+  value: DomainSelection | null
+  onChange: (domain: DomainSelection | null) => void
 }
 
 export default function DomainPicker({ value, onChange }: DomainPickerProps) {
-  const { domains, isLoading } = useDomainCapabilities();
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
+  const { domains, isLoading } = useDomainCapabilities()
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null)
 
   const updatePos = () => {
-    const btn = wrapRef.current;
-    if (!btn) return;
-    const r = btn.getBoundingClientRect();
-    setPos({ left: r.left, bottom: window.innerHeight - r.top + 8 });
-  };
+    const btn = wrapRef.current
+    if (!btn) return
+    const r = btn.getBoundingClientRect()
+    setPos({ left: r.left, bottom: window.innerHeight - r.top + 8 })
+  }
 
   useEffect(() => {
-    if (!open) return;
-    updatePos();
-    window.addEventListener('scroll', updatePos, true);
-    window.addEventListener('resize', updatePos);
+    if (!open) return
+    updatePos()
+    window.addEventListener('scroll', updatePos, true)
+    window.addEventListener('resize', updatePos)
     return () => {
-      window.removeEventListener('scroll', updatePos, true);
-      window.removeEventListener('resize', updatePos);
-    };
-  }, [open]);
+      window.removeEventListener('scroll', updatePos, true)
+      window.removeEventListener('resize', updatePos)
+    }
+  }, [open])
 
-  useClickOutside([wrapRef, menuRef], () => setOpen(false), { enabled: open });
+  useClickOutside([wrapRef, menuRef], () => setOpen(false), { enabled: open })
 
   if (isLoading) {
     return (
-      <div className="h-10 w-[84px] rounded-full bg-surface-subtle animate-pulse" aria-hidden />
-    );
+      <div
+        className="h-10 w-[84px] rounded-full bg-surface-subtle animate-pulse"
+        aria-hidden
+      />
+    )
   }
 
-  if (domains.length === 0) return null;
+  if (domains.length === 0) return null
 
   const select = (domain: DomainSelection | null) => {
-    onChange(domain);
-    setOpen(false);
-  };
+    onChange(domain)
+    setOpen(false)
+  }
 
   return (
     <div ref={wrapRef} className="relative">
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        onClick={(e) => {
+          e.stopPropagation()
+          setOpen((v) => !v)
+        }}
         className={`group inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-[13.5px] font-medium transition-colors duration-150 ${
           open || value
             ? 'bg-brand-subtle text-brand'
             : 'text-text-muted hover:bg-brand-subtle hover:text-brand'
         }`}
       >
-        {value ? <DomainIcon code={value.code} size={20} /> : (
+        {value ? (
+          <DomainIcon code={value.code} size={20} />
+        ) : (
           <MenuIcon width={20} height={20} />
         )}
         <span>{value ? value.label : '전체'}</span>
-        <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon
+          width={14}
+          height={14}
+          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {open && pos && (
         <div
           ref={menuRef}
           className="fixed min-w-[184px] rounded-2xl border border-surface-border shadow-[0_10px_30px_rgba(40,30,35,0.10)] p-1.5 z-50 animate-fade-in"
-          style={{ background: 'var(--color-surface)', left: pos.left, bottom: pos.bottom }}
+          style={{
+            background: 'var(--color-surface)',
+            left: pos.left,
+            bottom: pos.bottom,
+          }}
         >
           {domains.map((d) => {
-            const active = value?.code === d.code;
+            const active = value?.code === d.code
             return (
               <MenuRow
                 key={d.code}
@@ -84,22 +100,20 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
                 icon={<DomainIcon code={d.code} size={14} />}
                 label={d.label}
               />
-            );
+            )
           })}
 
           <div className="my-1 h-px bg-surface-border mx-1.5" />
           <MenuRow
             active={!value}
             onClick={() => select(null)}
-            icon={
-              <MenuIcon width={14} height={14} strokeWidth={2.4} />
-            }
+            icon={<MenuIcon width={14} height={14} strokeWidth={2.4} />}
             label="전체"
           />
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function MenuRow({
@@ -108,30 +122,32 @@ function MenuRow({
   icon,
   label,
 }: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
+  active: boolean
+  onClick: () => void
+  icon: React.ReactNode
+  label: string
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`group w-full flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl text-[13.5px] text-left transition-colors ${
-        active ? 'bg-brand-subtle text-brand font-semibold' : 'text-text-secondary hover:bg-surface-subtle'
+        active
+          ? 'bg-brand-subtle text-brand font-semibold'
+          : 'text-text-secondary hover:bg-surface-subtle'
       }`}
     >
       <span
         className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
-          active ? 'bg-brand-soft text-brand' : 'bg-surface-subtle text-text-muted group-hover:bg-brand-subtle group-hover:text-brand'
+          active
+            ? 'bg-brand-soft text-brand'
+            : 'bg-surface-subtle text-text-muted group-hover:bg-brand-subtle group-hover:text-brand'
         }`}
       >
         {icon}
       </span>
       <span className="flex-1">{label}</span>
-      {active && (
-        <CheckIcon width={15} height={15} strokeWidth={2.6} />
-      )}
+      {active && <CheckIcon width={15} height={15} strokeWidth={2.6} />}
     </button>
-  );
+  )
 }

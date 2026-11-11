@@ -23,9 +23,7 @@ export function KebabMenu({
         <MoreIcon className="h-4 w-4" />
       </IconButton>
       {open && (
-        <div
-          className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-rose-border bg-white p-1.5 shadow-[0_16px_40px_rgba(60,30,38,0.13)]"
-        >
+        <div className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-rose-border bg-white p-1.5 shadow-[0_16px_40px_rgba(60,30,38,0.13)]">
           <button
             type="button"
             onClick={() => {

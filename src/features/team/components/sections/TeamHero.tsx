@@ -5,7 +5,10 @@ import Placeholder from './Placeholder'
 export default function TeamHero() {
   return (
     <section className="relative flex min-h-[calc(100vh-66px)] items-center overflow-hidden px-[6vw] py-20">
-      <div className="mars-glow-bg" style={{ width: 640, height: 640, right: '-8%', top: '-6%' }} />
+      <div
+        className="mars-glow-bg"
+        style={{ width: 640, height: 640, right: '-8%', top: '-6%' }}
+      />
 
       <AnchorMark
         size={560}
@@ -34,7 +37,7 @@ export default function TeamHero() {
             </p>
           )}
           <p className="flex flex-row mars-reveal font-semibold mt-5 max-w-[400px] text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
-            <Placeholder value={HERO.sub2} /> 
+            <Placeholder value={HERO.sub2} />
           </p>
           <p className="mars-reveal max-w-[520px] font-semibold text-[clamp(15px,1.6vw,17.5px)] leading-[1.85] text-text-secondary break-keep">
             <Placeholder value={HERO.sub3} />

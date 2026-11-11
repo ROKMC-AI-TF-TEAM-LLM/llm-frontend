@@ -8,7 +8,11 @@ import {
   getDocGenTemplates,
   retryDocGenJob,
 } from './api'
-import type { CreateDocGenJobFields, DocGenJob, DocGenOutputFormat } from './types'
+import type {
+  CreateDocGenJobFields,
+  DocGenJob,
+  DocGenOutputFormat,
+} from './types'
 import { isJobActive } from './utils'
 import { useAuth } from '@/features/auth/useAuth'
 import { useDomainCapabilities } from '@/features/documents/hooks'
@@ -30,7 +34,10 @@ export const useDocGenTemplates = () => {
     staleTime: 10 * 60 * 1000,
     retry: 1,
   })
-  return { templates: query.data?.data.data.templates ?? [], isLoading: query.isLoading }
+  return {
+    templates: query.data?.data.data.templates ?? [],
+    isLoading: query.isLoading,
+  }
 }
 
 /** 내 생성 작업 목록. 진행 중인 작업이 있으면 계속 갱신한다 */
@@ -43,10 +50,16 @@ export const useDocGenJobs = () => {
     retry: 1,
     refetchInterval: (q) => {
       if (q.state.status === 'error') return false
-      return (q.state.data?.data.data.jobs ?? []).some(isJobActive) ? POLL_MS : false
+      return (q.state.data?.data.data.jobs ?? []).some(isJobActive)
+        ? POLL_MS
+        : false
     },
   })
-  return { jobs: query.data?.data.data.jobs ?? [], isLoading: query.isLoading, isError: query.isError }
+  return {
+    jobs: query.data?.data.data.jobs ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+  }
 }
 
 /* 작업을 바꾸는 요청. 성공하면 목록을 다시 받는다 */
@@ -57,22 +70,34 @@ const useInvalidateJobs = () => {
 
 export const useCreateDocGenJob = () => {
   const onSuccess = useInvalidateJobs()
-  return useMutation({ mutationFn: (fields: CreateDocGenJobFields) => createDocGenJob(fields), onSuccess })
+  return useMutation({
+    mutationFn: (fields: CreateDocGenJobFields) => createDocGenJob(fields),
+    onSuccess,
+  })
 }
 
 export const useCancelDocGenJob = () => {
   const onSuccess = useInvalidateJobs()
-  return useMutation({ mutationFn: (jobId: string) => cancelDocGenJob(jobId), onSuccess })
+  return useMutation({
+    mutationFn: (jobId: string) => cancelDocGenJob(jobId),
+    onSuccess,
+  })
 }
 
 export const useRetryDocGenJob = () => {
   const onSuccess = useInvalidateJobs()
-  return useMutation({ mutationFn: (jobId: string) => retryDocGenJob(jobId), onSuccess })
+  return useMutation({
+    mutationFn: (jobId: string) => retryDocGenJob(jobId),
+    onSuccess,
+  })
 }
 
 export const useDeleteDocGenJob = () => {
   const onSuccess = useInvalidateJobs()
-  return useMutation({ mutationFn: (jobId: string) => deleteDocGenJob(jobId), onSuccess })
+  return useMutation({
+    mutationFn: (jobId: string) => deleteDocGenJob(jobId),
+    onSuccess,
+  })
 }
 
 /* ───────── 화면 훅 ───────── */
@@ -91,7 +116,10 @@ export const useComposer = () => {
 
   const pickTemplate = (id: string) => {
     setTemplateId(id)
-    if (!format) setFormat(templates.find((t) => t.template_id === id)?.default_format ?? null)
+    if (!format)
+      setFormat(
+        templates.find((t) => t.template_id === id)?.default_format ?? null,
+      )
   }
 
   /** 요청을 보내고 만들어진 작업을 돌려준다. 보내지 못하면 알림을 띄우고 null */
@@ -107,14 +135,25 @@ export const useComposer = () => {
       })
       return res.data.data
     } catch {
-      showToast('문서 생성 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      showToast(
+        '문서 생성 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.',
+      )
       return null
     }
   }
 
   return {
-    prompt, setPrompt, templateId, pickTemplate, template, templates,
-    domain, setDomain, domains, format, setFormat,
+    prompt,
+    setPrompt,
+    templateId,
+    pickTemplate,
+    template,
+    templates,
+    domain,
+    setDomain,
+    domains,
+    format,
+    setFormat,
     canSubmit: !!prompt.trim() && !!template && !create.isPending,
     submit,
   }

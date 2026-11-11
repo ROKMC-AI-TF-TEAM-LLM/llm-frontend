@@ -1,6 +1,12 @@
 import { LayersIcon } from './icons'
 
-export function Mark({ size = 34, active = false }: { size?: number; active?: boolean }) {
+export function Mark({
+  size = 34,
+  active = false,
+}: {
+  size?: number
+  active?: boolean
+}) {
   return (
     <span
       style={{

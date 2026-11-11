@@ -1,7 +1,20 @@
-import { backendApi, refreshTokenOnce, getValidAccessToken, expireSession } from '@/lib/axios'
+import {
+  backendApi,
+  refreshTokenOnce,
+  getValidAccessToken,
+  expireSession,
+} from '@/lib/axios'
 import { API_BASE_URL } from '@/lib/api'
 import { logError } from '@/shared/utils/logError'
-import { type GetMessagesResponse, type GetMessagesParams, type StreamMessageRequest, type DeleteMessageResponse, type Source, type Notice, noticeFromCode } from './types'
+import {
+  type GetMessagesResponse,
+  type GetMessagesParams,
+  type StreamMessageRequest,
+  type DeleteMessageResponse,
+  type Source,
+  type Notice,
+  noticeFromCode,
+} from './types'
 import type { FileAttachment } from '@/shared/types/attachment'
 
 export const getMessages = (
@@ -9,20 +22,31 @@ export const getMessages = (
   params?: GetMessagesParams,
   options?: { signal?: AbortSignal },
 ) =>
-  backendApi.get<GetMessagesResponse>(`/api/v1/sessions/${sessionId}/messages`, {
-    params: { limit: 20, ...params },
-    ...options,
-  })
+  backendApi.get<GetMessagesResponse>(
+    `/api/v1/sessions/${sessionId}/messages`,
+    {
+      params: { limit: 20, ...params },
+      ...options,
+    },
+  )
 
 export const deleteMessage = (sessionId: string, messageId: string) =>
-  backendApi.delete<DeleteMessageResponse>(`/api/v1/sessions/${sessionId}/messages/${messageId}`)
+  backendApi.delete<DeleteMessageResponse>(
+    `/api/v1/sessions/${sessionId}/messages/${messageId}`,
+  )
 
 export const normalizeSource = (raw: unknown): Source => {
   const s = (raw ?? {}) as Record<string, unknown>
   const name = String(s.name ?? s.title ?? s.document_name ?? s.file_name ?? '')
 
   const rawPage =
-    s.page ?? s.page_no ?? s.page_number ?? s.pages ?? s.page_num ?? s.pageNo ?? null
+    s.page ??
+    s.page_no ??
+    s.page_number ??
+    s.pages ??
+    s.page_num ??
+    s.pageNo ??
+    null
 
   const page =
     rawPage === null || rawPage === undefined || rawPage === '' || rawPage === 0
@@ -59,13 +83,17 @@ interface SseHandlers {
   signal?: AbortSignal
 }
 
-const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promise<Response> => {
+const postSse = async (
+  url: string,
+  body: unknown,
+  signal?: AbortSignal,
+): Promise<Response> => {
   const makeRequest = (token: string | null) =>
     fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'text/event-stream',
+        Accept: 'text/event-stream',
         ...(token && { Authorization: `Bearer ${token}` }),
       },
       ...(body != null ? { body: JSON.stringify(body) } : {}),
@@ -90,20 +118,38 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
   return response
 }
 
-const readSse = async (response: Response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal }: SseHandlers) => {
+const readSse = async (
+  response: Response,
+  {
+    onChunk,
+    onSources,
+    onFiles,
+    onStatus,
+    onThought,
+    onNotice,
+    signal,
+  }: SseHandlers,
+) => {
   const reader = response.body?.getReader()
   const decoder = new TextDecoder()
 
   if (!reader) return
 
-  signal?.addEventListener('abort', () => {
-    clearTimeout(idleTimer)
-    reader.cancel()
-  }, { once: true })
+  signal?.addEventListener(
+    'abort',
+    () => {
+      clearTimeout(idleTimer)
+      reader.cancel()
+    },
+    { once: true },
+  )
 
   const IDLE_MS = Number(import.meta.env.VITE_STREAM_IDLE_MS) || 1_200_000
   let timedOut = false
-  let idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
+  let idleTimer = setTimeout(() => {
+    timedOut = true
+    reader.cancel()
+  }, IDLE_MS)
 
   let buffer = ''
 
@@ -112,7 +158,10 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
     if (done) break
 
     clearTimeout(idleTimer)
-    idleTimer = setTimeout(() => { timedOut = true; reader.cancel() }, IDLE_MS)
+    idleTimer = setTimeout(() => {
+      timedOut = true
+      reader.cancel()
+    }, IDLE_MS)
 
     buffer += decoder.decode(value, { stream: true })
     const lines = buffer.split('\n')
@@ -142,7 +191,23 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
         continue
       }
 
-      const evt = parsed as { type?: string; items?: unknown[]; message?: string; detail?: string; content?: string; answer?: string; text?: string; token?: string; level?: string; code?: string; name?: string; url?: string; tool?: string; thought?: string; step?: number }
+      const evt = parsed as {
+        type?: string
+        items?: unknown[]
+        message?: string
+        detail?: string
+        content?: string
+        answer?: string
+        text?: string
+        token?: string
+        level?: string
+        code?: string
+        name?: string
+        url?: string
+        tool?: string
+        thought?: string
+        step?: number
+      }
       if (evt.type === 'sources' && Array.isArray(evt.items)) {
         if (import.meta.env.DEV) {
           console.log('[SSE sources] 원본:', JSON.stringify(evt.items))
@@ -151,16 +216,27 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
       } else if (evt.type === 'file') {
         if (evt.name) onFiles?.([toAttachment(evt)])
       } else if (evt.type === 'files' && Array.isArray(evt.items)) {
-        onFiles?.(evt.items.map((it) => toAttachment(it as Record<string, unknown>)))
+        onFiles?.(
+          evt.items.map((it) => toAttachment(it as Record<string, unknown>)),
+        )
       } else if (evt.type === 'error') {
-        logError('SSE.errorEvent', evt.message || evt.detail || 'STREAM_ERROR', evt)
+        logError(
+          'SSE.errorEvent',
+          evt.message || evt.detail || 'STREAM_ERROR',
+          evt,
+        )
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
         // 끝 신호. 할 일은 없고, 아래 본문 처리로 떨어지지 않게 여기서 받는다
       } else if (evt.type === 'notice') {
         const fromCode = noticeFromCode(evt.code)
         if (fromCode) onNotice?.(fromCode)
-        else if (evt.message) onNotice?.({ code: evt.code ?? '', level: evt.level ?? 'warning', message: evt.message })
+        else if (evt.message)
+          onNotice?.({
+            code: evt.code ?? '',
+            level: evt.level ?? 'warning',
+            message: evt.message,
+          })
       } else if (evt.type === 'status') {
         if (evt.message) onStatus?.(evt.message)
         if (evt.thought) onThought?.(evt.thought, evt.step)
@@ -184,7 +260,7 @@ const readSse = async (response: Response, { onChunk, onSources, onFiles, onStat
   if (timedOut || signal?.aborted) {
     throw new DOMException(
       timedOut ? 'Stream idle timeout.' : 'The user aborted a request.',
-      'AbortError'
+      'AbortError',
     )
   }
 }
@@ -205,7 +281,15 @@ export const streamMessage = async (
     data,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal })
+  await readSse(response, {
+    onChunk,
+    onSources,
+    onFiles,
+    onStatus,
+    onThought,
+    onNotice,
+    signal,
+  })
 }
 
 export const regenerateMessageStream = async (
@@ -226,5 +310,13 @@ export const regenerateMessageStream = async (
     domain ? { domain } : undefined,
     signal,
   )
-  await readSse(response, { onChunk, onSources, onFiles, onStatus, onThought, onNotice, signal })
+  await readSse(response, {
+    onChunk,
+    onSources,
+    onFiles,
+    onStatus,
+    onThought,
+    onNotice,
+    signal,
+  })
 }

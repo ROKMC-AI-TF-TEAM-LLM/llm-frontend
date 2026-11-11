@@ -11,24 +11,43 @@ type Variant =
   | 'link'
 
 const VARIANT_CLASS: Record<Variant, string> = {
-  primary: 'rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors',
-  ghost: 'rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-[#f7f2f3]',
+  primary:
+    'rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors',
+  ghost:
+    'rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-[#f7f2f3]',
   link: 'text-sm text-brand hover:underline',
 }
 
-interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className' | 'style'> {
+interface ButtonProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'className' | 'style'
+> {
   variant: Variant
 }
 
-export default function Button({ variant, type = 'button', disabled, children, ...props }: ButtonProps) {
+export default function Button({
+  variant,
+  type = 'button',
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
   const isPrimary = variant === 'primary'
-  const state = !isPrimary ? '' : disabled ? ' bg-rose-divider text-[#cbbcc0]' : ' text-white hover:bg-[var(--color-brand-hover)]'
+  const state = !isPrimary
+    ? ''
+    : disabled
+      ? ' bg-rose-divider text-[#cbbcc0]'
+      : ' text-white hover:bg-[var(--color-brand-hover)]'
   return (
     <button
       type={type}
       disabled={disabled}
       // 바탕색은 기존 화면과 같게 인라인으로 준다 (클래스로 옮기면 hover 색이 살아나 모양이 달라진다)
-      style={isPrimary && !disabled ? { background: 'var(--color-brand)' } : undefined}
+      style={
+        isPrimary && !disabled
+          ? { background: 'var(--color-brand)' }
+          : undefined
+      }
       className={VARIANT_CLASS[variant] + state}
       {...props}
     >

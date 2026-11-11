@@ -1,6 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from '@/features/chat/types'
-import { useConfirmDeleteSession, useUpdateSession, useToggleFavorite } from '@/features/sessions/hooks'
+import {
+  useConfirmDeleteSession,
+  useUpdateSession,
+  useToggleFavorite,
+} from '@/features/sessions/hooks'
 import { displaySessionTitle } from '@/features/sessions/utils'
 import SidebarItem from './SidebarItem'
 
@@ -25,12 +29,32 @@ export default function SessionItem({ chat }: SessionItemProps) {
       isActive={chat.id === (routeChatId ?? routeId)}
       isFavorite={!!chat.isFavorite}
       labels={{ rename: '제목 수정', remove: '세션 삭제' }}
-      onOpen={() => navigate(chat.projectId ? `/projects/${chat.projectId}/${chat.id}` : `/chat/${chat.id}`)}
-      onRename={(title) => updateSession({ sessionId: chat.id, data: { title } })}
-      onToggleFavorite={() => toggleFavorite({ sessionId: chat.id, next: !chat.isFavorite })}
-      onDelete={() => confirmDelete({ id: chat.id, title: chat.title, projectId: chat.projectId })}
+      onOpen={() =>
+        navigate(
+          chat.projectId
+            ? `/projects/${chat.projectId}/${chat.id}`
+            : `/chat/${chat.id}`,
+        )
+      }
+      onRename={(title) =>
+        updateSession({ sessionId: chat.id, data: { title } })
+      }
+      onToggleFavorite={() =>
+        toggleFavorite({ sessionId: chat.id, next: !chat.isFavorite })
+      }
+      onDelete={() =>
+        confirmDelete({
+          id: chat.id,
+          title: chat.title,
+          projectId: chat.projectId,
+        })
+      }
     >
-      <span className={`truncate overflow-hidden ${isUntitled ? 'text-text-muted font-normal' : ''}`}>{titleText}</span>
+      <span
+        className={`truncate overflow-hidden ${isUntitled ? 'text-text-muted font-normal' : ''}`}
+      >
+        {titleText}
+      </span>
     </SidebarItem>
   )
 }

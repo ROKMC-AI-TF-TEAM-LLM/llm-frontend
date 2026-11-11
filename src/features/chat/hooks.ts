@@ -31,7 +31,10 @@ interface ChatSessionOptions {
  * - 스트림 오류는 알림으로 띄운다.
  * 화면마다 다른 부분(오류 문구, 이동할 주소)은 options로 받는다.
  */
-export function useChatSession(sessionId: string | undefined, options: ChatSessionOptions) {
+export function useChatSession(
+  sessionId: string | undefined,
+  options: ChatSessionOptions,
+) {
   const connect = useChatStore((s) => s.connect)
   const disconnect = useChatStore((s) => s.disconnect)
   const isConnecting = useChatStore((s) => s.isConnecting)
@@ -41,7 +44,11 @@ export function useChatSession(sessionId: string | undefined, options: ChatSessi
   const resetDeleted = useChatStore((s) => s.resetDeleted)
 
   // 어느 대화의 오류인지 함께 저장해, 다른 대화로 옮기면 자동으로 무시되게 한다.
-  const [failure, setFailure] = useState<{ sessionId: string; message: string; canRetry: boolean } | null>(null)
+  const [failure, setFailure] = useState<{
+    sessionId: string
+    message: string
+    canRetry: boolean
+  } | null>(null)
   const [retryKey, setRetryKey] = useState(0)
 
   // 화면에서 넘긴 콜백은 바뀌어도 다시 연결하지 않도록 effect event로 그때의 최신 값을 읽는다.
@@ -65,12 +72,18 @@ export function useChatSession(sessionId: string | undefined, options: ChatSessi
         canRetry: true,
       })
     } else if (isNetworkError(e)) {
-      setFailure({ sessionId: id, message: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.', canRetry: true })
+      setFailure({
+        sessionId: id,
+        message: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.',
+        canRetry: true,
+      })
     } else {
       options.onUnknownError()
     }
   })
-  const handleDeleted = useEffectEvent((message: string | null) => options.onDeleted(message))
+  const handleDeleted = useEffectEvent((message: string | null) =>
+    options.onDeleted(message),
+  )
 
   // useLayoutEffect: 라우터 내비게이션은 트랜지션으로 커밋되므로 useEffect면
   // 이전 대화의 메시지가 한 프레임 그려질 수 있다. 페인트 전에 연결한다.
@@ -109,7 +122,9 @@ export function useChatSession(sessionId: string | undefined, options: ChatSessi
 
   // 같은 대화로 돌아와 다시 연결 중일 때는 이전 오류를 숨긴다(성공하면 지워진다).
   const connectError =
-    failure && failure.sessionId === sessionId && !isConnecting ? { message: failure.message, canRetry: failure.canRetry } : null
+    failure && failure.sessionId === sessionId && !isConnecting
+      ? { message: failure.message, canRetry: failure.canRetry }
+      : null
 
   const retry = () => {
     setFailure(null)

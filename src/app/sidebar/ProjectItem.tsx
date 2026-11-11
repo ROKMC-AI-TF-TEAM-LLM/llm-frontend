@@ -10,7 +10,12 @@ interface ProjectItemProps {
   onDelete: (id: string) => void
 }
 
-export default function ProjectItem({ project: p, onToggleFavorite, onRename, onDelete }: ProjectItemProps) {
+export default function ProjectItem({
+  project: p,
+  onToggleFavorite,
+  onRename,
+  onDelete,
+}: ProjectItemProps) {
   const navigate = useNavigate()
   const location = useLocation()
 

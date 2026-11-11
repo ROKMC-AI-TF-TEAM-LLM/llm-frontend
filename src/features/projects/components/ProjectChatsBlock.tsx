@@ -17,7 +17,15 @@ interface ProjectChatsBlockProps {
 }
 
 /** 프로젝트 화면 왼쪽 패널의 대화 영역 */
-export function ProjectChatsBlock({ chats, openChatId, onOpen, onNew, onToggleFavorite, onRename, onDelete }: ProjectChatsBlockProps) {
+export function ProjectChatsBlock({
+  chats,
+  openChatId,
+  onOpen,
+  onNew,
+  onToggleFavorite,
+  onRename,
+  onDelete,
+}: ProjectChatsBlockProps) {
   return (
     <Block
       title={`대화 ${chats.length}`}
@@ -40,7 +48,9 @@ export function ProjectChatsBlock({ chats, openChatId, onOpen, onNew, onToggleFa
           />
         ))}
         {chats.length === 0 && (
-          <p className="py-6 text-center text-[12.5px] text-text-muted">아직 대화가 없습니다.</p>
+          <p className="py-6 text-center text-[12.5px] text-text-muted">
+            아직 대화가 없습니다.
+          </p>
         )}
       </div>
     </Block>

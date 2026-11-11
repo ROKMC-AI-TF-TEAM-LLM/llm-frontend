@@ -78,7 +78,9 @@ export function ChatRow({
       <span
         aria-hidden
         className="pointer-events-none absolute inset-y-0 right-0 w-24 rounded-r-[10px] opacity-0 transition-opacity group-hover:opacity-100"
-        style={{ background: `linear-gradient(to right, transparent 0%, ${hoverBg} 45%)` }}
+        style={{
+          background: `linear-gradient(to right, transparent 0%, ${hoverBg} 45%)`,
+        }}
       />
 
       <div className="absolute right-1.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex">
@@ -93,7 +95,11 @@ export function ChatRow({
             chat.isFavorite ? 'text-brand' : 'text-text-muted hover:text-brand'
           } hover:bg-white`}
         >
-          <StarIcon className="h-3.5 w-3.5" fill={chat.isFavorite ? 'currentColor' : 'none'} strokeWidth={1.9} />
+          <StarIcon
+            className="h-3.5 w-3.5"
+            fill={chat.isFavorite ? 'currentColor' : 'none'}
+            strokeWidth={1.9}
+          />
         </button>
         <button
           type="button"

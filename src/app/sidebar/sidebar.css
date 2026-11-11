@@ -32,21 +32,33 @@
 .sb-icon {
   display: inline-flex;
   transform-origin: center;
-  transition: transform 0.24s cubic-bezier(.2,.7,.2,1);
+  transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.sb-item:hover .sb-icon-plus { animation: sb-plus-spin 0.5s cubic-bezier(.34,1.5,.64,1) 1 both; }
+.sb-item:hover .sb-icon-plus {
+  animation: sb-plus-spin 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) 1 both;
+}
 
-.sb-item:hover .sb-icon-search { animation: sb-search-sweep 0.54s ease-out 1 both; }
+.sb-item:hover .sb-icon-search {
+  animation: sb-search-sweep 0.54s ease-out 1 both;
+}
 
-.sb-item:hover .sb-icon-folder { animation: sb-folder-hop 0.5s cubic-bezier(.34,1.5,.64,1) 1 both; }
+.sb-item:hover .sb-icon-folder {
+  animation: sb-folder-hop 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) 1 both;
+}
 
-.sb-item:hover .sb-icon-translate { animation: sb-translate-flip 0.6s ease-in-out 1 both; }
+.sb-item:hover .sb-icon-translate {
+  animation: sb-translate-flip 0.6s ease-in-out 1 both;
+}
 
-.sb-item:hover .sb-icon-docgen { animation: sb-docgen-tilt 0.5s cubic-bezier(.34,1.5,.64,1) 1 both; }
+.sb-item:hover .sb-icon-docgen {
+  animation: sb-docgen-tilt 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) 1 both;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .sb-icon { transition: none; }
+  .sb-icon {
+    transition: none;
+  }
   .sb-item:hover .sb-icon-plus,
   .sb-item:hover .sb-icon-search,
   .sb-item:hover .sb-icon-folder,

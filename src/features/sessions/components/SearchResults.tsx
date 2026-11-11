@@ -13,7 +13,9 @@ const SearchResults = ({ results, selectedId, onSelect, isLoading }: Props) => {
     return (
       <div className="mt-10">
         <div className="space-y-0.5">
-          {[...Array(5)].map((_, i) => <SearchResultSkeleton key={i} />)}
+          {[...Array(5)].map((_, i) => (
+            <SearchResultSkeleton key={i} />
+          ))}
         </div>
       </div>
     )
@@ -23,7 +25,9 @@ const SearchResults = ({ results, selectedId, onSelect, isLoading }: Props) => {
 
   return (
     <div className="mt-10">
-      <h2 className="text-l font-medium text-text-primary text-center mb-2">검색 결과</h2>
+      <h2 className="text-l font-medium text-text-primary text-center mb-2">
+        검색 결과
+      </h2>
       <div className="space-y-0.5">
         {results.map((result) => (
           <SearchResultItem

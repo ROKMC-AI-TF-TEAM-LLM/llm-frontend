@@ -14,9 +14,10 @@ window.addEventListener('vite:preloadError', (e) => {
 })
 
 // mock 모드(`npm run dev:mock`)에서는 첫 요청 전에 가짜 백엔드를 설치한다. 일반 빌드에서는 이 import가 빠진다.
-const prepare = import.meta.env.MODE === 'mock'
-  ? import('@/mock/index').then(({ installMock }) => installMock())
-  : Promise.resolve()
+const prepare =
+  import.meta.env.MODE === 'mock'
+    ? import('@/mock/index').then(({ installMock }) => installMock())
+    : Promise.resolve()
 
 prepare.then(() => {
   createRoot(document.getElementById('root')!).render(

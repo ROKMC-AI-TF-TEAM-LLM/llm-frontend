@@ -22,7 +22,11 @@ export const getMeUsers = () =>
   backendApi.get<GetMeResponse>('/api/v1/users/me')
 
 export const approveUser = (userId: string) =>
-  backendApi.patch<AdminUserApproveResponse>(`/api/v1/admin/users/${userId}/approve`)
+  backendApi.patch<AdminUserApproveResponse>(
+    `/api/v1/admin/users/${userId}/approve`,
+  )
 
 export const rejectUser = (userId: string) =>
-  backendApi.patch<AdminUserRejectResponse>(`/api/v1/admin/users/${userId}/reject`)
+  backendApi.patch<AdminUserRejectResponse>(
+    `/api/v1/admin/users/${userId}/reject`,
+  )

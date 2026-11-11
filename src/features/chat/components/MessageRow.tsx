@@ -1,26 +1,34 @@
-import { memo } from 'react';
-import type { Message } from '../types';
-import MessageBubble from './MessageBubble';
-import MessageActions from './MessageActions';
-import SourceBadge from './SourceBadge';
-import FileDownload from './FileDownload';
-import ImageAttachment from './ImageAttachment';
-import DomainIcon from '@/features/domains/components/DomainIcon';
-import { AlertAltIcon } from '@/shared/components/icons';
+import { memo } from 'react'
+import type { Message } from '../types'
+import MessageBubble from './MessageBubble'
+import MessageActions from './MessageActions'
+import SourceBadge from './SourceBadge'
+import FileDownload from './FileDownload'
+import ImageAttachment from './ImageAttachment'
+import DomainIcon from '@/features/domains/components/DomainIcon'
+import { AlertAltIcon } from '@/shared/components/icons'
 
 interface MessageRowProps {
-  msg: Message;
-  isLast: boolean;
-  isStreaming: boolean;
-  statusText: string | null;
-  statusSteps?: import('../types').StatusStep[];
-  onCopy: (text: string) => void;
-  onRegenerate: (id: string) => void;
+  msg: Message
+  isLast: boolean
+  isStreaming: boolean
+  statusText: string | null
+  statusSteps?: import('../types').StatusStep[]
+  onCopy: (text: string) => void
+  onRegenerate: (id: string) => void
 }
 
-function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onCopy, onRegenerate }: MessageRowProps) {
+function MessageRowBase({
+  msg,
+  isLast,
+  isStreaming,
+  statusText,
+  statusSteps,
+  onCopy,
+  onRegenerate,
+}: MessageRowProps) {
   if (msg.type === 'image') {
-    return <ImageAttachment filename={msg.filename} caption={msg.caption} />;
+    return <ImageAttachment filename={msg.filename} caption={msg.caption} />
   }
 
   if (msg.role === 'user') {
@@ -35,14 +43,18 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onC
           </div>
         )}
         <MessageBubble role="user" content={msg.content} />
-        <MessageActions role="user" onCopy={() => onCopy(msg.content)} createdAt={msg.createdAt} />
+        <MessageActions
+          role="user"
+          onCopy={() => onCopy(msg.content)}
+          createdAt={msg.createdAt}
+        />
       </div>
-    );
+    )
   }
 
-  const msgStreaming = msg.status === 'streaming';
-  const isInterrupted = msg.status === 'interrupted';
-  const hideEmptyBubble = isInterrupted && msg.content.trim() === '';
+  const msgStreaming = msg.status === 'streaming'
+  const isInterrupted = msg.status === 'interrupted'
+  const hideEmptyBubble = isInterrupted && msg.content.trim() === ''
 
   return (
     <div className="group/msg">
@@ -84,8 +96,8 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onC
         </>
       )}
     </div>
-  );
+  )
 }
 
-const MessageRow = memo(MessageRowBase);
-export default MessageRow;
+const MessageRow = memo(MessageRowBase)
+export default MessageRow

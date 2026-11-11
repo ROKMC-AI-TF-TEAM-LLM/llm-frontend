@@ -18,7 +18,14 @@ interface Options {
  * 목록 끝의 감시 요소가 화면에 들어오면 다음 쪽을 불러온다.
  * 돌려주는 ref를 목록 끝의 빈 요소에 단다. 그 요소가 사라졌다 다시 생겨도(접기·검색) 새 요소를 다시 지켜본다.
  */
-export function useInfiniteScroll<T extends Element>({ hasMore, isLoading, onLoadMore, enabled = true, threshold, rootMargin }: Options) {
+export function useInfiniteScroll<T extends Element>({
+  hasMore,
+  isLoading,
+  onLoadMore,
+  enabled = true,
+  threshold,
+  rootMargin,
+}: Options) {
   const [sentinel, setSentinel] = useState<T | null>(null)
   const loadMore = useEffectEvent(onLoadMore)
 

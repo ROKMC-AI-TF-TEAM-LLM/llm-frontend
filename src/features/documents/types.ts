@@ -23,7 +23,8 @@ export interface GetDocumentsParams {
   domain?: string
 }
 
-export type GetDocumentsErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'LLM_SERVER_ERROR'
+export type GetDocumentsErrorCode =
+  'UNAUTHORIZED' | 'TOKEN_INVALID' | 'LLM_SERVER_ERROR'
 
 export interface GetDocumentsResponse {
   success: boolean

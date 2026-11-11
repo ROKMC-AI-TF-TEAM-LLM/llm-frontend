@@ -24,7 +24,12 @@ export function InstructionBody({
         className="whitespace-pre-line text-[12.5px] leading-[1.75] text-text-secondary"
         style={
           clamp
-            ? { display: '-webkit-box', WebkitLineClamp: clamp, WebkitBoxOrient: 'vertical', overflow: 'hidden' }
+            ? {
+                display: '-webkit-box',
+                WebkitLineClamp: clamp,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }
             : undefined
         }
       >

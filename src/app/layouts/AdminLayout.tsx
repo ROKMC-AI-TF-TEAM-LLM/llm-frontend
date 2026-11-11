@@ -1,15 +1,15 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '@/features/auth/useAuth';
-import { useGetUsers } from '@/features/users/hooks';
-import { Skeleton, AdminRowSkeleton } from '@/shared/components/Skeleton';
-import type { ApiError } from '@/shared/utils/error';
+import { Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from '@/features/auth/useAuth'
+import { useGetUsers } from '@/features/users/hooks'
+import { Skeleton, AdminRowSkeleton } from '@/shared/components/Skeleton'
+import type { ApiError } from '@/shared/utils/error'
 
 const AdminLayout = () => {
-  const { accessToken } = useAuth();
-  const { isLoading, isError, error } = useGetUsers();
+  const { accessToken } = useAuth()
+  const { isLoading, isError, error } = useGetUsers()
 
   if (!accessToken) {
-    return <Navigate to='/' replace />;
+    return <Navigate to="/" replace />
   }
 
   if (isLoading) {
@@ -17,40 +17,52 @@ const AdminLayout = () => {
       <div className="p-8">
         <Skeleton className="h-8 w-48 mb-6" />
         <div className="flex gap-2 mb-6">
-          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-16 rounded-full" />)}
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-8 w-16 rounded-full" />
+          ))}
         </div>
         <div className="bg-white rounded-xl shadow overflow-hidden">
           <div className="border-b px-5 py-3 flex gap-5">
-            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-4 w-20" />)}
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-4 w-20" />
+            ))}
           </div>
-          <table className="w-full"><tbody>
-            {[...Array(6)].map((_, i) => <AdminRowSkeleton key={i} />)}
-          </tbody></table>
+          <table className="w-full">
+            <tbody>
+              {[...Array(6)].map((_, i) => (
+                <AdminRowSkeleton key={i} />
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    );
+    )
   }
 
   if (isError) {
-    const status = (error as ApiError)?.response?.status;
+    const status = (error as ApiError)?.response?.status
     if (status === 401 || status === 403) {
       return (
         <div className="flex flex-col items-center justify-center h-full gap-3 py-20">
           <span className="text-6xl">🚫</span>
-          <h1 className="text-2xl font-bold text-gray-800">접근 권한이 없습니다</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            접근 권한이 없습니다
+          </h1>
           <p className="text-gray-500">관리자 계정으로 로그인해주세요.</p>
         </div>
-      );
+      )
     }
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 py-20">
         <h1 className="text-2xl font-bold text-gray-800">연결 오류</h1>
-        <p className="text-gray-500">서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>
+        <p className="text-gray-500">
+          서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.
+        </p>
       </div>
-    );
+    )
   }
 
-  return <Outlet />;
-};
+  return <Outlet />
+}
 
-export default AdminLayout;
+export default AdminLayout

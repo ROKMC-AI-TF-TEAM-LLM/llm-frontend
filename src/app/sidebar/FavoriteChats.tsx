@@ -2,7 +2,12 @@ import { useState } from 'react'
 import type { ChatItem } from '@/features/chat/types'
 import SessionItem from './SessionItem'
 import ProjectItem from './ProjectItem'
-import { useProjectList, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '@/features/projects/hooks'
+import {
+  useProjectList,
+  useUpdateProject,
+  useToggleProjectFavorite,
+  useConfirmDeleteProject,
+} from '@/features/projects/hooks'
 import { ChevronDownIcon } from '@/shared/components/icons'
 
 interface FavoriteChatsProps {
@@ -10,14 +15,18 @@ interface FavoriteChatsProps {
   favorites: ChatItem[]
 }
 
-export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps) {
+export default function FavoriteChats({
+  isOpen,
+  favorites,
+}: FavoriteChatsProps) {
   const [expanded, setExpanded] = useState(true)
 
   const { projects } = useProjectList()
   const { mutate: updateProject } = useUpdateProject()
   const { mutate: toggleFavoriteApi } = useToggleProjectFavorite()
   const confirmDelete = useConfirmDeleteProject()
-  const rename = (id: string, next: string) => updateProject({ projectId: id, title: next })
+  const rename = (id: string, next: string) =>
+    updateProject({ projectId: id, title: next })
   const toggleFavorite = (id: string) => {
     const cur = projects.find((p) => p.id === id)?.isFavorite ?? false
     toggleFavoriteApi({ projectId: id, next: !cur })
@@ -47,7 +56,10 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
         <span className="text-[10.5px] font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-rose-muted whitespace-nowrap">
           즐겨찾기
         </span>
-        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-rose-muted transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`} strokeWidth={2.6} />
+        <ChevronDownIcon
+          className={`h-3 w-3 shrink-0 text-rose-muted transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`}
+          strokeWidth={2.6}
+        />
       </button>
 
       {expanded && (

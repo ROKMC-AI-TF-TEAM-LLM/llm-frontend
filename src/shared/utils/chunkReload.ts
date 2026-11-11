@@ -1,4 +1,5 @@
-const CHUNK_ERROR = /dynamically imported module|module script failed|failed to fetch dynamically|error loading dynamically|loading chunk/i
+const CHUNK_ERROR =
+  /dynamically imported module|module script failed|failed to fetch dynamically|error loading dynamically|loading chunk/i
 
 const CHUNK_RELOAD_KEY = 'rokm_chunk_reload_at'
 

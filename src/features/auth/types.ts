@@ -22,7 +22,11 @@ export interface LoginRequest {
   email: string
   password: string
 }
-export type LoginErrorCode = 'INVALID_CREDENTIALS' | 'APPROVAL_PENDING' | 'APPROVAL_REJECTED' | 'VALIDATION_ERROR'
+export type LoginErrorCode =
+  | 'INVALID_CREDENTIALS'
+  | 'APPROVAL_PENDING'
+  | 'APPROVAL_REJECTED'
+  | 'VALIDATION_ERROR'
 
 export interface LoginResponse {
   success: boolean

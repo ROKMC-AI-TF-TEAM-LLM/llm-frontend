@@ -13,7 +13,14 @@ interface IconButtonProps {
 }
 
 /** 아이콘만 있는 32px 정사각 버튼. 누름은 부모로 전파하지 않는다(행 안에 놓여도 행이 눌리지 않게) */
-export default function IconButton({ label, onClick, active = false, danger = false, disabled = false, children }: IconButtonProps) {
+export default function IconButton({
+  label,
+  onClick,
+  active = false,
+  danger = false,
+  disabled = false,
+  children,
+}: IconButtonProps) {
   return (
     <button
       type="button"

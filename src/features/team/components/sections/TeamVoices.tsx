@@ -16,7 +16,9 @@ export default function TeamVoices() {
 
       <div className="relative z-[1] mx-auto w-full max-w-[1100px]">
         <ScrollFade className="text-center">
-          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">THE TEAM</p>
+          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">
+            THE TEAM
+          </p>
           <h2
             className="mars-display mx-auto mt-5 font-extrabold tracking-tight text-text-primary break-keep"
             style={{ fontSize: 'clamp(30px,3.8vw,46px)' }}
@@ -29,7 +31,14 @@ export default function TeamVoices() {
           {VOICES.map((v, i) => (
             <ScrollFade key={i}>
               <figure className="flex h-full flex-col rounded-3xl border border-surface-border bg-white p-8 transition-shadow duration-300 hover:shadow-[0_18px_44px_rgba(26,25,23,0.08)]">
-                <svg aria-hidden width="26" height="20" viewBox="0 0 26 20" className="text-brand-soft" fill="currentColor">
+                <svg
+                  aria-hidden
+                  width="26"
+                  height="20"
+                  viewBox="0 0 26 20"
+                  className="text-brand-soft"
+                  fill="currentColor"
+                >
                   <path d="M0 20V11.2C0 5 3.4 1 9.6 0l1 2.6C7 3.7 5.2 5.9 5 9h4.2v11H0Zm15.6 0V11.2C15.6 5 19 1 25.2 0l1 2.6c-3.6 1.1-5.4 3.3-5.6 6.4H25v11h-9.4Z" />
                 </svg>
 

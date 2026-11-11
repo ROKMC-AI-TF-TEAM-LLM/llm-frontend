@@ -25,7 +25,11 @@ export const useInfiniteAdminDocuments = (
   return useInfiniteQuery({
     queryKey: ['admin', 'documents', params ?? {}],
     queryFn: ({ pageParam }) =>
-      getAdminDocuments({ ...params, offset: pageParam, limit: ADMIN_DOC_LIMIT }),
+      getAdminDocuments({
+        ...params,
+        offset: pageParam,
+        limit: ADMIN_DOC_LIMIT,
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.data.data.has_more) return undefined
@@ -38,7 +42,9 @@ export const useInfiniteAdminDocuments = (
       if (query.state.status === 'error') return false
       const pages = query.state.data?.pages ?? []
       const hasProcessing = pages.some((p) =>
-        p.data.data.documents.some((d) => normalizeDocStatus(d.status) === 'processing'),
+        p.data.data.documents.some(
+          (d) => normalizeDocStatus(d.status) === 'processing',
+        ),
       )
       return hasProcessing ? 5000 : false
     },
@@ -48,8 +54,13 @@ export const useInfiniteAdminDocuments = (
 export const useUploadDocument = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ file, fields }: { file: File; fields: UploadDocumentFields }) =>
-      uploadAdminDocument(file, fields),
+    mutationFn: ({
+      file,
+      fields,
+    }: {
+      file: File
+      fields: UploadDocumentFields
+    }) => uploadAdminDocument(file, fields),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'documents'] })
     },
@@ -73,7 +84,9 @@ export const useRetryDocument = () => {
     onSuccess: (_res, documentId) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'documents'] })
       // 행은 상태 조회 캐시를 목록보다 우선하므로, 이전 폴링에서 남은 실패 상태를 비운다.
-      queryClient.invalidateQueries({ queryKey: ['admin', 'document-status', documentId] })
+      queryClient.invalidateQueries({
+        queryKey: ['admin', 'document-status', documentId],
+      })
     },
   })
 }

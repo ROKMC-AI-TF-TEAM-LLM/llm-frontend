@@ -1,15 +1,27 @@
 import type { AdminDocumentItem } from '@/features/admin/types'
 import type { DocumentItem } from '@/features/documents/types'
 import { db, newId, now } from '../db'
-import { del, fail, file, get, offsetPage, ok, post, type MockRoute } from '../server'
+import {
+  del,
+  fail,
+  file,
+  get,
+  offsetPage,
+  ok,
+  post,
+  type MockRoute,
+} from '../server'
 
 const PROCESSING_MS = 3000
 
-const findDocument = (documentId: string) => db.libraryDocuments.find((doc) => doc.document_id === documentId)
+const findDocument = (documentId: string) =>
+  db.libraryDocuments.find((doc) => doc.document_id === documentId)
 
-const documentNotFound = () => fail(404, 'DOCUMENT_NOT_FOUND', '문서를 찾을 수 없습니다.')
+const documentNotFound = () =>
+  fail(404, 'DOCUMENT_NOT_FOUND', '문서를 찾을 수 없습니다.')
 
-const extensionOf = (name: string) => name.split('.').pop()?.toUpperCase() ?? null
+const extensionOf = (name: string) =>
+  name.split('.').pop()?.toUpperCase() ?? null
 
 /** 사용자 자료실(`/documents`)은 처리 완료된 문서만, 다른 필드 이름으로 보여준다 */
 const toLibraryItem = (doc: AdminDocumentItem): DocumentItem => ({
@@ -23,12 +35,17 @@ const toLibraryItem = (doc: AdminDocumentItem): DocumentItem => ({
 })
 
 const sampleFile = (name: string) =>
-  file(name, `${name}\n\nmock 모드에서 내려받은 예시 파일입니다. 실제 파일은 일반 개발 모드에서 확인하세요.\n`)
+  file(
+    name,
+    `${name}\n\nmock 모드에서 내려받은 예시 파일입니다. 실제 파일은 일반 개발 모드에서 확인하세요.\n`,
+  )
 
 export const documentRoutes: MockRoute[] = [
   get('/documents', ({ query }) => {
     const domain = query.get('domain')
-    const docs = db.libraryDocuments.filter((doc) => doc.status === 'COMPLETED' && (!domain || doc.domain === domain))
+    const docs = db.libraryDocuments.filter(
+      (doc) => doc.status === 'COMPLETED' && (!domain || doc.domain === domain),
+    )
     return ok(offsetPage(docs.map(toLibraryItem), query))
   }),
 
@@ -40,7 +57,9 @@ export const documentRoutes: MockRoute[] = [
   get('/admin/documents', ({ query }) => {
     const domain = query.get('domain')
     const search = query.get('search') ?? ''
-    const docs = db.libraryDocuments.filter((doc) => (!domain || doc.domain === domain) && doc.name.includes(search))
+    const docs = db.libraryDocuments.filter(
+      (doc) => (!domain || doc.domain === domain) && doc.name.includes(search),
+    )
     return ok(offsetPage(docs, query))
   }),
 
@@ -59,7 +78,9 @@ export const documentRoutes: MockRoute[] = [
       size: upload.size,
     }
     db.libraryDocuments.unshift(doc)
-    setTimeout(() => { doc.status = 'COMPLETED' }, PROCESSING_MS)
+    setTimeout(() => {
+      doc.status = 'COMPLETED'
+    }, PROCESSING_MS)
     return ok(doc, 201)
   }),
 
@@ -79,8 +100,18 @@ export const documentRoutes: MockRoute[] = [
     const doc = findDocument(params.documentId)
     if (!doc) return documentNotFound()
     doc.status = 'PROCESSING'
-    setTimeout(() => { doc.status = 'COMPLETED' }, PROCESSING_MS)
-    return ok({ document_id: doc.document_id, status: doc.status, chunks_indexed: 0, error: null }, 202)
+    setTimeout(() => {
+      doc.status = 'COMPLETED'
+    }, PROCESSING_MS)
+    return ok(
+      {
+        document_id: doc.document_id,
+        status: doc.status,
+        chunks_indexed: 0,
+        error: null,
+      },
+      202,
+    )
   }),
 
   del('/admin/documents/:documentId', ({ params }) => {

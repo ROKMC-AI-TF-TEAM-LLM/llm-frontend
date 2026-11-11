@@ -4,12 +4,15 @@ import { DOMAINS } from '@/features/domains/utils'
 /** 문서 목록 응답에서 문서 배열만 꺼낸다 (배열·items·documents 어느 모양이든) */
 export const pickDocuments = (data: unknown): DocumentItem[] => {
   if (Array.isArray(data)) return data as DocumentItem[]
-  const d = data as { items?: DocumentItem[]; documents?: DocumentItem[] } | null | undefined
+  const d = data as
+    { items?: DocumentItem[]; documents?: DocumentItem[] } | null | undefined
   return d?.items ?? d?.documents ?? []
 }
 
 export type DocIndexStatus = 'completed' | 'failed' | 'processing'
-export const normalizeDocStatus = (status: string | null | undefined): DocIndexStatus => {
+export const normalizeDocStatus = (
+  status: string | null | undefined,
+): DocIndexStatus => {
   const s = String(status ?? '').toLowerCase()
   if (/(complete|success|done|indexed|ready|\bok\b)/.test(s)) return 'completed'
   if (/(fail|error|reject|cancel)/.test(s)) return 'failed'
@@ -18,7 +21,9 @@ export const normalizeDocStatus = (status: string | null | undefined): DocIndexS
 
 export const extractDomains = (docs: DocumentItem[]): string[] => {
   const known = DOMAINS.map((d) => d.code)
-  const fromDocs = [...new Set(docs.map((d) => d.domain).filter((d): d is string => !!d))]
+  const fromDocs = [
+    ...new Set(docs.map((d) => d.domain).filter((d): d is string => !!d)),
+  ]
   const extra = fromDocs.filter((d) => !known.includes(d))
   return [...known, ...extra]
 }
@@ -55,7 +60,9 @@ export const findDocumentByName = (
     const t = d.applied_at ? Date.parse(d.applied_at) : NaN
     return Number.isNaN(t) ? -Infinity : t
   }
-  return matches.reduce((latest, d) => (appliedTime(d) > appliedTime(latest) ? d : latest))
+  return matches.reduce((latest, d) =>
+    appliedTime(d) > appliedTime(latest) ? d : latest,
+  )
 }
 
 export const formatAppliedAt = (iso?: string | null): string => {
