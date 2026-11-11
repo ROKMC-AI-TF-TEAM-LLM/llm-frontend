@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, type GuideSection } from './guideSections'
 import NavPreview from './NavPreview'
-// import { showDevToast } from '../DevToast'
 
 export default function LandingNav({ onStart }: { onStart: () => void }) {
   const navigate = useNavigate()

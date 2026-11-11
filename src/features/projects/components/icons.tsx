@@ -44,13 +44,6 @@ export const PlusIcon = ({ className = 'w-4 h-4' }: IconProps) => (
   </svg>
 )
 
-export const SearchIcon = ({ className = 'w-4 h-4' }: IconProps) => (
-  <svg className={className} {...base} strokeWidth={2}>
-    <circle cx="11" cy="11" r="7" />
-    <path d="M21 21l-4.3-4.3" />
-  </svg>
-)
-
 export const ChevronRight = ({ className = 'w-4 h-4' }: IconProps) => (
   <svg className={className} {...base} strokeWidth={2.2}>
     <path d="M9 6l6 6-6 6" />
@@ -60,12 +53,6 @@ export const ChevronRight = ({ className = 'w-4 h-4' }: IconProps) => (
 export const ChevronDown = ({ className = 'w-4 h-4' }: IconProps) => (
   <svg className={className} {...base} strokeWidth={2.2}>
     <path d="M6 9l6 6 6-6" />
-  </svg>
-)
-
-export const ArrowLeft = ({ className = 'w-4 h-4' }: IconProps) => (
-  <svg className={className} {...base} strokeWidth={2.2}>
-    <path d="M19 12H5M11 18l-6-6 6-6" />
   </svg>
 )
 

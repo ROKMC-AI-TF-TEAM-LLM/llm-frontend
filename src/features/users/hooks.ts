@@ -1,7 +1,7 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMeUsers, getUsers, deleteUsers, inquiryUsers, approveUser, rejectUser } from './api'
 import { signup } from '@/features/auth/api'
-import type { UserRole, UserStatus, GetAdminUsersParams } from './types'
+import type { GetAdminUsersParams } from './types'
 import type { SignupRequest } from '@/features/auth/types'
 import { useAuth } from '@/features/auth/useAuth'
 
@@ -11,20 +11,6 @@ export const useGetMe = () => {
     queryKey: ['me'],
     queryFn: () => getMeUsers(),
     enabled: !!accessToken,
-    retry: false,
-  })
-}
-
-export const useInfiniteUsers = (params?: { role?: UserRole; status?: UserStatus; search?: string; size?: number }) => {
-  return useInfiniteQuery({
-    queryKey: ['users', 'infinite', params],
-    queryFn: ({ pageParam }) =>
-      getUsers({ ...params, cursor: pageParam as string | undefined }),
-    getNextPageParam: (lastPage) => {
-      const data = lastPage.data.data
-      return data.has_next && data.next_cursor ? data.next_cursor : undefined
-    },
-    initialPageParam: undefined as string | undefined,
     retry: false,
   })
 }

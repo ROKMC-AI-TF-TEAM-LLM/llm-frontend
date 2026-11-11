@@ -167,12 +167,6 @@ const mapServerMessages = (items: ServerMessage[]): Message[] => {
   );
 };
 
-export const peekSessionMessages = (sessionId: string): Message[] => {
-  const s = useChatStore.getState();
-  if (s.sessionId === sessionId && s.messages.length > 0) return s.messages;
-  return messageCache.get(sessionId) ?? [];
-};
-
 const CACHE_KEY = (id: string) => `${CHAT_CACHE_PREFIX}${id}`
 
 const saveCache = (sessionId: string, messages: Message[]) => {

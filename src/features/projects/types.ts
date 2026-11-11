@@ -1,33 +1,11 @@
 /* ───────── 화면에서 쓰는 모양 (사이드바·프로젝트 화면) ───────── */
 
-export interface ProjectFile {
-  id: string
-  name: string
-  ext: string
-  size: string
-  lines?: string
-}
-
 export interface ProjectChat {
   id: string
   title: string
   updatedAt: string
   messageCount: number
   isFavorite?: boolean
-}
-
-export interface Project {
-  id: string
-  name: string
-  description: string
-  instructions: string
-  initial: string
-  files: ProjectFile[]
-  chats: ProjectChat[]
-  updatedAt: string
-  order: number
-  isFavorite: boolean
-  domain: string
 }
 
 /* ───────── 서버 요청·응답 ───────── */

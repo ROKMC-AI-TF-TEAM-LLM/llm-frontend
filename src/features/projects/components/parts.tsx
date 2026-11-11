@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ProjectChat, ProjectFile, ProjectDocument } from '../types'
+import type { ProjectChat, ProjectDocument } from '../types'
 import { displaySessionTitle } from '@/features/sessions/utils'
 import { formatFileSize } from '@/shared/utils/downloadAttachment'
 import { normalizeDocStatus } from '@/features/documents/utils'
@@ -194,26 +194,6 @@ export function ProjectPath({
           </span>
         </>
       )}
-    </div>
-  )
-}
-
-export function FileRow({ file }: { file: ProjectFile }) {
-  return (
-    <div className="group flex items-center gap-2.5 rounded-[10px] px-2 py-2 transition-colors hover:bg-[#fdf6f7]">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-brand-subtle text-brand">
-        <FileIcon className="h-3.5 w-3.5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-medium text-text-primary">{file.name}</span>
-        <span className="mt-0.5 block text-[11px] text-text-muted">
-          {file.ext} · {file.size}
-          {file.lines ? ` · ${file.lines}` : ''}
-        </span>
-      </span>
-      <IconButton label="파일 제거" danger>
-        <CloseIcon className="h-3.5 w-3.5" />
-      </IconButton>
     </div>
   )
 }
@@ -494,149 +474,6 @@ export function EmptyFiles() {
       <p className="mt-2 text-[12px] leading-relaxed text-text-muted">
         이 프로젝트에서 참조할 문서를 추가하세요.
       </p>
-    </div>
-  )
-}
-
-export function Composer({
-  placeholder = '무엇이든 물어보세요',
-  notice,
-}: {
-  placeholder?: string
-  notice?: string
-}) {
-  const [value, setValue] = useState('')
-  const [pendingFile, setPendingFile] = useState<string | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const dotIndex = pendingFile ? pendingFile.lastIndexOf('.') : -1
-  const pendingExt = dotIndex !== -1 ? pendingFile!.slice(dotIndex + 1).toUpperCase() : null
-  const pendingBasename = dotIndex !== -1 ? pendingFile!.slice(0, dotIndex) : pendingFile
-
-  return (
-    <div className="w-full">
-      <div
-        style={{ border: '1px solid #f0e3e6', boxShadow: '0 12px 30px rgba(160,0,40,0.05)' }}
-        className="cursor-text overflow-hidden rounded-[30px] bg-surface transition-all duration-200 focus-within:border-[#e4002b] focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)]"
-        onClick={() => textareaRef.current?.focus()}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".pdf,.doc,.docx,.txt,.hwp"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (!file) return
-            setPendingFile(file.name)
-            e.target.value = ''
-          }}
-        />
-
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          value={value}
-          onChange={(e) => {
-            const el = e.target
-            setValue(el.value)
-            el.style.overflowY = 'hidden'
-            el.style.height = 'auto'
-            el.style.height = `${el.scrollHeight}px`
-            if (el.scrollHeight > 192) el.style.overflowY = 'auto'
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-            }
-          }}
-          placeholder={pendingFile ? '메시지를 입력하세요...' : placeholder}
-          className="max-h-48 w-full resize-none overflow-y-hidden bg-transparent px-5 pt-6.5 pb-1 text-[15px] leading-normal text-text-primary outline-none placeholder-text-muted"
-        />
-
-        {pendingFile && (
-          <div className="flex items-center gap-2 px-3 pt-2">
-            <div className="flex max-w-full items-center gap-2 rounded-xl bg-brand px-3 py-2 text-white">
-              <div className="shrink-0 rounded-lg bg-brand-soft p-1.5">
-                <FileIcon className="h-4 w-4 text-brand" />
-              </div>
-              <div className="flex min-w-0 flex-col">
-                <span className="max-w-45 truncate text-xs font-medium">{pendingBasename}</span>
-                {pendingExt && (
-                  <span className="text-xs uppercase tracking-wide text-white/70">{pendingExt}</span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setPendingFile(null)
-                }}
-                className="ml-1 shrink-0 text-white/60 hover:text-white"
-                aria-label="첨부 취소"
-              >
-                <CloseIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div
-          className="flex cursor-text items-center justify-between px-3 pt-1 pb-3"
-          onClick={() => textareaRef.current?.focus()}
-        >
-          <button
-            type="button"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-brand-subtle hover:text-brand"
-            aria-label="첨부"
-            onClick={(e) => {
-              e.stopPropagation()
-              fileInputRef.current?.click()
-            }}
-          >
-            <svg
-              className="h-[22px] w-[22px]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.9}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-              />
-            </svg>
-          </button>
-
-          {value.trim() || pendingFile ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-              style={{
-                background: 'linear-gradient(135deg,#e4002b,#ff2d55)',
-                boxShadow: '0 5px 13px rgba(228,0,43,0.28)',
-              }}
-              className="flex h-10 w-10 shrink-0 animate-fade-in items-center justify-center rounded-full transition-transform hover:brightness-105 active:scale-95"
-              aria-label="전송"
-            >
-              <svg
-                className="h-5 w-5 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.4}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
-            </button>
-          ) : null}
-        </div>
-      </div>
-      {notice && <p className="mt-3 text-center text-xs text-text-muted">{notice}</p>}
     </div>
   )
 }

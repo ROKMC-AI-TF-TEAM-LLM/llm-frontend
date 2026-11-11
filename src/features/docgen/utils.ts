@@ -24,12 +24,6 @@ export const isJobActive = (job: Pick<DocGenJob, 'status'>): boolean => {
   return state === 'queued' || state === 'running'
 }
 
-/** 화면 상태: 선택된 작업이 없으면 처음(idle) */
-export type PageState = 'idle' | JobState
-
-export const getPageState = (job: Pick<DocGenJob, 'status'> | null | undefined): PageState =>
-  job ? normalizeJobStatus(job.status) : 'idle'
-
 export const JOB_STATE_LABEL: Record<JobState, string> = {
   queued: '대기',
   running: '생성 중',

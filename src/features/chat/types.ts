@@ -15,12 +15,6 @@ export interface Notice {
   message: string;
 }
 
-export interface StatusUpdate {
-  message: string;
-  thought?: string;
-  step?: number;
-}
-
 export interface StatusStep {
   message: string;
   thought?: string;
@@ -89,13 +83,6 @@ export interface ImageMessage {
   filename: string;
   caption?: string;
   createdAt?: string;
-}
-
-export interface RagDocument {
-  id: string
-  title: string
-  fileType: 'PDF' | 'HWP' | string
-  preview: string
 }
 
 export type Message = UserMessage | AssistantMessage | ImageMessage;

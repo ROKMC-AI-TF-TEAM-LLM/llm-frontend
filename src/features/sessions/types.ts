@@ -12,11 +12,6 @@ export interface SessionPageData {
   has_next: boolean
 }
 
-export interface GetSessionsParams {
-  cursor?: string | null
-  size?: number
-  is_favorite?: boolean
-}
 export type GetSessionsErrorCode = 'UNAUTHORIZED' | 'TOKEN_INVALID' | 'VALIDATION_ERROR'
 export interface GetSessionsResponse {
   success: boolean
