@@ -4,7 +4,7 @@ import { getSessions, createSession, searchSessions, updateSession, setFavorite,
 import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest, GetSessionsResponse } from './types'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
-import { clearCache } from '@/features/chat/store'
+import { clearCache } from '@/features/chat/storage'
 import { showToast } from '@/shared/store/toastStore'
 import { confirm } from '@/shared/store/confirmStore'
 import { getApiError } from '@/shared/utils/error'

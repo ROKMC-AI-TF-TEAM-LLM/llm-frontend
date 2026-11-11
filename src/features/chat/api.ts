@@ -1,8 +1,6 @@
-import { backendApi, refreshTokenOnce, getValidAccessToken } from '@/lib/axios'
-import { LOCAL_STORAGE_KEY } from '@/lib/storageKeys'
+import { backendApi, refreshTokenOnce, getValidAccessToken, expireSession } from '@/lib/axios'
 import { API_BASE_URL } from '@/lib/api'
 import { logError } from '@/shared/utils/logError'
-import { clearStoredChatData } from '@/shared/utils/chatStorage'
 import { type GetMessagesResponse, type GetMessagesParams, type StreamMessageRequest, type DeleteMessageResponse, type Source, type Notice, noticeFromCode } from './types'
 import type { FileAttachment } from '@/shared/types/attachment'
 
@@ -82,10 +80,7 @@ const postSse = async (url: string, body: unknown, signal?: AbortSignal): Promis
       parsedToken = await refreshTokenOnce()
     } catch (e) {
       logError('postSse.refresh', e)
-      sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-      localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-      clearStoredChatData()
-      window.location.href = '/'
+      expireSession()
       throw new Error('HTTP 401', { cause: e })
     }
     response = await makeRequest(parsedToken)

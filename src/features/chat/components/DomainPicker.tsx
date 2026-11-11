@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDomainCapabilities } from '@/features/domains/hooks';
-import type { DomainSelection } from '../store';
+import { type DomainSelection } from '../store/types';
 import DomainIcon from '@/features/domains/components/DomainIcon';
 import { CheckIcon, ChevronDownIcon, MenuIcon } from '@/shared/components/icons';
 

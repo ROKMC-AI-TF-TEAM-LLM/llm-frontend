@@ -1,7 +1,9 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { isNetworkError, readApiError } from '@/shared/utils/error';
-import { useChatStore, saveInflight, type DomainSelection } from '../store';
+import { useChatStore } from '../store';
+import { saveInflight } from '../storage';
+import { type DomainSelection } from '../store/types';
 import { logError } from '@/shared/utils/logError';
 import { useCreateSession } from '@/features/sessions/hooks';
 import { showToast } from '@/shared/store/toastStore';

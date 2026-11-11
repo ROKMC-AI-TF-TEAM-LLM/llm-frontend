@@ -68,6 +68,14 @@ export const scheduleTokenRefresh = (): void => {
   }, delay)
 }
 
+/** 토큰을 더 갱신할 수 없을 때: 저장된 토큰과 대화 캐시를 지우고 로그인 화면으로 보낸다 */
+export const expireSession = () => {
+  sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
+  localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
+  clearStoredChatData()
+  window.location.href = '/'
+}
+
 export const refreshTokenOnce = (): Promise<string> => {
   if (!pendingRefresh) {
     const refreshToken = parseStorageItem(localStorage.getItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN))
@@ -119,10 +127,7 @@ backendApi.interceptors.response.use(
         return backendApi(originalRequest)
       } catch (refreshError) {
         logError('axios.response.refresh', refreshError)
-        sessionStorage.removeItem(LOCAL_STORAGE_KEY.ACCESS_TOKEN)
-        localStorage.removeItem(LOCAL_STORAGE_KEY.REFRESH_TOKEN)
-        clearStoredChatData()
-        window.location.href = '/'
+        expireSession()
         return Promise.reject(refreshError)
       }
     }
