@@ -9,15 +9,10 @@ export const displaySessionTitle = (
     : { text: UNTITLED, isUntitled: true }
 }
 
-// 세션 오류 코드별 문구. 같은 코드라도 쓰이는 자리마다 문구가 달라 표를 따로 둔다 (합치지 않음).
+// 세션 오류 코드별 문구. 대화를 열 때와, 목록에서 이름 변경·삭제를 하다 실패했을 때의 문구가 다르다.
 export const SESSION_ERRORS = {
-  /** 채팅 화면(/chat/:id)에서 대화를 열 때 */
-  chat: {
-    SESSION_NOT_FOUND: '존재하지 않는 세션입니다.',
-    SESSION_ACCESS_DENIED: '접근 권한이 없는 세션입니다.',
-  },
-  /** 프로젝트 화면에서 대화를 열 때 */
-  project: {
+  /** 대화를 열 때 (채팅 화면·프로젝트 화면) */
+  open: {
     SESSION_NOT_FOUND: '존재하지 않는 대화입니다.',
     SESSION_ACCESS_DENIED: '접근 권한이 없는 대화입니다.',
   },

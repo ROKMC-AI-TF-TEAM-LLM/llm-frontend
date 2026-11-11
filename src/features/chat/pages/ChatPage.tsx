@@ -26,7 +26,7 @@ export default function ChatPage() {
   useDocumentTitle(title)
 
   const { isConnecting, connectError, retry } = useChatSession(sessionId, {
-    knownErrors: SESSION_ERRORS.chat,
+    knownErrors: SESSION_ERRORS.open,
     logLabel: 'ChatPage.connect',
     logContext: { sessionId },
     onUnknownError: () =>

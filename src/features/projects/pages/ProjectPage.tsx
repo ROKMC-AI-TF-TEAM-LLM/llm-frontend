@@ -50,7 +50,7 @@ export default function ProjectPage() {
     connectError,
     retry: retryConnect,
   } = useChatSession(chatId, {
-    knownErrors: SESSION_ERRORS.project,
+    knownErrors: SESSION_ERRORS.open,
     logLabel: 'ProjectPage.connect',
     logContext: { projectId: id, chatId },
     // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
