@@ -13,7 +13,6 @@ import {
   EmptyFiles,
   FavStar,
   FilesModal,
-  IconButton,
   InstructionBody,
   InstructionModal,
   KebabMenu,
@@ -24,6 +23,8 @@ import {
 } from '../components/parts'
 import { NewChatIcon, PanelIcon, SparkIcon } from '../components/icons'
 import { PlusIcon } from '@/shared/components/icons'
+import Button from '@/shared/components/Button'
+import IconButton from '@/shared/components/IconButton'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { useMutationState, useQueryClient } from '@tanstack/react-query'
 import { isNetworkError, readApiError } from '@/shared/utils/error'
@@ -441,9 +442,9 @@ export default function ProjectPage() {
         {openChatId && activeConnectError ? (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6">
             <p className="text-text-secondary">{activeConnectError}</p>
-            <button type="button" onClick={retryConnect} className="text-sm text-brand hover:underline">
+            <Button variant="link" onClick={retryConnect}>
               다시 시도
-            </button>
+            </Button>
           </div>
         ) : openChatId ? (
           <div className="flex min-h-0 flex-1 flex-col">

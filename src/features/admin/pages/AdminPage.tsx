@@ -176,6 +176,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
             onClick={() => onApprove(user.user_id)}
             disabled={isMutating}
             title="승인"
+            aria-label="승인"
             className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
           >
             <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -184,6 +185,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
             onClick={() => onReject(user.user_id)}
             disabled={isMutating}
             title="거절"
+            aria-label="거절"
             className="w-6 h-6 flex items-center justify-center rounded bg-brand text-white hover:bg-brand-hover disabled:opacity-50"
           >
             <CloseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -195,6 +197,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
           onClick={() => onApprove(user.user_id)}
           disabled={isMutating}
           title="승인"
+          aria-label="승인"
           className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
         >
           <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />

@@ -52,7 +52,7 @@ export default function Toast({ message, onClose, type = 'error', stackIndex = 0
     >
       <Icon className="w-4 h-4 shrink-0"><path d={style.path} /></Icon>
       {message}
-      <button onClick={() => onCloseRef.current()} className={`ml-1 ${style.icon}`}>
+      <button onClick={() => onCloseRef.current()} aria-label="닫기" className={`ml-1 ${style.icon}`}>
         <CloseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
       </button>
     </div>

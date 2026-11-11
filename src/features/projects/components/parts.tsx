@@ -3,6 +3,8 @@ import type { ProjectChat, ProjectDocument } from '../types'
 import { displaySessionTitle } from '@/features/sessions/utils'
 import { formatFileSize } from '@/shared/utils/fileSize'
 import { normalizeDocStatus } from '@/features/documents/utils'
+import Button from '@/shared/components/Button'
+import IconButton from '@/shared/components/IconButton'
 import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
 import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { LayersIcon } from './icons'
@@ -57,45 +59,6 @@ export function Block({
       </header>
       {children && <div className="px-4 py-3.5">{children}</div>}
     </section>
-  )
-}
-
-export function IconButton({
-  label,
-  onClick,
-  active = false,
-  children,
-  danger = false,
-  disabled = false,
-}: {
-  label: string
-  onClick?: () => void
-  active?: boolean
-  children: React.ReactNode
-  danger?: boolean
-  disabled?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick?.()
-      }}
-      disabled={disabled}
-      tabIndex={disabled ? -1 : undefined}
-      aria-label={label}
-      title={label}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] transition-colors ${
-        active
-          ? 'text-brand hover:bg-brand-subtle'
-          : danger
-            ? 'text-text-muted hover:bg-red-50 hover:text-red-500'
-            : 'text-text-muted hover:bg-[#f7f2f3] hover:text-text-primary'
-      }`}
-    >
-      {children}
-    </button>
   )
 }
 
@@ -556,24 +519,12 @@ function CreateProjectBody({
         </div>
 
         <div className="flex items-center justify-end gap-2 px-6 pt-2 pb-5">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-[#f7f2f3]"
-          >
+          <Button variant="ghost" onClick={onClose}>
             취소
-          </button>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!canSubmit}
-            style={canSubmit ? { background: 'var(--color-brand)' } : undefined}
-            className={`rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors ${
-              canSubmit ? 'text-white hover:bg-[var(--color-brand-hover)]' : 'bg-[#f4eced] text-[#cbbcc0]'
-            }`}
-          >
+          </Button>
+          <Button variant="primary" onClick={submit} disabled={!canSubmit}>
             만들기
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -706,21 +657,12 @@ function FilesModalBody({
         </div>
 
         <div className="flex items-center justify-end gap-2 border-t border-[#f4eced] px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-[#f7f2f3]"
-          >
+          <Button variant="ghost" onClick={onClose}>
             취소
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{ background: 'var(--color-brand)' }}
-            className="rounded-full px-5 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
-          >
+          </Button>
+          <Button variant="primary" onClick={onClose}>
             저장
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -786,21 +728,12 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
         </div>
 
         <div className="flex items-center justify-end gap-2 px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-[#f7f2f3]"
-          >
+          <Button variant="ghost" onClick={onClose}>
             취소
-          </button>
-          <button
-            type="button"
-            onClick={save}
-            style={{ background: 'var(--color-brand)' }}
-            className="rounded-full px-5 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)]"
-          >
+          </Button>
+          <Button variant="primary" onClick={save}>
             저장
-          </button>
+          </Button>
         </div>
       </div>
     </div>

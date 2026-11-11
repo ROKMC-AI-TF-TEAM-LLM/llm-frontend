@@ -10,6 +10,7 @@ import { isNetworkError, readApiError } from '@/shared/utils/error';
 import { SESSION_ERRORS } from '@/features/sessions/utils';
 import { logError } from '@/shared/utils/logError';
 import { AI_NOTICE } from '@/shared/constants';
+import Button from '@/shared/components/Button';
 import type { SessionData } from '@/features/sessions/types';
 
 export default function ChatPage() {
@@ -100,19 +101,13 @@ export default function ChatPage() {
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <p className="text-text-secondary">{sessionError}</p>
         {isServerError ? (
-          <button
-            onClick={() => { setSessionError(''); setRetryKey((k) => k + 1); }}
-            className="text-sm text-brand hover:underline"
-          >
+          <Button variant="link" onClick={() => { setSessionError(''); setRetryKey((k) => k + 1); }}>
             다시 시도
-          </button>
+          </Button>
         ) : (
-          <button
-            onClick={() => navigate('/chat', { replace: true })}
-            className="text-sm text-brand hover:underline"
-          >
+          <Button variant="link" onClick={() => navigate('/chat', { replace: true })}>
             새 채팅으로 이동
-          </button>
+          </Button>
         )}
       </div>
     );
