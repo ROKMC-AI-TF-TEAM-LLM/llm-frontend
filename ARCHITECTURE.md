@@ -65,6 +65,7 @@ features/<기능>/
 - `shared/components/Modal.tsx`·`Drawer.tsx` — 가운데 대화상자와 오른쪽 서랍. 배경, ESC·바깥 클릭 닫기, 포커스 가두기(`useFocusTrap`), 스크롤 잠금(`useBodyScrollLock`)을 맡는다. 화면에서 `fixed inset-0`을 직접 쓰지 않는다
 - `shared/store/confirmStore.ts` — `await confirm({ title, message, danger })`. 확인 창은 앱 루트의 `shared/components/ConfirmHost.tsx`가 그린다. 브라우저 기본 확인·알림 창은 쓰지 않는다(오류 알림은 `showToast`)
 - `shared/utils/postLoginRedirect.ts` — 로그인 후 돌아갈 주소 기억. `shared/utils/chatStorage.ts` — 대화 캐시 키와 지우기(`clearChatCache`·`clearStoredChatData`)
+- `shared/styles/global.css` — 토큰(`@theme`: 색, 글자 크기 `text-10`~`text-16`), 리셋, 여러 화면이 쓰는 규칙, 키프레임만 둔다. 소개성 화면의 스타일은 `shared/styles/intro.css`, 한 기능만 쓰는 스타일은 그 기능의 `styles.css`(사이드바는 `app/sidebar/sidebar.css`)
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
 
 ## import 쓰는 법

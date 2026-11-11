@@ -242,7 +242,7 @@ export default function ChatInput({
           }}
           onKeyDown={handleKeyDown}
           placeholder={pendingFile ? "메시지를 입력하세요..." : placeholder}
-          className="w-full px-5 pt-6.5 pb-1 bg-transparent outline-none text-[15px] text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal"
+          className="w-full px-5 pt-6.5 pb-1 bg-transparent outline-none text-15 text-text-primary placeholder-text-muted resize-none overflow-y-hidden max-h-48 leading-normal"
         />
 
         {pendingFile && (
@@ -284,8 +284,7 @@ export default function ChatInput({
           {isStreaming && !isNewChat ? (
             <button
               onClick={(e) => { e.stopPropagation(); abortStream(); }}
-              style={{ background: 'linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in bg-[linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))] shadow-[0_5px_13px_rgba(228,0,43,0.28)]"
               aria-label="중단"
             >
               <StopFilledIcon className="w-[18px] h-[18px] text-white" />
@@ -293,8 +292,7 @@ export default function ChatInput({
           ) : (value.trim() || pendingFile) ? (
             <button
               onClick={(e) => { e.stopPropagation(); handleSubmit(); }}
-              style={{ background: 'linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))', boxShadow: '0 5px 13px rgba(228,0,43,0.28)' }}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in bg-[linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))] shadow-[0_5px_13px_rgba(228,0,43,0.28)]"
               aria-label="전송"
             >
               <ArrowUpIcon className="w-5 h-5 text-white" strokeWidth={2.4} />

@@ -16,6 +16,7 @@ import { ComposerOptions } from '../components/Picker'
 import { DeleteButton, JobActions } from '../components/JobActions'
 import { JobMeta, JobProgressText, ProgressBar, Spinner, StatusBadge, StatusDot } from '../components/JobStatus'
 import { PreviewBody } from '../components/Preview'
+import '../styles.css'
 
 const motion = 'duration-500 ease-[cubic-bezier(.4,0,.2,1)] motion-reduce:transition-none'
 
@@ -104,8 +105,8 @@ function PreviewPanel({ job, pending, onClose, onDeleted }: {
         <div className="min-w-0 flex-1">
           {job ? (
             <>
-              <p className="truncate text-[15px] font-bold text-text-primary">{r?.file_name ?? job.title}</p>
-              <p className="mt-0.5 text-[12px] text-text-secondary">
+              <p className="truncate text-15 font-bold text-text-primary">{r?.file_name ?? job.title}</p>
+              <p className="mt-0.5 text-12 text-text-secondary">
                 {r ? `${job.output_format} · ${(formatFileSize(r.size) ?? '-')} · ${r.page_count}쪽` : `${job.template_name} · ${job.output_format}${building ? ' · 작성 중' : ''}`}
               </p>
             </>
@@ -146,7 +147,7 @@ function ProgressSection({ jobs, viewId, onSelect, isFresh }: {
   return (
     <section aria-label="진행 상황" className="rounded-[20px] border border-surface-border">
       <div className="flex items-center gap-2 border-b border-surface-border px-5 py-3">
-        <h2 className="text-[15px] font-bold text-text-primary">진행 상황</h2>
+        <h2 className="text-15 font-bold text-text-primary">진행 상황</h2>
         <span className="text-[12.5px] text-text-muted">{jobs.length}건</span>
       </div>
       <ul>
@@ -157,12 +158,12 @@ function ProgressSection({ jobs, viewId, onSelect, isFresh }: {
               className={`flex cursor-pointer items-center gap-3 border-b border-surface-border px-5 py-3 last:border-b-0 ${on ? 'bg-brand-subtle/50' : 'hover:bg-surface-card1'} ${isFresh(job.job_id) ? 'animate-docgen-row-in' : ''}`}>
               <span className="h-9 w-1 shrink-0 rounded-full" style={{ background: getDomainStyle(job.domain).bar }} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-semibold text-text-primary">{job.title}</p>
+                <p className="truncate text-14 font-semibold text-text-primary">{job.title}</p>
                 <JobMeta job={job} />
                 {normalizeJobStatus(job.status) === 'running' && <ProgressBar value={job.progress} className="mt-1.5 max-w-[240px]" />}
               </div>
               {/* 예상·남은 시간은 보여 주지 않는다 */}
-              <span className="hidden w-[190px] shrink-0 text-[12px] text-text-secondary sm:block">
+              <span className="hidden w-[190px] shrink-0 text-12 text-text-secondary sm:block">
                 {normalizeJobStatus(job.status) === 'queued' ? `대기 중 · 앞에 ${job.queue_position ?? 0}건` : <span className="tabular-nums">{job.progress}%</span>}
               </span>
               <StatusBadge job={job} />
@@ -230,7 +231,7 @@ function Stage() {
           <textarea id="docgen-prompt" value={c.prompt} onChange={(e) => c.setPrompt(e.target.value)} rows={3}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send() } }}
             placeholder="만들 문서를 설명해 주세요."
-            className="w-full resize-none bg-transparent px-5 pt-5 text-[15px] leading-relaxed text-text-primary outline-none placeholder:text-text-muted sm:px-6" />
+            className="w-full resize-none bg-transparent px-5 pt-5 text-15 leading-relaxed text-text-primary outline-none placeholder:text-text-muted sm:px-6" />
           <div className="flex flex-wrap items-center gap-1 px-3 pb-3 pt-2">
             <ComposerOptions c={c} withTemplate />
             <span className="flex-1" />
@@ -251,7 +252,7 @@ function Stage() {
         {/* 생성 문서: 문서가 생긴 뒤에야 나타난다 */}
         <Collapse open={doneJobs.length > 0}>
           <section aria-label="생성 문서" className="pt-10">
-            <h2 className="mb-2 px-1 text-[13px] font-semibold text-text-muted">생성 문서 {doneJobs.length}</h2>
+            <h2 className="mb-2 px-1 text-13 font-semibold text-text-muted">생성 문서 {doneJobs.length}</h2>
             <ul className="flex flex-col gap-0.5">
               {doneJobs.map((item) => {
                 const on = sideOpen && viewId === item.job_id

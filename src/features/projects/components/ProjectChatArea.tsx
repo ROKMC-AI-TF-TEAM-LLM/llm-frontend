@@ -35,7 +35,7 @@ export function ProjectChatArea({ project, openChatId, connectError, onRetry, is
 ) : (
   <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-8">
     <div className="w-full max-w-[720px] animate-page-in">
-      <p className="mb-6 text-center text-[14px] text-text-muted">
+      <p className="mb-6 text-center text-14 text-text-muted">
         MARS는 이 프로젝트에서 대화할 때마다 동일한 지침과 파일을 참조합니다.
       </p>
       <ChatInput projectId={project.id} hideDomain notice={AI_NOTICE} />

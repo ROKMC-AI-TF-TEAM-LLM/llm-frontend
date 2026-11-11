@@ -38,15 +38,14 @@ function CreateProjectBody({
   return (
     <Modal
       onClose={onClose}
-      style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
-      className="flex w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
+      className="flex w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_28px_70px_rgba(60,20,30,0.20)]"
     >
         <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-1">
           <div className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-brand-subtle text-brand">
               <LayersIcon className="h-4 w-4" />
             </span>
-            <h2 className="text-[16px] font-bold tracking-[-0.01em] text-text-primary">새 프로젝트</h2>
+            <h2 className="text-16 font-bold tracking-[-0.01em] text-text-primary">새 프로젝트</h2>
           </div>
           <IconButton label="닫기" onClick={onClose}>
             <CloseIcon className="h-4 w-4" strokeWidth={2.2} />
@@ -54,7 +53,7 @@ function CreateProjectBody({
         </div>
 
         <div className="px-6 pt-4">
-          <label htmlFor="project-name" className="mb-1.5 block text-[13px] font-semibold text-text-primary">
+          <label htmlFor="project-name" className="mb-1.5 block text-13 font-semibold text-text-primary">
             프로젝트 이름
           </label>
           <input
@@ -74,7 +73,7 @@ function CreateProjectBody({
         <div className="px-6 pt-4">
           <label
             htmlFor="project-instructions"
-            className="mb-1.5 block text-[13px] font-semibold text-text-primary"
+            className="mb-1.5 block text-13 font-semibold text-text-primary"
           >
             프로젝트 지침 <span className="font-normal text-text-muted">(선택)</span>
           </label>

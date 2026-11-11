@@ -36,7 +36,7 @@ const RagSearchInput = ({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`flex-1 min-w-0 bg-transparent text-text-primary placeholder:text-rose-placeholder outline-none ${
-          compact ? 'text-[14px]' : 'text-[15px]'
+          compact ? 'text-14' : 'text-15'
         }`}
       />
       {value && (

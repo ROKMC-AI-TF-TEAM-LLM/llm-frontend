@@ -50,8 +50,8 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
     >
       {time && (
         <div className="relative group/time mr-1.5">
-          <span className="text-[11px] text-text-muted cursor-default tabular-nums">{time}</span>
-          <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
+          <span className="text-11 text-text-muted cursor-default tabular-nums">{time}</span>
+          <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-10 whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/time:opacity-100 transition-opacity">
             {fullDate}
           </span>
         </div>
@@ -69,7 +69,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
             <RegenerateIcon width={14} height={14} />
           </button>
           {!regenerateDisabled && (
-            <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/regen:opacity-100 transition-opacity">
+            <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-10 whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/regen:opacity-100 transition-opacity">
               재생성
             </span>
           )}
@@ -90,7 +90,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
           )}
         </button>
         {!copied && (
-          <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/copy:opacity-100 transition-opacity">
+          <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-10 whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/copy:opacity-100 transition-opacity">
             복사
           </span>
         )}

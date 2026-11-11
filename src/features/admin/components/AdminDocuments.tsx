@@ -223,7 +223,7 @@ export default function AdminDocuments() {
             <UploadAltIcon className="w-5 h-5 text-brand" />
           </div>
           <div className="min-w-0">
-            <p className="text-[15px] font-bold text-text-primary">파일을 여기로 끌어다 놓거나 클릭해 업로드</p>
+            <p className="text-15 font-bold text-text-primary">파일을 여기로 끌어다 놓거나 클릭해 업로드</p>
             <p className="text-[12.5px] text-text-muted mt-0.5">PDF, DOCX, HWP · 최대 50MB</p>
           </div>
         </div>
@@ -233,7 +233,7 @@ export default function AdminDocuments() {
             <button
               type="button"
               onClick={() => setDomainMenuOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-2 rounded-full bg-white border border-brand-soft text-[13px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
+              className="inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-2 rounded-full bg-white border border-brand-soft text-13 font-semibold text-brand hover:bg-brand-subtle transition-colors"
             >
               <span className="w-2 h-2 rounded-full" style={{ background: getDomainStyle(uploadDomain.code).bar }} />
               {uploadDomain.label}
@@ -246,7 +246,7 @@ export default function AdminDocuments() {
                     key={d.code}
                     type="button"
                     onClick={() => { setUploadDomain(d); setDomainMenuOpen(false); }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-left transition-colors ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-13 text-left transition-colors ${
                       uploadDomain.code === d.code ? 'bg-brand-subtle text-brand font-semibold' : 'text-text-secondary hover:bg-surface-subtle'
                     }`}
                   >
@@ -262,7 +262,7 @@ export default function AdminDocuments() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadMut.isPending}
-            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[14px] font-bold shadow-[0_8px_20px_rgba(220,20,60,0.28)] hover:brightness-105 active:scale-[0.98] transition disabled:opacity-60"
+            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-14 font-bold shadow-[0_8px_20px_rgba(220,20,60,0.28)] hover:brightness-105 active:scale-[0.98] transition disabled:opacity-60"
           >
             {uploadMut.isPending ? '업로드 중...' : '파일 선택'}
           </button>
@@ -275,7 +275,7 @@ export default function AdminDocuments() {
             <button
               key={tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-13 font-semibold transition-colors ${
                 statusFilter === tab.value
                   ? 'bg-brand text-white'
                   : 'text-text-secondary hover:bg-brand-subtle hover:text-brand'
@@ -324,7 +324,7 @@ export default function AdminDocuments() {
             ) : isError ? (
               <tr><td colSpan={6} className="px-5 py-10 text-center text-text-muted">
                 문서를 불러오지 못했습니다.
-                <span className="block mt-1 text-[12px] text-text-muted/80">
+                <span className="block mt-1 text-12 text-text-muted/80">
                   {(() => {
                     const { status } = readApiError(error);
                     const msg = getApiError(error, {}, DEFAULT_STATUS_ERRORS, '서버에 연결할 수 없습니다.');

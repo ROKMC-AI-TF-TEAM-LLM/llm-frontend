@@ -62,7 +62,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
             ? { background: 'var(--color-brand-tint)', color: 'var(--color-brand-deep)' }
             : { color: 'var(--color-text-primary)' }
         }
-        className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
+        className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
       >
         <span className="w-[18px] flex justify-center shrink-0">
           <PlusIcon className="sb-icon sb-icon-plus" width="17" height="17" strokeWidth={2.2} />
@@ -82,7 +82,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
                 ? { background: 'var(--color-brand-tint)', color: 'var(--color-brand-deep)' }
                 : { color: 'var(--color-text-primary)' }
             }
-            className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
+            className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
           >
             <span className="w-[18px] flex justify-center shrink-0">{item.icon}</span>
             <span className={labelCls}>{item.label}</span>

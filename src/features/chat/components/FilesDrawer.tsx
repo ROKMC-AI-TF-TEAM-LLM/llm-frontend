@@ -31,8 +31,8 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-14 px-5 shrink-0 border-b border-surface-border">
             <div className="flex items-center gap-2">
-              <span className="text-[15px] font-bold text-text-primary">파일</span>
-              <span className="text-[13px] font-medium text-text-muted">{files.length}</span>
+              <span className="text-15 font-bold text-text-primary">파일</span>
+              <span className="text-13 font-medium text-text-muted">{files.length}</span>
             </div>
             <button type="button" onClick={close} className="text-text-muted hover:text-text-primary transition-colors" aria-label="닫기">
               <CloseIcon className="w-5 h-5" />
@@ -56,7 +56,7 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-[13.5px] font-semibold text-text-primary truncate">{att.name}</p>
-                        {meta && <p className="text-[12px] text-text-muted mt-0.5">{meta}</p>}
+                        {meta && <p className="text-12 text-text-muted mt-0.5">{meta}</p>}
                       </div>
                       <button
                         type="button"
@@ -74,7 +74,7 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
                     </div>
                   );
                 })}
-                {err && <p className="text-[12px] text-status-error">{err}</p>}
+                {err && <p className="text-12 text-status-error">{err}</p>}
               </div>
             )}
           </div>

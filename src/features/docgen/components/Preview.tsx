@@ -14,12 +14,12 @@ export function Paper({ job, compact = false }: { job: DocGenJob; compact?: bool
     return (
       <article className={`mx-auto aspect-[1/1.414] w-full max-w-[460px] overflow-hidden rounded-[4px] border border-surface-border bg-surface shadow-sm ${pad}`}>
         <h3 className="text-center text-[17px] font-bold text-text-primary">{job.title}</h3>
-        <p className="mt-1 text-center text-[11px] text-text-muted">{job.template_name} · {job.output_format}</p>
+        <p className="mt-1 text-center text-11 text-text-muted">{job.template_name} · {job.output_format}</p>
         <div className="mt-6 space-y-4">
           {job.result.preview.map((sec) => (
             <section key={sec.heading}>
-              <h4 className="text-[13px] font-bold text-text-primary">{sec.heading}</h4>
-              <p className="mt-1 whitespace-pre-line text-[12px] leading-relaxed text-text-secondary">{sec.body}</p>
+              <h4 className="text-13 font-bold text-text-primary">{sec.heading}</h4>
+              <p className="mt-1 whitespace-pre-line text-12 leading-relaxed text-text-secondary">{sec.body}</p>
             </section>
           ))}
         </div>
@@ -49,7 +49,7 @@ export function EmptyPreview({ title = '아직 미리볼 문서가 없습니다'
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-subtle text-brand">
         <DocumentIcon className="h-5 w-5" />
       </span>
-      <p className="text-[14px] font-semibold text-text-primary">{title}</p>
+      <p className="text-14 font-semibold text-text-primary">{title}</p>
       <p className="text-[12.5px] text-text-muted">요청을 보내거나 진행 상황에서 문서를 고르면 여기에 나타납니다.</p>
     </div>
   )
@@ -62,7 +62,7 @@ export function FailedNotice({ job }: { job: DocGenJob }) {
       <span className={`flex h-11 w-11 items-center justify-center rounded-full ${cancelled ? 'bg-surface-subtle text-text-muted' : 'bg-status-error/12 text-status-error'}`}>
         <AlertIcon className="h-5 w-5" />
       </span>
-      <p className="text-[15px] font-bold text-text-primary">{cancelled ? '요청이 취소되었습니다' : '문서를 만들지 못했습니다'}</p>
+      <p className="text-15 font-bold text-text-primary">{cancelled ? '요청이 취소되었습니다' : '문서를 만들지 못했습니다'}</p>
       {!cancelled && <p className="text-[12.5px] leading-relaxed text-text-secondary">{getJobErrorMessage(job.error?.code)}</p>}
       {job.error?.detail && <p className="text-[11.5px] text-text-muted">{job.error.detail}</p>}
     </div>

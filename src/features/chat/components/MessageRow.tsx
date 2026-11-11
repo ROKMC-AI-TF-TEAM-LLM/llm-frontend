@@ -28,7 +28,7 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onC
       <div data-mid={msg.id} className="group/msg">
         {msg.domainLabel && msg.domainCode && (
           <div className="flex justify-end mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-subtle text-brand text-[12px] font-medium border border-brand-soft">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-subtle text-brand text-12 font-medium border border-brand-soft">
               <DomainIcon code={msg.domainCode} size={13} />
               {msg.domainLabel}
             </span>

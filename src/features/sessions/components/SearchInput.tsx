@@ -23,7 +23,7 @@ const SearchInput = ({ value, onChange, placeholder = '채팅 및 대화를 입�
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 min-w-0 bg-transparent outline-none text-[15px] text-text-primary placeholder:text-rose-placeholder"
+        className="flex-1 min-w-0 bg-transparent outline-none text-15 text-text-primary placeholder:text-rose-placeholder"
       />
       {value && (
         <button

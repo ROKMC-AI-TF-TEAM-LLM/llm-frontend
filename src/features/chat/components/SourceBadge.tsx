@@ -65,11 +65,11 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
                 </div>
 
                 <div className="min-w-0 flex-1 flex items-center gap-2">
-                  <span className="min-w-0 truncate text-[14px] font-bold text-text-primary">{title}</span>
+                  <span className="min-w-0 truncate text-14 font-bold text-text-primary">{title}</span>
                   {isLoading && !matched ? (
                     <span className="h-3 w-24 shrink-0 rounded-full bg-surface-subtle animate-pulse" />
                   ) : (
-                    <span className="min-w-0 truncate flex items-center gap-1.5 text-[12px] text-text-muted">
+                    <span className="min-w-0 truncate flex items-center gap-1.5 text-12 text-text-muted">
                       {matched?.type && <span>{matched.type}</span>}
                       {matched?.type && matched?.domain && <span aria-hidden>·</span>}
                       {matched?.domain && <span style={{ color: style.badgeText }}>{getDomainLabel(matched.domain)}</span>}

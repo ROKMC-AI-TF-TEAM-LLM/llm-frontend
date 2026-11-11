@@ -80,7 +80,7 @@ const RagPage = () => {
               key={domain}
               type="button"
               onClick={() => setActiveDomain(domain)}
-              className={`relative shrink-0 px-3 pb-2.5 text-[14px] font-medium transition-colors ${
+              className={`relative shrink-0 px-3 pb-2.5 text-14 font-medium transition-colors ${
                 activeDomain === domain
                   ? 'text-[var(--color-brand)]'
                   : 'text-text-muted hover:text-text-secondary'

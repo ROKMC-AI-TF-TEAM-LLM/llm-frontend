@@ -15,12 +15,12 @@ export function UserDetailModal({ userId, onClose }: { userId: string; onClose: 
     { label: '이메일',    content: <span className="text-sm text-text-secondary">{user.email}</span> },
     { label: '사용자 ID', content: <span className="font-mono text-xs text-text-muted break-all text-right">{user.user_id}</span> },
     { label: '역할',      content: (
-      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${user.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+      <span className={`text-11 font-medium px-2.5 py-0.5 rounded-full ${user.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
         {user.role === 'admin' ? '관리자' : '사용자'}
       </span>
     )},
     { label: '상태',      content: (
-      <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${STATUS_STYLE[user.status as keyof typeof STATUS_STYLE] ?? ''}`}>
+      <span className={`text-11 font-medium px-2.5 py-0.5 rounded-full ${STATUS_STYLE[user.status as keyof typeof STATUS_STYLE] ?? ''}`}>
         {STATUS_LABEL[user.status as keyof typeof STATUS_LABEL] ?? user.status}
       </span>
     )},

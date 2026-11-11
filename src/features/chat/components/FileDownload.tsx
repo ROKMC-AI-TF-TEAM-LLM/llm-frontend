@@ -42,7 +42,7 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
               <FileIcon width={18} height={18} stroke="white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-semibold text-text-primary truncate">{att.name}</p>
+              <p className="text-13 font-semibold text-text-primary truncate">{att.name}</p>
               <p className="text-[11.5px] text-brand-hover font-medium mt-0.5">
                 {meta ? `${meta} · ` : ''}{busy ? '내려받는 중...' : '다운로드'}
               </p>
@@ -55,7 +55,7 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
           </button>
         );
       })}
-      {err && <p className="text-[12px] text-status-error ml-1">{err}</p>}
+      {err && <p className="text-12 text-status-error ml-1">{err}</p>}
     </div>
   );
 }

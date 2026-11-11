@@ -24,8 +24,7 @@ export function KebabMenu({
       </IconButton>
       {open && (
         <div
-          style={{ boxShadow: '0 16px 40px rgba(60,30,38,0.13)' }}
-          className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-rose-border bg-white p-1.5"
+          className="absolute left-0 top-[calc(100%+5px)] z-30 w-[158px] animate-fade-in overflow-hidden rounded-[12px] border border-rose-border bg-white p-1.5 shadow-[0_16px_40px_rgba(60,30,38,0.13)]"
         >
           <button
             type="button"
@@ -33,7 +32,7 @@ export function KebabMenu({
               setOpen(false)
               onRename?.()
             }}
-            className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-[13px] font-medium text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand"
+            className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-13 font-medium text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand"
           >
             <EditIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
             이름 바꾸기
@@ -44,7 +43,7 @@ export function KebabMenu({
               setOpen(false)
               onDelete?.()
             }}
-            className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-[13px] font-medium text-text-secondary transition-colors hover:bg-red-50 hover:text-red-500"
+            className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-13 font-medium text-text-secondary transition-colors hover:bg-red-50 hover:text-red-500"
           >
             <TrashIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
             삭제

@@ -50,14 +50,14 @@ export default function ChatHeader({ title }: ChatHeaderProps) {
   }, [messages]);
 
   return (
-    <header style={{ height: '60px' }} className="px-6 flex items-center justify-between gap-4">
-      <h1 title={title} className="min-w-0 text-[14px] font-bold text-text-primary truncate">{title}</h1>
+    <header className="px-6 flex items-center justify-between gap-4 h-[60px]">
+      <h1 title={title} className="min-w-0 text-14 font-bold text-text-primary truncate">{title}</h1>
       <div className="flex items-center gap-3 shrink-0">
         {files.length > 0 && (
           <button
             type="button"
             onClick={() => setFilesOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-semibold text-text-secondary hover:bg-brand-subtle hover:text-brand transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-13 font-semibold text-text-secondary hover:bg-brand-subtle hover:text-brand transition-colors"
             aria-label="첨부 파일 보기"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">

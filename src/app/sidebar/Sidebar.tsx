@@ -6,6 +6,7 @@ import RecentChats from "./RecentChats";
 import SidebarProjects from "./SidebarProjects";
 import SidebarFooter from "./SidebarFooter";
 import type { ChatItem, User } from "@/features/chat/types";
+import "./sidebar.css";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -45,8 +46,7 @@ export default function Sidebar({ isOpen, onToggle, chats, user, activeLabel, ha
   return (
     <aside
       ref={asideRef}
-      style={{ background: 'linear-gradient(190deg,#fdf3f5 0%,#faf6f7 40%,var(--color-surface) 100%)', borderRight: '1px solid #f2e2e6' }}
-      className={`fixed inset-y-0 left-0 z-30 flex flex-col overscroll-contain transition-[width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] overflow-visible ${
+      className={`bg-[linear-gradient(190deg,#fdf3f5_0%,#faf6f7_40%,var(--color-surface)_100%)] border-r border-[#f2e2e6] fixed inset-y-0 left-0 z-30 flex flex-col overscroll-contain transition-[width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] overflow-visible ${
         isOpen ? "w-60" : "w-[56px]"
       }`}
     >

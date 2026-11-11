@@ -251,8 +251,7 @@ export default function MessageList({ title, isLoading, hideHeader = false }: Me
       <div className="relative flex-1 min-h-0">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-3"
-        style={{ background: 'linear-gradient(to bottom, var(--color-surface) 40%, rgba(255,255,255,0) 100%)' }}
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-3 bg-[linear-gradient(to_bottom,var(--color-surface)_40%,rgba(255,255,255,0)_100%)]"
       />
       <div ref={scrollRef} onScroll={handleScroll} className="h-full overflow-y-auto px-4 pt-6 pb-2 scrollbar-hide [overflow-anchor:none]" aria-live="polite" aria-atomic="false">
         {isLoading ? (

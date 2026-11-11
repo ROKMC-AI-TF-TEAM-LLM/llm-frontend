@@ -43,7 +43,7 @@ export function ChatRow({
             if (e.key === 'Enter') submit()
             if (e.key === 'Escape') setEditing(false)
           }}
-          className="w-full rounded-[8px] border border-rose-border bg-white px-2.5 py-2 text-[13px] text-text-primary outline-none focus:border-brand"
+          className="w-full rounded-[8px] border border-rose-border bg-white px-2.5 py-2 text-13 text-text-primary outline-none focus:border-brand"
         />
       </div>
     )
@@ -60,7 +60,7 @@ export function ChatRow({
         }`}
       >
         <span
-          className={`min-w-0 flex-1 truncate text-[13px] ${
+          className={`min-w-0 flex-1 truncate text-13 ${
             isUntitled
               ? 'text-text-muted'
               : active

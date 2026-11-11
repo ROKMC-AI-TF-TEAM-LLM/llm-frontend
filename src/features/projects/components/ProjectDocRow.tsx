@@ -45,11 +45,11 @@ export function ProjectDocRow({
       </span>
       <span className="min-w-0 flex-1">
         <span
-          className={`block truncate text-[13px] font-medium ${deleting ? 'text-text-muted line-through' : 'text-text-primary'}`}
+          className={`block truncate text-13 font-medium ${deleting ? 'text-text-muted line-through' : 'text-text-primary'}`}
         >
           {doc.name}
         </span>
-        <span className="mt-0.5 block text-[11px] text-text-muted" aria-live="polite">
+        <span className="mt-0.5 block text-11 text-text-muted" aria-live="polite">
           {deleting ? (
             <DeletingStatus />
           ) : isBusy ? (
@@ -65,7 +65,7 @@ export function ProjectDocRow({
         <button
           type="button"
           onClick={onRetry}
-          className="shrink-0 rounded-md border border-brand-soft px-2 py-1 text-[11px] font-semibold text-brand transition-colors hover:bg-brand-subtle"
+          className="shrink-0 rounded-md border border-brand-soft px-2 py-1 text-11 font-semibold text-brand transition-colors hover:bg-brand-subtle"
         >
           재시도
         </button>
@@ -100,8 +100,8 @@ export function UploadingDocRow({ name, size }: { name: string; size: number }) 
         <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-medium text-text-primary">{name}</span>
-        <span className="mt-0.5 block text-[11px] text-text-muted">
+        <span className="block truncate text-13 font-medium text-text-primary">{name}</span>
+        <span className="mt-0.5 block text-11 text-text-muted">
           업로드 중...{sizeText ? ` · ${sizeText}` : ''}
         </span>
       </span>

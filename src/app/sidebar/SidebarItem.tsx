@@ -94,7 +94,7 @@ export default function SidebarItem({
       <button
         onClick={onOpen}
         title={tooltip}
-        className={`flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-[13px] transition-colors ${
+        className={`flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-13 transition-colors ${
           isActive ? 'bg-brand-tint font-bold text-brand-deep' : 'font-medium text-text-primary hover:bg-brand-tint hover:text-brand-deep'
         }`}
       >

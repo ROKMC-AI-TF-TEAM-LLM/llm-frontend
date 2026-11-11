@@ -92,10 +92,10 @@ export default function ProjectPage() {
     }
     return (
       <div className="flex h-full flex-col items-center justify-center px-6">
-        <p className="text-[15px] font-semibold text-text-primary">
+        <p className="text-15 font-semibold text-text-primary">
           {isDetailError ? '프로젝트에 접근할 수 없습니다.' : '프로젝트를 찾을 수 없습니다.'}
         </p>
-        <p className="mt-1.5 text-[13px] text-text-secondary">
+        <p className="mt-1.5 text-13 text-text-secondary">
           삭제되었거나 주소가 잘못되었을 수 있습니다.
         </p>
       </div>
@@ -133,10 +133,10 @@ export default function ProjectPage() {
                 if (e.key === 'Enter') submitRename()
                 if (e.key === 'Escape') setRenaming(false)
               }}
-              className="ml-1 min-w-0 flex-1 rounded-[8px] border border-rose-border px-2 py-1 text-[14px] font-bold text-text-primary outline-none focus:border-brand"
+              className="ml-1 min-w-0 flex-1 rounded-[8px] border border-rose-border px-2 py-1 text-14 font-bold text-text-primary outline-none focus:border-brand"
             />
           ) : (
-            <p className="ml-1 min-w-0 max-w-[136px] truncate text-[14px] font-bold text-text-primary">
+            <p className="ml-1 min-w-0 max-w-[136px] truncate text-14 font-bold text-text-primary">
               {project.name}
             </p>
           )}

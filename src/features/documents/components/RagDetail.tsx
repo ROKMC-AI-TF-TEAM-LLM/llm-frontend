@@ -47,7 +47,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
       <div className="flex-1 overflow-y-auto custom-scroll px-8 pb-10">
         {doc.domain && (
           <span
-            className="inline-block text-[12px] font-semibold px-3 py-1 rounded-full"
+            className="inline-block text-12 font-semibold px-3 py-1 rounded-full"
             style={{ background: style.badgeBg, color: style.badgeText }}
           >
             {getDomainLabel(doc.domain)}
@@ -69,7 +69,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
             {rows.map((r) => (
               <div key={r.label} className="flex items-center justify-between gap-4 px-5 py-4">
                 <dt className="text-[12.5px] text-text-muted shrink-0">{r.label}</dt>
-                <dd className="text-[14px] font-semibold text-text-primary text-right break-all">{r.value}</dd>
+                <dd className="text-14 font-semibold text-text-primary text-right break-all">{r.value}</dd>
               </div>
             ))}
           </dl>
@@ -79,7 +79,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           type="button"
           onClick={handleDownload}
           disabled={downloading}
-          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white text-[14px] font-bold shadow-[0_10px_24px_rgba(220,20,60,0.25)] hover:brightness-105 active:scale-[0.99] transition disabled:opacity-60"
+          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white text-14 font-bold shadow-[0_10px_24px_rgba(220,20,60,0.25)] hover:brightness-105 active:scale-[0.99] transition disabled:opacity-60"
         >
           {downloading ? (
             <SpinnerIcon className="w-4 h-4 animate-spin" trackOpacity={0.3} />

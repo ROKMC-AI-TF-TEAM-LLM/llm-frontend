@@ -21,7 +21,7 @@ export function Picker({ label, value, options, onChange, disabled = false, icon
   return (
     <div ref={ref} className="relative">
       <button type="button" disabled={disabled} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}
-        className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition-colors hover:bg-brand-subtle hover:text-brand disabled:pointer-events-none disabled:opacity-60 ${open ? 'bg-brand-subtle text-brand' : current ? 'text-text-primary' : 'text-text-secondary'}`}>
+        className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-13 font-medium transition-colors hover:bg-brand-subtle hover:text-brand disabled:pointer-events-none disabled:opacity-60 ${open ? 'bg-brand-subtle text-brand' : current ? 'text-text-primary' : 'text-text-secondary'}`}>
         {icon}
         {current?.label ?? label}
         <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -38,7 +38,7 @@ export function Picker({ label, value, options, onChange, disabled = false, icon
                   className={`flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left transition-colors ${on ? 'bg-brand-subtle' : 'hover:bg-surface-card1'}`}>
                   <span className="min-w-0 flex-1">
                     <span className={`block text-[13.5px] font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}>{o.label}</span>
-                    {o.hint && <span className="mt-0.5 block text-[12px] leading-snug text-text-muted">{o.hint}</span>}
+                    {o.hint && <span className="mt-0.5 block text-12 leading-snug text-text-muted">{o.hint}</span>}
                   </span>
                   {on && <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand" />}
                 </button>

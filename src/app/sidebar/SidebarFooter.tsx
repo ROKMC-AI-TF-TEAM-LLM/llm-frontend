@@ -31,7 +31,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   };
 
   return (
-    <div ref={wrapRef} className="relative" style={{ borderTop: '1px solid #f4e6ea' }}>
+    <div ref={wrapRef} className="relative border-t border-[#f4e6ea]">
       {open && (
         <div
           className={`absolute bottom-full mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in ${
@@ -40,8 +40,8 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         >
           {user.email && (
             <div className="px-4 pb-2 mb-1 border-b border-surface-border">
-              <p className="text-[13px] font-semibold text-text-primary truncate">{user.name}</p>
-              <p className="text-[12px] text-text-muted truncate">{user.email}</p>
+              <p className="text-13 font-semibold text-text-primary truncate">{user.name}</p>
+              <p className="text-12 text-text-muted truncate">{user.email}</p>
             </div>
           )}
 
@@ -116,7 +116,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
           >
             <span className="max-w-full truncate whitespace-nowrap text-[12.5px] font-bold text-text-primary mt-px">{user.name}</span>
             {user.email && (
-              <span className="max-w-full truncate whitespace-nowrap text-[11px] font-semibold text-text-muted">{user.email}</span>
+              <span className="max-w-full truncate whitespace-nowrap text-11 font-semibold text-text-muted">{user.email}</span>
             )}
           </div>
         </button>
@@ -166,7 +166,7 @@ function SubItem({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-2 px-4 py-2 text-left text-[13px] text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
+      className="flex w-full items-center gap-2 px-4 py-2 text-left text-13 text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
     >
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {external && (

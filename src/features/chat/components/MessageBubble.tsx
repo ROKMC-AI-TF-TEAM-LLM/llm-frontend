@@ -1,5 +1,6 @@
 import { Streamdown, type Components } from 'streamdown';
 import type { MessageRole, StatusStep } from '../types';
+import '../styles.css';
 
 const fixBold = (content: string): string =>
   content
@@ -142,7 +143,7 @@ function ReasoningTimeline({ steps, live = false }: { steps: StatusStep[]; live?
               }`}
             />
             <div className="min-w-0">
-              <p className={`text-[13px] leading-[1.5] font-medium ${isCurrent ? 'text-text-muted' : 'text-text-secondary'}`}>
+              <p className={`text-13 leading-[1.5] font-medium ${isCurrent ? 'text-text-muted' : 'text-text-secondary'}`}>
                 {s.message}
               </p>
               {s.thought && (
@@ -183,8 +184,8 @@ export default function MessageBubble({ role = 'assistant', content, isStreaming
         className={`
           py-3 leading-relaxed wrap-break-word
           ${isUser
-            ? 'max-w-[70%] px-5 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] shadow-[0_10px_22px_rgba(220,20,60,0.2)] whitespace-pre-wrap'
-            : 'max-w-[78%] pl-1 pr-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-[15px]'}
+            ? 'max-w-[70%] px-5 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-15 shadow-[0_10px_22px_rgba(220,20,60,0.2)] whitespace-pre-wrap'
+            : 'max-w-[78%] pl-1 pr-4 rounded-2xl rounded-tl-sm bg-white text-text-primary text-15'}
         `}
       >
         {isUser ? (

@@ -21,16 +21,14 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
 
   return (
     <div
-      style={{ height: '60px' }}
-      className={`flex-none flex items-center justify-between transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'px-[20px]' : 'px-[13px]'}`}
+      className={`h-[60px] flex-none flex items-center justify-between transition-[padding] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'px-[20px]' : 'px-[13px]'}`}
     >
       <div
         onClick={() => navigate("/chat")}
         className={`flex items-center cursor-pointer overflow-hidden transition-[opacity,max-width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100 max-w-[120px]' : 'opacity-0 max-w-0'}`}
       >
         <span
-          className="mars-brand-serif"
-          style={{ fontSize: 22, color: 'var(--color-brand-vivid)', whiteSpace: 'nowrap' }}
+          className="mars-brand-serif text-[22px] text-brand-vivid whitespace-nowrap"
         >
           MARS
         </span>
@@ -40,14 +38,13 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         onClick={onClick}
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
-        style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0 }}
-        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-brand-tint hover:text-brand-deep transition-colors cursor-pointer"
+        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-brand-tint hover:text-brand-deep transition-colors cursor-pointer w-[30px] h-[30px] rounded-[9px] shrink-0"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
         <ChevronsLeftIcon width={18} height={18} className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`} strokeWidth={2.2} />
         {showTip && (
           <span
-            className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in"
+            className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-11 font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in"
           >
             {isOpen ? '사이드바 접기' : '사이드바 펴기'}
           </span>

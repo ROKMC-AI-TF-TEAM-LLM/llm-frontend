@@ -60,12 +60,11 @@ function FilesModalBody({
   return (
     <Modal
       onClose={onClose}
-      style={{ boxShadow: '0 28px 70px rgba(60,20,30,0.20)' }}
-      className="flex max-h-[80vh] w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white"
+      className="flex max-h-[80vh] w-full max-w-[600px] animate-page-in flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_28px_70px_rgba(60,20,30,0.20)]"
     >
         <div className="flex items-start justify-between gap-4 px-6 pt-5">
           <div>
-            <h2 className="text-[16px] font-bold tracking-[-0.01em] text-text-primary">파일</h2>
+            <h2 className="text-16 font-bold tracking-[-0.01em] text-text-primary">파일</h2>
             <p className="mt-1 text-[12.5px] text-text-secondary">
               이 프로젝트에 컨텍스트를 제공하기 위해 업로드된 파일
             </p>
@@ -105,7 +104,7 @@ function FilesModalBody({
 
         <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-rose-divider px-6 py-4">
           {shown.length === 0 ? (
-            <p className="py-10 text-center text-[13px] text-text-muted">
+            <p className="py-10 text-center text-13 text-text-muted">
               {q ? '검색 결과가 없습니다' : '아직 업로드된 파일이 없습니다'}
             </p>
           ) : (
