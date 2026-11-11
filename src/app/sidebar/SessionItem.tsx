@@ -28,7 +28,7 @@ export default function SessionItem({ chat }: SessionItemProps) {
       name={chat.title}
       isActive={chat.id === (routeChatId ?? routeId)}
       isFavorite={!!chat.isFavorite}
-      labels={{ rename: '제목 수정', remove: '대화 삭제' }}
+      labels={{ rename: '이름 변경', remove: '대화 삭제' }}
       onOpen={() =>
         navigate(
           chat.projectId

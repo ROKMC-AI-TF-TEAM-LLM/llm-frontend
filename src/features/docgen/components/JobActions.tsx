@@ -38,7 +38,7 @@ export function DownloadButton({
   )
 }
 
-const REQUEST_FAILED = '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+const REQUEST_FAILED = '요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.'
 
 /**
  * 삭제 버튼. 되돌릴 수 없으므로 다른 화면의 삭제와 같이 확인 창으로 한 번 더 묻는다.

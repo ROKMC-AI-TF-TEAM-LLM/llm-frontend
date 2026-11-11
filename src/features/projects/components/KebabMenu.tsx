@@ -33,7 +33,7 @@ export function KebabMenu({
             className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-13 font-medium text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand"
           >
             <EditIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-            이름 바꾸기
+            이름 변경
           </button>
           <button
             type="button"

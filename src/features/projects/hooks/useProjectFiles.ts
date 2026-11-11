@@ -89,9 +89,7 @@ export function useProjectFiles(id: string | undefined) {
     retryDoc(documentId, {
       onError: (e) => {
         const { detail } = readApiError(e)
-        showToast(
-          detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해 주세요.',
-        )
+        showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해주세요.')
       },
     })
   }

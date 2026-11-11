@@ -136,7 +136,7 @@ export const useComposer = () => {
       return res.data.data
     } catch {
       showToast(
-        '문서 생성 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        '문서 생성 요청을 보내지 못했습니다. 잠시 후 다시 시도해주세요.',
       )
       return null
     }

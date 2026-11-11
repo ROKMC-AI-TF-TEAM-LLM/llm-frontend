@@ -373,7 +373,7 @@ function Stage() {
                 send()
               }
             }}
-            placeholder="만들 문서를 설명해 주세요."
+            placeholder="만들 문서를 설명해주세요."
             className="w-full resize-none bg-transparent px-5 pt-5 text-15 leading-relaxed text-text-primary outline-none placeholder:text-text-muted sm:px-6"
           />
           <div className="flex flex-wrap items-center gap-1 px-3 pb-3 pt-2">

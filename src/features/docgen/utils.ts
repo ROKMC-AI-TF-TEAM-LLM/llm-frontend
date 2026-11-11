@@ -53,8 +53,7 @@ export const LENGTHS: { code: DocGenLength; label: string }[] = [
 const ERROR_MESSAGES: Record<string, string> = {
   TEMPLATE_NOT_FOUND:
     '선택한 양식을 찾을 수 없습니다. 다른 양식을 골라 주세요.',
-  LLM_SERVER_ERROR:
-    '생성 서버에 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.',
+  LLM_SERVER_ERROR: '생성 서버에 문제가 생겼습니다. 잠시 후 다시 시도해주세요.',
   TIMEOUT:
     '생성 시간이 너무 오래 걸려 중단되었습니다. 분량을 줄여 다시 시도해 보세요.',
   CANCELLED: '요청이 취소되었습니다.',
@@ -66,7 +65,7 @@ export const getJobErrorMessage = (
 ): string =>
   (code && ERROR_MESSAGES[code]) ||
   fallback ||
-  '문서를 만들지 못했습니다. 다시 시도해 주세요.'
+  '문서를 만들지 못했습니다. 다시 시도해주세요.'
 
 export const formatDuration = (
   fromIso?: string | null,
