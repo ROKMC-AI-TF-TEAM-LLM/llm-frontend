@@ -10,6 +10,8 @@ import {
   normalizeJobStatus,
 } from '../utils'
 import { formatClock } from '@/shared/utils/date'
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
+import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { getDomainLabel, getDomainStyle } from '@/features/domains/utils'
 import { useCancelDocGenJob, useDeleteDocGenJob, useRetryDocGenJob, type Composer } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'
@@ -267,14 +269,8 @@ export function Picker({ label, value, options, onChange, disabled = false, icon
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: PointerEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
-    document.addEventListener('pointerdown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('pointerdown', onDown); document.removeEventListener('keydown', onKey) }
-  }, [open])
+  useClickOutside(ref, () => setOpen(false), { enabled: open, event: 'pointerdown' })
+  useEscapeKey(() => setOpen(false), open)
   const current = options.find((o) => o.value === value)
   return (
     <div ref={ref} className="relative">

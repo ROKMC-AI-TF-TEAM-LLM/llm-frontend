@@ -12,6 +12,7 @@ import DomainIcon from '@/features/domains/components/DomainIcon';
 import { showToast } from '@/shared/store/toastStore';
 import { getApiError, readApiError, DEFAULT_STATUS_ERRORS } from '@/shared/utils/error';
 import { formatDate } from '@/shared/utils/date';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { formatFileSize } from '@/shared/utils/fileSize';
 import type { AdminDocumentItem, AdminDocStatus } from '../types';
 
@@ -158,20 +159,13 @@ export default function AdminDocuments() {
     );
   }, [documents, statusFilter, search]);
 
-  // sentinel은 항상 마운트해 두어 ref가 가리키는 요소가 바뀌지 않게 한다 (RagPage의 재관측 누락 버그 방지).
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !hasNextPage || isFetchingNextPage || isError) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) fetchNextPage();
-      },
-      { rootMargin: '200px 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isError, fetchNextPage]);
+  const sentinelRef = useInfiniteScroll<HTMLDivElement>({
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage,
+    enabled: !isError,
+    rootMargin: '200px 0px',
+  });
 
   const handleFiles = (files: FileList | null) => {
     const file = files?.[0];

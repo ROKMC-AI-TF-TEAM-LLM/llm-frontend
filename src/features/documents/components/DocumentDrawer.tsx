@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react'
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
 import RagDetail from './RagDetail'
 import type { DocumentItem } from '../types'
 
@@ -13,18 +14,13 @@ interface DocumentDrawerProps {
 const DocumentDrawer = ({ doc, open, onClose }: DocumentDrawerProps) => {
   const handleClose = useCallback(() => onClose(), [onClose])
 
+  useEscapeKey(handleClose, !!doc)
+
   useEffect(() => {
     if (!doc) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose()
-    }
-    window.addEventListener('keydown', onKey)
     document.body.classList.add('modal-open')
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.classList.remove('modal-open')
-    }
-  }, [doc, handleClose])
+    return () => document.body.classList.remove('modal-open')
+  }, [doc])
 
   if (!doc) return null
 

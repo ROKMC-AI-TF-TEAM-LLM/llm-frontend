@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProjectList, useCreateProject, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '@/features/projects/hooks'
 import ProjectItem from './ProjectItem'
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
 import { CreateProjectModal } from '@/features/projects/components/parts'
 
 export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
@@ -20,16 +21,12 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
     toggleFavoriteApi({ projectId: id, next: !cur })
   }
 
-  const sentinelRef = useRef<HTMLLIElement>(null)
-  useEffect(() => {
-    const el = sentinelRef.current
-    if (!el) return
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage()
-    }, { threshold: 0.1 })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, expanded])
+  const sentinelRef = useInfiniteScroll<HTMLLIElement>({
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage,
+    threshold: 0.1,
+  })
 
   const items = projects.filter((p) => !p.isFavorite)
 

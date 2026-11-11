@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import type { ChatItem } from '@/features/chat/types'
 import SessionItem from './SessionItem'
 import { SessionItemSkeleton } from '@/shared/components/Skeleton'
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
 
 interface RecentChatsProps {
   isOpen: boolean;
@@ -14,20 +15,13 @@ interface RecentChatsProps {
 
 export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoadingMore, isInitialLoading }: RecentChatsProps) {
   const [expanded, setExpanded] = useState(true)
-  const sentinelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = sentinelRef.current
-    if (!el || !onLoadMore || !expanded) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasMore && !isLoadingMore) onLoadMore()
-      },
-      { threshold: 0.1 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [hasMore, isLoadingMore, onLoadMore, expanded])
+  const sentinelRef = useInfiniteScroll<HTMLDivElement>({
+    hasMore: !!hasMore,
+    isLoading: !!isLoadingMore,
+    onLoadMore: () => onLoadMore?.(),
+    enabled: !!onLoadMore && expanded,
+    threshold: 0.1,
+  })
 
   return (
     <div className={`px-[12px] pt-[12px] overflow-hidden transition-opacity duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>

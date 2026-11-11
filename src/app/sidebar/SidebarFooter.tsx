@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@/features/chat/types';
 import { useAuth } from '@/features/auth/useAuth';
@@ -16,20 +18,9 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   const [subOpen, setSubOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const closeAll = () => { setOpen(false); setSubOpen(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeAll(); };
-    const onDown = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) closeAll();
-    };
-    window.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onDown);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onDown);
-    };
-  }, [open]);
+  const closeAll = () => { setOpen(false); setSubOpen(false); };
+  useEscapeKey(closeAll, open);
+  useClickOutside(wrapRef, closeAll, { enabled: open });
 
   const go = (path: string) => {
     setOpen(false);

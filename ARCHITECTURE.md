@@ -57,6 +57,8 @@ features/<기능>/
 - `shared/utils/date.ts` — 날짜·시간 표시(`formatDate`·`formatDateTime`·`formatDateTimeLong`·`formatClock`). `toLocale*` 호출은 여기에만 둔다
 - `shared/utils/fileSize.ts` — 파일 크기 표시(`formatFileSize`)
 - `shared/utils/error.ts` — 서버 오류 해석(`getApiError`·`readApiError`·`isNetworkError`, `ApiError` 타입). `response.data.error`를 직접 꺼내지 않는다
+- `shared/hooks/useInfiniteScroll.ts` — 목록 끝 감시 요소가 보이면 다음 쪽 불러오기. `IntersectionObserver`를 화면에서 직접 쓰지 않는다(등장 애니메이션 제외)
+- `shared/hooks/useEscapeKey.ts`·`useClickOutside.ts` — ESC·바깥 클릭으로 닫기
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
 
 ## import 쓰는 법

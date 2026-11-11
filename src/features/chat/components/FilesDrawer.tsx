@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
 import type { FileAttachment } from '@/shared/types/attachment';
 import { downloadAttachment, fileExtOf } from '@/shared/utils/downloadAttachment';
 import { formatFileSize } from '@/shared/utils/fileSize';
@@ -15,12 +16,7 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
 
   const close = useCallback(() => onClose(), [onClose]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, close]);
+  useEscapeKey(close, open);
 
   const download = async (att: FileAttachment) => {
     if (busyId) return;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDomainCapabilities } from '@/features/domains/hooks';
 import type { DomainSelection } from '../store';
 import DomainIcon from '@/features/domains/components/DomainIcon';
@@ -33,16 +34,7 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
     };
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (wrapRef.current?.contains(t) || menuRef.current?.contains(t)) return;
-      setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  useClickOutside([wrapRef, menuRef], () => setOpen(false), { enabled: open });
 
   if (isLoading) {
     return (

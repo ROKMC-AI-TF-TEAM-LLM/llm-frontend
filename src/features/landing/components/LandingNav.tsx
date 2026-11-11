@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
 import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, type GuideSection } from './guideSections'
 import NavPreview from './NavPreview'
@@ -40,12 +41,7 @@ export default function LandingNav({ onStart }: { onStart: () => void }) {
 
   useEffect(() => cancelClose, [])
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  useEscapeKey(() => setOpen(false), open)
 
   const go = (id: string) => {
     setOpen(false)

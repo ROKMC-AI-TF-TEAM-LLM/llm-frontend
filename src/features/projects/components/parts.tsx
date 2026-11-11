@@ -3,6 +3,8 @@ import type { ProjectChat, ProjectDocument } from '../types'
 import { displaySessionTitle } from '@/features/sessions/utils'
 import { formatFileSize } from '@/shared/utils/fileSize'
 import { normalizeDocStatus } from '@/features/documents/utils'
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
+import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import {
   ChatIcon,
   ChevronDown,
@@ -121,19 +123,8 @@ export function KebabMenu({
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('mousedown', onDown)
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [open])
+  useClickOutside(ref, () => setOpen(false), { enabled: open })
+  useEscapeKey(() => setOpen(false), open)
 
   return (
     <div ref={ref} className="relative shrink-0">
@@ -501,15 +492,12 @@ function CreateProjectBody({
   const [name, setName] = useState('')
   const [instructions, setInstructions] = useState('')
 
+  useEscapeKey(onClose)
+
   useEffect(() => {
     document.body.classList.add('modal-open')
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.body.classList.remove('modal-open')
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
+    return () => document.body.classList.remove('modal-open')
+  }, [])
 
   const canSubmit = name.trim().length > 0
   const submit = () => {
@@ -646,15 +634,12 @@ function FilesModalBody({
   const [query, setQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  useEscapeKey(onClose)
+
   useEffect(() => {
     document.body.classList.add('modal-open')
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.body.classList.remove('modal-open')
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
+    return () => document.body.classList.remove('modal-open')
+  }, [])
 
   const q = query.trim().toLowerCase()
   const shown = q ? documents.filter((d) => d.name.toLowerCase().includes(q)) : documents
@@ -767,15 +752,12 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
   const [draft, setDraft] = useState(initial)
   const save = () => { onSave?.(draft); onClose() }
 
+  useEscapeKey(onClose)
+
   useEffect(() => {
     document.body.classList.add('modal-open')
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.body.classList.remove('modal-open')
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
+    return () => document.body.classList.remove('modal-open')
+  }, [])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">

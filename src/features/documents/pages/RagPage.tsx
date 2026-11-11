@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
 import RagSearchInput from '../components/RagSearchInput'
 import RagListItem from '../components/RagListItem'
 import DocumentDrawer from '../components/DocumentDrawer'
@@ -49,20 +50,12 @@ const RagPage = () => {
     )
   }, [documents, query])
 
-  const sentinelRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = sentinelRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage()
-      },
-      { threshold: 0.1 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  // query 포함: 검색 중엔 sentinel이 언마운트되므로, 검색어를 지워 다시 마운트되면 새 요소를 관측해야 한다.
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, query])
+  const sentinelRef = useInfiniteScroll<HTMLDivElement>({
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage,
+    threshold: 0.1,
+  })
 
   const tabs = [ALL, ...domains]
 

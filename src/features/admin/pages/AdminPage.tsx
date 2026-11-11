@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useGetUsers, useGetMe, useApproveUser, useDeleteUsers, useRejectUser, useInquiryUsers } from '@/features/users/hooks';
 import type { AdminUserItem } from '@/features/users/types';
 import { AdminRowSkeleton, Skeleton } from '@/shared/components/Skeleton';
@@ -8,6 +8,7 @@ import { logError } from '@/shared/utils/logError';
 import { copyText } from '@/shared/utils/clipboard';
 import { formatDate, formatDateTimeLong } from '@/shared/utils/date';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
+import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
 import AdminDocuments from '../components/AdminDocuments';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
@@ -52,17 +53,11 @@ const USER_PAGE_SIZE = 10;
 
 function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => void }) {
   const { data, isLoading, isError } = useInquiryUsers(userId);
-  const onCloseRef = useRef(onClose);
-  useEffect(() => { onCloseRef.current = onClose; });
+  useEscapeKey(onClose);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current(); };
-    window.addEventListener('keydown', onKey);
     document.body.classList.add('modal-open');
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.classList.remove('modal-open');
-    };
+    return () => document.body.classList.remove('modal-open');
   }, []);
 
   const user = data?.data?.data;
