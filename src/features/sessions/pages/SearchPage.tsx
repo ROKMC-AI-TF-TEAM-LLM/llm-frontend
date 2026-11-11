@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import SearchInput from '../components/SearchInput'
+import SearchInput from '@/shared/components/SearchInput'
 import SearchResults from '../components/SearchResults'
 import type { SearchResult } from '../components/SearchResultItem'
 import { useSearchSessions, useInfiniteSessions } from '../hooks'
@@ -71,7 +71,11 @@ const SearchPage = () => {
         </h1>
 
         <div className="shrink-0">
-          <SearchInput value={query} onChange={setQuery} />
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            placeholder="채팅 및 대화를 입력하세요..."
+          />
         </div>
 
         {debouncedQuery ? (

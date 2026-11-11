@@ -7,8 +7,7 @@ import {
   normalizeJobStatus,
 } from '../utils'
 import { formatClock } from '@/shared/utils/date'
-import { getDomainLabel, getDomainStyle } from '@/features/domains/utils'
-import DomainIcon from '@/features/domains/components/DomainIcon'
+import { DomainText } from '@/features/domains/components/DomainMarks'
 
 export function Spinner({ className = 'h-3.5 w-3.5' }: { className?: string }) {
   return (
@@ -118,20 +117,13 @@ export function JobProgressText({ job }: { job: DocGenJob }) {
 }
 
 export function JobMeta({ job }: { job: DocGenJob }) {
-  const style = getDomainStyle(job.domain)
   return (
     <span className="flex min-w-0 items-center gap-1.5 text-12 text-text-muted">
       <span>{job.template_name}</span>
       {job.domain && (
         <>
           <span>·</span>
-          <span
-            className="inline-flex items-center gap-1"
-            style={{ color: style.badgeText }}
-          >
-            <DomainIcon code={job.domain} size={12} />
-            {getDomainLabel(job.domain)}
-          </span>
+          <DomainText domain={job.domain} iconSize={12} className="gap-1" />
         </>
       )}
       <span>·</span>

@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import type { DocumentItem } from '../types'
-import { getDomainStyle, getDomainLabel } from '@/features/domains/utils'
+import {
+  DomainBadge,
+  DomainDocIcon,
+} from '@/features/domains/components/DomainMarks'
 import { formatAppliedAt } from '../utils'
 import { downloadDocument } from '@/shared/utils/downloadAttachment'
-import {
-  CloseIcon,
-  DocumentIcon,
-  DownloadIcon,
-  SpinnerIcon,
-} from '@/shared/components/icons'
+import { CloseIcon, DownloadIcon, SpinnerIcon } from '@/shared/components/icons'
 import IconButton from '@/shared/components/IconButton'
 import Button from '@/shared/components/Button'
 
@@ -18,7 +16,6 @@ interface RagDetailProps {
 }
 
 const RagDetail = ({ doc, onClose }: RagDetailProps) => {
-  const style = getDomainStyle(doc.domain)
   const [downloading, setDownloading] = useState(false)
   const [downloadErr, setDownloadErr] = useState<string | null>(null)
 
@@ -47,28 +44,10 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scroll px-8 pb-10">
-        {doc.domain && (
-          <span
-            className="inline-block text-12 font-semibold px-3 py-1 rounded-full"
-            style={{ background: style.badgeBg, color: style.badgeText }}
-          >
-            {getDomainLabel(doc.domain)}
-          </span>
-        )}
+        {doc.domain && <DomainBadge domain={doc.domain} size="md" />}
 
         <div className="flex items-center gap-3.5 mt-4">
-          <div
-            className="shrink-0 flex items-center justify-center"
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 13,
-              background: style.badgeBg,
-              color: style.bar,
-            }}
-          >
-            <DocumentIcon width="22" height="22" />
-          </div>
+          <DomainDocIcon domain={doc.domain} size="lg" />
           <h1 className="text-lg font-bold text-text-primary break-all leading-snug">
             {doc.name}
           </h1>

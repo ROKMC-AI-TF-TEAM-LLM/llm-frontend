@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
-import RagSearchInput from '../components/RagSearchInput'
+import SearchInput from '@/shared/components/SearchInput'
 import RagListItem from '../components/RagListItem'
 import DocumentDrawer from '../components/DocumentDrawer'
 import { RagListSkeleton } from '@/shared/components/Skeleton'
@@ -83,7 +83,7 @@ const RagPage = () => {
             )}
           </div>
           <div className="w-full max-w-[300px] shrink-0">
-            <RagSearchInput
+            <SearchInput
               value={query}
               onChange={setQuery}
               placeholder="문서 검색..."

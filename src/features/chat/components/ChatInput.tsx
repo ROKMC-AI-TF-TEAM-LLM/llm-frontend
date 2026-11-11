@@ -228,11 +228,7 @@ export default function ChatInput({
   return (
     <div className="w-full max-w-210 mx-auto">
       <div
-        style={{
-          border: '1px solid var(--color-rose-border)',
-          boxShadow: '0 12px 30px rgba(160,0,40,0.05)',
-        }}
-        className="bg-surface rounded-[30px] focus-within:border-brand-vivid focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)] transition-all duration-200 overflow-hidden cursor-text"
+        className="bg-surface rounded-[30px] border border-rose-border shadow-[0_12px_30px_rgba(160,0,40,0.05)] focus-within:border-brand-vivid focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.07)] transition-all duration-200 overflow-hidden cursor-text"
         onClick={() => textareaRef.current?.focus()}
       >
         <input

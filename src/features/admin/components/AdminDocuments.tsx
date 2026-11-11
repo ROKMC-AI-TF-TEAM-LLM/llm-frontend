@@ -6,11 +6,11 @@ import {
   useRetryDocument,
   useAdminDocumentStatus,
 } from '../hooks'
+import { DOMAINS } from '@/features/domains/utils'
 import {
-  DOMAINS,
-  getDomainLabel,
-  getDomainStyle,
-} from '@/features/domains/utils'
+  DomainBar,
+  DomainText,
+} from '@/features/domains/components/DomainMarks'
 import { normalizeDocStatus } from '@/features/documents/utils'
 import DomainIcon from '@/features/domains/components/DomainIcon'
 import { showToast } from '@/shared/store/toastStore'
@@ -76,7 +76,6 @@ function DocumentRow({
   const verifiedStatus = statusRes?.data.data.status ?? doc.status
   const state = normalizeDocStatus(verifiedStatus)
   const badge = statusBadge(verifiedStatus)
-  const style = getDomainStyle(doc.domain)
 
   const isFailed = state === 'failed'
   const isBusy = state === 'processing'
@@ -89,10 +88,7 @@ function DocumentRow({
     >
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span
-            className="shrink-0 w-1 h-8 rounded-full"
-            style={{ background: style.bar }}
-          />
+          <DomainBar domain={doc.domain} className="shrink-0 w-1 h-8" />
           <div className="min-w-0">
             <p className="font-semibold text-text-primary truncate max-w-[360px]">
               {doc.name}
@@ -104,13 +100,11 @@ function DocumentRow({
         </div>
       </td>
       <td className="px-4 py-3.5">
-        <span
-          className="inline-flex items-center gap-1.5 text-13 font-semibold"
-          style={{ color: style.badgeText }}
-        >
-          <DomainIcon code={doc.domain} size={14} />
-          {getDomainLabel(doc.domain)}
-        </span>
+        <DomainText
+          domain={doc.domain}
+          iconSize={14}
+          className="gap-1.5 text-13 font-semibold"
+        />
       </td>
       <td className="px-4 py-3.5 text-text-secondary">해병대</td>
       <td className="px-4 py-3.5">
@@ -298,10 +292,7 @@ export default function AdminDocuments() {
               active
               onClick={() => setDomainMenuOpen((v) => !v)}
             >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: getDomainStyle(uploadDomain.code).bar }}
-              />
+              <DomainBar domain={uploadDomain.code} className="w-2 h-2" />
               {uploadDomain.label}
             </SelectButton>
             {domainMenuOpen && (

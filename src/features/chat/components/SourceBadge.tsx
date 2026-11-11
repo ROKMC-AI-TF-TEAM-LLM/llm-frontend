@@ -5,7 +5,8 @@ import { useDocumentDrawer } from '@/features/documents/useDocumentDrawer'
 import { findDocument } from '@/features/documents/utils'
 import { getDomainStyle, getDomainLabel } from '@/features/domains/utils'
 import DocumentDrawer from '@/features/documents/components/DocumentDrawer'
-import { ChevronDownIcon, DocumentIcon } from '@/shared/components/icons'
+import { ChevronDownIcon } from '@/shared/components/icons'
+import { DomainDocIcon } from '@/features/domains/components/DomainMarks'
 import Button from '@/shared/components/Button'
 
 interface SourceBadgeProps {
@@ -68,18 +69,7 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
                     : 'cursor-default'
                 }`}
               >
-                <div
-                  className="shrink-0 flex items-center justify-center"
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: 10,
-                    background: style.badgeBg,
-                    color: style.bar,
-                  }}
-                >
-                  <DocumentIcon width={18} height={18} />
-                </div>
+                <DomainDocIcon domain={matched?.domain} size="sm" />
 
                 <div className="min-w-0 flex-1 flex items-center gap-2">
                   <span className="min-w-0 truncate text-14 font-bold text-text-primary">

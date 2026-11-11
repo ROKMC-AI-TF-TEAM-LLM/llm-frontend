@@ -9,7 +9,7 @@ import type { DocGenJob } from '../types'
 import { normalizeJobStatus } from '../utils'
 import { AI_NOTICE } from '@/shared/constants'
 import { formatFileSize } from '@/shared/utils/fileSize'
-import { getDomainStyle } from '@/features/domains/utils'
+import { DomainBar } from '@/features/domains/components/DomainMarks'
 import { useDocGenJobs, selectable, useComposer, useFreshIds } from '../hooks'
 import {
   ArrowUpIcon,
@@ -243,10 +243,7 @@ function ProgressSection({
               {...selectable(() => onSelect(job.job_id))}
               className={`flex cursor-pointer items-center gap-3 border-b border-surface-border px-5 py-3 last:border-b-0 ${on ? 'bg-brand-subtle/50' : 'hover:bg-surface-card1'} ${isFresh(job.job_id) ? 'animate-docgen-row-in' : ''}`}
             >
-              <span
-                className="h-9 w-1 shrink-0 rounded-full"
-                style={{ background: getDomainStyle(job.domain).bar }}
-              />
+              <DomainBar domain={job.domain} className="h-9 w-1 shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-14 font-semibold text-text-primary">
                   {job.title}
