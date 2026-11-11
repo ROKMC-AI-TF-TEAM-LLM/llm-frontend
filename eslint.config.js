@@ -21,6 +21,31 @@ const LIB_RULE = {
   message: 'lib는 모든 기능이 기대는 기반입니다. 기능·app 코드를 가져오지 말고, 필요한 타입은 lib에 두세요.',
 }
 
+// 기능 폴더 사이의 의존 방향. 왼쪽 기능은 오른쪽 기능을 가져오지 않는다(서로 가져다 쓰는 순환을 막는다).
+// 양쪽이 함께 쓰는 코드는 한쪽 또는 shared로 옮긴다.
+const FEATURE_DIRECTION = {
+  sessions: ['chat'],
+  auth: ['users'],
+  landing: ['auth'],
+  domains: ['documents'],
+}
+const directionRule = (from, targets) => ({
+  group: targets.flatMap((t) => [`@/features/${t}`, `@/features/${t}/**`]),
+  message: `${from} 기능은 ${targets.join('·')} 기능을 가져오지 않습니다(순환 참조). 함께 쓰는 코드는 한쪽 또는 shared로 옮기세요.`,
+})
+// 같은 규칙을 덮어쓰면 합쳐지지 않으므로, 화면 쪽(components·pages)과 그 밖을 나눠 기존 항목과 함께 적는다.
+const featureDirectionConfigs = Object.entries(FEATURE_DIRECTION).flatMap(([from, targets]) => [
+  {
+    files: [`src/features/${from}/**/*.{ts,tsx}`],
+    ignores: [`src/features/${from}/components/**`, `src/features/${from}/pages/**`],
+    rules: { 'no-restricted-imports': ['error', { paths: [ROUTER_RULE], patterns: [MOCK_RULE, directionRule(from, targets)] }] },
+  },
+  {
+    files: [`src/features/${from}/components/**/*.{ts,tsx}`, `src/features/${from}/pages/**/*.{ts,tsx}`],
+    rules: { 'no-restricted-imports': ['error', { paths: [ROUTER_RULE], patterns: [MOCK_RULE, API_RULE, directionRule(from, targets)] }] },
+  },
+])
+
 export default defineConfig([
   globalIgnores(['dist']),
   {
@@ -61,4 +86,5 @@ export default defineConfig([
       'no-restricted-imports': ['error', { paths: [ROUTER_RULE], patterns: [MOCK_RULE, LIB_RULE] }],
     },
   },
+  ...featureDirectionConfigs,
 ])

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { GUIDE_SECTIONS, GUIDE_EXTRAS } from './guideSections'
-import { setPostLoginRedirect } from '@/features/auth/utils'
+import { setPostLoginRedirect } from '@/shared/utils/postLoginRedirect'
 import { TUTORIALS } from '@/features/tutorials/tutorials'
 
 export default function LandingFooter({ onStart }: { onStart?: () => void }) {

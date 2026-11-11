@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMeUsers, getUsers, deleteUsers, inquiryUsers, approveUser, rejectUser } from './api'
-import { signup } from '@/features/auth/api'
 import type { GetAdminUsersParams } from './types'
-import type { SignupRequest } from '@/features/auth/types'
 import { useAuth } from '@/features/auth/useAuth'
 
 export const useGetMe = () => {
@@ -61,6 +59,3 @@ export const useRejectUser = () => {
   })
 }
 
-/** 회원가입. 실패 기록은 전역 mutationCache가 'mutation:signup'으로 남긴다 */
-export const useSignup = () =>
-  useMutation({ mutationKey: ['signup'], mutationFn: (data: SignupRequest) => signup(data) })

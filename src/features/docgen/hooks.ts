@@ -11,7 +11,7 @@ import {
 import type { CreateDocGenJobFields, DocGenJob, DocGenOutputFormat } from './types'
 import { isJobActive } from './utils'
 import { useAuth } from '@/features/auth/useAuth'
-import { useDomainCapabilities } from '@/features/domains/hooks'
+import { useDomainCapabilities } from '@/features/documents/hooks'
 import { showToast } from '@/shared/store/toastStore'
 
 /* ───────── 서버 데이터 (React Query) ───────── */

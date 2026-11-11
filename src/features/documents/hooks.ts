@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useEffect, useMemo } from 'react'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getDocuments } from './api'
 import { pickDocuments } from './utils'
 import { useAuth } from '@/features/auth/useAuth'
 import { logError } from '@/shared/utils/logError'
 import type { DocumentItem } from './types'
+import { getCapabilities } from '@/features/domains/api'
+import type { DomainCapability } from '@/features/domains/types'
 
 const LIMIT = 20
 const LOOKUP_LIMIT = 100
@@ -56,4 +58,30 @@ export const useInfiniteDocuments = (domain?: string) => {
     enabled: !!accessToken,
     retry: 1,
   })
+}
+
+/** 채팅·문서 제작에서 고를 수 있는 분야: 서버가 알려준 분야 중 문서가 하나라도 있는 것 */
+export const useDomainCapabilities = (enabled = true) => {
+  const { accessToken } = useAuth()
+  const capQuery = useQuery({
+    queryKey: ['capabilities'],
+    queryFn: getCapabilities,
+    enabled: enabled && !!accessToken,
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
+  })
+
+  const { documents, isLoading: docsLoading } = useDocumentLookup(enabled)
+
+  const allDomains: DomainCapability[] | undefined = capQuery.data?.data.data.domains
+
+  const domains = useMemo(() => {
+    const caps = allDomains ?? []
+    if (caps.length === 0) return []
+    if (documents.length === 0) return []
+    const present = new Set(documents.map((d) => d.domain).filter((v): v is string => !!v))
+    return caps.filter((d) => present.has(d.code))
+  }, [allDomains, documents])
+
+  return { domains, isLoading: capQuery.isLoading || docsLoading }
 }

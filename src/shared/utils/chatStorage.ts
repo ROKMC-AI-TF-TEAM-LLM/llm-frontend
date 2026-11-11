@@ -1,3 +1,5 @@
+import { logError } from './logError'
+
 // 브라우저에 남기는 대화 데이터의 키. chatStore와 로그아웃 정리가 같은 이름을 쓰도록 여기서 정의한다.
 export const CHAT_CACHE_PREFIX = 'rokm_cache_'
 export const CHAT_INFLIGHT_KEY = 'rokm_inflight'
@@ -20,5 +22,18 @@ export const clearStoredChatData = (): void => {
     sessionStorage.removeItem(CHAT_INFLIGHT_KEY)
   } catch {
     // 저장소 접근이 막힌 환경(사생활 보호 모드 등): 지울 것도 없다.
+  }
+}
+
+// 대화별 메시지의 메모리 캐시. 담는 값의 타입은 쓰는 쪽(features/chat/storage)이 정한다.
+export const chatMemoryCache = new Map<string, unknown>()
+
+/** 한 대화의 캐시(메모리·localStorage)를 지운다. 대화를 삭제할 때 부른다 */
+export const clearChatCache = (sessionId: string) => {
+  chatMemoryCache.delete(sessionId)
+  try {
+    localStorage.removeItem(`${CHAT_CACHE_PREFIX}${sessionId}`)
+  } catch (e) {
+    logError('clearCache', e)
   }
 }

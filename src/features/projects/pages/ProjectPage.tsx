@@ -1,13 +1,11 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { useChatStore } from '@/features/chat/store'
+import { useChatSession } from '@/features/chat/hooks'
 import { SESSION_ERRORS } from '@/features/sessions/utils'
 import IconButton from '@/shared/components/IconButton'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { showToast } from '@/shared/store/toastStore'
-import { isNetworkError, readApiError } from '@/shared/utils/error'
-import { logError } from '@/shared/utils/logError'
 import {
   useProjectView,
   useUpdateProject,
@@ -41,82 +39,27 @@ export default function ProjectPage() {
   const toggleFavorite = (pid: string) => toggleFavoriteApi({ projectId: pid, next: !(project?.isFavorite ?? false) })
 
   const queryClient = useQueryClient()
-  const connect = useChatStore((s) => s.connect)
-  const disconnect = useChatStore((s) => s.disconnect)
-  const isConnecting = useChatStore((s) => s.isConnecting)
-  const chatError = useChatStore((s) => s.error)
-  const clearChatError = useChatStore((s) => s.clearError)
-  const isDeleted = useChatStore((s) => s.isDeleted)
-  const resetDeleted = useChatStore((s) => s.resetDeleted)
-
-  // 일시적 오류(5xx·네트워크)는 ChatPage처럼 재시도 화면을 보여준다.
-  // 어느 대화의 오류인지 함께 저장해, 다른 대화로 옮기면 자동으로 무시되게 한다.
-  const [connectError, setConnectError] = useState<{ chatId: string; message: string } | null>(null)
-  const [retryKey, setRetryKey] = useState(0)
-
-  // useLayoutEffect: 라우터 내비게이션은 트랜지션으로 커밋되므로 useEffect면
-  // 이전 대화의 메시지가 한 프레임 그려질 수 있다. ChatPage와 동일하게 페인트 전에 연결한다.
-  useLayoutEffect(() => {
-    if (!chatId) {
-      disconnect()
-      return
-    }
-    let cancelled = false
-    connect(chatId)
-      .then(() => {
-        if (!cancelled) setConnectError(null)
-      })
-      .catch((e) => {
-        if (cancelled) return
-        logError('ProjectPage.connect', e, { projectId: id, chatId })
-        const { code, detail, status = 0 } = readApiError(e)
-        const known = code ? (SESSION_ERRORS.project as Record<string, string>)[code] : undefined
-        if (known) {
-          // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
-          showToast(known)
-          queryClient.invalidateQueries({ queryKey: ['projects', 'sessions', id] })
-          navigate(`/projects/${id}`, { replace: true })
-        } else if (status >= 500) {
-          setConnectError({
-            chatId,
-            message: detail
-              ? `서버에 일시적인 오류가 발생했습니다. (${status}: ${detail})`
-              : `서버에 일시적인 오류가 발생했습니다. (${status})`,
-          })
-        } else if (isNetworkError(e)) {
-          setConnectError({ chatId, message: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.' })
-        } else {
-          showToast('대화를 불러오는 중 오류가 발생했습니다.')
-          navigate(`/projects/${id}`, { replace: true })
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [chatId, id, retryKey, connect, disconnect, navigate, queryClient])
-  // 같은 대화로 돌아와 다시 연결 중일 때는 이전 오류를 숨긴다(성공하면 위 then에서 지워진다).
-  const activeConnectError =
-    connectError && connectError.chatId === chatId && !isConnecting ? connectError.message : null
-  const retryConnect = () => {
-    setConnectError(null)
-    setRetryKey((k) => k + 1)
-  }
-
-  // ChatPage와 동일하게 스트림 오류·첫 응답 실패로 인한 세션 삭제를 처리한다.
-  useEffect(() => {
-    if (isDeleted) {
-      const msg = chatError
-      resetDeleted()
-      clearChatError()
-      if (msg) showToast(msg)
-      navigate(`/projects/${id}`, { replace: true })
-      return
-    }
-    if (chatError) {
-      showToast(chatError)
-      clearChatError()
-    }
-  }, [isDeleted, chatError, resetDeleted, clearChatError, navigate, id])
+  const backToProject = () => navigate(`/projects/${id}`, { replace: true })
+  const { isConnecting, connectError, retry: retryConnect } = useChatSession(chatId, {
+    knownErrors: SESSION_ERRORS.project,
+    logLabel: 'ProjectPage.connect',
+    logContext: { projectId: id, chatId },
+    // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
+    onKnownError: (message) => {
+      showToast(message)
+      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions', id] })
+      backToProject()
+    },
+    onUnknownError: () => {
+      showToast('대화를 불러오는 중 오류가 발생했습니다.')
+      backToProject()
+    },
+    onDeleted: (message) => {
+      if (message) showToast(message)
+      backToProject()
+    },
+  })
+  const activeConnectError = connectError?.message ?? null
   const [filesOpen, setFilesOpen] = useState(false)
   const [renaming, setRenaming] = useState(false)
   const [nameDraft, setNameDraft] = useState('')

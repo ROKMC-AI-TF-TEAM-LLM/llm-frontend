@@ -1,9 +1,9 @@
 import { type Message } from './types';
 import { logError } from '@/shared/utils/logError';
-import { CHAT_CACHE_PREFIX, CHAT_INFLIGHT_KEY, isChatStorageLocked } from '@/shared/utils/chatStorage';
+import { CHAT_CACHE_PREFIX, CHAT_INFLIGHT_KEY, chatMemoryCache, clearChatCache, isChatStorageLocked } from '@/shared/utils/chatStorage';
 import { type DomainSelection } from './store/types';
 
-export const messageCache = new Map<string, Message[]>();
+export const messageCache = chatMemoryCache as Map<string, Message[]>;
 
 const CACHE_KEY = (id: string) => `${CHAT_CACHE_PREFIX}${id}`
 
@@ -38,10 +38,7 @@ export const loadCache = (sessionId: string): Message[] => {
   }
 }
 
-export const clearCache = (sessionId: string) => {
-  messageCache.delete(sessionId)
-  try { localStorage.removeItem(CACHE_KEY(sessionId)) } catch (e) { logError('clearCache', e) }
-}
+export const clearCache = clearChatCache
 
 const INFLIGHT_KEY = CHAT_INFLIGHT_KEY
 

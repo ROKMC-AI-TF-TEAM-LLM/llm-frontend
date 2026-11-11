@@ -4,7 +4,7 @@ import { getSessions, createSession, searchSessions, updateSession, setFavorite,
 import type { CreateSessionRequest, SearchSessionsRequest, UpdateSessionRequest, GetSessionsResponse } from './types'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
-import { clearCache } from '@/features/chat/storage'
+import { clearChatCache } from '@/shared/utils/chatStorage'
 import { showToast } from '@/shared/store/toastStore'
 import { confirm } from '@/shared/store/confirmStore'
 import { getApiError } from '@/shared/utils/error'
@@ -126,7 +126,7 @@ export const useDeleteSession = () => {
     },
     // 후처리는 훅 레벨 콜백에 둔다. 낙관적 제거로 목록 행이 즉시 언마운트되므로
     // mutate(id, { onSuccess }) 처럼 호출부에 넘긴 콜백은 실행되지 않는다.
-    onSuccess: (_d, sessionId) => clearCache(sessionId),
+    onSuccess: (_d, sessionId) => clearChatCache(sessionId),
     onError: (err, _vars, context) => {
       rollbackSnapshots(queryClient, context?.snapshots)
       showToast(getSessionErrorMessage(err, '대화를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.'))

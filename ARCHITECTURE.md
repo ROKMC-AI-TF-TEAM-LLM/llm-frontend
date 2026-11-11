@@ -16,7 +16,8 @@ src/
 ```
 
 의존 방향은 한쪽으로만 흐릅니다: `app → features → shared·lib`.
-기능끼리는 서로 가져다 써도 됩니다(예: 채팅이 분야(`domains`)의 아이콘을 씀).
+기능끼리는 가져다 써도 되지만(예: 채팅이 분야(`domains`)의 아이콘을 씀) **서로** 가져다 쓰지는 않습니다.
+✅ 방향은 `eslint.config.js`의 `FEATURE_DIRECTION`에 적습니다(sessions→chat, auth→users, landing→auth, domains→documents 금지).
 
 ## 기능 폴더 하나의 모양
 
@@ -63,6 +64,7 @@ features/<기능>/
 - `shared/components/Button.tsx` — 글자 버튼(`primary`·`ghost`·`link`). `IconButton.tsx` — 아이콘만 있는 버튼(`label` 필수)
 - `shared/components/Modal.tsx`·`Drawer.tsx` — 가운데 대화상자와 오른쪽 서랍. 배경, ESC·바깥 클릭 닫기, 포커스 가두기(`useFocusTrap`), 스크롤 잠금(`useBodyScrollLock`)을 맡는다. 화면에서 `fixed inset-0`을 직접 쓰지 않는다
 - `shared/store/confirmStore.ts` — `await confirm({ title, message, danger })`. 확인 창은 앱 루트의 `shared/components/ConfirmHost.tsx`가 그린다. 브라우저 기본 확인·알림 창은 쓰지 않는다(오류 알림은 `showToast`)
+- `shared/utils/postLoginRedirect.ts` — 로그인 후 돌아갈 주소 기억. `shared/utils/chatStorage.ts` — 대화 캐시 키와 지우기(`clearChatCache`·`clearStoredChatData`)
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
 
 ## import 쓰는 법
@@ -88,6 +90,7 @@ features/<기능>/
 
 ## 아직 규칙과 다른 곳 (정리 예정)
 
+- `landing` ↔ `tutorials`가 서로 가져다 쓴다(바닥글이 튜토리얼 목록을 쓰고, 튜토리얼 화면이 소개 화면의 상단·바닥글을 쓴다).
 - `features/chat/store/`: 스트리밍 상태와 함께 지난 메시지 불러오기(서버 데이터)도 들고 있다.
 - 코드 스타일(세미콜론·따옴표)이 파일마다 다르다. Prettier는 거의 모든 파일을 바꾸므로 열린 브랜치를 병합한 뒤 한 번에 적용한다.
 - 하드코딩 색(`#fdedf2` 등)과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 새 코드는 토큰을 쓴다.

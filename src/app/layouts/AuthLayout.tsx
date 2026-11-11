@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
-import { takePostLoginRedirect } from '@/features/auth/utils'
+import { takePostLoginRedirect } from '@/shared/utils/postLoginRedirect'
 
 const AuthLayout = () => {
   const { accessToken } = useAuth()
