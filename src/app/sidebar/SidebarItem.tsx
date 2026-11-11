@@ -85,7 +85,7 @@ export default function SidebarItem({
       <button
         onClick={onOpen}
         title={tooltip}
-        className={`flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-13 transition-colors ${
+        className={`flex w-full items-center gap-2.5 rounded-[10px] px-[8px] py-[7px] text-left text-13 transition-colors ${
           isActive
             ? 'bg-brand-tint font-bold text-brand-hover'
             : 'font-medium text-text-primary hover:bg-brand-tint hover:text-brand-hover'
@@ -98,7 +98,7 @@ export default function SidebarItem({
       {/* 마우스를 올리면 오른쪽 동작 버튼 뒤로 이름이 흐려지게 한다 */}
       <span
         aria-hidden
-        className={`pointer-events-none absolute inset-y-0 right-0 ${look.fade} rounded-r-[9px] bg-[linear-gradient(to_right,rgba(253,237,242,0)_0%,#fdedf2_35%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100`}
+        className={`pointer-events-none absolute inset-y-0 right-0 ${look.fade} rounded-r-[10px] bg-[linear-gradient(to_right,rgba(253,237,242,0)_0%,#fdedf2_35%)] opacity-0 transition-opacity duration-150 group-hover:opacity-100`}
       />
 
       <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex">

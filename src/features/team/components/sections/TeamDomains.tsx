@@ -18,7 +18,7 @@ export default function TeamDomains() {
       <div className="mx-auto grid w-full max-w-[1180px] items-center gap-14 lg:grid-cols-[.8fr_1.2fr]">
         <div>
           <ScrollFade>
-            <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">
+            <p className="text-13 font-bold tracking-[0.22em] text-brand">
               WHAT WE COVER
             </p>
             <h2
@@ -47,11 +47,11 @@ export default function TeamDomains() {
                     >
                       {ICONS[i % ICONS.length]}
                     </svg>
-                    <h3 className="mars-display text-[18.5px] font-extrabold tracking-tight text-text-primary break-keep">
+                    <h3 className="mars-display text-18 font-extrabold tracking-tight text-text-primary break-keep">
                       <Placeholder value={r.title} />
                     </h3>
                   </div>
-                  <p className="mt-3.5 text-[14.5px] leading-[1.9] text-text-secondary break-keep">
+                  <p className="mt-3.5 text-15 leading-[1.9] text-text-secondary break-keep">
                     <Placeholder value={r.desc} />
                   </p>
                 </div>

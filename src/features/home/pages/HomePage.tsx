@@ -76,7 +76,7 @@ const HomePage = () => {
               <br />
               한 번에 <RotatingWord words={HERO_VERBS} />
             </p>
-            <p className="mars-reveal font-semibold mt-5 text-[16.5px] leading-[1.7] text-text-secondary max-w-[420px] break-keep">
+            <p className="mars-reveal font-semibold mt-5 text-16 leading-[1.7] text-text-secondary max-w-[420px] break-keep">
               법령·규정·규칙을 참조해 장병의 질문에 근거와 함께 답합니다.
             </p>
             <div className="mars-reveal mt-8 relative h-[52px]">
@@ -96,7 +96,7 @@ const HomePage = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/team')}
-                  className="mars-pill mars-pill-ghost mars-brand-serif text-[14px]"
+                  className="mars-pill mars-pill-ghost mars-brand-serif text-14"
                 >
                   <svg
                     width="16"
@@ -117,7 +117,7 @@ const HomePage = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/guide')}
-                  className="mars-pill mars-pill-ghost mars-brand-serif text-[14px]"
+                  className="mars-pill mars-pill-ghost mars-brand-serif text-14"
                 >
                   <svg
                     width="16"
@@ -155,7 +155,7 @@ const HomePage = () => {
               onClick={scrollToFeatures}
               className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col items-center gap-1.5 text-text-muted hover:text-brand transition-colors"
             >
-              <span className="text-[13px] font-semibold tracking-wide">
+              <span className="text-13 font-semibold tracking-wide">
                 더 알아보기
               </span>
               <svg

@@ -35,13 +35,13 @@ export function StepRow({
   )
   const text = (
     <Reveal className="flex-1 min-w-[300px]" delay={reverse ? 0 : 100}>
-      <div className="text-[14px] font-extrabold text-brand tracking-[0.12em] mb-4">
+      <div className="text-14 font-extrabold text-brand tracking-[0.12em] mb-4">
         {step}
       </div>
       <div className="mars-display text-[32px] md:text-[38px] font-extrabold mb-5 leading-[1.3] tracking-tight">
         {title}
       </div>
-      <p className="m-0 text-[17px] md:text-[18px] font-semibold leading-[1.85] text-ink-soft">
+      <p className="m-0 text-18 md:text-18 font-semibold leading-[1.85] text-ink-soft">
         {desc}
       </p>
       {bullets && (
@@ -49,7 +49,7 @@ export function StepRow({
           {bullets.map((b) => (
             <li
               key={b}
-              className="flex items-start gap-3 text-[15.5px] leading-[1.6] text-[#4a4750]"
+              className="flex items-start gap-3 text-16 leading-[1.6] text-[#4a4750]"
             >
               <span className="mt-[7px] shrink-0 w-1.5 h-1.5 rounded-full bg-brand" />
               <span>{b}</span>

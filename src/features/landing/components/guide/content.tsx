@@ -72,7 +72,7 @@ export const FAQ = [
 
 export const Q_TEXT = '해병대 창설과 그 배경에 대해 알려줄래?'
 export const ANSWER_LINES = [
-  <h3 className="text-[20.5px] font-bold text-text-primary">
+  <h3 className="text-20 font-bold text-text-primary">
     대한민국 해병대 창설 배경
   </h3>,
   '대한민국 해병대는 1949년 4월 15일, 경상남도 창원시 진해구 덕산동에 위치한 진해 해군기지의 진해비행장(덕산비행장)에서 대한민국 해군에서 선발한 380명(장교 26명, 부사관 54명, 병 300명)의 병력으로 창설되었다.',

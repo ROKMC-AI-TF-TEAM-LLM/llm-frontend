@@ -79,7 +79,8 @@ features/<기능>/
 - `shared/components/Button.tsx` — 글자 버튼. 종류(`primary`·`secondary`·`outline`·`danger`·`ghost`·`link`)와 크기(`sm`·`md`·`lg`)만 고른다. `IconButton.tsx` — 아이콘만 있는 버튼(`label` 필수, 크기 `xs`~`lg`, 색조 `default`·`brand`·`danger`·`success`·`solid`). 화면에서 `<button>`에 색·크기 클래스를 직접 쓰지 않는다
 - `shared/components/SearchInput.tsx` — 검색어 입력창(큰 것·`compact`)
 - `shared/components/Chip.tsx`(고르는 알약 버튼)·`Tab.tsx`(밑줄 탭)·`MenuItem.tsx`(펼침 메뉴의 한 줄)·`SelectButton.tsx`(눌러서 메뉴를 펼치는 고르기 버튼)
-- 글자 크기는 `text-10`~`text-16` 단계만 쓴다(0.5px 단위·임의 px 금지)
+- 글자 크기는 `text-10`~`text-16` 단계를 쓴다(0.5px 단위·임의 px 금지). 소개성 화면의 큰 본문·소제목은 `text-18`·`text-20`·`text-24`·`text-28`. 화면 너비에 따라 변하는 큰 제목(`text-[length:clamp(...)]`)과 워드마크만 예외다. CSS 파일의 `font-size`도 0.5px 단위를 쓰지 않는다
+- 모서리 반경을 px로 적을 때는 짝수만 쓴다(`rounded-[10px]`·`rounded-[12px]`). Tailwind 기본 단계(`rounded-xl`, `h-10` 등 rem 단위)는 html 글자 크기가 90%라 표기보다 작게 나온다는 점에 주의한다(`h-10`은 36px)
 - `shared/components/Modal.tsx`·`Drawer.tsx` — 가운데 대화상자와 오른쪽 서랍. 배경, ESC·바깥 클릭 닫기, 포커스 가두기(`useFocusTrap`), 스크롤 잠금(`useBodyScrollLock`)을 맡는다. 화면에서 `fixed inset-0`을 직접 쓰지 않는다
 - `shared/store/confirmStore.ts` — `await confirm({ title, message, danger })`. 확인 창은 앱 루트의 `shared/components/ConfirmHost.tsx`가 그린다. 브라우저 기본 확인·알림 창은 쓰지 않는다(오류 알림은 `showToast`)
 - `shared/utils/postLoginRedirect.ts` — 로그인 후 돌아갈 주소 기억. `shared/utils/chatStorage.ts` — 대화 캐시 키와 지우기(`clearChatCache`·`clearStoredChatData`)

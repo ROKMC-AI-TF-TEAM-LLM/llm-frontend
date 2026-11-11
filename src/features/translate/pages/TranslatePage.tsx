@@ -25,7 +25,7 @@ function LangSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center mars-brand-serif gap-2 rounded-[12px] border border-rose-border bg-white px-4 py-2.5 text-[13.5px] font-semibold text-text-primary transition-colors hover:border-brand-soft"
+        className="flex items-center mars-brand-serif gap-2 rounded-[12px] border border-rose-border bg-white px-4 py-2.5 text-14 font-semibold text-text-primary transition-colors hover:border-brand-soft"
       >
         {value}
         <svg
@@ -53,7 +53,7 @@ function LangSelect({
                   onChange(l)
                   setOpen(false)
                 }}
-                className={`block w-full px-4 py-2 text-left text-[13.5px] transition-colors hover:bg-brand-subtle ${l === value ? 'font-semibold text-brand' : 'text-text-secondary'}`}
+                className={`block w-full px-4 py-2 text-left text-14 transition-colors hover:bg-brand-subtle ${l === value ? 'font-semibold text-brand' : 'text-text-secondary'}`}
               >
                 {l}
               </button>
@@ -131,7 +131,7 @@ export default function TranslatePage() {
     <>
       <div className="h-full overflow-y-auto custom-scroll px-8 pt-8 pb-6">
         <div className="mx-auto flex max-w-[1120px] flex-col">
-          <h1 className="mars-display text-[20px] mars-brand-serif font-bold text-text-primary">
+          <h1 className="mars-display text-20 mars-brand-serif font-bold text-text-primary">
             번역
           </h1>
 
@@ -165,7 +165,7 @@ export default function TranslatePage() {
                     key={s.value}
                     type="button"
                     onClick={() => setStyle(s.value)}
-                    className={`h-9 rounded-full px-4 text-[13px] font-semibold transition-colors ${
+                    className={`h-9 rounded-full px-4 text-13 font-semibold transition-colors ${
                       style === s.value
                         ? 'bg-brand text-white'
                         : 'text-text-secondary hover:bg-brand-subtle hover:text-brand'
@@ -183,11 +183,11 @@ export default function TranslatePage() {
                 onClick={() => setFontSize((s) => Math.max(12, s - 1))}
                 disabled={fontSize <= 12}
                 aria-label="글자 작게"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-bold text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand disabled:opacity-40 disabled:hover:bg-transparent"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-13 font-bold text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand disabled:opacity-40 disabled:hover:bg-transparent"
               >
                 A−
               </button>
-              <span className="w-9 text-center text-[12.5px] tabular-nums text-text-muted">
+              <span className="w-9 text-center text-13 tabular-nums text-text-muted">
                 {fontSize}px
               </span>
               <button
@@ -195,7 +195,7 @@ export default function TranslatePage() {
                 onClick={() => setFontSize((s) => Math.min(24, s + 1))}
                 disabled={fontSize >= 24}
                 aria-label="글자 크게"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[15px] font-bold text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand disabled:opacity-40 disabled:hover:bg-transparent"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-15 font-bold text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand disabled:opacity-40 disabled:hover:bg-transparent"
               >
                 A+
               </button>
@@ -213,7 +213,7 @@ export default function TranslatePage() {
                 className="flex-1 resize-none rounded-t-[18px] bg-transparent px-6 pt-6 leading-[1.7] text-text-primary outline-none placeholder:text-text-muted"
               />
               <div className="flex items-center justify-between px-5 py-3.5">
-                <span className="text-[12.5px] tabular-nums text-text-muted">
+                <span className="text-13 tabular-nums text-text-muted">
                   {input.length} / {MAX}
                 </span>
                 <button
@@ -225,7 +225,7 @@ export default function TranslatePage() {
                       ? { background: 'var(--color-brand)' }
                       : undefined
                   }
-                  className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-14 font-semibold transition-colors ${
                     input.trim() && !isPending
                       ? 'text-white hover:bg-[var(--color-brand-hover)]'
                       : 'bg-rose-divider text-[#cbbcc0] cursor-not-allowed'

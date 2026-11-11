@@ -85,7 +85,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
               }
             : { color: 'var(--color-text-primary)' }
         }
-        className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
+        className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[12px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
       >
         <span className="w-[18px] flex justify-center shrink-0">
           <PlusIcon
@@ -113,7 +113,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
                   }
                 : { color: 'var(--color-text-primary)' }
             }
-            className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
+            className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[12px] text-13 font-semibold hover:bg-brand-tint transition-colors duration-200 cursor-pointer"
           >
             <span className="w-[18px] flex justify-center shrink-0">
               {item.icon}

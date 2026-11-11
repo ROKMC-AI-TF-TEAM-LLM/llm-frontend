@@ -19,13 +19,13 @@ export default function TutorialPage() {
   if (!tutorial) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6">
-        <p className="text-[15px] font-semibold text-text-primary">
+        <p className="text-15 font-semibold text-text-primary">
           튜토리얼을 찾을 수 없습니다.
         </p>
         <button
           type="button"
           onClick={() => navigate('/tutorials')}
-          className="mt-6 rounded-full bg-brand px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-brand-hover"
+          className="mars-pill mars-pill-brand mt-6"
         >
           튜토리얼 목록
         </button>
@@ -39,7 +39,7 @@ export default function TutorialPage() {
     <div className="min-h-screen bg-[linear-gradient(180deg,#fdf6f8_0%,#ffffff_20%,#ffffff_100%)]">
       <TutorialHeader />
 
-      <div className="flex items-center gap-2 border-b border-rose-divider px-[6vw] py-3.5 text-[13px]">
+      <div className="flex items-center gap-2 border-b border-rose-divider px-[6vw] py-3.5 text-13">
         <button
           type="button"
           onClick={() => navigate('/tutorials')}
@@ -80,7 +80,7 @@ export default function TutorialPage() {
           tint={tutorial.tint}
           videoUrl={tutorial.videoUrl}
         />
-        <p className="mt-4 text-[12px] leading-[1.7] text-text-muted">
+        <p className="mt-4 text-12 leading-[1.7] text-text-muted">
           본 영상은 사용법 안내를 위해 제작된 픽션입니다. 등장하는
           부대·문서·상황은 실제와 무관하며, 예시로 나오는 규정 내용은 실제
           규정을 대신할 수 없습니다.
@@ -90,7 +90,7 @@ export default function TutorialPage() {
       <div className="mx-auto max-w-[760px] px-[6vw] pb-24 lg:px-8">
         <Reveal>
           <p className="mars-eyebrow">WHY</p>
-          <h2 className="mars-display mt-4 text-[26px] font-bold tracking-[-0.02em] text-text-primary">
+          <h2 className="mars-display mt-4 text-28 font-bold tracking-[-0.02em] text-text-primary">
             {tutorial.pointsTitle}
           </h2>
         </Reveal>
@@ -99,14 +99,14 @@ export default function TutorialPage() {
           {tutorial.points.map((c, i) => (
             <Reveal key={c.title} delay={i * 60}>
               <li className="flex items-start gap-5 border-t border-rose-divider py-5">
-                <span className="mt-0.5 shrink-0 text-[12px] font-extrabold tabular-nums text-brand">
+                <span className="mt-0.5 shrink-0 text-12 font-extrabold tabular-nums text-brand">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[15.5px] font-bold text-text-primary">
+                  <p className="text-16 font-bold text-text-primary">
                     {c.title}
                   </p>
-                  <p className="mt-1.5 text-[13.5px] leading-[1.75] text-text-secondary break-keep">
+                  <p className="mt-1.5 text-14 leading-[1.75] text-text-secondary break-keep">
                     {c.desc}
                   </p>
                 </div>
@@ -117,10 +117,10 @@ export default function TutorialPage() {
 
         <Reveal delay={80}>
           <div className="mt-14 bg-[linear-gradient(160deg,#fdf3f5_0%,#fffdfd_100%)] rounded-[18px] border border-[#f2e2e6] px-8 py-9 text-center">
-            <p className="text-[19px] font-bold tracking-[-0.01em] mars-brand-serif text-text-primary break-keep">
+            <p className="text-20 font-bold tracking-[-0.01em] mars-brand-serif text-text-primary break-keep">
               직접 해보는 게 가장 빠릅니다
             </p>
-            <p className="mx-auto mt-3 max-w-[420px] text-[13.5px] leading-[1.7] text-text-secondary break-keep">
+            <p className="mx-auto mt-3 max-w-[420px] text-14 leading-[1.7] text-text-secondary break-keep">
               지금 MARS에서 방금 본 내용을 그대로 따라 해보세요. 몇 분이면
               충분합니다.
             </p>
@@ -163,10 +163,10 @@ export default function TutorialPage() {
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11.5px] font-extrabold uppercase tracking-[0.12em] text-[#c9aab2]">
+      <dt className="text-12 font-extrabold uppercase tracking-[0.12em] text-[#c9aab2]">
         {label}
       </dt>
-      <dd className="mt-1.5 text-[14.5px] font-semibold text-text-primary">
+      <dd className="mt-1.5 text-15 font-semibold text-text-primary">
         {value}
       </dd>
     </div>
@@ -217,10 +217,10 @@ function VideoSlot({
           <path d="M8 5.5v13l11-6.5z" />
         </svg>
       </span>
-      <p className="mt-6 text-[15px] font-bold text-text-primary">
+      <p className="mt-6 text-15 font-bold text-text-primary">
         영상 준비 중입니다
       </p>
-      <p className="mt-1.5 text-[13px] text-text-secondary">
+      <p className="mt-1.5 text-13 text-text-secondary">
         제작이 끝나면 이 자리에 바로 올라갑니다.
       </p>
     </div>

@@ -52,7 +52,7 @@ export default function SidebarHeader({
         onClick={onClick}
         onMouseEnter={onEnter}
         onMouseLeave={onLeave}
-        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-brand-tint hover:text-brand-hover transition-colors cursor-pointer w-[30px] h-[30px] rounded-[9px] shrink-0"
+        className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-brand-tint hover:text-brand-hover transition-colors cursor-pointer w-[30px] h-[30px] rounded-[10px] shrink-0"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
         <ChevronsLeftIcon

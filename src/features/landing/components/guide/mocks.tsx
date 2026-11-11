@@ -30,7 +30,7 @@ export function Step01Mock() {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-7 p-10">
       <div className="text-center">
-        <div className="text-[27px] font-extrabold leading-[1.4] text-text-primary">
+        <div className="text-28 font-extrabold leading-[1.4] text-text-primary">
           해병대님, <span className="text-brand">무엇을</span> 도와드릴까요?
         </div>
         <div className="mt-2.5 text-sm text-rose-ash">
@@ -39,7 +39,7 @@ export function Step01Mock() {
       </div>
       <div className="w-full max-w-[440px]">
         <div className="rounded-[22px] bg-white border border-[#eee0e2] shadow-[0_8px_24px_rgba(150,0,40,0.05)]">
-          <div className="min-h-[22px] px-[22px] pt-[18px] pb-1.5 text-[15px] text-text-primary">
+          <div className="min-h-[22px] px-[22px] pt-[18px] pb-1.5 text-15 text-text-primary">
             <span>{q.slice(0, qLen)}</span>
             <span className="inline-block w-0.5 h-4 bg-brand ml-px align-[-3px] animate-[blink_1.3s_ease-in-out_infinite]" />
           </div>
@@ -70,7 +70,7 @@ export function Step01Mock() {
             </span>
           </div>
         </div>
-        <div className="mt-3.5 text-center text-[11.5px] text-[#c2b5ba]">
+        <div className="mt-3.5 text-center text-12 text-[#c2b5ba]">
           {AI_NOTICE}
         </div>
       </div>
@@ -86,10 +86,10 @@ export function DomainStepMock() {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-6 p-10">
       <div className="text-center">
-        <div className="text-[20px] font-extrabold leading-[1.4] text-text-primary">
+        <div className="text-20 font-extrabold leading-[1.4] text-text-primary">
           검색할 범위를 골라보세요
         </div>
-        <div className="mt-2 text-[13.5px] text-rose-ash">
+        <div className="mt-2 text-14 text-rose-ash">
           선택한 도메인 안에서만 근거를 찾습니다.
         </div>
       </div>
@@ -138,7 +138,7 @@ function GuideMenuRow({
 }) {
   return (
     <div
-      className={`w-full flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl text-[13.5px] text-left transition-colors ${
+      className={`w-full flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl text-14 text-left transition-colors ${
         active
           ? 'bg-brand-subtle text-brand font-semibold'
           : 'text-text-secondary'
@@ -183,7 +183,7 @@ export function Step02Mock() {
     <div className="h-full flex flex-col">
       <div className="flex-1 px-9 pt-8 pb-3 overflow-hidden">
         <div className="flex justify-end mb-5">
-          <div className="max-w-[82%] px-5 py-3 rounded-[18px_18px_4px_18px] bg-gradient-to-br from-brand to-brand-vivid-light text-white text-[14.5px] leading-[1.5]">
+          <div className="max-w-[82%] px-5 py-3 rounded-[18px_18px_4px_18px] bg-gradient-to-br from-brand to-brand-vivid-light text-white text-15 leading-[1.5]">
             해병대 창설과 그 배경에 대해 알려줄래?
           </div>
         </div>
@@ -198,7 +198,7 @@ export function Step02Mock() {
             i < revealCount ? (
               <div
                 key={i}
-                className="text-[14.5px] leading-[1.75] text-ink animate-[lineIn_.5s_ease_both]"
+                className="text-15 leading-[1.75] text-ink animate-[lineIn_.5s_ease_both]"
               >
                 {line}
               </div>
@@ -227,7 +227,7 @@ export function Step03Mock() {
   const open = p >= 2400 && p < 5200
 
   return (
-    <div className="p-9 text-[14.5px] leading-[1.8] text-ink">
+    <div className="p-9 text-15 leading-[1.8] text-ink">
       <div className="mb-5">
         국가계약법은 국가가 당사자가 되는 계약의 기본 사항을 규정한 법률입니다.
         적용 범위와 계약 원칙 등 주요 내용을 정리했습니다.
@@ -308,7 +308,7 @@ function DomainChip({ code, label }: { code?: string; label?: string }) {
   const selected = !!code
   return (
     <span
-      className={`inline-flex items-center gap-1.5 pl-2 pr-2.5 h-9 rounded-full text-[13.5px] font-medium ${
+      className={`inline-flex items-center gap-1.5 pl-2 pr-2.5 h-9 rounded-full text-14 font-medium ${
         selected ? 'bg-brand-subtle text-brand' : 'text-text-muted'
       }`}
     >

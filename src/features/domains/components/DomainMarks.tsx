@@ -7,8 +7,8 @@ type Domain = string | null | undefined
 
 const DOC_ICON_SIZE = {
   sm: { box: 38, radius: 10, icon: 18 },
-  md: { box: 40, radius: 11, icon: 19 },
-  lg: { box: 48, radius: 13, icon: 22 },
+  md: { box: 40, radius: 12, icon: 19 },
+  lg: { box: 48, radius: 14, icon: 22 },
 }
 
 /** 분야 색 바탕의 네모 문서 아이콘 (출처·문서 목록·문서 상세) */

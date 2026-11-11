@@ -19,7 +19,7 @@ export default function TeamHero() {
 
       <div className="relative z-[1] mx-auto grid w-full max-w-[1180px] items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
         <div>
-          <p className="mars-reveal font-semibold flex items-center gap-2.5 text-[12.5px] font-bold tracking-[0.22em] text-brand">
+          <p className="mars-reveal font-semibold flex items-center gap-2.5 text-13 font-bold tracking-[0.22em] text-brand">
             <span className="h-px w-8 bg-brand/45" />
             {HERO.eyebrow}
           </p>

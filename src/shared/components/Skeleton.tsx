@@ -156,7 +156,7 @@ function RagRowSkeleton() {
   return (
     <div className="w-full flex items-center gap-4 py-3 pl-2 pr-5 border-b border-surface-border">
       <Skeleton className="shrink-0 w-[5px] h-10 rounded-full" />
-      <Skeleton className="shrink-0 w-10 h-10 rounded-[11px]" />
+      <Skeleton className="shrink-0 w-10 h-10 rounded-[12px]" />
       <div className="min-w-0 flex-1">
         <Skeleton className="h-[15px] w-2/3 rounded" />
         <Skeleton className="mt-2 h-[13px] w-24 rounded" />

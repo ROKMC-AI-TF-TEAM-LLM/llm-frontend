@@ -36,14 +36,14 @@ export function TutorialCard({
       </span>
 
       <span className="flex flex-1 flex-col p-5">
-        <span className="text-[16.5px] font-bold leading-[1.35] tracking-[-0.01em] text-text-primary mars-brand-serif break-keep">
+        <span className="text-16 font-bold leading-[1.35] tracking-[-0.01em] text-text-primary mars-brand-serif break-keep">
           {tutorial.title}
         </span>
-        <span className="mt-2.5 line-clamp-2 text-[13px] leading-[1.7] text-text-secondary break-keep">
+        <span className="mt-2.5 line-clamp-2 text-13 leading-[1.7] text-text-secondary break-keep">
           {tutorial.summary}
         </span>
 
-        <span className="mt-auto flex items-center gap-2 border-t border-[#f7f0f1] pt-4 text-[12px] font-medium text-text-muted">
+        <span className="mt-auto flex items-center gap-2 border-t border-[#f7f0f1] pt-4 text-12 font-medium text-text-muted">
           <span
             className="inline-block h-1.5 w-1.5 rounded-full"
             style={{ background: tutorial.tint }}

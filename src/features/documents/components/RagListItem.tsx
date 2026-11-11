@@ -19,7 +19,7 @@ const RagListItem = ({ doc, onClick }: RagListItemProps) => {
       onClick={onClick}
       className="group w-full flex items-center gap-4 py-3 pl-2 pr-5 text-left bg-surface border-b border-surface-border transition-colors hover:bg-surface-subtle"
     >
-      <DomainBar domain={doc.domain} className="shrink-0 h-10 w-[5px]" />
+      <DomainBar domain={doc.domain} className="shrink-0 h-[40px] w-[5px]" />
 
       <DomainDocIcon domain={doc.domain} />
 

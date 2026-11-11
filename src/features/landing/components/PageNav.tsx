@@ -38,7 +38,7 @@ export default function PageNav({ current }: { current: NavKey }) {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="inline-flex items-center gap-1.5 rounded-[6px] bg-brand px-4 py-2 text-[13.5px] font-medium text-white transition-colors hover:bg-brand-hover"
+          className="mars-nav-cta-main mars-brand-serif"
         >
           시작하기
         </button>

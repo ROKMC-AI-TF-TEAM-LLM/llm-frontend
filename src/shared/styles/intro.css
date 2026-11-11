@@ -157,7 +157,7 @@
 }
 
 .mars-eyebrow-full {
-  font-size: 12.5px;
+  font-size: 13px;
   letter-spacing: 0.02em;
   text-transform: none;
   font-weight: 700;
@@ -330,7 +330,7 @@
 
 .mars-nav-cta-main {
   padding: 7px 15px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.01em;
   background: var(--color-brand);
@@ -441,7 +441,7 @@
 }
 
 .mars-nav-rowdesc {
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--color-text-secondary);
   word-break: keep-all;
@@ -541,7 +541,7 @@
 .mars-navprev-composer-text {
   padding: 11px 12px 7px;
   min-height: 34px;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--color-text-primary);
 }
@@ -656,7 +656,7 @@
   border-radius: 13px 13px 4px 13px;
   background: var(--color-brand);
   color: #fff;
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -667,14 +667,14 @@
 }
 
 .mars-navprev-answertext {
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.65;
   color: var(--color-text-primary);
   word-break: keep-all;
 }
 
 .mars-navprev-thinking {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--color-text-muted);
   animation: cursor-blink 1.4s ease-in-out infinite;
 }
@@ -693,7 +693,7 @@
   gap: 5px;
   padding: 5px 11px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   background: var(--color-brand-subtle);
   color: var(--color-brand);
@@ -742,7 +742,7 @@
 }
 
 .mars-navprev-srctitle {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-text-primary);
   overflow: hidden;
@@ -752,7 +752,7 @@
 
 .mars-navprev-srcdomain {
   flex: none;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 999px;
@@ -831,7 +831,7 @@
 
 .mars-footer-org {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.75;
   color: var(--color-text-secondary);
   word-break: keep-all;
@@ -858,7 +858,7 @@
 }
 
 .mars-footer-coltitle {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 3px;
@@ -870,7 +870,7 @@
   border: 0;
   background: none;
   cursor: pointer;
-  font-size: 13.5px;
+  font-size: 14px;
   text-align: left;
   color: var(--color-text-secondary);
   transition: color 0.2s ease;
@@ -911,7 +911,7 @@
 .mars-footer-tel {
   display: block;
   margin-top: 3px;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--color-text-secondary);
 }
 

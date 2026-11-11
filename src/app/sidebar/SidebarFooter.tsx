@@ -132,7 +132,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label="프로필"
-          className={`min-w-0 flex-1 flex items-center gap-2 p-0.5 rounded-[11px] transition-colors cursor-pointer ${open ? 'bg-brand-tint' : 'hover:bg-brand-tint'}`}
+          className={`min-w-0 flex-1 flex items-center gap-2 p-0.5 rounded-[12px] transition-colors cursor-pointer ${open ? 'bg-brand-tint' : 'hover:bg-brand-tint'}`}
         >
           <Avatar />
           <div

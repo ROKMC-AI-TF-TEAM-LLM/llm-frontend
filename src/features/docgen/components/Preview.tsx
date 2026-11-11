@@ -32,7 +32,7 @@ export function Paper({
       <article
         className={`mx-auto aspect-[1/1.414] w-full max-w-[460px] overflow-hidden rounded-[4px] border border-surface-border bg-surface shadow-sm ${pad}`}
       >
-        <h3 className="text-center text-[17px] font-bold text-text-primary">
+        <h3 className="text-center text-18 font-bold text-text-primary">
           {job.title}
         </h3>
         <p className="mt-1 text-center text-11 text-text-muted">

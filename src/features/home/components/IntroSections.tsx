@@ -141,7 +141,7 @@ export function IntroSections({
             <br />
             <span className="text-brand">인공지능</span>이 찾아냅니다.
           </h2>
-          <p className="mars-reveal font-semibold max-w-[560px] mt-4 mb-10 text-[16px] text-text-secondary leading-[1.7] break-keep">
+          <p className="mars-reveal font-semibold max-w-[560px] mt-4 mb-10 text-16 text-text-secondary leading-[1.7] break-keep">
             MARS는 해병대 실무 문서를 근거로 답하며, 모든 답변에 출처를 함께
             제시합니다.
           </p>
@@ -151,10 +151,10 @@ export function IntroSections({
                 <div className="w-9 h-9 rounded-lg bg-brand-subtle border border-brand-soft flex items-center justify-center mb-3.5 text-brand">
                   <FeatureIcon type={f.icon} />
                 </div>
-                <div className="text-[15.5px] font-extrabold mb-1.5 tracking-tight">
+                <div className="text-16 font-extrabold mb-1.5 tracking-tight">
                   {f.title}
                 </div>
-                <div className="text-[13.5px] text-text-secondary leading-[1.65] break-keep">
+                <div className="text-14 text-text-secondary leading-[1.65] break-keep">
                   {f.desc}
                 </div>
               </div>
@@ -172,7 +172,7 @@ export function IntroSections({
               <br />
               <span className="text-brand">찾아서</span> 답합니다.
             </h2>
-            <p className="mars-reveal font-semibold text-[17px] text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
+            <p className="mars-reveal font-semibold text-18 text-text-secondary leading-relaxed mb-12 max-w-[400px] break-keep">
               궁금한 규정과 절차를 평소 말하듯 입력하면, MARS가 원문 조항을 찾아
               대조한 뒤 근거와 함께 답합니다.
             </p>
@@ -195,14 +195,14 @@ export function IntroSections({
                 ],
               ].map(([s, t, d]) => (
                 <div key={s} className="mars-reveal flex gap-5 items-start">
-                  <span className="shrink-0 text-[12px] font-extrabold text-brand tracking-[0.1em] pt-1 w-14">
+                  <span className="shrink-0 text-12 font-extrabold text-brand tracking-[0.1em] pt-1 w-14">
                     {s}
                   </span>
                   <div>
-                    <div className="text-[17px] font-extrabold mb-1 mars-brand-serif tracking-tight">
+                    <div className="text-18 font-extrabold mb-1 mars-brand-serif tracking-tight">
                       {t}
                     </div>
-                    <div className="text-[14px] text-text-secondary leading-relaxed break-keep">
+                    <div className="text-14 text-text-secondary leading-relaxed break-keep">
                       {d}
                     </div>
                   </div>
@@ -214,10 +214,10 @@ export function IntroSections({
           <div className="flex-1 min-w-0 w-full">
             <div className="mars-reveal rounded-3xl bg-white border border-brand-soft/60 shadow-[0_30px_70px_rgba(150,0,40,0.10)] overflow-hidden">
               <div className="p-7 pb-4 flex flex-col gap-5">
-                <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-[15px] leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">
+                <div className="self-end max-w-[72%] px-5 py-3 rounded-[20px_20px_6px_20px] bg-gradient-to-br from-brand to-brand-light text-white text-15 leading-relaxed shadow-[0_10px_22px_rgba(220,20,60,0.2)]">
                   야간근무 수당은 어떻게 지급되나요?
                 </div>
-                <div className="text-[15px] leading-relaxed text-text-primary">
+                <div className="text-15 leading-relaxed text-text-primary">
                   <b className="font-extrabold">야간근무 수당</b>은 다음
                   기준으로 지급됩니다.
                   <div className="mt-3.5 flex flex-col gap-2.5">
@@ -227,7 +227,7 @@ export function IntroSections({
                       '근무 기록은 부대 인사담당이 월 단위로 정산합니다.',
                     ].map((t, i) => (
                       <div key={i} className="flex gap-3 items-start">
-                        <span className="shrink-0 w-5 h-5 mt-0.5 rounded-md bg-brand-subtle text-brand text-[11.5px] font-extrabold flex items-center justify-center">
+                        <span className="shrink-0 w-5 h-5 mt-0.5 rounded-md bg-brand-subtle text-brand text-12 font-extrabold flex items-center justify-center">
                           {i + 1}
                         </span>
                         <span>{t}</span>
@@ -305,10 +305,10 @@ export function IntroSections({
                             </svg>
                           </span>
                           <span className="min-w-0 flex-1 flex items-center gap-2">
-                            <span className="shrink-0 text-[14px] font-bold text-text-primary">
+                            <span className="shrink-0 text-14 font-bold text-text-primary">
                               {s.title}
                             </span>
-                            <span className="min-w-0 truncate flex items-center gap-1.5 text-[12px] text-text-muted">
+                            <span className="min-w-0 truncate flex items-center gap-1.5 text-12 text-text-muted">
                               <span>{s.type}</span>
                               <span aria-hidden>·</span>
                               <span style={{ color: s.style.text }}>
@@ -332,7 +332,7 @@ export function IntroSections({
                   }}
                   className="bg-white rounded-[30px] overflow-hidden cursor-default select-none"
                 >
-                  <div className="px-5 pt-6 pb-1 text-[15px] text-text-muted">
+                  <div className="px-5 pt-6 pb-1 text-15 text-text-muted">
                     메시지를 입력하세요...
                   </div>
                   <div className="flex items-center justify-between px-3 pb-3 pt-1">
@@ -352,7 +352,7 @@ export function IntroSections({
                           />
                         </svg>
                       </span>
-                      <span className="inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-[13.5px] font-medium text-text-muted">
+                      <span className="inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-14 font-medium text-text-muted">
                         <svg
                           width={20}
                           height={20}
@@ -404,7 +404,7 @@ export function IntroSections({
                   </div>
                 </div>
               </div>
-              <div className="text-center pb-5 text-[13px] text-text-muted">
+              <div className="text-center pb-5 text-13 text-text-muted">
                 {AI_NOTICE}
               </div>
             </div>
@@ -440,11 +440,11 @@ export function IntroSections({
                     >
                       {DOMAIN_ICONS[i % DOMAIN_ICONS.length]}
                     </svg>
-                    <h3 className="mars-brand-serif text-[18.5px] font-bold tracking-tight text-text-primary break-keep">
+                    <h3 className="mars-brand-serif text-18 font-bold tracking-tight text-text-primary break-keep">
                       {r.title}
                     </h3>
                   </div>
-                  <p className="mt-3.5 text-[14.5px] leading-[1.9] text-text-secondary break-keep">
+                  <p className="mt-3.5 text-15 leading-[1.9] text-text-secondary break-keep">
                     {r.desc}
                   </p>
                 </div>
@@ -479,14 +479,14 @@ export function IntroSections({
               <br />
               <span className="text-brand">해병대</span>를 위해 만들었습니다.
             </h2>
-            <p className="mars-reveal mt-7 text-[17px] font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
+            <p className="mars-reveal mt-7 text-18 font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
               규정 하나를 확인하려고 여러 부서에 전화를 돌리고, 어느 자료가
               최신인지 몰라 다시 묻는 일.
             </p>
-            <p className="mars-reveal text-[17px] font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
+            <p className="mars-reveal text-18 font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
               해병대의 일상에서 반복되던 그 시간을 줄이기 위해
             </p>
-            <p className="mars-reveal text-[17px] font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
+            <p className="mars-reveal text-18 font-semibold text-text-primary leading-[1.85] break-keep max-w-[680px]">
               해병대의 규정과 업무 방식만 놓고 처음부터 설계했습니다.
             </p>
           </div>
@@ -511,10 +511,10 @@ export function IntroSections({
                     {c.icon}
                   </svg>
                 </span>
-                <h3 className="mars-brand-serif mt-5 text-[18px] font-bold tracking-tight text-text-primary">
+                <h3 className="mars-brand-serif mt-5 text-18 font-bold tracking-tight text-text-primary">
                   {c.title}
                 </h3>
-                <p className="mt-3 text-[14.5px] leading-[1.9] text-text-secondary break-keep">
+                <p className="mt-3 text-15 leading-[1.9] text-text-secondary break-keep">
                   {c.desc}
                 </p>
               </div>
@@ -538,7 +538,7 @@ export function IntroSections({
           <h2 className="mars-reveal mars-display m-0 mb-6 text-[length:clamp(36px,5vw,62px)]">
             지금 <span className="text-brand">시작</span>해보세요
           </h2>
-          <p className="mars-reveal mx-auto max-w-[460px] text-[17px] text-text-secondary font-semibold leading-relaxed break-keep">
+          <p className="mars-reveal mx-auto max-w-[460px] text-18 text-text-secondary font-semibold leading-relaxed break-keep">
             해병대의 모든 규정을, 대화 한 번으로.
             <br />
             MARS가 장병 여러분과 함께합니다.

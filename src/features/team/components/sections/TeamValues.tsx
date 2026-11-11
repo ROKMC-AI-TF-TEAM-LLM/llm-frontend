@@ -18,7 +18,7 @@ export default function TeamValues() {
 
       <div className="relative z-[1] mx-auto w-full max-w-[1100px]">
         <ScrollFade className="text-center">
-          <p className="text-[12.5px] font-bold tracking-[0.22em] text-brand">
+          <p className="text-13 font-bold tracking-[0.22em] text-brand">
             GOALS
           </p>
           <h2
@@ -33,13 +33,13 @@ export default function TeamValues() {
           {VALUES.map((v) => (
             <ScrollFade key={v.no}>
               <article className="group h-full rounded-3xl border border-surface-border bg-surface-card2 p-9 transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-soft hover:shadow-[0_20px_44px_rgba(220,20,60,0.09)]">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-subtle text-[13px] font-black text-brand">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-subtle text-13 font-black text-brand">
                   {v.no}
                 </span>
-                <h3 className="mars-display mt-7 text-[20px] font-extrabold leading-snug tracking-tight text-text-primary break-keep">
+                <h3 className="mars-display mt-7 text-20 font-extrabold leading-snug tracking-tight text-text-primary break-keep">
                   <Placeholder value={v.title} />
                 </h3>
-                <p className="mt-4 text-[14.5px] leading-[1.9] text-text-secondary break-keep">
+                <p className="mt-4 text-15 leading-[1.9] text-text-secondary break-keep">
                   <Placeholder value={v.desc} />
                 </p>
               </article>

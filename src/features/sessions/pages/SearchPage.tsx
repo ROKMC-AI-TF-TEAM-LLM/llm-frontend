@@ -113,7 +113,7 @@ const SearchPage = () => {
                       className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer bg-surface border border-rose-border shadow-[0_10px_24px_rgba(40,30,35,0.05)]"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px] bg-[linear-gradient(135deg,#fff0f3,#fde3e8)] border border-[#f7d7de] text-brand-vivid">
+                        <div className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[12px] bg-[linear-gradient(135deg,#fff0f3,#fde3e8)] border border-[#f7d7de] text-brand-vivid">
                           <ChatIcon width="16" height="16" />
                         </div>
                         <span className="text-15 font-bold text-text-primary truncate">

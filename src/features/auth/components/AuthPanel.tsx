@@ -62,6 +62,10 @@ export interface AuthPanelHandle {
   reset: () => void
 }
 
+// 로그인·회원가입의 제출 버튼(두 폼이 같은 모양)
+const SUBMIT_BUTTON =
+  'mt-1.5 w-full py-4 rounded-full mars-brand-serif bg-gradient-to-r from-brand to-brand-light text-white text-16 font-extrabold shadow-[0_14px_30px_rgba(220,20,60,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 transition'
+
 /** 오른쪽에서 밀려 나오는 로그인·회원가입 창. 밀려 나오는 모양은 global.css의 .mars-auth-panel이 맡는다 */
 export function AuthPanel({
   onClose,
@@ -178,10 +182,10 @@ export function AuthPanel({
         </svg>
       </button>
       <div className="mars-panel-inner">
-        <div className="text-[28px] font-extrabold text-text-primary mars-brand-serif leading-tight">
+        <div className="text-28 font-extrabold text-text-primary mars-brand-serif leading-tight">
           {mode === 'login' ? '로그인' : '회원가입'}
         </div>
-        <p className="mt-2 text-[14px] text-text-secondary">
+        <p className="mt-2 text-14 text-text-secondary">
           {mode === 'login'
             ? '계정으로 로그인하고 MARS를 시작하세요.'
             : '관리자 승인 후 서비스 이용이 가능합니다.'}
@@ -217,7 +221,7 @@ export function AuthPanel({
             <button
               type="submit"
               disabled={isLoginDisabled}
-              className="mt-1.5 w-full py-4 rounded-full mars-brand-serif bg-gradient-to-r from-brand to-brand-light text-white text-[16px] font-extrabold shadow-[0_14px_30px_rgba(220,20,60,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 transition"
+              className={SUBMIT_BUTTON}
             >
               {isLoginSubmitting ? '로그인 중...' : '시작하기'}
             </button>
@@ -229,7 +233,7 @@ export function AuthPanel({
                   resetSignup()
                   setMode('signup')
                 }}
-                className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors"
+                className="text-13 font-bold text-text-muted hover:text-brand transition-colors"
               >
                 회원가입
               </button>
@@ -287,7 +291,7 @@ export function AuthPanel({
             <button
               type="submit"
               disabled={isSignupDisabled}
-              className="mt-1.5 w-full py-4 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-[16px] font-extrabold shadow-[0_14px_30px_rgba(220,20,60,0.3)] disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-105 transition"
+              className={SUBMIT_BUTTON}
             >
               {isSignupSubmitting ? '가입 중...' : '회원가입'}
             </button>
@@ -298,7 +302,7 @@ export function AuthPanel({
                   resetSignup()
                   setMode('login')
                 }}
-                className="text-[13px] font-bold text-text-muted hover:text-brand transition-colors"
+                className="text-13 font-bold text-text-muted hover:text-brand transition-colors"
               >
                 로그인
               </button>
@@ -306,10 +310,10 @@ export function AuthPanel({
           </form>
         )}
         <div className="mt-8 pt-5 border-t border-brand-soft/50 text-center">
-          <p className="text-[13px] text-text-secondary mars-brand-serif leading-relaxed">
+          <p className="text-13 text-text-secondary mars-brand-serif leading-relaxed">
             해병대사 지휘통신참모처 지능정보화발전과 AI DATA TF
           </p>
-          <p className="mt-2 text-[11px] tracking-wide mars-brand-serif text-text-muted">
+          <p className="mt-2 text-11 tracking-wide mars-brand-serif text-text-muted">
             MARS v{APP_VERSION}
           </p>
         </div>

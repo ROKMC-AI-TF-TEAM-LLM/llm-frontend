@@ -25,7 +25,7 @@ export function GuideHero({ onNext }: { onNext: () => void }) {
         </div>
       </div>
       <div className="relative w-full max-w-[760px] mx-auto text-center">
-        <Reveal className="text-[13px] font-bold tracking-[0.14em] text-brand-deep mb-[14px]">
+        <Reveal className="text-13 font-bold tracking-[0.14em] text-brand-deep mb-[14px]">
           GUIDE
         </Reveal>
         <Reveal delay={70}>
@@ -34,7 +34,7 @@ export function GuideHero({ onNext }: { onNext: () => void }) {
           </h1>
         </Reveal>
         <Reveal delay={160}>
-          <p className="mt-6 mx-auto max-w-[540px] text-[18px] leading-[1.75] font-semibold text-ink-soft">
+          <p className="mt-6 mx-auto max-w-[540px] text-18 leading-[1.75] font-semibold text-ink-soft">
             질문 입력부터 도메인 선택, 근거 확인, 문서 검색까지. MARS가 실제로
             어떻게 동작하는지 보여드립니다.
           </p>
@@ -52,7 +52,7 @@ export function GuideHero({ onNext }: { onNext: () => void }) {
           ].map((f) => (
             <span
               key={f}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-rose-line text-[14px] font-semibold text-text-secondary shadow-[0_4px_14px_rgba(150,0,40,0.04)]"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-rose-line text-14 font-semibold text-text-secondary shadow-[0_4px_14px_rgba(150,0,40,0.04)]"
             >
               <svg
                 width={14}
@@ -78,7 +78,7 @@ export function GuideHero({ onNext }: { onNext: () => void }) {
           onClick={onNext}
           className="group flex flex-col items-center gap-2 text-[#b89aa0] hover:text-brand transition-colors"
         >
-          <span className="text-[12px] font-semibold tracking-wider">
+          <span className="text-12 font-semibold tracking-wider">
             아래로 스크롤
           </span>
           <svg
@@ -207,12 +207,10 @@ export function GuideSmart() {
             delay={i * 70}
             className="p-7 rounded-2xl bg-white border border-rose-line shadow-[0_10px_30px_rgba(150,0,40,0.04)]"
           >
-            <div className="text-[18px] font-extrabold mars-brand-serif mb-2">
+            <div className="text-18 font-extrabold mars-brand-serif mb-2">
               {s.title}
             </div>
-            <div className="text-[15px] text-ink-soft leading-[1.7]">
-              {s.desc}
-            </div>
+            <div className="text-15 text-ink-soft leading-[1.7]">{s.desc}</div>
           </Reveal>
         ))}
       </div>
@@ -236,10 +234,10 @@ export function GuideTips() {
             delay={i * 80}
             className="flex items-start gap-5 px-7 py-6 rounded-2xl bg-white border border-rose-line shadow-[0_10px_30px_rgba(150,0,40,0.04)]"
           >
-            <span className="flex-none w-8 h-8 rounded-full bg-brand-subtle text-brand text-[15px] font-extrabold flex items-center justify-center">
+            <span className="flex-none w-8 h-8 rounded-full bg-brand-subtle text-brand text-15 font-extrabold flex items-center justify-center">
               {tip.n}
             </span>
-            <span className="text-[16.5px] leading-[1.7] text-ink pt-0.5">
+            <span className="text-16 leading-[1.7] text-ink pt-0.5">
               {tip.text}
             </span>
           </Reveal>
@@ -273,7 +271,7 @@ export function GuideFaq() {
                 onClick={() => setOpenFaq(isOpen ? null : i)}
                 className="w-full flex items-center justify-between gap-4 px-7 py-6 text-left"
               >
-                <span className="text-[17.5px] font-bold text-text-primary mars-brand-serif">
+                <span className="text-18 font-bold text-text-primary mars-brand-serif">
                   {item.q}
                 </span>
                 <span
@@ -294,7 +292,7 @@ export function GuideFaq() {
                 </span>
               </button>
               {isOpen && (
-                <div className="px-7 pb-6 text-[16px] leading-[1.8] text-ink-soft animate-[faqIn_.3s_cubic-bezier(.2,.7,.2,1)]">
+                <div className="px-7 pb-6 text-16 leading-[1.8] text-ink-soft animate-[faqIn_.3s_cubic-bezier(.2,.7,.2,1)]">
                   {item.a}
                 </div>
               )}
@@ -317,7 +315,7 @@ export function GuideCta() {
         <h2 className="mars-display m-0 mb-5 font-black tracking-tight text-[length:clamp(36px,5vw,60px)]">
           지금 <span className="text-brand">시작</span>해보세요
         </h2>
-        <p className="mx-auto max-w-[460px] text-[17px] font-semibold text-text-secondary leading-relaxed">
+        <p className="mx-auto max-w-[460px] text-18 font-semibold text-text-secondary leading-relaxed">
           해병대의 모든 규정을, 대화 한 번으로.
           <br />
           MARS가 장병 여러분과 함께합니다.
@@ -371,7 +369,7 @@ function SectionIntro({
 }) {
   return (
     <>
-      <Reveal className="text-center mb-3 text-[14px] font-bold tracking-[0.14em] text-brand-deep">
+      <Reveal className="text-center mb-3 text-14 font-bold tracking-[0.14em] text-brand-deep">
         {eyebrow}
       </Reveal>
       <Reveal delay={60}>
@@ -383,7 +381,7 @@ function SectionIntro({
       </Reveal>
       <Reveal delay={120}>
         <p
-          className={`text-center mx-auto font-semibold text-[17px] leading-[1.7] text-ink-soft ${descClassName}`}
+          className={`text-center mx-auto font-semibold text-18 leading-[1.7] text-ink-soft ${descClassName}`}
         >
           {desc}
         </p>

@@ -335,7 +335,7 @@ function Stage() {
       }}
     >
       <div className="mx-auto flex w-full min-w-0 max-w-[720px] flex-col">
-        <h1 className="text-center text-[24px] font-bold text-text-primary sm:text-[28px]">
+        <h1 className="text-center text-24 font-bold text-text-primary sm:text-28">
           어떤 <span className="text-brand">문서</span>를 만들까요?
         </h1>
         <p className="mt-2 text-center text-14 text-text-secondary">
