@@ -14,7 +14,7 @@ const VARIANT_CLASS: Record<Variant, string> = {
   primary:
     'rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors',
   ghost:
-    'rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-[#f7f2f3]',
+    'rounded-full px-4 py-2 text-[13.5px] font-semibold text-text-secondary transition-colors hover:bg-rose-divider',
   link: 'text-sm text-brand hover:underline',
 }
 
@@ -36,7 +36,7 @@ export default function Button({
   const state = !isPrimary
     ? ''
     : disabled
-      ? ' bg-rose-divider text-[#cbbcc0]'
+      ? ' bg-rose-divider text-rose-muted'
       : ' text-white hover:bg-[var(--color-brand-hover)]'
   return (
     <button

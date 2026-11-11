@@ -105,8 +105,8 @@ export default function SidebarItem({
         title={tooltip}
         className={`flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-13 transition-colors ${
           isActive
-            ? 'bg-brand-tint font-bold text-brand-deep'
-            : 'font-medium text-text-primary hover:bg-brand-tint hover:text-brand-deep'
+            ? 'bg-brand-tint font-bold text-brand-hover'
+            : 'font-medium text-text-primary hover:bg-brand-tint hover:text-brand-hover'
         }`}
       >
         {icon}

@@ -56,7 +56,7 @@ export default function Sidebar({
   return (
     <aside
       ref={asideRef}
-      className={`bg-[linear-gradient(190deg,#fdf3f5_0%,#faf6f7_40%,var(--color-surface)_100%)] border-r border-[#f2e2e6] fixed inset-y-0 left-0 z-30 flex flex-col overscroll-contain transition-[width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] overflow-visible ${
+      className={`bg-[linear-gradient(190deg,#fdf3f5_0%,#faf6f7_40%,var(--color-surface)_100%)] border-r border-rose-border fixed inset-y-0 left-0 z-30 flex flex-col overscroll-contain transition-[width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] overflow-visible ${
         isOpen ? 'w-60' : 'w-[56px]'
       }`}
     >

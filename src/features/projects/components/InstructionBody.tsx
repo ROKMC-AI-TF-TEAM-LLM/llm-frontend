@@ -12,7 +12,7 @@ export function InstructionBody({
       <button
         type="button"
         onClick={onEdit}
-        className="w-full rounded-[10px] border border-dashed border-[#efdfe3] px-3 py-3 text-left text-[12.5px] text-text-muted transition-colors hover:border-brand-soft hover:bg-brand-subtle hover:text-brand"
+        className="w-full rounded-[10px] border border-dashed border-rose-border px-3 py-3 text-left text-[12.5px] text-text-muted transition-colors hover:border-brand-soft hover:bg-brand-subtle hover:text-brand"
       >
         MARS의 응답을 맞춤화하는 지침 추가
       </button>

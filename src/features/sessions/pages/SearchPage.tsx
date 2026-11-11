@@ -106,7 +106,7 @@ const SearchPage = () => {
                       onClick={() =>
                         goToSession(session.session_id, session.project_id)
                       }
-                      className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer bg-surface border border-rose-border-alt shadow-[0_10px_24px_rgba(40,30,35,0.05)]"
+                      className="doc-card flex flex-col gap-2 p-[18px] rounded-2xl text-left group cursor-pointer bg-surface border border-rose-border shadow-[0_10px_24px_rgba(40,30,35,0.05)]"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px] bg-[linear-gradient(135deg,#fff0f3,#fde3e8)] border border-[#f7d7de] text-brand-vivid">
@@ -116,7 +116,7 @@ const SearchPage = () => {
                           {session.title}
                         </span>
                       </div>
-                      <span className="text-xs text-[#a89aa0] ml-[46px]">
+                      <span className="text-xs text-rose-placeholder ml-[46px]">
                         {formatDateTime(session.updated_at)}
                       </span>
                     </button>

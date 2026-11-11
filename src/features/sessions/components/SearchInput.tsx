@@ -18,7 +18,7 @@ const SearchInput = ({
     <div
       style={{
         background: 'var(--color-surface)',
-        border: '1px solid var(--color-rose-border-alt)',
+        border: '1px solid var(--color-rose-border)',
         boxShadow: '0 10px 26px rgba(40,30,35,0.05)',
       }}
       className="group flex items-center gap-3 pl-[20px] pr-5 py-[18px] rounded-[22px] transition-all duration-200 focus-within:border-brand-vivid focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.08)] cursor-text"

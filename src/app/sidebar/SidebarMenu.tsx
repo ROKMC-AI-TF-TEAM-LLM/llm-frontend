@@ -81,7 +81,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
           isNewChatActive
             ? {
                 background: 'var(--color-brand-tint)',
-                color: 'var(--color-brand-deep)',
+                color: 'var(--color-brand-hover)',
               }
             : { color: 'var(--color-text-primary)' }
         }
@@ -109,7 +109,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
               isActive
                 ? {
                     background: 'var(--color-brand-tint)',
-                    color: 'var(--color-brand-deep)',
+                    color: 'var(--color-brand-hover)',
                   }
                 : { color: 'var(--color-text-primary)' }
             }

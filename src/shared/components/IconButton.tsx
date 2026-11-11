@@ -37,7 +37,7 @@ export default function IconButton({
           ? 'text-brand hover:bg-brand-subtle'
           : danger
             ? 'text-text-muted hover:bg-red-50 hover:text-red-500'
-            : 'text-text-muted hover:bg-[#f7f2f3] hover:text-text-primary'
+            : 'text-text-muted hover:bg-rose-divider hover:text-text-primary'
       }`}
     >
       {children}

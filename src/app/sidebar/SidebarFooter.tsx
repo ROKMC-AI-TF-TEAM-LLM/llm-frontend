@@ -41,7 +41,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
   }
 
   return (
-    <div ref={wrapRef} className="relative border-t border-[#f4e6ea]">
+    <div ref={wrapRef} className="relative border-t border-rose-border">
       {open && (
         <div
           className={`absolute bottom-full mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in ${

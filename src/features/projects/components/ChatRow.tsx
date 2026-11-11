@@ -64,7 +64,7 @@ export function ChatRow({
             isUntitled
               ? 'text-text-muted'
               : active
-                ? 'font-bold text-brand-deep'
+                ? 'font-bold text-brand-hover'
                 : 'font-medium text-text-primary'
           }`}
         >

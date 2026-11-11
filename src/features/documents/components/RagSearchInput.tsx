@@ -20,7 +20,7 @@ const RagSearchInput = ({
     <div
       style={{
         background: 'var(--color-surface)',
-        border: '1px solid var(--color-rose-border-alt)',
+        border: '1px solid var(--color-rose-border)',
         boxShadow: compact
           ? '0 2px 8px rgba(40,30,35,0.04)'
           : '0 10px 26px rgba(40,30,35,0.05)',

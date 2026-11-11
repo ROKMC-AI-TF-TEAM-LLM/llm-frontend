@@ -62,12 +62,10 @@
   /* 화면에 흩어져 있던 색에 이름을 붙인 것. 값은 기존 hex 그대로다 */
   --color-brand-vivid: #e4002b;
   --color-brand-vivid-light: #ff2d55;
-  --color-brand-deep: #c0002a;
   --color-brand-tint: #fdedf2;
   --color-rose-hover: #fdf6f7;
   --color-rose-divider: #f4eced;
   --color-rose-border: #f0e6e8;
-  --color-rose-border-alt: #f0e3e6;
   --color-rose-muted: #c9aab2;
   --color-rose-placeholder: #b8a7ac;
 

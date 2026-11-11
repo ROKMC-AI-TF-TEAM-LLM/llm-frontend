@@ -70,7 +70,7 @@ export default function SidebarProjects({ isOpen }: { isOpen: boolean }) {
           <li>
             <button
               onClick={() => setCreateOpen(true)}
-              className="flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-13 font-normal text-[#b3aab0] transition-colors hover:bg-brand-tint hover:text-brand-deep"
+              className="flex w-full items-center gap-2.5 rounded-[9px] px-[8px] py-[7px] text-left text-13 font-normal text-[#b3aab0] transition-colors hover:bg-brand-tint hover:text-brand-hover"
             >
               <PlusIcon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate  mars-brand-serif">새 프로젝트</span>
