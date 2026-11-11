@@ -6,7 +6,7 @@ import SourceBadge from './SourceBadge'
 import FileDownload from './FileDownload'
 import ImageAttachment from './ImageAttachment'
 import DomainIcon from '@/features/domains/components/DomainIcon'
-import { AlertAltIcon } from '@/shared/components/icons'
+import { AlertIcon } from '@/shared/components/icons'
 
 interface MessageRowProps {
   msg: Message
@@ -81,7 +81,7 @@ function MessageRowBase({
           )}
           {isInterrupted && (
             <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
-              <AlertAltIcon className="w-4 h-4 shrink-0 text-text-muted" />
+              <AlertIcon className="w-4 h-4 shrink-0 text-text-muted" />
               <span>응답이 중단되었습니다.</span>
               <button
                 onClick={() => onRegenerate(msg.id)}

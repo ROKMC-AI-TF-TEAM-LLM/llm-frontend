@@ -11,7 +11,7 @@ import {
   DownloadIcon,
   RetryIcon,
   StopIcon,
-  TrashAltIcon,
+  TrashIcon,
 } from '@/shared/components/icons'
 import { Spinner } from './JobStatus'
 
@@ -76,7 +76,7 @@ export function DeleteButton({
         onClick={() => setConfirming(true)}
         className={`inline-flex shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error disabled:opacity-50 ${large ? 'h-10 w-10' : 'h-8 w-8'}`}
       >
-        <TrashAltIcon className={large ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
+        <TrashIcon className={large ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
       </button>
     )
 
@@ -106,7 +106,7 @@ export function DeleteButton({
         {remove.isPending ? (
           <Spinner className="h-3 w-3" />
         ) : (
-          <TrashAltIcon className="h-3.5 w-3.5" />
+          <TrashIcon className="h-3.5 w-3.5" />
         )}{' '}
         삭제
       </button>

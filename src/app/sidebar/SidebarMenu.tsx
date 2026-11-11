@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
-  DocumentAltIcon,
+  DocumentIcon,
   FolderIcon,
   PlusIcon,
   SearchIcon,
@@ -40,7 +40,7 @@ const navItems = [
     label: '문서 제작',
     path: '/docgen',
     icon: (
-      <DocumentAltIcon
+      <DocumentIcon
         className="sb-icon sb-icon-docgen"
         width="16"
         height="16"

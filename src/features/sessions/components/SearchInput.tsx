@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CloseIcon, SearchAlt2Icon } from '@/shared/components/icons'
+import { CloseIcon, SearchIcon } from '@/shared/components/icons'
 
 interface SearchInputProps {
   value: string
@@ -24,7 +24,7 @@ const SearchInput = ({
       className="group flex items-center gap-3 pl-[20px] pr-5 py-[18px] rounded-[22px] transition-all duration-200 focus-within:border-brand-vivid focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.08)] cursor-text"
       onClick={() => inputRef.current?.focus()}
     >
-      <SearchAlt2Icon
+      <SearchIcon
         width="20"
         height="20"
         className="shrink-0 text-rose-muted transition-colors duration-200 group-focus-within:text-brand-vivid"

@@ -27,8 +27,8 @@ import type { AdminDocumentItem, AdminDocStatus } from '../types'
 import {
   ChevronDownIcon,
   CloseIcon,
-  SearchAltIcon,
-  UploadAltIcon,
+  SearchIcon,
+  UploadIcon,
 } from '@/shared/components/icons'
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed'
@@ -274,7 +274,7 @@ export default function AdminDocuments() {
         />
         <div className="flex items-center gap-4 min-w-0">
           <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-soft flex items-center justify-center">
-            <UploadAltIcon className="w-5 h-5 text-brand" />
+            <UploadIcon className="w-5 h-5 text-brand" />
           </div>
           <div className="min-w-0">
             <p className="text-15 font-bold text-text-primary">
@@ -357,7 +357,7 @@ export default function AdminDocuments() {
           ))}
         </div>
         <div className="relative w-full max-w-[280px]">
-          <SearchAltIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             type="text"
             value={search}

@@ -4,7 +4,6 @@
 //   <CheckIcon width={14} height={14} strokeWidth={2.5} />   선 굵기 기본값은 2
 //
 // 새 아이콘은 여기에 추가한다. 일러스트·로고·차트처럼 아이콘이 아닌 그림은 쓰는 곳에 둔다.
-// 이름 끝이 Alt인 것은 같은 뜻의 아이콘인데 모양이 조금 달라 합치지 않고 둔 것이다 (합칠 후보).
 
 import type { ReactNode, SVGProps } from 'react'
 
@@ -92,11 +91,6 @@ export const TrashIcon = (props: IconProps) => (
     <path d="M19 7l-.9 12.1A2 2 0 0 1 16.1 21H7.9a2 2 0 0 1-2-1.9L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
   </Icon>
 )
-export const TrashAltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
-  </Icon>
-)
 export const CopyIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -121,11 +115,6 @@ export const StarIcon = (props: IconProps) => (
     <path d="M12 2.6l2.9 6.1 6.6.7-4.9 4.5 1.3 6.4L12 17l-5.9 3.3 1.3-6.4L2.5 9.4l6.6-.7z" />
   </Icon>
 )
-export const StarAltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M12 2l2.9 6.26 6.6.72-4.9 4.6 1.35 6.42L12 16.9 6.05 20l1.35-6.42L2.5 8.98l6.6-.72L12 2z" />
-  </Icon>
-)
 /** 세로 점 세 개 (더보기). 선이 아니라 채운 점이다 */
 export const MoreIcon = (props: IconProps) => (
   <Icon fill="currentColor" stroke="none" {...props}>
@@ -140,17 +129,6 @@ export const SearchIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="11" cy="11" r="7" />
     <path d="M21 21l-4.3-4.3" />
-  </Icon>
-)
-export const SearchAltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <circle cx="11" cy="11" r="8" />
-    <path d="M21 21l-4.35-4.35" />
-  </Icon>
-)
-export const SearchAlt2Icon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
   </Icon>
 )
 export const MenuIcon = (props: IconProps) => (
@@ -172,12 +150,6 @@ export const DocumentIcon = (props: IconProps) => (
     <path d="M14 2v6h6M8 13h8M8 17h5" />
   </Icon>
 )
-export const DocumentAltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-    <path d="M14 3v5h5M9 13h6M9 17h4" />
-  </Icon>
-)
 export const FolderIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -194,19 +166,9 @@ export const UploadIcon = (props: IconProps) => (
     <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
   </Icon>
 )
-export const UploadAltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M12 3v12M7 8l5-5 5 5M5 21h14" />
-  </Icon>
-)
 
 /* ───────── 대화·사용자 ───────── */
 export const ChatIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.5-4.5A8 8 0 1 1 21 12z" />
-  </Icon>
-)
-export const ChatAltIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </Icon>
@@ -239,12 +201,6 @@ export const AlertIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="12" cy="12" r="9" />
     <path d="M12 8v5M12 16h.01" />
-  </Icon>
-)
-export const AlertAltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 8v4m0 4h.01" />
   </Icon>
 )
 export const StopIcon = (props: IconProps) => (

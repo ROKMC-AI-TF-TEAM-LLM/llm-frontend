@@ -1,4 +1,4 @@
-import { CloseIcon, SearchAltIcon } from '@/shared/components/icons'
+import { CloseIcon, SearchIcon } from '@/shared/components/icons'
 import { USER_TABS, type UserStatusTab } from '../utils'
 
 interface UserFilterProps {
@@ -33,7 +33,7 @@ export function UserFilter({
         ))}
       </div>
       <div className="relative ml-auto group">
-        <SearchAltIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors duration-200 group-focus-within:text-brand" />
+        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors duration-200 group-focus-within:text-brand" />
         <input
           type="text"
           value={query}

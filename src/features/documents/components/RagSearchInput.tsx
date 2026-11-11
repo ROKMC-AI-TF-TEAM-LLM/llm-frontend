@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CloseIcon, SearchAlt2Icon } from '@/shared/components/icons'
+import { CloseIcon, SearchIcon } from '@/shared/components/icons'
 
 interface RagSearchInputProps {
   value: string
@@ -32,7 +32,7 @@ const RagSearchInput = ({
       }`}
       onClick={() => inputRef.current?.focus()}
     >
-      <SearchAlt2Icon
+      <SearchIcon
         className="shrink-0 transition-colors duration-200 text-rose-muted group-focus-within:text-brand-vivid"
         width={compact ? 17 : 20}
         height={compact ? 17 : 20}

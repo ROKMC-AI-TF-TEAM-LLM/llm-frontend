@@ -1,27 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import {
-  EditIcon,
-  StarAltIcon,
-  StarIcon,
-  TrashIcon,
-} from '@/shared/components/icons'
+import { EditIcon, StarIcon, TrashIcon } from '@/shared/components/icons'
 
-// 대화와 프로젝트는 별 모양·색과 아이콘 선 굵기가 조금 다르다. 모양을 바꾸지 않으려고 값만 나눠 둔다 (합칠 후보).
+// 대화와 프로젝트는 흐림 폭과 아이콘 선 굵기만 조금 다르다.
 const LOOK = {
-  chat: {
-    fade: 'w-32',
-    Star: StarAltIcon,
-    strokeWidth: 2.2,
-    starOn: 'text-[#e4b100]',
-    starOff: 'text-text-muted hover:text-[#e4b100]',
-  },
-  project: {
-    fade: 'w-28',
-    Star: StarIcon,
-    strokeWidth: 1.9,
-    starOn: 'text-brand',
-    starOff: 'text-text-muted hover:text-brand',
-  },
+  chat: { fade: 'w-32', strokeWidth: 2.2 },
+  project: { fade: 'w-28', strokeWidth: 1.9 },
 }
 
 interface SidebarItemProps {
@@ -126,9 +109,9 @@ export default function SidebarItem({
             onToggleFavorite()
           }}
           aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-          className={`${actionClass} hover:bg-brand-subtle ${isFavorite ? look.starOn : look.starOff}`}
+          className={`${actionClass} hover:bg-brand-subtle ${isFavorite ? 'text-brand' : 'text-text-muted hover:text-brand'}`}
         >
-          <look.Star
+          <StarIcon
             className="h-3 w-3"
             fill={isFavorite ? 'currentColor' : 'none'}
             strokeWidth={look.strokeWidth}

@@ -1,4 +1,4 @@
-import { ChatAltIcon } from '@/shared/components/icons'
+import { ChatIcon } from '@/shared/components/icons'
 export interface SearchResult {
   id: string
   title: string
@@ -22,7 +22,7 @@ const SearchResultItem = ({ result, isActive, onClick }: Props) => {
       <div
         className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-brand-subtle' : 'bg-surface'}`}
       >
-        <ChatAltIcon
+        <ChatIcon
           width="18"
           height="18"
           className={isActive ? 'text-brand' : 'text-text-muted'}
