@@ -110,8 +110,6 @@ export const settleProjects = (qc: QueryClient, force = false) => {
   qc.invalidateQueries({ queryKey: ['projects', 'detail'] })
 }
 
-export const projectSessionsKey = (projectId: string | undefined) =>
-  ['projects', 'sessions', projectId] as const
 export const projectDocumentsKey = (projectId: string | undefined) =>
   ['projects', 'documents', projectId] as const
 export const projectDocumentStatusKey = (

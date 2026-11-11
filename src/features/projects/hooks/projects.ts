@@ -30,12 +30,12 @@ import {
   patchProjectCaches,
   projectDetailKey,
   projectDocumentsKey,
-  projectSessionsKey,
   rollback,
   settleProjects,
   type ProjectDetail,
   type ProjectsInfinite,
 } from './cache'
+import { SESSIONS_KEY, projectSessionsKey } from '@/lib/queryKeys'
 
 export interface ProjectView {
   id: string
@@ -269,7 +269,7 @@ export const useDeleteProject = () => {
     onSettled: (_d, e) => {
       settleProjects(queryClient, !!e)
       // 전역 세션 목록(사이드바 최근 대화)에도 프로젝트 하위 세션이 들어 있다.
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      queryClient.invalidateQueries({ queryKey: SESSIONS_KEY })
     },
   })
 }

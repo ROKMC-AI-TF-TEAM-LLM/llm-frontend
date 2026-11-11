@@ -25,6 +25,7 @@ import { ProjectFilesBlock } from '../components/ProjectFilesBlock'
 import { ProjectInstructionBlock } from '../components/ProjectInstructionBlock'
 import { ProjectPath } from '../components/ProjectPath'
 import { PanelIcon } from '../components/icons'
+import { projectSessionsKey } from '@/lib/queryKeys'
 
 export default function ProjectPage() {
   const { id, chatId } = useParams()
@@ -56,7 +57,7 @@ export default function ProjectPage() {
     // 이미 삭제됐거나 접근할 수 없는 대화: 목록에서 걷어내고 프로젝트 첫 화면으로.
     onKnownError: (message) => {
       showToast(message)
-      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions', id] })
+      queryClient.invalidateQueries({ queryKey: projectSessionsKey(id) })
       backToProject()
     },
     onUnknownError: () => {

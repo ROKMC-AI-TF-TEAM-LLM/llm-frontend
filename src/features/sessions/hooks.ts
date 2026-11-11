@@ -27,8 +27,12 @@ import { showToast } from '@/shared/store/toastStore'
 import { confirm } from '@/shared/store/confirmStore'
 import { getApiError } from '@/shared/utils/error'
 import { displaySessionTitle, SESSION_ERRORS } from './utils'
-
-const SESSIONS_INFINITE_KEY = ['sessions', 'infinite'] as const
+import {
+  PROJECT_SESSIONS_KEY,
+  SESSIONS_INFINITE_KEY,
+  cancelSessionLists,
+  invalidateSessionLists,
+} from '@/lib/queryKeys'
 
 // 세션을 바꾸는 mutation 공통 접두사. 여러 변경(예: 즐겨찾기 연타)이 겹치면
 // 마지막으로 끝난 것만 목록을 다시 받아, 중간 상태 응답이 화면을 되돌리지 않게 한다.
@@ -49,8 +53,7 @@ const settleSessions = (
     queryClient.isMutating({ mutationKey: SESSION_MUTATION_PREFIX }) > 1
   )
     return
-  queryClient.invalidateQueries({ queryKey: ['sessions'] })
-  queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
+  invalidateSessionLists(queryClient)
 }
 
 type SessionsInfinite = InfiniteData<
@@ -61,7 +64,7 @@ type SessionsInfinite = InfiniteData<
 export const useInfiniteSessions = () => {
   const { accessToken } = useAuth()
   return useInfiniteQuery({
-    queryKey: ['sessions', 'infinite'],
+    queryKey: SESSIONS_INFINITE_KEY,
     queryFn: ({ pageParam }) => getSessions(pageParam as string | undefined),
     getNextPageParam: (lastPage) => {
       const data = lastPage.data.data
@@ -77,8 +80,7 @@ export const useCreateSession = () => {
   return useMutation({
     mutationFn: (data: CreateSessionRequest) => createSession(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
-      queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
+      invalidateSessionLists(queryClient)
     },
   })
 }
@@ -104,8 +106,7 @@ export const useUpdateSession = () => {
     }) => updateSession(sessionId, data),
     onMutate: async ({ sessionId, data }) => {
       if (data.title === undefined) return { snapshots: undefined }
-      await queryClient.cancelQueries({ queryKey: ['sessions'] })
-      await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
+      await cancelSessionLists(queryClient)
       const snapshots = optimisticallyPatchSession(
         queryClient,
         sessionId,
@@ -130,8 +131,7 @@ export const useDeleteSession = () => {
     mutationKey: [...SESSION_MUTATION_PREFIX, 'delete'],
     mutationFn: (sessionId: string) => deleteSession(sessionId),
     onMutate: async (sessionId) => {
-      await queryClient.cancelQueries({ queryKey: ['sessions'] })
-      await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
+      await cancelSessionLists(queryClient)
 
       const snapshots: [readonly unknown[], SessionsInfinite | undefined][] = []
       const dropSession = (old: SessionsInfinite | undefined) => {
@@ -163,7 +163,7 @@ export const useDeleteSession = () => {
       )
 
       for (const [key, data] of queryClient.getQueriesData<SessionsInfinite>({
-        queryKey: ['projects', 'sessions'],
+        queryKey: PROJECT_SESSIONS_KEY,
       })) {
         snapshots.push([key, data])
         queryClient.setQueryData<SessionsInfinite>(key, dropSession)
@@ -261,7 +261,7 @@ const optimisticallyPatchSession = (
   )
 
   const projectQueries = queryClient.getQueriesData<SessionsInfinite>({
-    queryKey: ['projects', 'sessions'],
+    queryKey: PROJECT_SESSIONS_KEY,
   })
   for (const [key, data] of projectQueries) {
     snapshots.push([key, data])
@@ -290,8 +290,7 @@ export const useToggleFavorite = () => {
       setFavorite(sessionId, { is_favorite: next }),
 
     onMutate: async ({ sessionId, next }) => {
-      await queryClient.cancelQueries({ queryKey: ['sessions'] })
-      await queryClient.cancelQueries({ queryKey: ['projects', 'sessions'] })
+      await cancelSessionLists(queryClient)
       const snapshots = optimisticallyPatchSession(
         queryClient,
         sessionId,

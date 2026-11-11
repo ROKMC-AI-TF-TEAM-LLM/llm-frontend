@@ -1,12 +1,9 @@
 import { type Message } from '../types'
 import { queryClient } from '@/lib/queryClient'
+import { invalidateSessionLists as invalidateLists } from '@/lib/queryKeys'
 
-// 세션 목록은 전역(['sessions'])과 프로젝트별(['projects','sessions',id]) 두 캐시에 있다.
-// 세션이 바뀌면 둘 다 갱신해야 프로젝트 패널이 사이드바와 어긋나지 않는다.
-export const invalidateSessionLists = () => {
-  queryClient.invalidateQueries({ queryKey: ['sessions'] })
-  queryClient.invalidateQueries({ queryKey: ['projects', 'sessions'] })
-}
+// 세션이 바뀌면 전역·프로젝트별 세션 목록을 함께 갱신해야 프로젝트 패널이 사이드바와 어긋나지 않는다.
+export const invalidateSessionLists = () => invalidateLists(queryClient)
 
 export const streamRegistry = new Map<string, Message[]>()
 
