@@ -7,6 +7,7 @@ import { logError } from '@/shared/utils/logError'
 import type { DocumentItem } from './types'
 import { getCapabilities } from '@/features/domains/api'
 import type { DomainCapability } from '@/features/domains/types'
+import { nextOffset } from '@/shared/utils/pagination'
 
 const LIMIT = 20
 const LOOKUP_LIMIT = 100
@@ -18,13 +19,7 @@ export const useDocumentLookup = (enabled: boolean) => {
     queryKey: ['document-lookup'],
     queryFn: ({ pageParam }) =>
       getDocuments({ offset: pageParam as number, limit: LOOKUP_LIMIT }),
-    getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce(
-        (acc, p) => acc + pickDocuments(p.data.data).length,
-        0,
-      )
-    },
+    getNextPageParam: nextOffset(pickDocuments),
     initialPageParam: 0,
     enabled: enabled && !!accessToken,
     staleTime: 5 * 60 * 1000,
@@ -58,13 +53,7 @@ export const useInfiniteDocuments = (domain?: string) => {
         limit: LIMIT,
         ...(domain ? { domain } : {}),
       }),
-    getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce(
-        (acc, p) => acc + pickDocuments(p.data.data).length,
-        0,
-      )
-    },
+    getNextPageParam: nextOffset(pickDocuments),
     initialPageParam: 0,
     enabled: !!accessToken,
     retry: 1,

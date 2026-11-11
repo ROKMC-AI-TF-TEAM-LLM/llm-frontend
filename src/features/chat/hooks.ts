@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useState } from 'react'
 import { showToast } from '@/shared/store/toastStore'
-import { isNetworkError, readApiError } from '@/shared/utils/error'
+import { ERROR_TEXT, isNetworkError, readApiError } from '@/shared/utils/error'
 import { logError } from '@/shared/utils/logError'
 import { useChatStore } from './store'
 
@@ -74,7 +74,7 @@ export function useChatSession(
     } else if (isNetworkError(e)) {
       setFailure({
         sessionId: id,
-        message: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.',
+        message: ERROR_TEXT.network,
         canRetry: true,
       })
     } else {

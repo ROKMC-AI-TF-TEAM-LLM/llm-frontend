@@ -15,12 +15,21 @@ import type {
 } from '../types'
 import { useAuth } from '@/features/auth/useAuth'
 import { showToast } from '@/shared/store/toastStore'
-import {
-  isNetworkError,
-  readApiError,
-  type ApiError,
-} from '@/shared/utils/error'
+import { describeApiError, readApiError } from '@/shared/utils/error'
 import { projectDocumentsKey, projectDocumentStatusKey } from './cache'
+
+const UPLOAD_ERRORS: Record<string, string> = {
+  FILE_TOO_LARGE: '파일이 너무 커서 업로드할 수 없습니다. (최대 50MB)',
+  BAD_REQUEST: '지원하지 않는 파일입니다. (.md, .txt, .pdf)',
+  LLM_SERVER_ERROR: '문서 처리 서버에 일시적인 오류가 발생했습니다.',
+}
+
+const DELETE_ERRORS: Record<string, string> = {
+  CONFLICT:
+    '파일을 처리(색인)하는 중이라 삭제할 수 없습니다. 처리가 끝난 뒤 다시 시도해주세요.',
+  LLM_SERVER_ERROR:
+    '문서 처리 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+}
 
 type DocumentStatusResponse = AxiosResponse<GetProjectDocumentStatusResponse>
 
@@ -44,19 +53,13 @@ export const useUploadProjectDocument = (projectId: string) => {
     },
     // 훅 레벨 콜백이라 업로드 중 페이지를 떠나도 실패를 알린다.
     onError: (e, file) => {
-      const { code, detail } = readApiError(e)
-      const fallback =
-        code === 'FILE_TOO_LARGE'
-          ? '파일이 너무 커서 업로드할 수 없습니다. (최대 50MB)'
-          : code === 'BAD_REQUEST'
-            ? '지원하지 않는 파일입니다. (.md, .txt, .pdf)'
-            : code === 'LLM_SERVER_ERROR'
-              ? '문서 처리 서버에 일시적인 오류가 발생했습니다.'
-              : (e as ApiError)?.code === 'ECONNABORTED'
-                ? '업로드 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.'
-                : isNetworkError(e)
-                  ? '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
-                  : '업로드에 실패했습니다. 잠시 후 다시 시도해주세요.'
+      const { detail } = readApiError(e)
+      const fallback = describeApiError(
+        e,
+        UPLOAD_ERRORS,
+        '업로드에 실패했습니다. 잠시 후 다시 시도해주세요.',
+        '업로드 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.',
+      )
       showToast(`'${file.name}' ${detail ?? fallback}`)
     },
   })
@@ -114,14 +117,11 @@ export const useDeleteProjectDocument = (projectId: string) => {
         })
         return
       }
-      const fallback =
-        code === 'CONFLICT'
-          ? '파일을 처리(색인)하는 중이라 삭제할 수 없습니다. 처리가 끝난 뒤 다시 시도해주세요.'
-          : code === 'LLM_SERVER_ERROR'
-            ? '문서 처리 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-            : isNetworkError(e)
-              ? '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.'
-              : '파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.'
+      const fallback = describeApiError(
+        e,
+        DELETE_ERRORS,
+        '파일을 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.',
+      )
       showToast(detail ? `파일을 삭제하지 못했습니다. (${detail})` : fallback)
     },
   })

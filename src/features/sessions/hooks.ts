@@ -33,6 +33,7 @@ import {
   cancelSessionLists,
   invalidateSessionLists,
 } from '@/lib/queryKeys'
+import { nextCursor } from '@/shared/utils/pagination'
 
 // 세션을 바꾸는 mutation 공통 접두사. 여러 변경(예: 즐겨찾기 연타)이 겹치면
 // 마지막으로 끝난 것만 목록을 다시 받아, 중간 상태 응답이 화면을 되돌리지 않게 한다.
@@ -66,10 +67,7 @@ export const useInfiniteSessions = () => {
   return useInfiniteQuery({
     queryKey: SESSIONS_INFINITE_KEY,
     queryFn: ({ pageParam }) => getSessions(pageParam as string | undefined),
-    getNextPageParam: (lastPage) => {
-      const data = lastPage.data.data
-      return data.has_next && data.next_cursor ? data.next_cursor : undefined
-    },
+    getNextPageParam: nextCursor,
     initialPageParam: undefined as string | undefined,
     enabled: !!accessToken,
   })

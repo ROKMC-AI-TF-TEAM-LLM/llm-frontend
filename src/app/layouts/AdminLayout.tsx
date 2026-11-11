@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { useGetUsers } from '@/features/users/hooks'
 import { Skeleton, AdminRowSkeleton } from '@/shared/components/Skeleton'
-import type { ApiError } from '@/shared/utils/error'
+import { ERROR_TEXT, type ApiError } from '@/shared/utils/error'
 
 const AdminLayout = () => {
   const { accessToken } = useAuth()
@@ -55,9 +55,7 @@ const AdminLayout = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 py-20">
         <h1 className="text-2xl font-bold text-gray-800">연결 오류</h1>
-        <p className="text-gray-500">
-          서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.
-        </p>
+        <p className="text-gray-500">{ERROR_TEXT.network}</p>
       </div>
     )
   }

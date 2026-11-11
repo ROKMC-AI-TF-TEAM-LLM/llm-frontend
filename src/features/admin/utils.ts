@@ -1,5 +1,5 @@
 import type { AdminUserItem } from '@/features/users/types'
-import { getApiError } from '@/shared/utils/error'
+import { ERROR_TEXT, getApiError } from '@/shared/utils/error'
 
 export type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected'
 
@@ -33,7 +33,7 @@ export const USER_TABS: { label: string; value: UserStatusTab }[] = [
 const ADMIN_MUTATION_ERRORS: Record<string, string> = {
   ADMIN_REQUIRED: '관리자 권한이 필요합니다.',
   USER_NOT_FOUND: '사용자를 찾을 수 없습니다.',
-  UNAUTHORIZED: '인증이 만료되었습니다. 다시 로그인해주세요.',
+  UNAUTHORIZED: ERROR_TEXT.unauthorized,
 }
 
 export const getAdminMutationError = (error: unknown): string =>

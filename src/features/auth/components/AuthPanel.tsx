@@ -10,6 +10,7 @@ import { useAuth } from '../useAuth'
 import { useSignup } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'
 import {
+  ERROR_TEXT,
   getApiError,
   isNetworkError,
   DEFAULT_STATUS_ERRORS,
@@ -108,7 +109,7 @@ export function AuthPanel({
     } catch (error) {
       logError('login', error)
       if (isNetworkError(error)) {
-        showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+        showToast(ERROR_TEXT.network)
         return
       }
       showToast(
@@ -131,7 +132,7 @@ export function AuthPanel({
       setMode('login')
     } catch (error) {
       if (isNetworkError(error)) {
-        showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+        showToast(ERROR_TEXT.network)
         return
       }
       showToast(

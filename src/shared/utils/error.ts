@@ -24,6 +24,12 @@ export const readApiError = (
   }
 }
 
+/** 여러 화면이 같이 쓰는 오류 문구. 같은 상황에는 같은 문장을 쓴다 */
+export const ERROR_TEXT = {
+  network: '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.',
+  unauthorized: '인증이 만료되었습니다. 다시 로그인해주세요.',
+} as const
+
 export const getApiError = (
   error: unknown,
   codeMap: Record<string, string> = {},
@@ -38,7 +44,7 @@ export const getApiError = (
 }
 
 export const DEFAULT_STATUS_ERRORS: Record<number, string> = {
-  401: '인증이 만료되었습니다. 다시 로그인해주세요.',
+  401: ERROR_TEXT.unauthorized,
   403: '접근이 거부되었습니다. 관리자에게 문의하세요.',
   404: '요청한 리소스를 찾을 수 없습니다.',
   500: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
@@ -46,4 +52,21 @@ export const DEFAULT_STATUS_ERRORS: Record<number, string> = {
 
 export const isNetworkError = (error: unknown): boolean => {
   return !(error as ApiError)?.response
+}
+
+/**
+ * 변경 요청이 실패했을 때 보여 줄 문구를 고른다.
+ * 서버 코드별 문구(codeMap) → 시간 초과(timeout을 준 경우) → 연결 실패 → 기본 문구(fallback) 순서.
+ */
+export const describeApiError = (
+  error: unknown,
+  codeMap: Record<string, string>,
+  fallback: string,
+  timeout?: string,
+): string => {
+  const { code } = readApiError(error)
+  if (code && codeMap[code]) return codeMap[code]
+  if (timeout && (error as ApiError)?.code === 'ECONNABORTED') return timeout
+  if (isNetworkError(error)) return ERROR_TEXT.network
+  return fallback
 }

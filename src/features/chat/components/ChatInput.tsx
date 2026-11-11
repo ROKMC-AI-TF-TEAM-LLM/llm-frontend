@@ -1,6 +1,6 @@
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { isNetworkError, readApiError } from '@/shared/utils/error'
+import { ERROR_TEXT, isNetworkError, readApiError } from '@/shared/utils/error'
 import { useChatStore } from '../store'
 import { saveInflight } from '../storage'
 import { type DomainSelection } from '../store/types'
@@ -198,9 +198,9 @@ export default function ChatInput({
         updateValue(text)
         const { code } = readApiError(e)
         if (code === 'UNAUTHORIZED') {
-          showToast('인증이 만료되었습니다. 다시 로그인해주세요.')
+          showToast(ERROR_TEXT.unauthorized)
         } else if (isNetworkError(e)) {
-          showToast('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.')
+          showToast(ERROR_TEXT.network)
         } else {
           showToast('채팅 생성 중 오류가 발생했습니다. 다시 시도해주세요.')
         }

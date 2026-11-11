@@ -56,7 +56,7 @@ features/<기능>/
 | `chat` | 채팅 화면, 메시지 스트리밍(`store/`: 상태·동작 `index.ts`, 스트림 실행 `stream.ts`, 지난 메시지 불러오기·복구 `history.ts`), 대화 캐시(`storage.ts`), 입력창·말풍선·출처 | `/chat`, `/chat/:id` |
 | `sessions` | 대화 목록 API, 대화 검색 화면 | `/search` |
 | `documents` | 문서 검색(자료실) 화면, 문서 서랍 | `/rag` |
-| `domains` | 분야 목록·라벨·색·아이콘 | — |
+| `domains` | 분야 목록·라벨·색·아이콘. 분야 색으로 칠하는 표시는 `components/DomainMarks`(문서 아이콘·배지·글자·막대)만 쓴다 | — |
 | `projects` | 프로젝트 화면. `hooks/`: 캐시 키·도구 `cache.ts`, 프로젝트 `projects.ts`, 참고 파일 `documents.ts`, 화면 훅 `use*.ts` | `/projects/:id` |
 | `docgen` | 문서 제작 | `/docgen` |
 | `translate` | 번역 | `/translate` |
@@ -70,11 +70,14 @@ features/<기능>/
 
 - `shared/utils/date.ts` — 날짜·시간 표시(`formatDate`·`formatDateTime`·`formatDateTimeLong`·`formatClock`). `toLocale*` 호출은 여기에만 둔다
 - `shared/utils/fileSize.ts` — 파일 크기 표시(`formatFileSize`)
-- `shared/utils/error.ts` — 서버 오류 해석(`getApiError`·`readApiError`·`isNetworkError`, `ApiError` 타입). `response.data.error`를 직접 꺼내지 않는다
+- `shared/utils/error.ts` — 서버 오류 해석(`getApiError`·`readApiError`·`isNetworkError`, `ApiError` 타입). `response.data.error`를 직접 꺼내지 않는다. 변경 실패 문구는 `describeApiError`(코드별 문구 → 시간 초과 → 연결 실패 → 기본)로 고르고, 연결 실패·인증 만료 문장은 `ERROR_TEXT`를 쓴다
+- `shared/utils/pagination.ts` — 무한 목록의 다음 쪽 계산(`nextCursor`: 커서 방식, `nextOffset`: 오프셋 방식). `getNextPageParam`을 직접 쓰지 않는다
 - `shared/hooks/useInfiniteScroll.ts` — 목록 끝 감시 요소가 보이면 다음 쪽 불러오기. `IntersectionObserver`를 화면에서 직접 쓰지 않는다(등장 애니메이션 제외)
+- `shared/hooks/useInView.ts`·`useRevealOnScroll.ts` — 화면에 들어올 때의 등장 애니메이션(전자는 컴포넌트용, 후자는 `.mars-reveal` 클래스용). 소개 화면의 떠오르는 효과는 `landing/components/Reveal`
 - `shared/hooks/useEscapeKey.ts`·`useClickOutside.ts` — ESC·바깥 클릭으로 닫기
 - `shared/components/icons` — UI 아이콘(닫기·삭제·편집·별·검색·화살표 등)과 공통 틀 `Icon`. 화면에 `<svg>`를 직접 쓰지 않는다(일러스트·로고·차트 제외). 한 기능에서만 쓰는 아이콘은 그 기능의 `components/icons.tsx`
 - `shared/components/Button.tsx` — 글자 버튼. 종류(`primary`·`secondary`·`outline`·`danger`·`ghost`·`link`)와 크기(`sm`·`md`·`lg`)만 고른다. `IconButton.tsx` — 아이콘만 있는 버튼(`label` 필수, 크기 `xs`~`lg`, 색조 `default`·`brand`·`danger`·`success`·`solid`). 화면에서 `<button>`에 색·크기 클래스를 직접 쓰지 않는다
+- `shared/components/SearchInput.tsx` — 검색어 입력창(큰 것·`compact`)
 - `shared/components/Chip.tsx`(고르는 알약 버튼)·`Tab.tsx`(밑줄 탭)·`MenuItem.tsx`(펼침 메뉴의 한 줄)·`SelectButton.tsx`(눌러서 메뉴를 펼치는 고르기 버튼)
 - 글자 크기는 `text-10`~`text-16` 단계만 쓴다(0.5px 단위·임의 px 금지)
 - `shared/components/Modal.tsx`·`Drawer.tsx` — 가운데 대화상자와 오른쪽 서랍. 배경, ESC·바깥 클릭 닫기, 포커스 가두기(`useFocusTrap`), 스크롤 잠금(`useBodyScrollLock`)을 맡는다. 화면에서 `fixed inset-0`을 직접 쓰지 않는다
@@ -118,4 +121,4 @@ Prettier가 맡습니다(세미콜론 없음, 작은따옴표, 나머지 기본�
 
 - `features/chat/store/`: 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있다. 불러오기 코드는 `history.ts`로 떼어 두었지만 데이터는 아직 스토어에 있다. 스트리밍·다시 생성·끊긴 답변 복구가 같은 `messages` 배열을 고치므로, React Query로 옮기기 전에 이 흐름의 테스트부터 만든다.
 - 하드코딩 색과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 3회 이상 쓰이던 색은 `global.css`의 `@theme`에 토큰(`brand-tint`·`rose-border`·`rose-line`·`brand-deep`·`ink-soft` 등)으로 올렸다. 새 코드는 토큰을 쓴다. 한두 번 쓰인 색, 분야별 색표(`domains/utils.ts`), 그림(진단 화면의 `hall/`, `MarsPlanet`)의 색은 hex로 남겨 둔다.
-- 인라인 `style`은 값이 상태에 따라 바뀌는 곳(너비·위치·분야 색)과 그림에만 남기고, 고정 값은 클래스로 옮겼다. `ChatInput`·`RagSearchInput`·`SearchInput`의 테두리는 인라인 `style`이라 `focus-within:` 테두리 클래스를 덮어쓰고 있다(포커스 테두리가 안 보임). 의도인지 확인 후 정리한다.
+- 인라인 `style`은 값이 상태에 따라 바뀌는 곳(너비·위치·분야 색)과 그림에만 남기고, 고정 값은 클래스로 옮겼다.

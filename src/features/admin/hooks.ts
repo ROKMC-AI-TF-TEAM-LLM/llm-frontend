@@ -15,6 +15,7 @@ import {
 import type { GetAdminDocumentsParams, UploadDocumentFields } from './types'
 import { normalizeDocStatus } from '@/features/documents/utils'
 import { useAuth } from '@/features/auth/useAuth'
+import { nextOffset } from '@/shared/utils/pagination'
 
 const ADMIN_DOC_LIMIT = 20
 
@@ -31,10 +32,9 @@ export const useInfiniteAdminDocuments = (
         limit: ADMIN_DOC_LIMIT,
       }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      if (!lastPage.data.data.has_more) return undefined
-      return allPages.reduce((acc, p) => acc + p.data.data.documents.length, 0)
-    },
+    getNextPageParam: nextOffset(
+      (d: { documents: unknown[]; has_more?: boolean }) => d.documents,
+    ),
     enabled: !!accessToken,
     retry: 1,
     placeholderData: keepPreviousData,

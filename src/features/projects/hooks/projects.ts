@@ -36,6 +36,7 @@ import {
   type ProjectsInfinite,
 } from './cache'
 import { SESSIONS_KEY, projectSessionsKey } from '@/lib/queryKeys'
+import { nextCursor } from '@/shared/utils/pagination'
 
 export interface ProjectView {
   id: string
@@ -53,10 +54,7 @@ export const useInfiniteProjects = (isFavorite?: boolean) => {
         cursor: pageParam as string | undefined,
         is_favorite: isFavorite,
       }),
-    getNextPageParam: (lastPage) => {
-      const data = lastPage.data.data
-      return data.has_next && data.next_cursor ? data.next_cursor : undefined
-    },
+    getNextPageParam: nextCursor,
     initialPageParam: undefined as string | undefined,
     enabled: !!accessToken,
   })
@@ -286,10 +284,7 @@ export const useProjectSessions = (
         ...params,
         cursor: pageParam as string | undefined,
       }),
-    getNextPageParam: (lastPage) => {
-      const data = lastPage.data.data
-      return data.has_next && data.next_cursor ? data.next_cursor : undefined
-    },
+    getNextPageParam: nextCursor,
     initialPageParam: undefined as string | undefined,
     enabled: !!accessToken && !!projectId,
   })
