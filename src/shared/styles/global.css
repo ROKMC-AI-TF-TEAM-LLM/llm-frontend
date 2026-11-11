@@ -68,6 +68,13 @@
   --color-rose-border: #f0e6e8;
   --color-rose-muted: #c9aab2;
   --color-rose-placeholder: #b8a7ac;
+  --color-rose-line: #f2dfe3;
+  --color-rose-ash: #a89aa0;
+  --color-brand-deep: #c0002a;
+
+  /* 소개성 화면(이용 안내 등)의 본문 글자색 */
+  --color-ink: #33333a;
+  --color-ink-soft: #6a6a72;
 
   --color-surface: #ffffff;
   --color-surface-subtle: #f3f2f0;

@@ -49,7 +49,7 @@ export default function TutorialPage() {
     >
       <TutorialHeader />
 
-      <div className="flex items-center gap-2 border-b border-[#f4eced] px-[6vw] py-3.5 text-[13px]">
+      <div className="flex items-center gap-2 border-b border-rose-divider px-[6vw] py-3.5 text-[13px]">
         <button
           type="button"
           onClick={() => navigate('/tutorials')}
@@ -78,7 +78,7 @@ export default function TutorialPage() {
                 </p>
               </div>
 
-              <dl className="flex w-[200px] shrink-0 flex-col gap-5 border-l border-[#f4eced] pl-6">
+              <dl className="flex w-[200px] shrink-0 flex-col gap-5 border-l border-rose-divider pl-6">
                 <MetaItem label="분류" value={tutorial.category} />
                 <MetaItem label="대상" value={tutorial.product} />
               </dl>
@@ -111,7 +111,7 @@ export default function TutorialPage() {
         <ol className="mt-9 flex flex-col">
           {tutorial.points.map((c, i) => (
             <Reveal key={c.title} delay={i * 60}>
-              <li className="flex items-start gap-5 border-t border-[#f4eced] py-5">
+              <li className="flex items-start gap-5 border-t border-rose-divider py-5">
                 <span className="mt-0.5 shrink-0 text-[12px] font-extrabold tabular-nums text-brand">
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -154,7 +154,7 @@ export default function TutorialPage() {
       </div>
 
       {related.length > 0 && (
-        <div className="border-t border-[#f4eced] bg-[#fdfbfb] px-[6vw] py-20">
+        <div className="border-t border-rose-divider bg-[#fdfbfb] px-[6vw] py-20">
           <Reveal>
             <h2 className="mars-display text-center text-[clamp(26px,3.6vw,38px)] font-bold tracking-[-0.03em] text-text-primary">
               이어서 볼 만한 튜토리얼

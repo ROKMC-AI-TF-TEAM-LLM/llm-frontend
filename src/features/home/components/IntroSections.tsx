@@ -284,7 +284,7 @@ export function IntroSections({
                       ].map((s) => (
                         <div
                           key={s.title}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#f0e6e8] bg-white"
+                          className="flex items-center gap-3 p-3 rounded-xl border border-rose-border bg-white"
                         >
                           <span
                             className="shrink-0 flex items-center justify-center"

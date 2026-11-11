@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { logError } from '../utils/logError'
 
 export const useLocalStorage = <T = unknown>(
   key: string,
@@ -12,7 +13,7 @@ export const useLocalStorage = <T = unknown>(
       try {
         store.setItem(key, JSON.stringify(value))
       } catch (error) {
-        console.error(error)
+        logError(`useLocalStorage.set:${key}`, error)
       }
     },
     [store, key],
@@ -23,7 +24,7 @@ export const useLocalStorage = <T = unknown>(
       const item = store.getItem(key)
       return item ? (JSON.parse(item) as T) : null
     } catch (error) {
-      console.error(error)
+      logError(`useLocalStorage.get:${key}`, error)
       return null
     }
   }, [store, key])
@@ -32,7 +33,7 @@ export const useLocalStorage = <T = unknown>(
     try {
       store.removeItem(key)
     } catch (error) {
-      console.error(error)
+      logError(`useLocalStorage.remove:${key}`, error)
     }
   }, [store, key])
 

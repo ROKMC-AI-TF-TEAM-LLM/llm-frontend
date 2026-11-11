@@ -25,7 +25,7 @@ function LangSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center mars-brand-serif gap-2 rounded-[12px] border border-[#f0e6e8] bg-white px-4 py-2.5 text-[13.5px] font-semibold text-text-primary transition-colors hover:border-brand-soft"
+        className="flex items-center mars-brand-serif gap-2 rounded-[12px] border border-rose-border bg-white px-4 py-2.5 text-[13.5px] font-semibold text-text-primary transition-colors hover:border-brand-soft"
       >
         {value}
         <svg
@@ -44,7 +44,7 @@ function LangSelect({
       </button>
       {open && (
         <>
-          <div className="absolute left-0 top-full z-20 mt-1.5 w-[140px] overflow-hidden rounded-[12px] border border-[#f0e6e8] bg-white py-1 shadow-[0_12px_30px_rgba(60,20,30,0.12)]">
+          <div className="absolute left-0 top-full z-20 mt-1.5 w-[140px] overflow-hidden rounded-[12px] border border-rose-border bg-white py-1 shadow-[0_12px_30px_rgba(60,20,30,0.12)]">
             {LANGS.map((l) => (
               <button
                 key={l}
@@ -142,7 +142,7 @@ export default function TranslatePage() {
                 type="button"
                 onClick={swap}
                 aria-label="언어 바꾸기"
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#f0e6e8] bg-white text-brand transition-colors hover:bg-brand-subtle"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-border bg-white text-brand transition-colors hover:bg-brand-subtle"
               >
                 <svg
                   width={18}
@@ -159,7 +159,7 @@ export default function TranslatePage() {
               </button>
               <LangSelect value={target} onChange={pickTarget} />
 
-              <div className="ml-1 flex items-center rounded-full border border-[#f0e6e8] bg-white p-1">
+              <div className="ml-1 flex items-center rounded-full border border-rose-border bg-white p-1">
                 {STYLES.map((s) => (
                   <button
                     key={s.value}
@@ -177,7 +177,7 @@ export default function TranslatePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1 rounded-full border border-[#f0e6e8] bg-white px-1.5 py-1">
+            <div className="flex items-center gap-1 rounded-full border border-rose-border bg-white px-1.5 py-1">
               <button
                 type="button"
                 onClick={() => setFontSize((s) => Math.max(12, s - 1))}
@@ -203,7 +203,7 @@ export default function TranslatePage() {
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="flex min-h-[460px] flex-col rounded-[18px] border border-[#f0e6e8] bg-white">
+            <div className="flex min-h-[460px] flex-col rounded-[18px] border border-rose-border bg-white">
               <textarea
                 value={input}
                 onChange={(e) => changeInput(e.target.value.slice(0, MAX))}
@@ -228,7 +228,7 @@ export default function TranslatePage() {
                   className={`flex items-center gap-1.5 rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors ${
                     input.trim() && !isPending
                       ? 'text-white hover:bg-[var(--color-brand-hover)]'
-                      : 'bg-[#f4eced] text-[#cbbcc0] cursor-not-allowed'
+                      : 'bg-rose-divider text-[#cbbcc0] cursor-not-allowed'
                   }`}
                 >
                   번역
@@ -236,7 +236,7 @@ export default function TranslatePage() {
               </div>
             </div>
 
-            <div className="flex min-h-[460px] flex-col rounded-[18px] border border-[#f0e6e8] bg-[#fdfbfb]">
+            <div className="flex min-h-[460px] flex-col rounded-[18px] border border-rose-border bg-[#fdfbfb]">
               <div
                 className="flex-1 px-6 pt-6 leading-[1.7]"
                 style={{ fontSize }}

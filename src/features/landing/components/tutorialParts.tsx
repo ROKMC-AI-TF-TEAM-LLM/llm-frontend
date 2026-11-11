@@ -60,7 +60,7 @@ export function TutorialCard({
     <button
       type="button"
       onClick={onOpen}
-      className="tut-card group flex flex-col overflow-hidden rounded-[16px] border border-[#f0e6e8] bg-white text-left"
+      className="tut-card group flex flex-col overflow-hidden rounded-[16px] border border-rose-border bg-white text-left"
     >
       <span
         className="tut-thumb relative flex items-center justify-center overflow-hidden"
