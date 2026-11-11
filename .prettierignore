@@ -1,0 +1,9 @@
+dist
+node_modules
+package-lock.json
+public
+docs
+개발일지
+mars-intro-video-refs
+.claude
+*.md

@@ -83,6 +83,11 @@ features/<기능>/
 5. 서버 데이터는 React Query 캐시 한 곳에만 둔다. zustand에 복사해 두지 않는다.
 6. 한 기능에서만 쓰면 그 기능 폴더에, 여러 기능이 쓰는 범용 코드는 `shared`에 둔다.
 
+## 코드 스타일
+
+Prettier가 맡습니다(세미콜론 없음, 작은따옴표, 나머지 기본값 — `.prettierrc.json`). 저장 전에 `npm run format`, 확인은 `npm run format:check`.
+전체 포맷 커밋은 `.git-blame-ignore-revs`에 적어 두었습니다(`git config blame.ignoreRevsFile .git-blame-ignore-revs`).
+
 ## 새 기능을 넣을 때
 
 1. `features/<기능>/`을 만들고 `types.ts` → `api.ts` → `hooks.ts` → `components/`·`pages/` 순서로 채운다.
@@ -93,5 +98,4 @@ features/<기능>/
 
 - `landing` ↔ `tutorials`가 서로 가져다 쓴다(바닥글이 튜토리얼 목록을 쓰고, 튜토리얼 화면이 소개 화면의 상단·바닥글을 쓴다).
 - `features/chat/store/`: 스트리밍 상태와 함께 지난 메시지 불러오기(서버 데이터)도 들고 있다.
-- 코드 스타일(세미콜론·따옴표)이 파일마다 다르다. Prettier는 거의 모든 파일을 바꾸므로 열린 브랜치를 병합한 뒤 한 번에 적용한다.
 - 하드코딩 색과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 3회 이상 쓰이던 색은 `global.css`의 `@theme`에 토큰(`brand-tint`·`rose-border` 등)으로 올렸다. 새 코드는 토큰을 쓴다. 한두 번 쓰인 색과 소개성 화면의 색은 아직 hex로 남아 있다.

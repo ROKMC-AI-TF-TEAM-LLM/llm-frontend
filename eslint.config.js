@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import eslintConfigPrettier from 'eslint-config-prettier/flat'
 
 // 구조 규칙 (ARCHITECTURE.md 참고). 같은 규칙을 덮어쓰면 합쳐지지 않으므로 공통 항목을 상수로 둔다.
 const ROUTER_RULE = { name: 'react-router', message: 'react-router-dom에서 가져오세요.' }
@@ -87,4 +88,6 @@ export default defineConfig([
     },
   },
   ...featureDirectionConfigs,
+  // 포맷은 Prettier가 맡는다. 포맷과 겹치는 ESLint 규칙은 끈다 (맨 뒤에 둬야 한다)
+  eslintConfigPrettier,
 ])
