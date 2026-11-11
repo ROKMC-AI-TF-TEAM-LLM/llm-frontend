@@ -3,6 +3,7 @@ import { useServerStatus } from '@/features/system/hooks'
 import { useChatStore } from '../store'
 import FilesDrawer from './FilesDrawer'
 import type { FileAttachment } from '@/shared/types/attachment'
+import Button from '@/shared/components/Button'
 
 const STATUS_CONFIG = {
   ok: {
@@ -79,10 +80,10 @@ export default function ChatHeader({ title }: ChatHeaderProps) {
       </h1>
       <div className="flex items-center gap-3 shrink-0">
         {files.length > 0 && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setFilesOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-13 font-semibold text-text-secondary hover:bg-brand-subtle hover:text-brand transition-colors"
             aria-label="첨부 파일 보기"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -132,7 +133,7 @@ export default function ChatHeader({ title }: ChatHeaderProps) {
                 strokeOpacity={0.55}
               />
             </svg>
-          </button>
+          </Button>
         )}
         <ServerStatusLight />
       </div>

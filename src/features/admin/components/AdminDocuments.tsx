@@ -24,16 +24,12 @@ import { formatDate } from '@/shared/utils/date'
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
 import { formatFileSize } from '@/shared/utils/fileSize'
 import type { AdminDocumentItem, AdminDocStatus } from '../types'
-import {
-  ChevronDownIcon,
-  CloseIcon,
-  SearchIcon,
-  UploadIcon,
-} from '@/shared/components/icons'
+import { CloseIcon, SearchIcon, UploadIcon } from '@/shared/components/icons'
 import Button from '@/shared/components/Button'
 import MenuItem from '@/shared/components/MenuItem'
 import Chip from '@/shared/components/Chip'
 import IconButton from '@/shared/components/IconButton'
+import SelectButton from '@/shared/components/SelectButton'
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed'
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
@@ -297,20 +293,17 @@ export default function AdminDocuments() {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative">
-            <button
-              type="button"
+            <SelectButton
+              open={domainMenuOpen}
+              active
               onClick={() => setDomainMenuOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 pl-2.5 pr-2.5 py-2 rounded-full bg-white border border-brand-soft text-13 font-semibold text-brand hover:bg-brand-subtle transition-colors"
             >
               <span
                 className="w-2 h-2 rounded-full"
                 style={{ background: getDomainStyle(uploadDomain.code).bar }}
               />
               {uploadDomain.label}
-              <ChevronDownIcon
-                className={`w-3.5 h-3.5 transition-transform ${domainMenuOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
+            </SelectButton>
             {domainMenuOpen && (
               <div className="absolute right-0 top-full mt-2 min-w-[160px] rounded-2xl border border-surface-border bg-white shadow-[0_10px_30px_rgba(40,30,35,0.12)] p-1.5 z-20">
                 {DOMAINS.map((d) => (

@@ -5,11 +5,9 @@ import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
 import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { type Composer } from '../hooks'
 import DomainIcon from '@/features/domains/components/DomainIcon'
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  DocumentIcon,
-} from '@/shared/components/icons'
+import { CheckIcon, DocumentIcon } from '@/shared/components/icons'
+import SelectButton from '@/shared/components/SelectButton'
+import MenuItem from '@/shared/components/MenuItem'
 
 /* ───────── 입력창 선택 칩 ───────── */
 interface PickerOption {
@@ -43,20 +41,15 @@ export function Picker({
   const current = options.find((o) => o.value === value)
   return (
     <div ref={ref} className="relative">
-      <button
-        type="button"
+      <SelectButton
+        open={open}
+        active={!!current}
         disabled={disabled}
-        aria-haspopup="menu"
-        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-13 font-medium transition-colors hover:bg-brand-subtle hover:text-brand disabled:pointer-events-none disabled:opacity-60 ${open ? 'bg-brand-subtle text-brand' : current ? 'text-text-primary' : 'text-text-secondary'}`}
       >
         {icon}
         {current?.label ?? label}
-        <ChevronDownIcon
-          className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
+      </SelectButton>
       {open && (
         <ul
           role="menu"
@@ -73,15 +66,14 @@ export function Picker({
             const on = o.value === value
             return (
               <li key={o.value} role="none">
-                <button
-                  type="button"
+                <MenuItem
+                  selected={on}
                   role="menuitemradio"
                   aria-checked={on}
                   onClick={() => {
                     onChange(o.value)
                     setOpen(false)
                   }}
-                  className={`flex w-full items-start gap-2 rounded-xl px-3 py-2 text-left transition-colors ${on ? 'bg-brand-subtle' : 'hover:bg-surface-card1'}`}
                 >
                   <span className="min-w-0 flex-1">
                     <span
@@ -98,7 +90,7 @@ export function Picker({
                   {on && (
                     <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                   )}
-                </button>
+                </MenuItem>
               </li>
             )
           })}

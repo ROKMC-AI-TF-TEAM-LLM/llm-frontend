@@ -3,8 +3,9 @@ import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { useDomainCapabilities } from '@/features/documents/hooks'
 import { type DomainSelection } from '../store/types'
 import DomainIcon from '@/features/domains/components/DomainIcon'
-import { CheckIcon, ChevronDownIcon, MenuIcon } from '@/shared/components/icons'
+import { CheckIcon, MenuIcon } from '@/shared/components/icons'
 import MenuItem from '@/shared/components/MenuItem'
+import SelectButton from '@/shared/components/SelectButton'
 
 interface DomainPickerProps {
   value: DomainSelection | null
@@ -56,17 +57,13 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
 
   return (
     <div ref={wrapRef} className="relative">
-      <button
-        type="button"
+      <SelectButton
+        open={open}
+        active={!!value}
         onClick={(e) => {
           e.stopPropagation()
           setOpen((v) => !v)
         }}
-        className={`group inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-14 font-medium transition-colors duration-150 ${
-          open || value
-            ? 'bg-brand-subtle text-brand'
-            : 'text-text-muted hover:bg-brand-subtle hover:text-brand'
-        }`}
       >
         {value ? (
           <DomainIcon code={value.code} size={20} />
@@ -74,12 +71,7 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
           <MenuIcon width={20} height={20} />
         )}
         <span>{value ? value.label : '전체'}</span>
-        <ChevronDownIcon
-          width={14}
-          height={14}
-          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
+      </SelectButton>
 
       {open && pos && (
         <div

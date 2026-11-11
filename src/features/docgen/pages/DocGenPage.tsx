@@ -373,19 +373,19 @@ function Stage() {
           <div className="flex flex-wrap items-center gap-1 px-3 pb-3 pt-2">
             <ComposerOptions c={c} withTemplate />
             <span className="flex-1" />
-            <button
-              type="button"
-              aria-label="생성 요청"
+            <IconButton
+              size="lg"
+              tone="solid"
+              label="생성 요청"
               disabled={!c.canSubmit || pending}
               onClick={send}
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition ${c.canSubmit && !pending ? 'bg-gradient-to-br from-brand to-brand-light text-white shadow-[0_5px_13px_rgba(220,20,60,0.28)] hover:brightness-105' : 'bg-surface-subtle text-text-muted'}`}
             >
               {pending ? (
                 <Spinner className="h-4 w-4" />
               ) : (
                 <ArrowUpIcon className="h-5 w-5" />
               )}
-            </button>
+            </IconButton>
           </div>
         </section>
 

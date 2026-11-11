@@ -7,12 +7,12 @@ import { useAuth } from '@/features/auth/useAuth'
 import { TUTORIALS } from '@/features/tutorials/tutorials'
 import {
   ChevronRightIcon,
-  ExternalLinkIcon,
   Icon,
   InfoIcon,
   LogoutIcon,
   UserIcon,
 } from '@/shared/components/icons'
+import MenuItem from '@/shared/components/MenuItem'
 
 interface SidebarFooterProps {
   isOpen: boolean
@@ -44,12 +44,12 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
     <div ref={wrapRef} className="relative border-t border-rose-border">
       {open && (
         <div
-          className={`absolute bottom-full mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] py-2 z-50 animate-fade-in ${
+          className={`absolute bottom-full mb-2 rounded-2xl border border-surface-border bg-white shadow-[0_16px_40px_rgba(40,30,35,0.16)] p-1.5 z-50 animate-fade-in ${
             isOpen ? 'left-2 right-2' : 'left-2 w-64'
           }`}
         >
           {user.email && (
-            <div className="px-4 pb-2 mb-1 border-b border-surface-border">
+            <div className="-mx-1.5 mb-1.5 border-b border-surface-border px-4 pb-2 pt-1">
               <p className="text-13 font-semibold text-text-primary truncate">
                 {user.name}
               </p>
@@ -62,15 +62,11 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             onMouseEnter={() => setSubOpen(true)}
             onMouseLeave={() => setSubOpen(false)}
           >
-            <button
+            <MenuItem
               onClick={() => setSubOpen((v) => !v)}
               aria-expanded={subOpen}
               aria-haspopup="true"
-              className={`flex w-full mars-brand-serif items-center gap-3 px-4 py-2 text-14 transition-colors ${
-                subOpen
-                  ? 'bg-surface-subtle text-text-primary'
-                  : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
-              }`}
+              active={subOpen}
             >
               <InfoIcon
                 className="h-[18px] w-[18px] shrink-0"
@@ -81,11 +77,11 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
                 className="ml-auto h-3.5 w-3.5 shrink-0 text-text-muted"
                 strokeWidth={2.2}
               />
-            </button>
+            </MenuItem>
 
             {subOpen && (
               <div className="absolute bottom-0 left-full font-semibold z-50 pl-2 animate-fade-in">
-                <div className="w-56 rounded-2xl border border-surface-border bg-white py-2 shadow-[0_16px_40px_rgba(40,30,35,0.16)]">
+                <div className="w-56 rounded-2xl border border-surface-border bg-white p-1.5 shadow-[0_16px_40px_rgba(40,30,35,0.16)]">
                   <SubItem label="서비스 이용법" onClick={() => go('/guide')} />
                   <SubItem label="튜토리얼" onClick={() => go('/tutorials')} />
 
@@ -108,30 +104,27 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
           </div>
 
           {user.role === 'admin' && (
-            <MenuItem
-              icon={
-                <>
-                  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </>
-              }
-              label="관리자 페이지"
-              onClick={() => go('/admin')}
-            />
+            <MenuItem onClick={() => go('/admin')}>
+              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.9}>
+                <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </Icon>
+              관리자 페이지
+            </MenuItem>
           )}
 
           <div className="my-1 h-px bg-surface-border mx-3" />
 
-          <button
+          <MenuItem
+            danger
             onClick={() => {
               setOpen(false)
               logout()
             }}
-            className="w-full font-semibold flex items-center gap-3 px-4 py-2 text-14 text-red-500 hover:bg-red-50 transition-colors"
           >
             <LogoutIcon className="w-[18px] h-[18px] shrink-0" />
             로그아웃
-          </button>
+          </MenuItem>
         </div>
       )}
 
@@ -196,46 +189,10 @@ function Avatar() {
   )
 }
 
-function SubItem({
-  label,
-  onClick,
-  external = false,
-}: {
-  label: string
-  onClick: () => void
-  external?: boolean
-}) {
+function SubItem({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="flex w-full items-center gap-2 px-4 py-2 text-left text-13 text-text-secondary transition-colors hover:bg-surface-subtle hover:text-text-primary"
-    >
+    <MenuItem onClick={onClick}>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {external && (
-        <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 text-text-muted" />
-      )}
-    </button>
-  )
-}
-
-function MenuItem({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full mars-brand-serif flex items-center gap-3 px-4 py-2 text-14 text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
-    >
-      <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.9}>
-        {icon}
-      </Icon>
-      {label}
-    </button>
+    </MenuItem>
   )
 }
