@@ -6,7 +6,7 @@ import {
 } from '@/features/sessions/hooks'
 import { formatClock } from '@/shared/utils/date'
 import type { ProjectChat } from '../types'
-import { useProjectSessions } from './queries'
+import { useProjectSessions } from './projects'
 
 /** 프로젝트 안의 대화 목록과 이름 변경·즐겨찾기·삭제 (프로젝트 화면의 대화 영역) */
 export function useProjectChats(id: string | undefined) {

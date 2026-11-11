@@ -9,7 +9,7 @@ import {
   useDeleteProjectDocument,
   useRetryProjectDocument,
   projectDocumentDeleteKey,
-} from './queries'
+} from './documents'
 
 /** 프로젝트 파일 목록과 올리기·삭제·재시도 동작 (프로젝트 화면의 파일 영역) */
 export function useProjectFiles(id: string | undefined) {

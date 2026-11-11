@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
-import LandingFooter from '@/features/landing/components/LandingFooter'
+import LandingFooter from '../components/LandingFooter'
 import { TUTORIALS } from '../tutorials'
-import { Reveal, TutorialCard, TutorialHeader } from '../components/parts'
+import {
+  Reveal,
+  TutorialCard,
+  TutorialHeader,
+} from '../components/tutorialParts'
 
 export default function TutorialsPage() {
   useDocumentTitle('튜토리얼')

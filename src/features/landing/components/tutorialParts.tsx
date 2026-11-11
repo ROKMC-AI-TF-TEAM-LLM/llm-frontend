@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Tutorial } from '../tutorials'
-import PageNav from '@/features/landing/components/PageNav'
+import PageNav from './PageNav'
 
 export function TutorialHeader() {
   return <PageNav current="tutorials" />

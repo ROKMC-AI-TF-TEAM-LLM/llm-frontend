@@ -4,12 +4,15 @@ import MarsPlanet from '@/features/landing/components/MarsPlanet'
 import RotatingWord from '@/features/landing/components/RotatingWord'
 import LandingNav from '@/features/landing/components/LandingNav'
 import LandingFooter from '@/features/landing/components/LandingFooter'
-import { AuthPanel, type AuthPanelHandle } from '../components/AuthPanel'
+import {
+  AuthPanel,
+  type AuthPanelHandle,
+} from '@/features/auth/components/AuthPanel'
 import { IntroSections } from '../components/IntroSections'
 
 const HERO_VERBS = ['물어보세요', '찾아보세요', '확인하세요', '정리하세요']
 
-const LoginPage = () => {
+const HomePage = () => {
   const navigate = useNavigate()
   const [view, setView] = useState<'intro' | 'auth'>('intro')
 
@@ -205,4 +208,4 @@ const LoginPage = () => {
   )
 }
 
-export default LoginPage
+export default HomePage

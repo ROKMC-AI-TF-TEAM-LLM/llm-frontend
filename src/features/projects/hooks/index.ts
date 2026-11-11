@@ -1,3 +1,5 @@
-export * from './queries'
+export * from './projects'
+export * from './documents'
+export * from './useConfirmDeleteProject'
 export * from './useProjectFiles'
 export * from './useProjectChats'

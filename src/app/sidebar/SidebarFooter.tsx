@@ -4,7 +4,7 @@ import { useClickOutside } from '@/shared/hooks/useClickOutside'
 import { useNavigate } from 'react-router-dom'
 import type { User } from '@/features/chat/types'
 import { useAuth } from '@/features/auth/useAuth'
-import { TUTORIALS } from '@/features/tutorials/tutorials'
+import { TUTORIALS } from '@/features/landing/tutorials'
 import {
   ChevronRightIcon,
   Icon,

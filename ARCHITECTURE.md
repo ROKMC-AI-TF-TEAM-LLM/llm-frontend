@@ -17,8 +17,18 @@ mock-server/        dev:mock 개발 서버(Node)에서만 도는 코드. claudeP
 ```
 
 의존 방향은 한쪽으로만 흐릅니다: `app → features → shared·lib`.
-기능끼리는 가져다 써도 되지만(예: 채팅이 분야(`domains`)의 아이콘을 씀) **서로** 가져다 쓰지는 않습니다.
-✅ 방향은 `eslint.config.js`의 `FEATURE_DIRECTION`에 적습니다(sessions→chat, auth→users, landing→auth, domains→documents 금지).
+기능끼리는 가져다 써도 되지만(예: 채팅이 분야(`domains`)의 아이콘을 씀) **서로** 가져다 쓰지는 않습니다(여러 단계를 거친 순환도 안 됩니다).
+✅ 어느 기능이 어느 기능을 가져올 수 있는지는 `eslint.config.js`의 `FEATURE_DEPS`에 적습니다. 표에 없는 방향은 lint 오류이고, 표에 순환이 생기면 lint가 시작할 때 멈춥니다.
+
+```
+home → auth · landing · team        admin → auth · documents · domains · users
+team → landing                      docgen → auth · documents · domains
+landing → domains                   documents → auth · domains
+system → team                       projects → auth · chat · documents · sessions
+chat → documents · domains · sessions · system · users
+sessions → auth                     users → auth
+auth · domains · translate → (없음)
+```
 
 ## 기능 폴더 하나의 모양
 
@@ -39,18 +49,20 @@ features/<기능>/
 
 | 폴더 | 내용 | 주소 |
 | --- | --- | --- |
-| `auth` | 로그인·회원가입 화면, 로그인 상태(`AuthProvider`·`useAuth`), 로그인 후 이동 | `/` |
+| `home` | 첫 화면: 소개 섹션과 로그인 창을 한 화면에 조립 | `/` |
+| `auth` | 로그인·회원가입 창(`AuthPanel`), 로그인 상태(`AuthProvider`·`useAuth`) | — |
 | `users` | 내 정보, 사용자 목록·승인 | — |
 | `admin` | 관리자 화면(사용자·자료실 관리) | `/admin` |
-| `chat` | 채팅 화면, 메시지 스트리밍(`store/`: 상태·동작 `index.ts`, 스트림 실행 `stream.ts`), 대화 캐시(`storage.ts`), 입력창·말풍선·출처 | `/chat`, `/chat/:id` |
+| `chat` | 채팅 화면, 메시지 스트리밍(`store/`: 상태·동작 `index.ts`, 스트림 실행 `stream.ts`, 지난 메시지 불러오기·복구 `history.ts`), 대화 캐시(`storage.ts`), 입력창·말풍선·출처 | `/chat`, `/chat/:id` |
 | `sessions` | 대화 목록 API, 대화 검색 화면 | `/search` |
 | `documents` | 문서 검색(자료실) 화면, 문서 서랍 | `/rag` |
 | `domains` | 분야 목록·라벨·색·아이콘 | — |
-| `projects` | 프로젝트 화면 | `/projects/:id` |
+| `projects` | 프로젝트 화면. `hooks/`: 캐시 키·도구 `cache.ts`, 프로젝트 `projects.ts`, 참고 파일 `documents.ts`, 화면 훅 `use*.ts` | `/projects/:id` |
 | `docgen` | 문서 제작 | `/docgen` |
 | `translate` | 번역 | `/translate` |
 | `system` | 서버 상태, 숨은 진단 화면 | — |
-| `landing`·`team`·`tutorials` | 소개·이용 안내·팀·튜토리얼 페이지 | `/guide`, `/team`, `/tutorials` |
+| `landing` | 소개 화면들의 공통 상단·바닥글, 이용 안내, 튜토리얼 | `/guide`, `/tutorials`, `/tutorials/:slug` |
+| `team` | 팀 소개 | `/team` |
 
 ## 공용 코드 (shared)
 
@@ -93,12 +105,11 @@ Prettier가 맡습니다(세미콜론 없음, 작은따옴표, 나머지 기본�
 
 ## 새 기능을 넣을 때
 
-1. `features/<기능>/`을 만들고 `types.ts` → `api.ts` → `hooks.ts` → `components/`·`pages/` 순서로 채운다.
+1. `features/<기능>/`을 만들고 `types.ts` → `api.ts` → `hooks.ts` → `components/`·`pages/` 순서로 채운다. `eslint.config.js`의 `FEATURE_DEPS`에 기능 이름과 가져다 쓰는 기능을 적는다.
 2. `app/App.tsx`에 라우트, 필요하면 `app/sidebar/SidebarMenu.tsx`에 메뉴를 단다.
 3. `src/mock/handlers/<기능>.ts`에 가짜 응답을 만들고 `src/mock/index.ts`에 등록한다.
 
 ## 아직 규칙과 다른 곳 (정리 예정)
 
-- `landing` ↔ `tutorials`가 서로 가져다 쓴다(바닥글이 튜토리얼 목록을 쓰고, 튜토리얼 화면이 소개 화면의 상단·바닥글을 쓴다).
-- `features/chat/store/`: 스트리밍 상태와 함께 지난 메시지 불러오기(서버 데이터)도 들고 있다.
+- `features/chat/store/`: 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있다. 불러오기 코드는 `history.ts`로 떼어 두었지만 데이터는 아직 스토어에 있다. 스트리밍·다시 생성·끊긴 답변 복구가 같은 `messages` 배열을 고치므로, React Query로 옮기기 전에 이 흐름의 테스트부터 만든다.
 - 하드코딩 색과 디자인 토큰(`bg-brand` 등)이 섞여 있다. 3회 이상 쓰이던 색은 `global.css`의 `@theme`에 토큰(`brand-tint`·`rose-border` 등)으로 올렸다. 새 코드는 토큰을 쓴다. 한두 번 쓰인 색과 소개성 화면의 색은 아직 hex로 남아 있다.

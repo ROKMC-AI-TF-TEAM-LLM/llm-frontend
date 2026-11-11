@@ -6,7 +6,7 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 import { isMetricPath } from '@/features/system/telemetry'
-import LoginPage from '@/features/auth/pages/LoginPage'
+import HomePage from '@/features/home/pages/HomePage'
 import AuthLayout from './layouts/AuthLayout'
 import NewChatPage from '@/features/chat/pages/NewChatPage'
 import ErrorPage from './ErrorPage'
@@ -31,11 +31,9 @@ const GuidePage = lazy(() => import('@/features/landing/pages/GuidePage'))
 // TODO: 번역 기능 미완성 — 완성 후 주석 해제
 // const TranslatePage = lazy(() => import('@/features/translate/pages/TranslatePage'));
 const TutorialsPage = lazy(
-  () => import('@/features/tutorials/pages/TutorialsPage'),
+  () => import('@/features/landing/pages/TutorialsPage'),
 )
-const TutorialPage = lazy(
-  () => import('@/features/tutorials/pages/TutorialPage'),
-)
+const TutorialPage = lazy(() => import('@/features/landing/pages/TutorialPage'))
 const TeamPage = lazy(() => import('@/features/team/pages/TeamPage'))
 const SystemDiagnostics = lazy(
   () => import('@/features/system/pages/SystemDiagnostics'),
@@ -48,7 +46,7 @@ const publicRoutes: RouteObject[] = [
   {
     element: <AuthLayout />,
     errorElement: <ErrorPage />,
-    children: [{ path: '/', element: <LoginPage /> }],
+    children: [{ path: '/', element: <HomePage /> }],
   },
   {
     path: '/guide',
