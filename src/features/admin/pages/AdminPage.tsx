@@ -10,6 +10,7 @@ import { formatDate, formatDateTimeLong } from '@/shared/utils/date';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
 import AdminDocuments from '../components/AdminDocuments';
+import { CheckIcon, CloseIcon, SearchAltIcon } from '@/shared/components/icons';
 
 type DisplayStatus = 'admin' | 'pending' | 'approved' | 'rejected';
 type UserStatusTab = 'all' | 'pending' | 'approved' | 'rejected';
@@ -93,9 +94,7 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
         <div className="flex items-center justify-between px-6 py-5 border-b border-surface-border">
           <h2 className="text-base font-semibold text-text-primary">사용자 상세 정보</h2>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors" aria-label="닫기">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <CloseIcon className="w-5 h-5" />
           </button>
         </div>
 
@@ -179,9 +178,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
             title="승인"
             className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
           <button
             onClick={() => onReject(user.user_id)}
@@ -189,10 +186,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
             title="거절"
             className="w-6 h-6 flex items-center justify-center rounded bg-brand text-white hover:bg-brand-hover disabled:opacity-50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <CloseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
         </>
       )}
@@ -203,9 +197,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
           title="승인"
           className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
         </button>
       )}
       {(user.displayStatus === 'rejected' || user.displayStatus === 'approved' || user.displayStatus === 'admin') && (
@@ -396,9 +388,7 @@ export default function AdminPage() {
             ))}
           </div>
           <div className="relative ml-auto group">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors duration-200 group-focus-within:text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
-            </svg>
+            <SearchAltIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors duration-200 group-focus-within:text-brand" />
             <input
               type="text"
               value={searchQuery}
@@ -413,9 +403,7 @@ export default function AdminPage() {
                 aria-label="검색어 지우기"
                 className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6 rounded-full text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
+                <CloseIcon className="w-4 h-4" strokeWidth={2.2} />
               </button>
             )}
           </div>

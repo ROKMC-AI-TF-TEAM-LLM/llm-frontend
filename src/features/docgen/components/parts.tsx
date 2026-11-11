@@ -16,7 +16,7 @@ import { getDomainLabel, getDomainStyle } from '@/features/domains/utils'
 import { useCancelDocGenJob, useDeleteDocGenJob, useRetryDocGenJob, type Composer } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'
 import DomainIcon from '@/features/domains/components/DomainIcon'
-import { AlertIcon, CheckIcon, ChevronIcon, DocIcon, DownloadIcon, RetryIcon, StopIcon, TrashIcon } from './icons'
+import { AlertIcon, CheckIcon, ChevronDownIcon, DocumentIcon, DownloadIcon, RetryIcon, StopIcon, TrashAltIcon } from '@/shared/components/icons'
 
 export function Spinner({ className = 'h-3.5 w-3.5' }: { className?: string }) {
   return <span className={`inline-block rounded-full border-2 border-current border-t-transparent animate-spin ${className}`} />
@@ -147,7 +147,7 @@ export function EmptyPreview({ title = '아직 미리볼 문서가 없습니다'
   return (
     <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-subtle text-brand">
-        <DocIcon className="h-5 w-5" />
+        <DocumentIcon className="h-5 w-5" />
       </span>
       <p className="text-[14px] font-semibold text-text-primary">{title}</p>
       <p className="text-[12.5px] text-text-muted">요청을 보내거나 진행 상황에서 문서를 고르면 여기에 나타납니다.</p>
@@ -206,7 +206,7 @@ export function DeleteButton({ job, onDeleted, large = false }: { job: DocGenJob
     return (
       <button type="button" aria-label={`${job.title} 삭제`} title="삭제" disabled={remove.isPending} onClick={() => setConfirming(true)}
         className={`inline-flex shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error disabled:opacity-50 ${large ? 'h-10 w-10' : 'h-8 w-8'}`}>
-        <TrashIcon className={large ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
+        <TrashAltIcon className={large ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
       </button>
     )
 
@@ -220,7 +220,7 @@ export function DeleteButton({ job, onDeleted, large = false }: { job: DocGenJob
     <span className="inline-flex items-center gap-1" onKeyDown={(e) => { if (e.key === 'Escape') setConfirming(false) }}>
       <button ref={confirmRef} type="button" disabled={remove.isPending} onClick={doDelete}
         className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-status-error font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 ${size}`}>
-        {remove.isPending ? <Spinner className="h-3 w-3" /> : <TrashIcon className="h-3.5 w-3.5" />} 삭제
+        {remove.isPending ? <Spinner className="h-3 w-3" /> : <TrashAltIcon className="h-3.5 w-3.5" />} 삭제
       </button>
       <button type="button" disabled={remove.isPending} onClick={() => setConfirming(false)}
         className={`whitespace-nowrap rounded-full font-semibold text-text-secondary transition-colors hover:bg-surface-subtle ${size}`}>
@@ -278,7 +278,7 @@ export function Picker({ label, value, options, onChange, disabled = false, icon
         className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition-colors hover:bg-brand-subtle hover:text-brand disabled:pointer-events-none disabled:opacity-60 ${open ? 'bg-brand-subtle text-brand' : current ? 'text-text-primary' : 'text-text-secondary'}`}>
         {icon}
         {current?.label ?? label}
-        <ChevronIcon className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <ul role="menu" aria-label={label}
@@ -315,7 +315,7 @@ export function ComposerOptions({ c, disabled = false, withTemplate = false }: {
       <Picker label="파일 유형" value={c.format} disabled={disabled} onChange={(v) => c.setFormat(v as DocGenOutputFormat)}
         options={OUTPUT_FORMATS.map((f) => ({ value: f.code, label: f.label }))} />
       {withTemplate && (
-        <Picker label="양식" value={c.templateId} disabled={disabled} icon={<DocIcon className="h-3.5 w-3.5" />} onChange={c.pickTemplate}
+        <Picker label="양식" value={c.templateId} disabled={disabled} icon={<DocumentIcon className="h-3.5 w-3.5" />} onChange={c.pickTemplate}
           options={c.templates.map((t) => ({ value: t.template_id, label: t.name, hint: t.description }))} />
       )}
     </>

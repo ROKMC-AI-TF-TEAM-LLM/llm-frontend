@@ -18,14 +18,12 @@ import {
   InstructionModal,
   KebabMenu,
   Mark,
-  NewChatIcon,
-  PanelIcon,
-  PlusIcon,
   ProjectDocRow,
   ProjectPath,
-  SparkIcon,
   UploadingDocRow,
 } from '../components/parts'
+import { NewChatIcon, PanelIcon, SparkIcon } from '../components/icons'
+import { PlusIcon } from '@/shared/components/icons'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { useMutationState, useQueryClient } from '@tanstack/react-query'
 import { isNetworkError, readApiError } from '@/shared/utils/error'
@@ -347,7 +345,7 @@ export default function ProjectPage() {
             title="지침"
             action={
               <IconButton label="지침 편집" onClick={() => setModalOpen(true)}>
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="h-4 w-4" strokeWidth={2.2} />
               </IconButton>
             }
           >
@@ -358,7 +356,7 @@ export default function ProjectPage() {
             title={`파일 ${documents.length}`}
             action={
               <IconButton label="파일 업로드" onClick={handlePickFile}>
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="h-4 w-4" strokeWidth={2.2} />
               </IconButton>
             }
           >

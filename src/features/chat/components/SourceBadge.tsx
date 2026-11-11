@@ -5,6 +5,7 @@ import { useDocumentDrawer } from '@/features/documents/useDocumentDrawer';
 import { findDocument } from '@/features/documents/utils';
 import { getDomainStyle, getDomainLabel } from '@/features/domains/utils';
 import DocumentDrawer from '@/features/documents/components/DocumentDrawer';
+import { ChevronDownIcon, DocumentIcon } from '@/shared/components/icons';
 
 interface SourceBadgeProps {
   sources?: Source[];
@@ -28,9 +29,7 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
           onClick={() => setOpen(!open)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-subtle text-brand text-xs font-medium rounded-full border border-brand-soft hover:bg-brand-soft transition-colors"
         >
-          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          <ChevronDownIcon width={12} height={12} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
           출처 {sources!.length}개 {open ? '닫기' : '보기'}
         </button>
       )}
@@ -62,10 +61,7 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
                   className="shrink-0 flex items-center justify-center"
                   style={{ width: 38, height: 38, borderRadius: 10, background: style.badgeBg, color: style.bar }}
                 >
-                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <path d="M14 2v6h6M8 13h8M8 17h5" />
-                  </svg>
+                  <DocumentIcon width={18} height={18} />
                 </div>
 
                 <div className="min-w-0 flex-1 flex items-center gap-2">

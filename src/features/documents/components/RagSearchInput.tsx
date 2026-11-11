@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { CloseIcon, SearchAlt2Icon } from '@/shared/components/icons'
 
 interface RagSearchInputProps {
   value: string
@@ -27,19 +28,7 @@ const RagSearchInput = ({
       }`}
       onClick={() => inputRef.current?.focus()}
     >
-      <svg
-        className="shrink-0 transition-colors duration-200 text-[#c9aab2] group-focus-within:text-[#e4002b]"
-        width={compact ? 17 : 20}
-        height={compact ? 17 : 20}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
+      <SearchAlt2Icon className="shrink-0 transition-colors duration-200 text-[#c9aab2] group-focus-within:text-[#e4002b]" width={compact ? 17 : 20} height={compact ? 17 : 20} />
       <input
         ref={inputRef}
         type="text"
@@ -62,18 +51,7 @@ const RagSearchInput = ({
           className="shrink-0 flex items-center justify-center rounded-full text-[#c9aab2] hover:text-text-primary hover:bg-surface-subtle transition-colors"
           style={{ width: compact ? 22 : 26, height: compact ? 22 : 26 }}
         >
-          <svg
-            width={compact ? 15 : 17}
-            height={compact ? 15 : 17}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <CloseIcon width={compact ? 15 : 17} height={compact ? 15 : 17} strokeWidth={2.2} />
         </button>
       )}
     </div>

@@ -3,6 +3,7 @@ import type { DocumentItem } from '../types'
 import { getDomainStyle, getDomainLabel } from '@/features/domains/utils'
 import { formatAppliedAt } from '../utils'
 import { downloadDocument } from '@/shared/utils/downloadAttachment'
+import { CloseIcon, DocumentIcon, DownloadIcon, SpinnerIcon } from '@/shared/components/icons'
 
 interface RagDetailProps {
   doc: DocumentItem
@@ -39,9 +40,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           className="text-text-muted hover:text-text-primary transition-colors"
           aria-label="닫기"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <CloseIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -60,10 +59,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
             className="shrink-0 flex items-center justify-center"
             style={{ width: 48, height: 48, borderRadius: 13, background: style.badgeBg, color: style.bar }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6M8 13h8M8 17h5" />
-            </svg>
+            <DocumentIcon width="22" height="22" />
           </div>
           <h1 className="text-lg font-bold text-text-primary break-all leading-snug">{doc.name}</h1>
         </div>
@@ -86,14 +82,9 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white text-[14px] font-bold shadow-[0_10px_24px_rgba(220,20,60,0.25)] hover:brightness-105 active:scale-[0.99] transition disabled:opacity-60"
         >
           {downloading ? (
-            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.3" />
-              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
+            <SpinnerIcon className="w-4 h-4 animate-spin" trackOpacity={0.3} />
           ) : (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-            </svg>
+            <DownloadIcon className="w-4 h-4" strokeWidth={2.2} />
           )}
           {downloading ? '내려받는 중...' : '원본 다운로드'}
         </button>

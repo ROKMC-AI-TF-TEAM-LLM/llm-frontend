@@ -5,23 +5,17 @@ import { formatFileSize } from '@/shared/utils/fileSize'
 import { normalizeDocStatus } from '@/features/documents/utils'
 import { useEscapeKey } from '@/shared/hooks/useEscapeKey'
 import { useClickOutside } from '@/shared/hooks/useClickOutside'
+import { LayersIcon } from './icons'
 import {
-  ChatIcon,
-  ChevronDown,
-  ChevronRight,
   CloseIcon,
   EditIcon,
   FileIcon,
-  LayersIcon,
   MoreIcon,
-  NewChatIcon,
-  PanelIcon,
   PlusIcon,
-  SparkIcon,
   StarIcon,
   TrashIcon,
   UploadIcon,
-} from './icons'
+} from '@/shared/components/icons'
 
 export function Mark({ size = 34, active = false }: { size?: number; active?: boolean }) {
   return (
@@ -108,7 +102,7 @@ export function IconButton({
 export function FavStar({ active, onToggle }: { active: boolean; onToggle: () => void }) {
   return (
     <IconButton label={active ? '즐겨찾기 해제' : '즐겨찾기 추가'} onClick={onToggle} active={active}>
-      <StarIcon className="h-[17px] w-[17px]" filled={active} />
+      <StarIcon className="h-[17px] w-[17px]" fill={active ? 'currentColor' : 'none'} strokeWidth={1.9} />
     </IconButton>
   )
 }
@@ -144,7 +138,7 @@ export function KebabMenu({
             }}
             className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-[13px] font-medium text-text-secondary transition-colors hover:bg-brand-subtle hover:text-brand"
           >
-            <EditIcon className="h-3.5 w-3.5" />
+            <EditIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
             이름 바꾸기
           </button>
           <button
@@ -155,7 +149,7 @@ export function KebabMenu({
             }}
             className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-[13px] font-medium text-text-secondary transition-colors hover:bg-red-50 hover:text-red-500"
           >
-            <TrashIcon className="h-3.5 w-3.5" />
+            <TrashIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
             삭제
           </button>
         </div>
@@ -224,7 +218,7 @@ export function ProjectDocRow({
         {isBusy || deleting ? (
           <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
         ) : (
-          <FileIcon className="h-3.5 w-3.5" />
+          <FileIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
         )}
       </span>
       <span className="min-w-0 flex-1">
@@ -256,7 +250,7 @@ export function ProjectDocRow({
       )}
       {onDelete && (
         <IconButton label="파일 제거" danger onClick={onDelete} disabled={deleting}>
-          <CloseIcon className="h-3.5 w-3.5" />
+          <CloseIcon className="h-3.5 w-3.5" strokeWidth={2.2} />
         </IconButton>
       )}
     </div>
@@ -383,7 +377,7 @@ export function ChatRow({
             chat.isFavorite ? 'text-brand' : 'text-text-muted hover:text-brand'
           } hover:bg-white`}
         >
-          <StarIcon className="h-3.5 w-3.5" filled={chat.isFavorite} />
+          <StarIcon className="h-3.5 w-3.5" fill={chat.isFavorite ? 'currentColor' : 'none'} strokeWidth={1.9} />
         </button>
         <button
           type="button"
@@ -395,7 +389,7 @@ export function ChatRow({
           aria-label="이름 변경"
           className="rounded-[7px] p-1.5 text-text-muted transition-colors hover:bg-white hover:text-brand"
         >
-          <EditIcon className="h-3.5 w-3.5" />
+          <EditIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
         </button>
         <button
           type="button"
@@ -406,7 +400,7 @@ export function ChatRow({
           aria-label="대화 삭제"
           className="rounded-[7px] p-1.5 text-text-muted transition-colors hover:bg-red-50 hover:text-red-500"
         >
-          <TrashIcon className="h-3.5 w-3.5" />
+          <TrashIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
         </button>
       </div>
     </div>
@@ -461,7 +455,7 @@ export function InstructionBody({
 export function EmptyFiles() {
   return (
     <div className="rounded-[10px] bg-[#faf7f8] px-4 py-6 text-center">
-      <UploadIcon className="mx-auto h-5 w-5 text-brand opacity-50" />
+      <UploadIcon className="mx-auto h-5 w-5 text-brand opacity-50" strokeWidth={1.9} />
       <p className="mt-2 text-[12px] leading-relaxed text-text-muted">
         이 프로젝트에서 참조할 문서를 추가하세요.
       </p>
@@ -521,7 +515,7 @@ function CreateProjectBody({
             <h2 className="text-[16px] font-bold tracking-[-0.01em] text-text-primary">새 프로젝트</h2>
           </div>
           <IconButton label="닫기" onClick={onClose}>
-            <CloseIcon className="h-4 w-4" />
+            <CloseIcon className="h-4 w-4" strokeWidth={2.2} />
           </IconButton>
         </div>
 
@@ -659,7 +653,7 @@ function FilesModalBody({
             </p>
           </div>
           <IconButton label="닫기" onClick={onClose}>
-            <CloseIcon className="h-4 w-4" />
+            <CloseIcon className="h-4 w-4" strokeWidth={2.2} />
           </IconButton>
         </div>
 
@@ -686,7 +680,7 @@ function FilesModalBody({
             onClick={() => fileInputRef.current?.click()}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-[10px] border border-[#f0e6e8] px-3.5 py-2.5 text-[13.5px] font-semibold text-text-secondary transition-colors hover:border-brand-soft hover:bg-brand-subtle hover:text-brand"
           >
-            <PlusIcon className="h-4 w-4" />
+            <PlusIcon className="h-4 w-4" strokeWidth={2.2} />
             첨부
           </button>
         </div>
@@ -769,7 +763,7 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
         <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-4">
           <h2 className="text-[16px] font-bold tracking-[-0.01em] text-text-primary">프로젝트 지침</h2>
           <IconButton label="닫기" onClick={onClose}>
-            <CloseIcon className="h-4 w-4" />
+            <CloseIcon className="h-4 w-4" strokeWidth={2.2} />
           </IconButton>
         </div>
 
@@ -813,4 +807,3 @@ function ModalBody({ initial, onClose, onSave }: { initial: string; onClose: () 
   )
 }
 
-export { ChatIcon, FileIcon, LayersIcon, SparkIcon, PlusIcon, ChevronRight, ChevronDown, StarIcon, UploadIcon, CloseIcon, PanelIcon, NewChatIcon }

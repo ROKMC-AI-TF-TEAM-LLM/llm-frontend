@@ -59,6 +59,7 @@ features/<기능>/
 - `shared/utils/error.ts` — 서버 오류 해석(`getApiError`·`readApiError`·`isNetworkError`, `ApiError` 타입). `response.data.error`를 직접 꺼내지 않는다
 - `shared/hooks/useInfiniteScroll.ts` — 목록 끝 감시 요소가 보이면 다음 쪽 불러오기. `IntersectionObserver`를 화면에서 직접 쓰지 않는다(등장 애니메이션 제외)
 - `shared/hooks/useEscapeKey.ts`·`useClickOutside.ts` — ESC·바깥 클릭으로 닫기
+- `shared/components/icons` — UI 아이콘(닫기·삭제·편집·별·검색·화살표 등)과 공통 틀 `Icon`. 화면에 `<svg>`를 직접 쓰지 않는다(일러스트·로고·차트 제외). 한 기능에서만 쓰는 아이콘은 그 기능의 `components/icons.tsx`
 - `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
 
 ## import 쓰는 법

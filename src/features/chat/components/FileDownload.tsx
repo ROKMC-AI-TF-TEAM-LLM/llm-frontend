@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FileAttachment } from '@/shared/types/attachment';
 import { downloadAttachment, fileExtOf } from '@/shared/utils/downloadAttachment';
 import { formatFileSize } from '@/shared/utils/fileSize';
+import { DownloadIcon, FileIcon, SpinnerIcon } from '@/shared/components/icons';
 
 interface FileDownloadProps {
   attachments?: FileAttachment[];
@@ -38,10 +39,7 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
             className="group w-full flex items-center gap-3 p-3 rounded-xl border border-brand-soft bg-brand-subtle text-left transition-colors hover:bg-brand-soft disabled:opacity-60 disabled:cursor-default"
           >
             <div className="shrink-0 w-9 h-9 rounded-lg bg-brand flex items-center justify-center">
-              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <path d="M14 2v6h6" />
-              </svg>
+              <FileIcon width={18} height={18} stroke="white" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold text-text-primary truncate">{att.name}</p>
@@ -50,14 +48,9 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
               </p>
             </div>
             {busy ? (
-              <svg className="shrink-0 w-5 h-5 text-brand animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
-                <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
+              <SpinnerIcon className="shrink-0 w-5 h-5 text-brand animate-spin" />
             ) : (
-              <svg className="shrink-0 w-5 h-5 text-brand transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-              </svg>
+              <DownloadIcon className="shrink-0 w-5 h-5 text-brand transition-transform group-hover:translate-y-0.5" />
             )}
           </button>
         );

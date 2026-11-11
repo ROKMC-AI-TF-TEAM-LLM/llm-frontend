@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { ProjectView } from '@/features/projects/hooks'
-import { EditIcon, LayersIcon, StarIcon, TrashIcon } from '@/features/projects/components/icons'
+import { LayersIcon } from '@/features/projects/components/icons'
+import { EditIcon, StarIcon, TrashIcon } from '@/shared/components/icons'
 
 const HOVER_BG = '#fdedf2'
 
@@ -82,7 +83,7 @@ export default function ProjectItem({
             p.isFavorite ? 'text-brand' : 'text-text-muted hover:text-brand'
           }`}
         >
-          <StarIcon className="h-3 w-3" filled={p.isFavorite} />
+          <StarIcon className="h-3 w-3" fill={p.isFavorite ? 'currentColor' : 'none'} strokeWidth={1.9} />
         </button>
 
         <button
@@ -94,7 +95,7 @@ export default function ProjectItem({
           aria-label="이름 변경"
           className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-brand-subtle hover:text-brand"
         >
-          <EditIcon className="h-3 w-3" />
+          <EditIcon className="h-3 w-3" strokeWidth={1.9} />
         </button>
 
         <button
@@ -105,7 +106,7 @@ export default function ProjectItem({
           aria-label="프로젝트 삭제"
           className="rounded-lg p-1.5 text-text-muted transition-colors hover:bg-red-50 hover:text-red-500"
         >
-          <TrashIcon className="h-3 w-3" />
+          <TrashIcon className="h-3 w-3" strokeWidth={1.9} />
         </button>
       </div>
     </li>

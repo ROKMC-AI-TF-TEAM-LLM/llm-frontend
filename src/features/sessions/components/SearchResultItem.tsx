@@ -1,3 +1,4 @@
+import { ChatAltIcon } from '@/shared/components/icons'
 export interface SearchResult {
   id: string
   title: string
@@ -19,19 +20,7 @@ const SearchResultItem = ({ result, isActive, onClick }: Props) => {
       }`}
     >
       <div className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-brand-subtle' : 'bg-surface'}`}>
-        <svg
-          viewBox="0 0 24 24"
-          width="18"
-          height="18"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={isActive ? 'text-brand' : 'text-text-muted'}
-        >
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
+        <ChatAltIcon width="18" height="18" className={isActive ? 'text-brand' : 'text-text-muted'} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-text-primary truncate">{result.title}</p>

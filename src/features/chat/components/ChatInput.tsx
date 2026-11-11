@@ -6,6 +6,7 @@ import { logError } from '@/shared/utils/logError';
 import { useCreateSession } from '@/features/sessions/hooks';
 import { showToast } from '@/shared/store/toastStore';
 import DomainPicker from './DomainPicker';
+import { ArrowUpIcon, CloseIcon, FileIcon, StopFilledIcon } from '@/shared/components/icons';
 
 const MAX_LEN = 1000;
 const MAX_LIMIT_TOAST = 5;
@@ -246,10 +247,7 @@ export default function ChatInput({
           <div className="flex items-center gap-2 px-3 pt-2">
             <div className="flex items-center gap-2 bg-brand text-white rounded-xl px-3 py-2 max-w-full">
               <div className="bg-brand-soft rounded-lg p-1.5 shrink-0">
-                <svg className="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 2v6h6" />
-                </svg>
+                <FileIcon className="w-4 h-4 text-brand" />
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-xs font-medium truncate max-w-45">{pendingBasename}</span>
@@ -260,9 +258,7 @@ export default function ChatInput({
                 className="ml-1 text-white/60 hover:text-white shrink-0"
                 aria-label="첨부 취소"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <CloseIcon className="w-5 h-5" strokeWidth={2.5} />
               </button>
             </div>
           </div>
@@ -290,9 +286,7 @@ export default function ChatInput({
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="중단"
             >
-              <svg className="w-[18px] h-[18px] text-white" fill="currentColor" viewBox="0 0 24 24">
-                <rect x="5" y="5" width="14" height="14" rx="2" />
-              </svg>
+              <StopFilledIcon className="w-[18px] h-[18px] text-white" />
             </button>
           ) : (value.trim() || pendingFile) ? (
             <button
@@ -301,9 +295,7 @@ export default function ChatInput({
               className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in"
               aria-label="전송"
             >
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
+              <ArrowUpIcon className="w-5 h-5 text-white" strokeWidth={2.4} />
             </button>
           ) : null}
         </div>

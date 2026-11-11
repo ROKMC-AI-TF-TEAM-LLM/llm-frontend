@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import type { User } from '@/features/chat/types';
 import { useAuth } from '@/features/auth/useAuth';
 import { TUTORIALS } from '@/features/tutorials/tutorials';
+import { ChevronRightIcon, ExternalLinkIcon, Icon, InfoIcon, LogoutIcon, UserIcon } from '@/shared/components/icons';
 
 interface SidebarFooterProps {
   isOpen: boolean;
@@ -57,14 +58,9 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
                 subOpen ? 'bg-surface-subtle text-text-primary' : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
               }`}
             >
-              <svg className="h-[18px] w-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 16v-4M12 8h.01" />
-              </svg>
+              <InfoIcon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.9} />
               자세히 알아보기
-              <svg className="ml-auto h-3.5 w-3.5 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 6l6 6-6 6" />
-              </svg>
+              <ChevronRightIcon className="ml-auto h-3.5 w-3.5 shrink-0 text-text-muted" strokeWidth={2.2} />
             </button>
 
             {subOpen && (
@@ -101,9 +97,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             onClick={() => { setOpen(false); logout(); }}
             className="w-full font-semibold flex items-center gap-3 px-4 py-2 text-[13.5px] text-red-500 hover:bg-red-50 transition-colors"
           >
-            <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <LogoutIcon className="w-[18px] h-[18px] shrink-0" />
             로그아웃
           </button>
         </div>
@@ -139,9 +133,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             pointerEvents: isOpen ? 'auto' : 'none',
           }}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
+          <LogoutIcon className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -157,9 +149,7 @@ function Avatar() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
-      </svg>
+      <UserIcon width="15" height="15" stroke="#fff" strokeWidth={2.2} />
     </div>
   );
 }
@@ -180,9 +170,7 @@ function SubItem({
     >
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {external && (
-        <svg className="h-3.5 w-3.5 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
-        </svg>
+        <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 text-text-muted" />
       )}
     </button>
   );
@@ -194,9 +182,7 @@ function MenuItem({ icon, label, onClick }: { icon: React.ReactNode; label: stri
       onClick={onClick}
       className="w-full mars-brand-serif flex items-center gap-3 px-4 py-2 text-[13.5px] text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
     >
-      <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
-        {icon}
-      </svg>
+      <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.9}>{icon}</Icon>
       {label}
     </button>
   );

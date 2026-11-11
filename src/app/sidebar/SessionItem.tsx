@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { ChatItem } from '@/features/chat/types'
 import { useConfirmDeleteSession, useUpdateSession, useToggleFavorite } from '@/features/sessions/hooks'
 import { displaySessionTitle } from '@/features/sessions/utils'
+import { EditIcon, StarAltIcon, TrashIcon } from '@/shared/components/icons'
 
 const HOVER_BG = '#fdedf2'
 
@@ -88,17 +89,7 @@ export default function SessionItem({ chat }: SessionItemProps) {
           }`}
           aria-label={chat.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
         >
-          <svg
-            className="w-3 h-3"
-            viewBox="0 0 24 24"
-            fill={chat.isFavorite ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            strokeWidth={2.2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2l2.9 6.26 6.6.72-4.9 4.6 1.35 6.42L12 16.9 6.05 20l1.35-6.42L2.5 8.98l6.6-.72L12 2z" />
-          </svg>
+          <StarAltIcon className="w-3 h-3" fill={chat.isFavorite ? 'currentColor' : 'none'} strokeWidth={2.2} />
         </button>
 
         <button
@@ -106,9 +97,7 @@ export default function SessionItem({ chat }: SessionItemProps) {
           className="p-1.5 rounded-lg text-text-muted hover:text-brand hover:bg-brand-subtle transition-colors"
           aria-label="제목 수정"
         >
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
+          <EditIcon className="w-3 h-3" strokeWidth={2.2} />
         </button>
 
         <button
@@ -116,9 +105,7 @@ export default function SessionItem({ chat }: SessionItemProps) {
           className="p-1.5 rounded-lg text-text-muted hover:text-red-500 hover:bg-red-50 transition-colors"
           aria-label="세션 삭제"
         >
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
+          <TrashIcon className="w-3 h-3" strokeWidth={2.2} />
         </button>
       </div>
     </li>

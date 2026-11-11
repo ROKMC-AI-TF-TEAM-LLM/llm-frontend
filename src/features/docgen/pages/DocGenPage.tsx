@@ -11,7 +11,7 @@ import { AI_NOTICE } from '@/shared/constants'
 import { formatFileSize } from '@/shared/utils/fileSize'
 import { getDomainStyle } from '@/features/domains/utils'
 import { useDocGenJobs, selectable, useComposer, useFreshIds } from '../hooks'
-import { ArrowUpIcon, DocIcon, DownloadIcon, XIcon } from '../components/icons'
+import { ArrowUpIcon, CloseIcon, DocumentIcon, DownloadIcon } from '@/shared/components/icons'
 import {
   ComposerOptions, DeleteButton, JobActions, JobMeta, JobProgressText, PreviewBody, ProgressBar, Spinner, StatusBadge, StatusDot,
 } from '../components/parts'
@@ -98,7 +98,7 @@ function PreviewPanel({ job, pending, onClose, onDeleted }: {
     <div className="flex h-full flex-col gap-4 p-5">
       <div className="flex flex-wrap items-center gap-3">
         <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${motion} ${r ? 'bg-brand text-white' : 'bg-surface-card1 text-text-muted'}`}>
-          {building ? <Spinner className="h-4 w-4 text-brand" /> : <DocIcon className="h-5 w-5" />}
+          {building ? <Spinner className="h-4 w-4 text-brand" /> : <DocumentIcon className="h-5 w-5" />}
         </span>
         <div className="min-w-0 flex-1">
           {job ? (
@@ -123,7 +123,7 @@ function PreviewPanel({ job, pending, onClose, onDeleted }: {
           )}
           {job && !building && <DeleteButton job={job} onDeleted={onDeleted} large />}
           <button type="button" aria-label="미리보기 닫기" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-subtle hover:text-text-primary">
-            <XIcon className="h-4 w-4" />
+            <CloseIcon className="h-4 w-4" />
           </button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { Icon } from '@/shared/components/icons';
 const pathFor = (code: string) => {
   switch (code) {
     case 'HR':
@@ -23,8 +24,6 @@ interface DomainIconProps {
 
 export default function DomainIcon({ code, size = 16, className }: DomainIconProps) {
   return (
-    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      {pathFor(code)}
-    </svg>
+    <Icon className={className} width={size} height={size}>{pathFor(code)}</Icon>
   );
 }

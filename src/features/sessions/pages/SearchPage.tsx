@@ -8,6 +8,7 @@ import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { SearchSessionCardSkeleton } from '@/shared/components/Skeleton'
 import { showToast } from '@/shared/store/toastStore'
 import { formatDateTime } from '@/shared/utils/date'
+import { ChatAltIcon } from '@/shared/components/icons'
 
 const SearchPage = () => {
   const navigate = useNavigate()
@@ -90,18 +91,7 @@ const SearchPage = () => {
                           style={{ background: 'linear-gradient(135deg,#fff0f3,#fde3e8)', border: '1px solid #f7d7de', color: '#e4002b' }}
                           className="shrink-0 flex items-center justify-center w-9 h-9 rounded-[11px]"
                         >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          </svg>
+                          <ChatAltIcon width="16" height="16" />
                         </div>
                         <span className="text-[15px] font-bold text-text-primary truncate">
                           {session.title}

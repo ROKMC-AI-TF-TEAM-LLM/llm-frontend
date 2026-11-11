@@ -3,6 +3,7 @@ import type { ChatItem } from '@/features/chat/types'
 import SessionItem from './SessionItem'
 import { SessionItemSkeleton } from '@/shared/components/Skeleton'
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
+import { ChevronDownIcon } from '@/shared/components/icons'
 
 interface RecentChatsProps {
   isOpen: boolean;
@@ -34,17 +35,7 @@ export default function RecentChats({ isOpen, chats, hasMore, onLoadMore, isLoad
         <span className="text-[10.5px] mars-brand-serif font-extrabold uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
           최근 대화
         </span>
-        <svg
-          className={`h-3 w-3 shrink-0 text-[#c9aab2] transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-[#c9aab2] transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`} strokeWidth={2.6} />
       </button>
 
       {expanded && (

@@ -3,6 +3,7 @@ import { useEscapeKey } from '@/shared/hooks/useEscapeKey';
 import type { FileAttachment } from '@/shared/types/attachment';
 import { downloadAttachment, fileExtOf } from '@/shared/utils/downloadAttachment';
 import { formatFileSize } from '@/shared/utils/fileSize';
+import { CloseIcon, DownloadIcon, FileIcon, SpinnerIcon } from '@/shared/components/icons';
 
 interface FilesDrawerProps {
   open: boolean;
@@ -45,9 +46,7 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
               <span className="text-[13px] font-medium text-text-muted">{files.length}</span>
             </div>
             <button type="button" onClick={close} className="text-text-muted hover:text-text-primary transition-colors" aria-label="닫기">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <CloseIcon className="w-5 h-5" />
             </button>
           </div>
 
@@ -64,10 +63,7 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
                   return (
                     <div key={att.attachment_id} className="flex items-center gap-3 p-3 rounded-xl border border-surface-border bg-surface-subtle">
                       <div className="shrink-0 w-10 h-10 rounded-lg bg-brand flex items-center justify-center">
-                        <svg width={19} height={19} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <path d="M14 2v6h6" />
-                        </svg>
+                        <FileIcon width={19} height={19} stroke="white" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-[13.5px] font-semibold text-text-primary truncate">{att.name}</p>
@@ -80,14 +76,9 @@ export default function FilesDrawer({ open, files, onClose }: FilesDrawerProps) 
                         className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-soft bg-brand-subtle text-brand text-[12.5px] font-semibold hover:bg-brand-soft transition-colors disabled:opacity-60"
                       >
                         {busy ? (
-                          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
-                            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                          </svg>
+                          <SpinnerIcon className="w-4 h-4 animate-spin" />
                         ) : (
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
-                          </svg>
+                          <DownloadIcon className="w-4 h-4" />
                         )}
                         다운로드
                       </button>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CheckIcon, CopyIcon, RegenerateIcon } from '@/shared/components/icons';
 
 interface MessageActionsProps {
   role?: 'user' | 'assistant';
@@ -65,10 +66,7 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
             className={`${iconBtn} disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-muted`}
             aria-label="다시 생성"
           >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
+            <RegenerateIcon width={14} height={14} />
           </button>
           {!regenerateDisabled && (
             <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/regen:opacity-100 transition-opacity">
@@ -86,14 +84,9 @@ export default function MessageActions({ role = 'assistant', onCopy, onRegenerat
           aria-label="복사"
         >
           {copied ? (
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
+            <CheckIcon width={14} height={14} strokeWidth={2.5} />
           ) : (
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
+            <CopyIcon width={14} height={14} />
           )}
         </button>
         {!copied && (

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
+import { ChevronsLeftIcon } from "@/shared/components/icons";
 
 interface SidebarHeaderProps {
   isOpen: boolean;
@@ -43,20 +44,7 @@ export default function SidebarHeader({ isOpen, onToggle }: SidebarHeaderProps) 
         className="relative flex items-center justify-center border-none bg-transparent text-[#9a8a90] hover:bg-[#fdedf2] hover:text-[#c0002a] transition-colors cursor-pointer"
         aria-label={isOpen ? '사이드바 접기' : '사이드바 펴기'}
       >
-        <svg
-          width={18}
-          height={18}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`}
-        >
-          <path d="M17 6l-6 6 6 6" />
-          <path d="M11 6l-6 6 6 6" />
-        </svg>
+        <ChevronsLeftIcon width={18} height={18} className={`transition-transform duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)] ${isOpen ? '' : 'rotate-180'}`} strokeWidth={2.2} />
         {showTip && (
           <span
             className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[11px] font-semibold text-white bg-[#2c2b30] shadow-lg animate-fade-in"

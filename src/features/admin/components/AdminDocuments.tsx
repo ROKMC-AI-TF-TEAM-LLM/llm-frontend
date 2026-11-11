@@ -15,6 +15,7 @@ import { formatDate } from '@/shared/utils/date';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { formatFileSize } from '@/shared/utils/fileSize';
 import type { AdminDocumentItem, AdminDocStatus } from '../types';
+import { ChevronDownIcon, CloseIcon, SearchAltIcon, UploadAltIcon } from '@/shared/components/icons';
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
@@ -218,9 +219,7 @@ export default function AdminDocuments() {
         />
         <div className="flex items-center gap-4 min-w-0">
           <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-soft flex items-center justify-center">
-            <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3v12M7 8l5-5 5 5M5 21h14" />
-            </svg>
+            <UploadAltIcon className="w-5 h-5 text-brand" />
           </div>
           <div className="min-w-0">
             <p className="text-[15px] font-bold text-text-primary">파일을 여기로 끌어다 놓거나 클릭해 업로드</p>
@@ -237,7 +236,7 @@ export default function AdminDocuments() {
             >
               <span className="w-2 h-2 rounded-full" style={{ background: getDomainStyle(uploadDomain.code).bar }} />
               {uploadDomain.label}
-              <svg className={`w-3.5 h-3.5 transition-transform ${domainMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+              <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform ${domainMenuOpen ? 'rotate-180' : ''}`} />
             </button>
             {domainMenuOpen && (
               <div className="absolute right-0 top-full mt-2 min-w-[160px] rounded-2xl border border-surface-border bg-white shadow-[0_10px_30px_rgba(40,30,35,0.12)] p-1.5 z-20">
@@ -286,9 +285,7 @@ export default function AdminDocuments() {
           ))}
         </div>
         <div className="relative w-full max-w-[280px]">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
-          </svg>
+          <SearchAltIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             type="text"
             value={search}
@@ -302,7 +299,7 @@ export default function AdminDocuments() {
               className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
               aria-label="검색어 지우기"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              <CloseIcon className="w-4 h-4" strokeWidth={2.2} />
             </button>
           )}
         </div>

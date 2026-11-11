@@ -3,6 +3,7 @@ import type { ChatItem } from '@/features/chat/types'
 import SessionItem from './SessionItem'
 import ProjectItem from './ProjectItem'
 import { useProjectList, useUpdateProject, useToggleProjectFavorite, useConfirmDeleteProject } from '@/features/projects/hooks'
+import { ChevronDownIcon } from '@/shared/components/icons'
 
 interface FavoriteChatsProps {
   isOpen: boolean
@@ -46,17 +47,7 @@ export default function FavoriteChats({ isOpen, favorites }: FavoriteChatsProps)
         <span className="text-[10.5px] font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-[#c9aab2] whitespace-nowrap">
           즐겨찾기
         </span>
-        <svg
-          className={`h-3 w-3 shrink-0 text-[#c9aab2] transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        <ChevronDownIcon className={`h-3 w-3 shrink-0 text-[#c9aab2] transition-transform duration-200 ${expanded ? '' : '-rotate-90'}`} strokeWidth={2.6} />
       </button>
 
       {expanded && (

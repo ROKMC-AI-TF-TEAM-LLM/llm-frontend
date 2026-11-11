@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { CloseIcon, SearchAlt2Icon } from '@/shared/components/icons'
 
 interface SearchInputProps {
   value: string
@@ -15,9 +16,7 @@ const SearchInput = ({ value, onChange, placeholder = '채팅 및 대화를 입�
       className="group flex items-center gap-3 pl-[20px] pr-5 py-[18px] rounded-[22px] transition-all duration-200 focus-within:border-[#e4002b] focus-within:shadow-[0_0_0_3px_rgba(228,0,43,0.08)] cursor-text"
       onClick={() => inputRef.current?.focus()}
     >
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#c9aab2] transition-colors duration-200 group-focus-within:text-[#e4002b]">
-        <path d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
+      <SearchAlt2Icon width="20" height="20" className="shrink-0 text-[#c9aab2] transition-colors duration-200 group-focus-within:text-[#e4002b]" />
       <input
         ref={inputRef}
         type="text"
@@ -37,9 +36,7 @@ const SearchInput = ({ value, onChange, placeholder = '채팅 및 대화를 입�
           aria-label="검색어 지우기"
           className="shrink-0 flex items-center justify-center w-[26px] h-[26px] rounded-full text-[#c9aab2] hover:text-text-primary hover:bg-surface-subtle transition-colors"
         >
-          <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <CloseIcon width={17} height={17} strokeWidth={2.2} />
         </button>
       )}
     </div>

@@ -3,6 +3,7 @@ import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDomainCapabilities } from '@/features/domains/hooks';
 import type { DomainSelection } from '../store';
 import DomainIcon from '@/features/domains/components/DomainIcon';
+import { CheckIcon, ChevronDownIcon, MenuIcon } from '@/shared/components/icons';
 
 interface DomainPickerProps {
   value: DomainSelection | null;
@@ -61,14 +62,10 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
         }`}
       >
         {value ? <DomainIcon code={value.code} size={20} /> : (
-          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 7h18M3 12h18M3 17h18" />
-          </svg>
+          <MenuIcon width={20} height={20} />
         )}
         <span>{value ? value.label : '전체'}</span>
-        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <ChevronDownIcon width={14} height={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && pos && (
@@ -95,9 +92,7 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
             active={!value}
             onClick={() => select(null)}
             icon={
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 7h18M3 12h18M3 17h18" />
-              </svg>
+              <MenuIcon width={14} height={14} strokeWidth={2.4} />
             }
             label="전체"
           />
@@ -135,9 +130,7 @@ function MenuRow({
       </span>
       <span className="flex-1">{label}</span>
       {active && (
-        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
+        <CheckIcon width={15} height={15} strokeWidth={2.6} />
       )}
     </button>
   );

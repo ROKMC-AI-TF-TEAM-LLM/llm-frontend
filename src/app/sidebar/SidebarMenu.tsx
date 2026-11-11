@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { DocumentAltIcon, FolderIcon, PlusIcon, SearchIcon } from "@/shared/components/icons";
 
 interface SidebarMenuProps {
   isOpen: boolean;
@@ -10,28 +11,21 @@ const navItems = [
     label: "대화 검색",
     path: "/search",
     icon: (
-      <svg className="sb-icon sb-icon-search" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-        <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-      </svg>
+      <SearchIcon className="sb-icon sb-icon-search" width="16" height="16" strokeWidth={2.2} />
     ),
   },
   {
     label: "문서 검색",
     path: "/rag",
     icon: (
-      <svg className="sb-icon sb-icon-folder" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      </svg>
+      <FolderIcon className="sb-icon sb-icon-folder" width="16" height="16" strokeWidth={2.2} />
     ),
   },
   {
     label: "문서 제작",
     path: "/docgen",
     icon: (
-      <svg className="sb-icon sb-icon-docgen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-        <path d="M14 3v5h5M9 13h6M9 17h4" />
-      </svg>
+      <DocumentAltIcon className="sb-icon sb-icon-docgen" width="16" height="16" strokeWidth={2.2} />
     ),
   },
   // TODO: 번역 기능 미완성 — 완성 후 주석 해제
@@ -71,9 +65,7 @@ export default function SidebarMenu({ isOpen }: SidebarMenuProps) {
         className="sb-item flex items-center gap-[10px] px-[10px] py-[9px] rounded-[11px] text-[13px] font-semibold hover:bg-[#fdedf2] transition-colors duration-200 cursor-pointer"
       >
         <span className="w-[18px] flex justify-center shrink-0">
-          <svg className="sb-icon sb-icon-plus" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          <PlusIcon className="sb-icon sb-icon-plus" width="17" height="17" strokeWidth={2.2} />
         </span>
         <span className={labelCls}>새 채팅</span>
       </button>

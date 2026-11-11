@@ -6,6 +6,7 @@ import SourceBadge from './SourceBadge';
 import FileDownload from './FileDownload';
 import ImageAttachment from './ImageAttachment';
 import DomainIcon from '@/features/domains/components/DomainIcon';
+import { AlertAltIcon } from '@/shared/components/icons';
 
 interface MessageRowProps {
   msg: Message;
@@ -68,10 +69,7 @@ function MessageRowBase({ msg, isLast, isStreaming, statusText, statusSteps, onC
           )}
           {isInterrupted && (
             <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
-              <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10" />
-                <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-              </svg>
+              <AlertAltIcon className="w-4 h-4 shrink-0 text-text-muted" />
               <span>응답이 중단되었습니다.</span>
               <button
                 onClick={() => onRegenerate(msg.id)}
