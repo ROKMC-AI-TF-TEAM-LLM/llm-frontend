@@ -7,6 +7,7 @@ import { useSearchSessions, useInfiniteSessions } from '../hooks'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { SearchSessionCardSkeleton } from '@/shared/components/Skeleton'
 import { showToast } from '@/shared/store/toastStore'
+import { formatDateTime } from '@/shared/utils/date'
 
 const SearchPage = () => {
   const navigate = useNavigate()
@@ -26,7 +27,7 @@ const SearchPage = () => {
   const searchResults: SearchResult[] = (searchData?.data?.data ?? []).map((s) => ({
     id: s.session_id,
     title: s.title,
-    preview: new Date(s.updated_at).toLocaleString('ko-KR'),
+    preview: formatDateTime(s.updated_at),
   }))
 
   const recentSessions = (sessionsData?.pages ?? []).flatMap((p) => p.data.data.items)
@@ -107,7 +108,7 @@ const SearchPage = () => {
                         </span>
                       </div>
                       <span className="text-xs text-[#a89aa0] ml-[46px]">
-                        {new Date(session.updated_at).toLocaleString('ko-KR')}
+                        {formatDateTime(session.updated_at)}
                       </span>
                     </button>
                   ))}

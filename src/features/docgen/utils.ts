@@ -53,20 +53,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 export const getJobErrorMessage = (code: DocGenErrorCode | null | undefined, fallback?: string): string =>
   (code && ERROR_MESSAGES[code]) || fallback || '문서를 만들지 못했습니다. 다시 시도해 주세요.'
 
-export const formatBytes = (size?: number | null): string => {
-  if (!size || size <= 0) return '-'
-  if (size < 1024) return `${size}B`
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)}KB`
-  return `${(size / 1024 / 1024).toFixed(1)}MB`
-}
-
-export const formatClock = (iso?: string | null): string => {
-  if (!iso) return ''
-  const t = Date.parse(iso)
-  if (Number.isNaN(t)) return ''
-  return new Date(t).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })
-}
-
 export const formatDuration = (fromIso?: string | null, toIso?: string | null): string => {
   if (!fromIso || !toIso) return ''
   const sec = Math.max(0, Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 1000))

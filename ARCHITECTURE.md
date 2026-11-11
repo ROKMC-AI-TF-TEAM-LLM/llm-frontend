@@ -50,6 +50,14 @@ features/<기능>/
 | `system` | 서버 상태, 숨은 진단 화면 | — |
 | `landing`·`team`·`tutorials` | 소개·이용 안내·팀·튜토리얼 페이지 | `/guide`, `/team`, `/tutorials` |
 
+## 공용 코드 (shared)
+
+새 공용 코드를 만들면 여기에 한 줄 추가합니다.
+
+- `shared/utils/date.ts` — 날짜·시간 표시(`formatDate`·`formatDateTime`·`formatDateTimeLong`·`formatClock`). `toLocale*` 호출은 여기에만 둔다
+- `shared/utils/fileSize.ts` — 파일 크기 표시(`formatFileSize`)
+- `shared/constants.ts` — 여러 기능이 같이 쓰는 문구(`AI_NOTICE`)
+
 ## import 쓰는 법
 
 - 같은 기능(또는 같은 `app`·`shared`·`lib`) 안: 상대 경로 `./api`, `../hooks`

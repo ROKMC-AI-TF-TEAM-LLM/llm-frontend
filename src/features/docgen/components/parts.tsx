@@ -4,12 +4,12 @@ import type { DocGenJob, DocGenOutputFormat } from '../types'
 import {
   JOB_STATE_LABEL,
   OUTPUT_FORMATS,
-  formatClock,
   formatDuration,
   formatEta,
   getJobErrorMessage,
   normalizeJobStatus,
 } from '../utils'
+import { formatClock } from '@/shared/utils/date'
 import { getDomainLabel, getDomainStyle } from '@/features/domains/utils'
 import { useCancelDocGenJob, useDeleteDocGenJob, useRetryDocGenJob, type Composer } from '../hooks'
 import { showToast } from '@/shared/store/toastStore'

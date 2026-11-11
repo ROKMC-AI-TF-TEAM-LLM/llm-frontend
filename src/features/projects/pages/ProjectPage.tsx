@@ -30,9 +30,8 @@ import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import { useMutationState, useQueryClient } from '@tanstack/react-query'
 import { isNetworkError } from '@/shared/utils/error'
 import { logError } from '@/shared/utils/logError'
-
-// ChatPage·NewChatPage와 같은 안내 문구.
-const AI_NOTICE = 'MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.'
+import { AI_NOTICE } from '@/shared/constants'
+import { formatClock } from '@/shared/utils/date'
 
 const SESSION_ERRORS: Record<string, string> = {
   SESSION_NOT_FOUND: '존재하지 않는 대화입니다.',
@@ -63,13 +62,6 @@ function PollingDocRow({
       deleting={deleting}
     />
   )
-}
-
-const formatTime = (iso?: string | null): string => {
-  if (!iso) return ''
-  const t = Date.parse(iso)
-  if (Number.isNaN(t)) return ''
-  return new Date(t).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })
 }
 
 export default function ProjectPage() {
@@ -252,7 +244,7 @@ export default function ProjectPage() {
         id: s.session_id,
         title: s.title,
         isFavorite: s.is_favorite,
-        updatedAt: formatTime(s.updated_at),
+        updatedAt: formatClock(s.updated_at),
         messageCount: 0,
       }))
   }, [sessionsData])

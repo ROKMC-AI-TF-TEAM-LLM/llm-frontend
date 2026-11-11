@@ -11,6 +11,8 @@ import { normalizeDocStatus } from '@/features/documents/utils';
 import DomainIcon from '@/features/domains/components/DomainIcon';
 import { showToast } from '@/shared/store/toastStore';
 import { getApiError, DEFAULT_STATUS_ERRORS, type ApiError } from '@/shared/utils/error';
+import { formatDate } from '@/shared/utils/date';
+import { formatFileSize } from '@/shared/utils/fileSize';
 import type { AdminDocumentItem, AdminDocStatus } from '../types';
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed';
@@ -72,7 +74,7 @@ function DocumentRow({
           <span className="shrink-0 w-1 h-8 rounded-full" style={{ background: style.bar }} />
           <div className="min-w-0">
             <p className="font-semibold text-text-primary truncate max-w-[360px]">{doc.name}</p>
-            <p className="text-[11.5px] text-text-muted">{doc.content_type || '문서'} · {formatSize(doc.size)}</p>
+            <p className="text-[11.5px] text-text-muted">{doc.content_type || '문서'} · {formatFileSize(doc.size) ?? '-'}</p>
           </div>
         </div>
       </td>
@@ -89,7 +91,7 @@ function DocumentRow({
         </span>
       </td>
       <td className="px-4 py-3.5 text-text-muted whitespace-nowrap">
-        {doc.created_at ? new Date(doc.created_at).toLocaleDateString('ko-KR') : '-'}
+        {doc.created_at ? formatDate(doc.created_at) : '-'}
       </td>
       <td className="px-5 py-3.5 text-right whitespace-nowrap">
         <div className="inline-flex items-center gap-2">
@@ -114,13 +116,6 @@ function DocumentRow({
     </tr>
   );
 }
-
-const formatSize = (size?: number): string => {
-  if (!size || size <= 0) return '-';
-  if (size < 1024) return `${size}B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)}KB`;
-  return `${(size / 1024 / 1024).toFixed(1)}MB`;
-};
 
 const ACCEPT = '.pdf,.docx,.hwp,.md,.txt';
 

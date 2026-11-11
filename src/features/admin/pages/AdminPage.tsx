@@ -6,6 +6,7 @@ import { showToast } from '@/shared/store/toastStore';
 import { getApiError } from '@/shared/utils/error';
 import { logError } from '@/shared/utils/logError';
 import { copyText } from '@/shared/utils/clipboard';
+import { formatDate, formatDateTimeLong } from '@/shared/utils/date';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import AdminDocuments from '../components/AdminDocuments';
 
@@ -66,8 +67,6 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
 
   const user = data?.data?.data;
 
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   const rows: { label: string; content: React.ReactNode }[] = user ? [
     { label: '이름',      content: <span className="text-sm text-text-secondary">{user.name}</span> },
@@ -83,8 +82,8 @@ function UserDetailModal({ userId, onClose }: { userId: string; onClose: () => v
         {STATUS_LABEL[user.status as keyof typeof STATUS_LABEL] ?? user.status}
       </span>
     )},
-    { label: '가입일',    content: <span className="text-sm text-text-secondary">{fmt(user.created_at)}</span> },
-    { label: '수정일',    content: <span className="text-sm text-text-secondary">{fmt(user.updated_at)}</span> },
+    { label: '가입일',    content: <span className="text-sm text-text-secondary">{formatDateTimeLong(user.created_at)}</span> },
+    { label: '수정일',    content: <span className="text-sm text-text-secondary">{formatDateTimeLong(user.updated_at)}</span> },
   ] : [];
 
   return (
@@ -174,7 +173,7 @@ const UserRow = ({ user, isMutating, myId, onApprove, onReject, onDelete, onSele
       </span>
     </td>
     <td className="px-4 py-3 text-text-muted">
-      {new Date(user.created_at).toLocaleDateString('ko-KR')}
+      {formatDate(user.created_at)}
     </td>
     <td className="px-4 py-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
       {user.displayStatus === 'pending' && (

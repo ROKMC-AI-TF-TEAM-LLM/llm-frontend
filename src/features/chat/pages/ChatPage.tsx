@@ -8,6 +8,7 @@ import { useInfiniteSessions } from '@/features/sessions/hooks';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { isNetworkError } from '@/shared/utils/error';
 import { logError } from '@/shared/utils/logError';
+import { AI_NOTICE } from '@/shared/constants';
 import type { SessionData } from '@/features/sessions/types';
 
 const SESSION_ERRORS: Record<string, string> = {
@@ -131,7 +132,7 @@ export default function ChatPage() {
       <div className="shrink-0 bg-surface px-4 pb-2">
         <ChatInput isConnecting={isConnecting} />
         <p className="text-xs text-center text-text-muted pt-2">
-          MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.
+          {AI_NOTICE}
         </p>
       </div>
     </div>

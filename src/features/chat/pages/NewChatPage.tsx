@@ -4,6 +4,7 @@ import ChatInput from "../components/ChatInput"
 import { showToast } from "@/shared/store/toastStore"
 import { useGetMe } from "@/features/users/hooks"
 import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle"
+import { AI_NOTICE } from "@/shared/constants"
 
 export default function NewChatPage() {
   const { data: meData } = useGetMe()
@@ -38,7 +39,7 @@ export default function NewChatPage() {
         </p>
 
         <ChatInput
-          notice="MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오."
+          notice={AI_NOTICE}
         />
       </div>
     </main>

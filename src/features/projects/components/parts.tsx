@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ProjectChat, ProjectDocument } from '../types'
 import { displaySessionTitle } from '@/features/sessions/utils'
-import { formatFileSize } from '@/shared/utils/downloadAttachment'
+import { formatFileSize } from '@/shared/utils/fileSize'
 import { normalizeDocStatus } from '@/features/documents/utils'
 import {
   ChatIcon,

@@ -6,7 +6,9 @@
 // 진행은 서버 작업 상태를 그대로 따른다. (목 서버에서는 결과가 무작위이고, 프롬프트에 '실패'·'취소'를 넣으면 고정된다)
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { DocGenJob } from '../types'
-import { formatBytes, normalizeJobStatus } from '../utils'
+import { normalizeJobStatus } from '../utils'
+import { AI_NOTICE } from '@/shared/constants'
+import { formatFileSize } from '@/shared/utils/fileSize'
 import { getDomainStyle } from '@/features/domains/utils'
 import { useDocGenJobs, selectable, useComposer, useFreshIds } from '../hooks'
 import { ArrowUpIcon, DocIcon, DownloadIcon, XIcon } from '../components/icons'
@@ -103,7 +105,7 @@ function PreviewPanel({ job, pending, onClose, onDeleted }: {
             <>
               <p className="truncate text-[15px] font-bold text-text-primary">{r?.file_name ?? job.title}</p>
               <p className="mt-0.5 text-[12px] text-text-secondary">
-                {r ? `${job.output_format} · ${formatBytes(r.size)} · ${r.page_count}쪽` : `${job.template_name} · ${job.output_format}${building ? ' · 작성 중' : ''}`}
+                {r ? `${job.output_format} · ${(formatFileSize(r.size) ?? '-')} · ${r.page_count}쪽` : `${job.template_name} · ${job.output_format}${building ? ' · 작성 중' : ''}`}
               </p>
             </>
           ) : (
@@ -275,7 +277,7 @@ function Stage() {
           </section>
         </Collapse>
 
-        <p className="mt-6 text-center text-[11.5px] text-text-muted">MARS v1.0.0은 AI이므로 실수를 할 수 있습니다. 중요한 정보는 재차 확인하십시오.</p>
+        <p className="mt-6 text-center text-[11.5px] text-text-muted">{AI_NOTICE}</p>
       </div>
 
       {/* 오른쪽 미리보기: 보내면 오른쪽에서 밀려 나온다. 좁은 화면에서는 아래에 붙는다 */}

@@ -46,9 +46,3 @@ export const fileExtOf = (name: string): string | null => {
   return i > 0 ? name.slice(i + 1).toUpperCase() : null;
 };
 
-export const formatFileSize = (size?: number): string | null => {
-  if (!size || size <= 0) return null;
-  if (size < 1024) return `${size}B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)}KB`;
-  return `${(size / 1024 / 1024).toFixed(1)}MB`;
-};
