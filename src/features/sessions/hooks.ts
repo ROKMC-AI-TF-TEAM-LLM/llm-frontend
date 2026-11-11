@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { clearCache } from '@/features/chat/store'
 import { showToast } from '@/shared/store/toastStore'
+import { confirm } from '@/shared/store/confirmStore'
 import { getApiError } from '@/shared/utils/error'
 import { displaySessionTitle, SESSION_ERRORS } from './utils'
 
@@ -140,12 +141,15 @@ export const useConfirmDeleteSession = () => {
   const { mutate } = useDeleteSession()
   const navigate = useNavigate()
   const location = useLocation()
-  return (session: { id: string; title?: string | null; projectId?: string | null }) => {
+  return async (session: { id: string; title?: string | null; projectId?: string | null }) => {
     const { text, isUntitled } = displaySessionTitle(session.title)
     const label = isUntitled ? '이 대화' : `'${text}' 대화`
-    if (!window.confirm(`${label}를 삭제하시겠습니까?
-
-대화의 모든 메시지가 함께 삭제되며 되돌릴 수 없습니다.`)) return
+    const ok = await confirm({
+      title: `${label}를 삭제하시겠습니까?`,
+      message: '대화의 모든 메시지가 함께 삭제되며 되돌릴 수 없습니다.',
+      danger: true,
+    })
+    if (!ok) return
     const path = location.pathname
     const isOpen = path === `/chat/${session.id}` || path.endsWith(`/${session.id}`)
     if (isOpen) navigate(session.projectId ? `/projects/${session.projectId}` : '/chat')

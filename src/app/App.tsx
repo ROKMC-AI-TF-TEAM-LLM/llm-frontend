@@ -12,6 +12,7 @@ import NewChatPage from '@/features/chat/pages/NewChatPage';
 import ErrorPage from './ErrorPage';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import ToastHost from '@/shared/components/ToastHost';
+import ConfirmHost from '@/shared/components/ConfirmHost';
 import ProtectedLayout from './layouts/ProtectedLayout';
 import AdminLayout from './layouts/AdminLayout';
 import { SearchPageSkeleton, RagPageSkeleton, AdminPageSkeleton, MessagesSkeleton } from '@/shared/components/Skeleton';
@@ -177,6 +178,7 @@ const App = () => (
   <AuthProvider>
     <RouterProvider router={router} />
     <ToastHost />
+    <ConfirmHost />
   </AuthProvider>
 );
 

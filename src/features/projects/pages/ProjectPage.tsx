@@ -7,6 +7,7 @@ import { useUpdateSession, useToggleFavorite as useToggleSessionFavorite, useCon
 import ChatInput from '@/features/chat/components/ChatInput'
 import MessageList from '@/features/chat/components/MessageList'
 import { showToast } from '@/shared/store/toastStore'
+import { confirm } from '@/shared/store/confirmStore'
 import {
   Block,
   ChatRow,
@@ -170,12 +171,14 @@ export default function ProjectPage() {
   })
   const isDeletingRow = (documentId: string) => deletingIds.includes(documentId)
   // 되돌릴 수 없으므로 프로젝트·대화 삭제와 같이 확인을 받는다.
-  const handleDeleteDoc = (documentId: string) => {
+  const handleDeleteDoc = async (documentId: string) => {
     if (isDeletingRow(documentId)) return
     const name = documents.find((d) => d.document_id === documentId)?.name ?? '이 파일'
-    const ok = window.confirm(
-      `'${name}'을(를) 프로젝트에서 삭제하시겠습니까?\n\n이후 대화에서 이 파일을 참조하지 않으며 되돌릴 수 없습니다.`,
-    )
+    const ok = await confirm({
+      title: `'${name}'을(를) 프로젝트에서 삭제하시겠습니까?`,
+      message: '이후 대화에서 이 파일을 참조하지 않으며 되돌릴 수 없습니다.',
+      danger: true,
+    })
     if (ok) deleteDoc(documentId)
   }
 
@@ -220,7 +223,7 @@ export default function ProjectPage() {
     retryDoc(documentId, {
       onError: (e) => {
         const { detail } = readApiError(e)
-        window.alert(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+        showToast(detail ?? '재시도에 실패했습니다. 잠시 후 다시 시도해 주세요.')
       },
     })
   }

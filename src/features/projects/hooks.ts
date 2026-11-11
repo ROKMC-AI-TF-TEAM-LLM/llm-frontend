@@ -13,6 +13,7 @@ import type {
 } from './types'
 import { useAuth } from '@/features/auth/useAuth'
 import { showToast } from '@/shared/store/toastStore'
+import { confirm } from '@/shared/store/confirmStore'
 import { isNetworkError, readApiError, type ApiError } from '@/shared/utils/error'
 
 // 프로젝트 목록·상세의 단일 출처는 React Query 캐시다.
@@ -275,10 +276,12 @@ export const useConfirmDeleteProject = () => {
   const { mutate } = useDeleteProject()
   const navigate = useNavigate()
   const location = useLocation()
-  return (project: { id: string; name: string }) => {
-    const ok = window.confirm(
-      `'${project.name}' 프로젝트를 삭제하시겠습니까?\n\n하위 대화와 메시지, 업로드한 참고 파일이 모두 함께 삭제되며 되돌릴 수 없습니다.`,
-    )
+  return async (project: { id: string; name: string }) => {
+    const ok = await confirm({
+      title: `'${project.name}' 프로젝트를 삭제하시겠습니까?`,
+      message: '하위 대화와 메시지, 업로드한 참고 파일이 모두 함께 삭제되며 되돌릴 수 없습니다.',
+      danger: true,
+    })
     if (!ok) return
     mutate(project.id)
     const base = `/projects/${project.id}`

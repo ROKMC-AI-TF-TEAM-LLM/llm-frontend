@@ -10,6 +10,7 @@ import { DOMAINS, getDomainLabel, getDomainStyle } from '@/features/domains/util
 import { normalizeDocStatus } from '@/features/documents/utils';
 import DomainIcon from '@/features/domains/components/DomainIcon';
 import { showToast } from '@/shared/store/toastStore';
+import { confirm } from '@/shared/store/confirmStore';
 import { getApiError, readApiError, DEFAULT_STATUS_ERRORS } from '@/shared/utils/error';
 import { formatDate } from '@/shared/utils/date';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
@@ -180,8 +181,8 @@ export default function AdminDocuments() {
     );
   };
 
-  const handleDelete = (doc: AdminDocumentItem) => {
-    if (!window.confirm(`'${doc.name}' 문서를 삭제하시겠습니까?`)) return;
+  const handleDelete = async (doc: AdminDocumentItem) => {
+    if (!(await confirm({ title: `'${doc.name}' 문서를 삭제하시겠습니까?`, danger: true }))) return;
     deleteMut.mutate(doc.document_id, {
       onError: () => showToast('삭제에 실패했습니다.'),
     });
