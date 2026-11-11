@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useRevealOnScroll } from '@/shared/hooks/useRevealOnScroll'
 import MarsPlanet from '@/features/landing/components/MarsPlanet'
 import RotatingWord from '@/features/landing/components/RotatingWord'
 import LandingNav from '@/features/landing/components/LandingNav'
@@ -55,23 +56,7 @@ const HomePage = () => {
   const scrollToFeatures = () =>
     featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
 
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-shown')
-            io.unobserve(e.target)
-          }
-        })
-      },
-      { threshold: 0.15 },
-    )
-    introRef.current
-      ?.querySelectorAll('.mars-reveal')
-      .forEach((el) => io.observe(el))
-    return () => io.disconnect()
-  }, [])
+  useRevealOnScroll(introRef)
 
   return (
     <div className="mars-root" data-view={view}>

@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
+import { useRevealOnScroll } from '@/shared/hooks/useRevealOnScroll'
 import LandingFooter from '@/features/landing/components/LandingFooter'
 import TeamHero from '../components/sections/TeamHero'
 import TeamValues from '../components/sections/TeamValues'
@@ -11,21 +11,7 @@ import PageNav from '@/features/landing/components/PageNav'
 export default function TeamPage() {
   useDocumentTitle('팀 소개')
 
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-shown')
-            io.unobserve(e.target)
-          }
-        })
-      },
-      { threshold: 0.15 },
-    )
-    document.querySelectorAll('.mars-reveal').forEach((el) => io.observe(el))
-    return () => io.disconnect()
-  }, [])
+  useRevealOnScroll()
 
   return (
     <div className="min-h-screen bg-surface text-text-primary">

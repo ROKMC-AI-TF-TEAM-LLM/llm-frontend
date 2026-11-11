@@ -3,11 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle'
 import LandingFooter from '../components/LandingFooter'
 import { TUTORIALS, findTutorial } from '../tutorials'
-import {
-  Reveal,
-  TutorialCard,
-  TutorialHeader,
-} from '../components/tutorialParts'
+import { Reveal } from '../components/Reveal'
+import { TutorialCard, TutorialHeader } from '../components/tutorialParts'
 
 export default function TutorialPage() {
   const { slug } = useParams()

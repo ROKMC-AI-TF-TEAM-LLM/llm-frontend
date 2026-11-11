@@ -1,52 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
 import type { Tutorial } from '../tutorials'
 import PageNav from './PageNav'
 
 export function TutorialHeader() {
   return <PageNav current="tutorials" />
-}
-
-export function Reveal({
-  children,
-  delay = 0,
-  className = '',
-}: {
-  children: React.ReactNode
-  delay?: number
-  className?: string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [shown, setShown] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShown(true)
-          io.unobserve(el)
-        }
-      },
-      { threshold: 0.12 },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? 'none' : 'translateY(18px)',
-        transition: `opacity .6s cubic-bezier(.2,.7,.2,1) ${delay}ms, transform .6s cubic-bezier(.2,.7,.2,1) ${delay}ms`,
-      }}
-    >
-      {children}
-    </div>
-  )
 }
 
 export function TutorialCard({
