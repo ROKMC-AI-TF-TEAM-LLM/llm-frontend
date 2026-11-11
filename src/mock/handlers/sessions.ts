@@ -3,6 +3,7 @@ import type {
   CreateSessionRequest,
   SessionData,
 } from '@/features/sessions/types'
+import { claudeEvents, isClaudeEnabled } from '../claude'
 import { db, newId, now } from '../db'
 import {
   cursorPage,
@@ -51,8 +52,18 @@ async function* answerEvents(
   session: SessionData,
   answer: MessageItem,
   signal: AbortSignal,
+  /** 이 답변 앞까지의 대화 (실제 Claude에 보낼 때 쓴다) */
+  history: MessageItem[],
 ) {
   try {
+    if (await isClaudeEnabled()) {
+      yield { type: 'status', message: '답변을 작성하는 중입니다.', step: 1 }
+      for await (const event of claudeEvents(history, signal)) {
+        if (event.type === 'text') answer.content += event.content
+        yield event
+      }
+      return
+    }
     yield {
       type: 'status',
       message: '관련 자료를 찾는 중입니다.',
@@ -171,7 +182,7 @@ export const sessionRoutes: MockRoute[] = [
       },
       answer,
     )
-    return sse(answerEvents(session, answer, request.signal))
+    return sse(answerEvents(session, answer, request.signal, list.slice(0, -1)))
   }),
 
   post(
@@ -179,7 +190,8 @@ export const sessionRoutes: MockRoute[] = [
     ({ request, params }) => {
       const session = findSession(params.sessionId)
       if (!session) return sessionNotFound()
-      const answer = db.messages[params.sessionId]?.find(
+      const list = db.messages[params.sessionId] ?? []
+      const answer = list.find(
         (message) => message.message_id === params.messageId,
       )
       if (!answer)
@@ -195,7 +207,14 @@ export const sessionRoutes: MockRoute[] = [
         sources: undefined,
         created_at: now(),
       })
-      return sse(answerEvents(session, answer, request.signal))
+      return sse(
+        answerEvents(
+          session,
+          answer,
+          request.signal,
+          list.slice(0, list.indexOf(answer)),
+        ),
+      )
     },
   ),
 ]

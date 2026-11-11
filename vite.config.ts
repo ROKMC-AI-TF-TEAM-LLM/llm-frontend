@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { claudeProxy } from './mock-server/claudeProxy'
 
 const nodeModule = (names: string) =>
   new RegExp(`[\\\\/]node_modules[\\\\/](${names})[\\\\/]`)
@@ -10,7 +11,8 @@ const markdownModules = nodeModule(
 )
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  // claudeProxy: dev:mock에서 ANTHROPIC_API_KEY가 있으면 mock 채팅을 실제 Claude로 응답하게 한다
+  plugins: [react(), tailwindcss(), claudeProxy()],
   resolve: {
     // 영역을 넘는 import는 '@/...' (tsconfig.app.json의 paths와 같게)
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

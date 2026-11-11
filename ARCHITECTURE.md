@@ -13,6 +13,7 @@ src/
   shared/           어느 기능에도 기대지 않는 공용 코드: 토스트, 스켈레톤, 범용 훅·유틸, 전역 CSS
   features/<기능>/  기능 하나의 모든 것 (아래)
   mock/             `npm run dev:mock`용 가짜 백엔드. API마다 handlers/<도메인>.ts
+mock-server/        dev:mock 개발 서버(Node)에서만 도는 코드. claudeProxy.ts: `.env.mock.local`에 ANTHROPIC_API_KEY가 있으면 mock 채팅을 실제 Claude로 응답
 ```
 
 의존 방향은 한쪽으로만 흐릅니다: `app → features → shared·lib`.
