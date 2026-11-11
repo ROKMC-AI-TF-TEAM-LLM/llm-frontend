@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { EditIcon, StarIcon, TrashIcon } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
 
 // 대화와 프로젝트는 흐림 폭과 아이콘 선 굵기만 조금 다르다.
 const LOOK = {
@@ -79,8 +80,6 @@ export default function SidebarItem({
     )
   }
 
-  const actionClass = 'rounded-lg p-1.5 transition-colors'
-
   return (
     <li className="group relative">
       <button
@@ -103,43 +102,47 @@ export default function SidebarItem({
       />
 
       <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex">
-        <button
+        <IconButton
+          size="xs"
+          tone="brand"
+          active={isFavorite}
           onClick={(e) => {
             e.stopPropagation()
             onToggleFavorite()
           }}
-          aria-label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-          className={`${actionClass} hover:bg-brand-subtle ${isFavorite ? 'text-brand' : 'text-text-muted hover:text-brand'}`}
+          label={isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
         >
           <StarIcon
             className="h-3 w-3"
             fill={isFavorite ? 'currentColor' : 'none'}
             strokeWidth={look.strokeWidth}
           />
-        </button>
+        </IconButton>
 
-        <button
+        <IconButton
+          size="xs"
+          tone="brand"
           onClick={(e) => {
             e.stopPropagation()
             setDraft(name)
             setIsEditing(true)
           }}
-          aria-label={labels.rename}
-          className={`${actionClass} text-text-muted hover:bg-brand-subtle hover:text-brand`}
+          label={labels.rename}
         >
           <EditIcon className="h-3 w-3" strokeWidth={look.strokeWidth} />
-        </button>
+        </IconButton>
 
-        <button
+        <IconButton
+          size="xs"
+          danger
           onClick={(e) => {
             e.stopPropagation()
             onDelete()
           }}
-          aria-label={labels.remove}
-          className={`${actionClass} text-text-muted hover:bg-red-50 hover:text-red-500`}
+          label={labels.remove}
         >
           <TrashIcon className="h-3 w-3" strokeWidth={look.strokeWidth} />
-        </button>
+        </IconButton>
       </div>
     </li>
   )

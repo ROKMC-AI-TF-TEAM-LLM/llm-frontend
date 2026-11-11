@@ -66,7 +66,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               onClick={() => setSubOpen((v) => !v)}
               aria-expanded={subOpen}
               aria-haspopup="true"
-              className={`flex w-full mars-brand-serif items-center gap-3 px-4 py-2 text-[13.5px] transition-colors ${
+              className={`flex w-full mars-brand-serif items-center gap-3 px-4 py-2 text-14 transition-colors ${
                 subOpen
                   ? 'bg-surface-subtle text-text-primary'
                   : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
@@ -127,7 +127,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
               setOpen(false)
               logout()
             }}
-            className="w-full font-semibold flex items-center gap-3 px-4 py-2 text-[13.5px] text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full font-semibold flex items-center gap-3 px-4 py-2 text-14 text-red-500 hover:bg-red-50 transition-colors"
           >
             <LogoutIcon className="w-[18px] h-[18px] shrink-0" />
             로그아웃
@@ -146,7 +146,7 @@ export default function SidebarFooter({ isOpen, user }: SidebarFooterProps) {
             className="flex flex-col items-start min-w-0 overflow-hidden transition-[opacity,width] duration-[380ms] ease-[cubic-bezier(.4,0,.2,1)]"
             style={{ width: isOpen ? '100%' : 0, opacity: isOpen ? 1 : 0 }}
           >
-            <span className="max-w-full truncate whitespace-nowrap text-[12.5px] font-bold text-text-primary mt-px">
+            <span className="max-w-full truncate whitespace-nowrap text-13 font-bold text-text-primary mt-px">
               {user.name}
             </span>
             {user.email && (
@@ -230,7 +230,7 @@ function MenuItem({
   return (
     <button
       onClick={onClick}
-      className="w-full mars-brand-serif flex items-center gap-3 px-4 py-2 text-[13.5px] text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
+      className="w-full mars-brand-serif flex items-center gap-3 px-4 py-2 text-14 text-text-secondary hover:bg-surface-subtle hover:text-text-primary transition-colors"
     >
       <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.9}>
         {icon}

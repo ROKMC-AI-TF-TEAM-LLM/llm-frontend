@@ -30,6 +30,10 @@ import {
   SearchIcon,
   UploadIcon,
 } from '@/shared/components/icons'
+import Button from '@/shared/components/Button'
+import MenuItem from '@/shared/components/MenuItem'
+import Chip from '@/shared/components/Chip'
+import IconButton from '@/shared/components/IconButton'
 
 type StatusFilter = 'all' | 'processing' | 'completed' | 'failed'
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
@@ -97,7 +101,7 @@ function DocumentRow({
             <p className="font-semibold text-text-primary truncate max-w-[360px]">
               {doc.name}
             </p>
-            <p className="text-[11.5px] text-text-muted">
+            <p className="text-12 text-text-muted">
               {doc.content_type || '문서'} · {formatFileSize(doc.size) ?? '-'}
             </p>
           </div>
@@ -105,7 +109,7 @@ function DocumentRow({
       </td>
       <td className="px-4 py-3.5">
         <span
-          className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold"
+          className="inline-flex items-center gap-1.5 text-13 font-semibold"
           style={{ color: style.badgeText }}
         >
           <DomainIcon code={doc.domain} size={14} />
@@ -115,7 +119,7 @@ function DocumentRow({
       <td className="px-4 py-3.5 text-text-secondary">해병대</td>
       <td className="px-4 py-3.5">
         <span
-          className={`inline-flex items-center whitespace-nowrap text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}
+          className={`inline-flex items-center whitespace-nowrap text-12 font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}
         >
           {badge.label}
         </span>
@@ -126,21 +130,23 @@ function DocumentRow({
       <td className="px-5 py-3.5 text-right whitespace-nowrap">
         <div className="inline-flex items-center gap-2">
           {isFailed && (
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onRetry(doc)}
               disabled={retrying}
-              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-brand-soft text-[12.5px] font-semibold text-brand hover:bg-brand-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
             >
               재시도
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="danger"
+            size="sm"
             onClick={() => onDelete(doc)}
             disabled={deleting || isBusy}
-            className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg border border-surface-border text-[12.5px] font-semibold text-text-secondary hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-secondary disabled:hover:border-surface-border"
           >
             삭제
-          </button>
+          </Button>
         </div>
       </td>
     </tr>
@@ -280,7 +286,7 @@ export default function AdminDocuments() {
             <p className="text-15 font-bold text-text-primary">
               파일을 여기로 끌어다 놓거나 클릭해 업로드
             </p>
-            <p className="text-[12.5px] text-text-muted mt-0.5">
+            <p className="text-13 text-text-muted mt-0.5">
               PDF, DOCX, HWP · 최대 50MB
             </p>
           </div>
@@ -308,52 +314,43 @@ export default function AdminDocuments() {
             {domainMenuOpen && (
               <div className="absolute right-0 top-full mt-2 min-w-[160px] rounded-2xl border border-surface-border bg-white shadow-[0_10px_30px_rgba(40,30,35,0.12)] p-1.5 z-20">
                 {DOMAINS.map((d) => (
-                  <button
+                  <MenuItem
+                    selected={uploadDomain.code === d.code}
                     key={d.code}
-                    type="button"
                     onClick={() => {
                       setUploadDomain(d)
                       setDomainMenuOpen(false)
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-13 text-left transition-colors ${
-                      uploadDomain.code === d.code
-                        ? 'bg-brand-subtle text-brand font-semibold'
-                        : 'text-text-secondary hover:bg-surface-subtle'
-                    }`}
                   >
                     <DomainIcon code={d.code} size={15} />
                     {d.label}
-                  </button>
+                  </MenuItem>
                 ))}
               </div>
             )}
           </div>
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="lg"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadMut.isPending}
-            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-brand to-brand-light text-white text-14 font-bold shadow-[0_8px_20px_rgba(220,20,60,0.28)] hover:brightness-105 active:scale-[0.98] transition disabled:opacity-60"
           >
             {uploadMut.isPending ? '업로드 중...' : '파일 선택'}
-          </button>
+          </Button>
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-1.5">
           {STATUS_TABS.map((tab) => (
-            <button
+            <Chip
+              selected={statusFilter === tab.value}
               key={tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`px-3.5 py-1.5 rounded-full text-13 font-semibold transition-colors ${
-                statusFilter === tab.value
-                  ? 'bg-brand text-white'
-                  : 'text-text-secondary hover:bg-brand-subtle hover:text-brand'
-              }`}
             >
               {tab.label}
-            </button>
+            </Chip>
           ))}
         </div>
         <div className="relative w-full max-w-[280px]">
@@ -366,13 +363,14 @@ export default function AdminDocuments() {
             className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-surface-border bg-surface text-text-primary placeholder-text-muted focus:outline-none focus:border-brand-soft transition-colors"
           />
           {search && (
-            <button
+            <IconButton
+              size="xs"
               onClick={() => setSearch('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
-              aria-label="검색어 지우기"
+              label="검색어 지우기"
+              className="absolute right-2 top-1/2 -translate-y-1/2"
             >
               <CloseIcon className="w-4 h-4" strokeWidth={2.2} />
-            </button>
+            </IconButton>
           )}
         </div>
       </div>
@@ -380,7 +378,7 @@ export default function AdminDocuments() {
       <div className="rounded-2xl border border-surface-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-surface-subtle text-[12.5px] text-text-muted">
+            <tr className="bg-surface-subtle text-13 text-text-muted">
               <th className="text-left font-semibold px-5 py-3">파일명</th>
               <th className="text-left font-semibold px-4 py-3 w-[130px]">
                 도메인

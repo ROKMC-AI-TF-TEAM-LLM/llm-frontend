@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { CloseIcon, SearchIcon } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
 
 interface SearchInputProps {
   value: string
@@ -38,18 +39,17 @@ const SearchInput = ({
         className="flex-1 min-w-0 bg-transparent outline-none text-15 text-text-primary placeholder:text-rose-placeholder"
       />
       {value && (
-        <button
-          type="button"
+        <IconButton
+          size="xs"
           onClick={(e) => {
             e.stopPropagation()
             onChange('')
             inputRef.current?.focus()
           }}
-          aria-label="검색어 지우기"
-          className="shrink-0 flex items-center justify-center w-[26px] h-[26px] rounded-full text-rose-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
+          label="검색어 지우기"
         >
           <CloseIcon width={17} height={17} strokeWidth={2.2} />
-        </button>
+        </IconButton>
       )}
     </div>
   )

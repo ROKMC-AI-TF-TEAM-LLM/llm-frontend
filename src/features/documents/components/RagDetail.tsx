@@ -9,6 +9,8 @@ import {
   DownloadIcon,
   SpinnerIcon,
 } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
+import Button from '@/shared/components/Button'
 
 interface RagDetailProps {
   doc: DocumentItem
@@ -39,14 +41,9 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-end h-14 px-5 shrink-0">
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-text-muted hover:text-text-primary transition-colors"
-          aria-label="닫기"
-        >
+        <IconButton onClick={onClose} label="닫기">
           <CloseIcon className="w-5 h-5" />
-        </button>
+        </IconButton>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scroll px-8 pb-10">
@@ -84,9 +81,7 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
                 key={r.label}
                 className="flex items-center justify-between gap-4 px-5 py-4"
               >
-                <dt className="text-[12.5px] text-text-muted shrink-0">
-                  {r.label}
-                </dt>
+                <dt className="text-13 text-text-muted shrink-0">{r.label}</dt>
                 <dd className="text-14 font-semibold text-text-primary text-right break-all">
                   {r.value}
                 </dd>
@@ -95,11 +90,13 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
           </dl>
         )}
 
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
           onClick={handleDownload}
           disabled={downloading}
-          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white text-14 font-bold shadow-[0_10px_24px_rgba(220,20,60,0.25)] hover:brightness-105 active:scale-[0.99] transition disabled:opacity-60"
+          className="mt-6"
         >
           {downloading ? (
             <SpinnerIcon className="w-4 h-4 animate-spin" trackOpacity={0.3} />
@@ -107,9 +104,9 @@ const RagDetail = ({ doc, onClose }: RagDetailProps) => {
             <DownloadIcon className="w-4 h-4" strokeWidth={2.2} />
           )}
           {downloading ? '내려받는 중...' : '원본 다운로드'}
-        </button>
+        </Button>
         {downloadErr && (
-          <p className="mt-2 text-[12.5px] text-status-error text-center">
+          <p className="mt-2 text-13 text-status-error text-center">
             {downloadErr}
           </p>
         )}

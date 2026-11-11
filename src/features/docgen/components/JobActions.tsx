@@ -14,11 +14,10 @@ import {
   TrashIcon,
 } from '@/shared/components/icons'
 import { Spinner } from './JobStatus'
+import Button from '@/shared/components/Button'
+import IconButton from '@/shared/components/IconButton'
 
 /* ───────── 작업 액션 (진행 상황 목록에서, 상태별로 바뀜) ───────── */
-const ghostBtn =
-  'inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-lg border px-2.5 text-[12.5px] font-semibold transition-colors disabled:opacity-50'
-
 // TODO(백엔드 연결): 결과 파일 다운로드 엔드포인트가 정해지면 연결한다
 export function DownloadButton({
   job,
@@ -28,13 +27,13 @@ export function DownloadButton({
   primary?: boolean
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant={primary ? 'primary' : 'secondary'}
+      size="sm"
       aria-label={`${job.result?.file_name ?? job.title} 다운로드`}
-      className={`${ghostBtn} ${primary ? 'border-brand bg-brand text-white hover:bg-brand-hover' : 'border-brand-soft text-brand hover:bg-brand-subtle'}`}
     >
       <DownloadIcon className="h-3.5 w-3.5" /> 다운로드
-    </button>
+    </Button>
   )
 }
 
@@ -70,20 +69,19 @@ export function DeleteButton({
 
   const iconSize = large ? 'h-4 w-4' : 'h-3.5 w-3.5'
   return (
-    <button
-      type="button"
-      aria-label={`${job.title} 삭제`}
-      title="삭제"
+    <IconButton
+      size={large ? 'lg' : 'md'}
+      danger
+      label={`${job.title} 삭제`}
       disabled={remove.isPending}
       onClick={handleDelete}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error disabled:opacity-50 ${large ? 'h-10 w-10' : 'h-8 w-8'}`}
     >
       {remove.isPending ? (
         <Spinner className={iconSize} />
       ) : (
         <TrashIcon className={iconSize} />
       )}
-    </button>
+    </IconButton>
   )
 }
 
@@ -101,29 +99,29 @@ export function JobActions({
   const s = normalizeJobStatus(job.status)
   if (s === 'queued' || s === 'running')
     return (
-      <button
-        type="button"
+      <Button
+        variant="outline"
+        size="sm"
         disabled={busy}
         onClick={() => cancel.mutate(job.job_id, onError)}
-        className={`${ghostBtn} border-surface-border text-text-secondary hover:bg-surface-subtle`}
       >
         {s === 'running' && <StopIcon className="h-3 w-3" />}{' '}
         {s === 'queued' ? '취소' : '중지'}
-      </button>
+      </Button>
     )
   return (
     <span className="inline-flex items-center gap-1">
       {s === 'completed' ? (
         <DownloadButton job={job} />
       ) : (
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           disabled={busy}
           onClick={() => retry.mutate(job.job_id, onError)}
-          className={`${ghostBtn} border-brand-soft text-brand hover:bg-brand-subtle`}
         >
           <RetryIcon className="h-3.5 w-3.5" /> 재시도
-        </button>
+        </Button>
       )}
       <DeleteButton job={job} onDeleted={onDeleted} />
     </span>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ProjectChat } from '../types'
 import { displaySessionTitle } from '@/features/sessions/utils'
 import { EditIcon, StarIcon, TrashIcon } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
 
 export function ChatRow({
   chat,
@@ -70,7 +71,7 @@ export function ChatRow({
         >
           {text}
         </span>
-        <span className="shrink-0 text-[11.5px] text-text-muted transition-opacity group-hover:opacity-0">
+        <span className="shrink-0 text-12 text-text-muted transition-opacity group-hover:opacity-0">
           {chat.updatedAt}
         </span>
       </button>
@@ -84,46 +85,45 @@ export function ChatRow({
       />
 
       <div className="absolute right-1.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex">
-        <button
-          type="button"
+        <IconButton
+          size="xs"
+          tone="brand"
+          active={!!chat.isFavorite}
           onClick={(e) => {
             e.stopPropagation()
             onToggleFavorite?.()
           }}
-          aria-label={chat.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-          className={`rounded-[7px] p-1.5 transition-colors ${
-            chat.isFavorite ? 'text-brand' : 'text-text-muted hover:text-brand'
-          } hover:bg-white`}
+          label={chat.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
         >
           <StarIcon
             className="h-3.5 w-3.5"
             fill={chat.isFavorite ? 'currentColor' : 'none'}
             strokeWidth={1.9}
           />
-        </button>
-        <button
-          type="button"
+        </IconButton>
+        <IconButton
+          size="xs"
+          tone="brand"
           onClick={(e) => {
             e.stopPropagation()
             setDraft(chat.title)
             setEditing(true)
           }}
-          aria-label="이름 변경"
-          className="rounded-[7px] p-1.5 text-text-muted transition-colors hover:bg-white hover:text-brand"
+          label="이름 변경"
         >
           <EditIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-        </button>
-        <button
-          type="button"
+        </IconButton>
+        <IconButton
+          size="xs"
+          danger
           onClick={(e) => {
             e.stopPropagation()
             onDelete?.()
           }}
-          aria-label="대화 삭제"
-          className="rounded-[7px] p-1.5 text-text-muted transition-colors hover:bg-red-50 hover:text-red-500"
+          label="대화 삭제"
         >
           <TrashIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-        </button>
+        </IconButton>
       </div>
     </div>
   )

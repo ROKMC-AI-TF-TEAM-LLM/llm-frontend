@@ -37,7 +37,7 @@ export function StatusBadge({ job }: { job: DocGenJob }) {
   const cancelled = job.error?.code === 'CANCELLED'
   return (
     <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${cancelled ? BADGE.queued : BADGE[s]}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-12 font-semibold ${cancelled ? BADGE.queued : BADGE[s]}`}
     >
       {s === 'running' && <Spinner className="h-2.5 w-2.5" />}
       {stateLabel(job)}
@@ -120,7 +120,7 @@ export function JobProgressText({ job }: { job: DocGenJob }) {
 export function JobMeta({ job }: { job: DocGenJob }) {
   const style = getDomainStyle(job.domain)
   return (
-    <span className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-text-muted">
+    <span className="flex min-w-0 items-center gap-1.5 text-12 text-text-muted">
       <span>{job.template_name}</span>
       {job.domain && (
         <>

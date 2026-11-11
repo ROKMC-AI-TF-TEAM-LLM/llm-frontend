@@ -48,7 +48,7 @@ export default function FileDownload({ attachments }: FileDownloadProps) {
               <p className="text-13 font-semibold text-text-primary truncate">
                 {att.name}
               </p>
-              <p className="text-[11.5px] text-brand-hover font-medium mt-0.5">
+              <p className="text-12 text-brand-hover font-medium mt-0.5">
                 {meta ? `${meta} · ` : ''}
                 {busy ? '내려받는 중...' : '다운로드'}
               </p>

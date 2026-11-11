@@ -12,6 +12,8 @@ import {
   FileIcon,
   SpinnerIcon,
 } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
+import Button from '@/shared/components/Button'
 
 interface FilesDrawerProps {
   open: boolean
@@ -48,14 +50,9 @@ export default function FilesDrawer({
               {files.length}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={close}
-            className="text-text-muted hover:text-text-primary transition-colors"
-            aria-label="닫기"
-          >
+          <IconButton onClick={close} label="닫기">
             <CloseIcon className="w-5 h-5" />
-          </button>
+          </IconButton>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scroll px-5 py-4">
@@ -79,18 +76,18 @@ export default function FilesDrawer({
                       <FileIcon width={19} height={19} stroke="white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13.5px] font-semibold text-text-primary truncate">
+                      <p className="text-14 font-semibold text-text-primary truncate">
                         {att.name}
                       </p>
                       {meta && (
                         <p className="text-12 text-text-muted mt-0.5">{meta}</p>
                       )}
                     </div>
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       disabled={busy}
                       onClick={() => download(att)}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-soft bg-brand-subtle text-brand text-[12.5px] font-semibold hover:bg-brand-soft transition-colors disabled:opacity-60"
                     >
                       {busy ? (
                         <SpinnerIcon className="w-4 h-4 animate-spin" />
@@ -98,7 +95,7 @@ export default function FilesDrawer({
                         <DownloadIcon className="w-4 h-4" />
                       )}
                       다운로드
-                    </button>
+                    </Button>
                   </div>
                 )
               })}

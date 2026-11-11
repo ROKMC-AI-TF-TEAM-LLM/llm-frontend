@@ -65,7 +65,7 @@ export function Picker({
         >
           <li
             role="none"
-            className="px-3 pb-1 pt-1.5 text-[11.5px] font-semibold text-text-muted"
+            className="px-3 pb-1 pt-1.5 text-12 font-semibold text-text-muted"
           >
             {label}
           </li>
@@ -85,7 +85,7 @@ export function Picker({
                 >
                   <span className="min-w-0 flex-1">
                     <span
-                      className={`block text-[13.5px] font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}
+                      className={`block text-14 font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}
                     >
                       {o.label}
                     </span>

@@ -53,7 +53,7 @@ export default function FavoriteChats({
         aria-expanded={expanded}
         className="mb-1 flex w-full items-center gap-1 rounded-[7px] px-[8px] py-[3px] text-left transition-colors hover:bg-brand-tint"
       >
-        <span className="text-[10.5px] font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-rose-muted whitespace-nowrap">
+        <span className="text-11 font-extrabold mars-brand-serif uppercase tracking-[0.12em] text-rose-muted whitespace-nowrap">
           즐겨찾기
         </span>
         <ChevronDownIcon

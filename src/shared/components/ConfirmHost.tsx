@@ -30,7 +30,7 @@ export default function ConfirmHost() {
           {title}
         </h2>
         {message && (
-          <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-text-secondary">
+          <p className="mt-2 whitespace-pre-line text-14 leading-relaxed text-text-secondary">
             {message}
           </p>
         )}

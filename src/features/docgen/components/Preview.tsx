@@ -87,7 +87,7 @@ export function Paper({
         ))}
       </div>
       {s === 'queued' && (
-        <p className="mt-8 text-center text-[11.5px] text-text-muted">
+        <p className="mt-8 text-center text-12 text-text-muted">
           {job.template_name} 양식 윤곽
         </p>
       )}
@@ -106,7 +106,7 @@ export function EmptyPreview({
         <DocumentIcon className="h-5 w-5" />
       </span>
       <p className="text-14 font-semibold text-text-primary">{title}</p>
-      <p className="text-[12.5px] text-text-muted">
+      <p className="text-13 text-text-muted">
         요청을 보내거나 진행 상황에서 문서를 고르면 여기에 나타납니다.
       </p>
     </div>
@@ -129,12 +129,12 @@ export function FailedNotice({ job }: { job: DocGenJob }) {
         {cancelled ? '요청이 취소되었습니다' : '문서를 만들지 못했습니다'}
       </p>
       {!cancelled && (
-        <p className="text-[12.5px] leading-relaxed text-text-secondary">
+        <p className="text-13 leading-relaxed text-text-secondary">
           {getJobErrorMessage(job.error?.code)}
         </p>
       )}
       {job.error?.detail && (
-        <p className="text-[11.5px] text-text-muted">{job.error.detail}</p>
+        <p className="text-12 text-text-muted">{job.error.detail}</p>
       )}
     </div>
   )

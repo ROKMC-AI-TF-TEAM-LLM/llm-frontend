@@ -192,7 +192,7 @@ function ReasoningTimeline({
                 {s.message}
               </p>
               {s.thought && (
-                <p className="mt-1 text-[12.5px] leading-relaxed text-text-muted">
+                <p className="mt-1 text-13 leading-relaxed text-text-muted">
                   {s.thought}
                 </p>
               )}
@@ -218,7 +218,7 @@ function ReasoningBlock({
 
   return (
     <div className="animate-fade-in select-none">
-      <div className="flex items-center gap-2 text-[13.5px]">
+      <div className="flex items-center gap-2 text-14">
         <span className="h-3.5 w-3.5 shrink-0 rounded-full border-[1.5px] border-brand border-t-transparent animate-spin" />
         <span className="font-semibold status-blink">{headerLabel}</span>
       </div>

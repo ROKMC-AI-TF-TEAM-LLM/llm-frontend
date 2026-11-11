@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { CloseIcon, SearchIcon } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
 
 interface RagSearchInputProps {
   value: string
@@ -48,23 +49,21 @@ const RagSearchInput = ({
         }`}
       />
       {value && (
-        <button
-          type="button"
+        <IconButton
+          size="xs"
           onClick={(e) => {
             e.stopPropagation()
             onChange('')
             inputRef.current?.focus()
           }}
-          aria-label="검색어 지우기"
-          className="shrink-0 flex items-center justify-center rounded-full text-rose-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
-          style={{ width: compact ? 22 : 26, height: compact ? 22 : 26 }}
+          label="검색어 지우기"
         >
           <CloseIcon
             width={compact ? 15 : 17}
             height={compact ? 15 : 17}
             strokeWidth={2.2}
           />
-        </button>
+        </IconButton>
       )}
     </div>
   )

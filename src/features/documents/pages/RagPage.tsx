@@ -9,6 +9,7 @@ import { useInfiniteDocuments } from '../hooks'
 import { useDocumentDrawer } from '../useDocumentDrawer'
 import { extractDomains, pickDocuments } from '../utils'
 import { getDomainLabel } from '@/features/domains/utils'
+import Tab from '@/shared/components/Tab'
 
 const ALL = '__ALL__'
 
@@ -93,21 +94,13 @@ const RagPage = () => {
 
         <div className="flex items-center gap-1 border-b border-surface-border overflow-x-auto scrollbar-hide">
           {tabs.map((domain) => (
-            <button
+            <Tab
+              selected={activeDomain === domain}
               key={domain}
-              type="button"
               onClick={() => setActiveDomain(domain)}
-              className={`relative shrink-0 px-3 pb-2.5 text-14 font-medium transition-colors ${
-                activeDomain === domain
-                  ? 'text-[var(--color-brand)]'
-                  : 'text-text-muted hover:text-text-secondary'
-              }`}
             >
               {domain === ALL ? '전체' : getDomainLabel(domain)}
-              {activeDomain === domain && (
-                <span className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-[var(--color-brand)]" />
-              )}
-            </button>
+            </Tab>
           ))}
         </div>
 

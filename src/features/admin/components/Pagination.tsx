@@ -1,3 +1,4 @@
+import Chip from '@/shared/components/Chip'
 export const Pagination = ({
   page,
   totalPages,
@@ -36,17 +37,13 @@ export const Pagination = ({
             …
           </span>
         ) : (
-          <button
+          <Chip
+            selected={page === p}
             key={p}
             onClick={() => onChange(p as number)}
-            className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-              page === p
-                ? 'bg-brand text-white'
-                : 'bg-surface text-text-secondary border border-surface-border hover:bg-surface-subtle'
-            }`}
           >
             {p}
-          </button>
+          </Chip>
         ),
       )}
     </div>

@@ -29,6 +29,8 @@ import {
 } from '../components/JobStatus'
 import { PreviewBody } from '../components/Preview'
 import '../styles.css'
+import Button from '@/shared/components/Button'
+import IconButton from '@/shared/components/IconButton'
 
 const motion =
   'duration-500 ease-[cubic-bezier(.4,0,.2,1)] motion-reduce:transition-none'
@@ -180,24 +182,16 @@ function PreviewPanel({
         </div>
         <div className="flex gap-2">
           {r && (
-            <button
-              type="button"
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-brand px-5 text-[13.5px] font-bold text-white shadow-[0_6px_16px_rgba(220,20,60,0.25)] transition-colors hover:bg-brand-hover"
-            >
+            <Button variant="primary" size="lg">
               <DownloadIcon className="h-4 w-4" /> 다운로드
-            </button>
+            </Button>
           )}
           {job && !building && (
             <DeleteButton job={job} onDeleted={onDeleted} large />
           )}
-          <button
-            type="button"
-            aria-label="미리보기 닫기"
-            onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-subtle hover:text-text-primary"
-          >
+          <IconButton size="lg" label="미리보기 닫기" onClick={onClose}>
             <CloseIcon className="h-4 w-4" />
-          </button>
+          </IconButton>
         </div>
       </div>
 
@@ -237,7 +231,7 @@ function ProgressSection({
     >
       <div className="flex items-center gap-2 border-b border-surface-border px-5 py-3">
         <h2 className="text-15 font-bold text-text-primary">진행 상황</h2>
-        <span className="text-[12.5px] text-text-muted">{jobs.length}건</span>
+        <span className="text-13 text-text-muted">{jobs.length}건</span>
       </div>
       <ul>
         {jobs.map((job) => {
@@ -347,7 +341,7 @@ function Stage() {
         <h1 className="text-center text-[24px] font-bold text-text-primary sm:text-[28px]">
           어떤 <span className="text-brand">문서</span>를 만들까요?
         </h1>
-        <p className="mt-2 text-center text-[13.5px] text-text-secondary">
+        <p className="mt-2 text-center text-14 text-text-secondary">
           요청을 적고 양식을 고르면 그 양식에 맞춰 초안을 써 드립니다.
         </p>
 
@@ -433,20 +427,20 @@ function Stage() {
                       <div className="flex items-center gap-2">
                         <StatusDot job={item} />
                         <span
-                          className={`min-w-0 flex-1 truncate text-[13.5px] font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}
+                          className={`min-w-0 flex-1 truncate text-14 font-semibold ${on ? 'text-brand' : 'text-text-primary'}`}
                         >
                           {item.title}
                         </span>
                         {isFresh(item.job_id) && (
-                          <span className="shrink-0 rounded-full bg-brand px-2 py-0.5 text-[10.5px] font-bold text-white">
+                          <span className="shrink-0 rounded-full bg-brand px-2 py-0.5 text-11 font-bold text-white">
                             방금
                           </span>
                         )}
-                        <span className="shrink-0 text-[11.5px] text-text-muted">
+                        <span className="shrink-0 text-12 text-text-muted">
                           {item.template_name} · {item.output_format}
                         </span>
                       </div>
-                      <div className="mt-1 flex min-h-8 items-center justify-between gap-2 pl-4 text-[11.5px] text-text-muted">
+                      <div className="mt-1 flex min-h-8 items-center justify-between gap-2 pl-4 text-12 text-text-muted">
                         {/* 완료된 문서는 소요·완료 시각을 보여 주지 않는다 (실패·취소 사유만) */}
                         {normalizeJobStatus(item.status) === 'completed' ? (
                           <span />
@@ -468,9 +462,7 @@ function Stage() {
           </section>
         </Collapse>
 
-        <p className="mt-6 text-center text-[11.5px] text-text-muted">
-          {AI_NOTICE}
-        </p>
+        <p className="mt-6 text-center text-12 text-text-muted">{AI_NOTICE}</p>
       </div>
 
       {/* 오른쪽 미리보기: 보내면 오른쪽에서 밀려 나온다. 좁은 화면에서는 아래에 붙는다 */}

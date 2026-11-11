@@ -48,7 +48,7 @@ export function ProjectChatsBlock({
           />
         ))}
         {chats.length === 0 && (
-          <p className="py-6 text-center text-[12.5px] text-text-muted">
+          <p className="py-6 text-center text-13 text-text-muted">
             아직 대화가 없습니다.
           </p>
         )}

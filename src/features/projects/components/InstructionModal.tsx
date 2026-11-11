@@ -61,7 +61,7 @@ function ModalBody({
           spellCheck={false}
           maxLength={1000}
           placeholder="MARS가 채택하기를 원하는 어조, 형식, 인용 규칙에 대한 지침을 추가하세요."
-          className="min-h-[240px] w-full resize-none rounded-[12px] border border-rose-border bg-white px-4 py-3.5 text-[13.5px] leading-[1.75] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
+          className="min-h-[240px] w-full resize-none rounded-[12px] border border-rose-border bg-white px-4 py-3.5 text-14 leading-[1.75] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
         />
         <div
           className={`mt-1.5 text-right text-12 tabular-nums ${draft.length >= 1000 ? 'text-brand' : 'text-text-muted'}`}

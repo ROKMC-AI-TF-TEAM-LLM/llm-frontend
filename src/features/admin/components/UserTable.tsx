@@ -1,6 +1,6 @@
 import { formatDate } from '@/shared/utils/date'
-import { CheckIcon, CloseIcon } from '@/shared/components/icons'
 import { STATUS_LABEL, STATUS_STYLE, type DisplayUser } from '../utils'
+import Button from '@/shared/components/Button'
 
 export const TableHeader = () => (
   <thead>
@@ -67,47 +67,45 @@ export const UserRow = ({
     <td className="px-4 py-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
       {user.displayStatus === 'pending' && (
         <>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => onApprove(user.user_id)}
             disabled={isMutating}
-            title="승인"
-            aria-label="승인"
-            className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
           >
-            <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
-          </button>
-          <button
+            승인
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
             onClick={() => onReject(user.user_id)}
             disabled={isMutating}
-            title="거절"
-            aria-label="거절"
-            className="w-6 h-6 flex items-center justify-center rounded bg-brand text-white hover:bg-brand-hover disabled:opacity-50"
           >
-            <CloseIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
-          </button>
+            거절
+          </Button>
         </>
       )}
       {user.displayStatus === 'rejected' && (
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => onApprove(user.user_id)}
           disabled={isMutating}
-          title="승인"
-          aria-label="승인"
-          className="w-6 h-6 flex items-center justify-center rounded bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
         >
-          <CheckIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
-        </button>
+          승인
+        </Button>
       )}
       {(user.displayStatus === 'rejected' ||
         user.displayStatus === 'approved' ||
         user.displayStatus === 'admin') && (
-        <button
+        <Button
+          variant="danger"
+          size="sm"
           onClick={() => onDelete(user.user_id)}
           disabled={isMutating || user.user_id === myId}
-          className="px-4 py-1 rounded bg-text-secondary text-surface text-xs hover:bg-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           삭제
-        </button>
+        </Button>
       )}
     </td>
   </tr>

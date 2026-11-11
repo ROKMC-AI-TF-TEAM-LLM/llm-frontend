@@ -6,6 +6,7 @@ import { findDocument } from '@/features/documents/utils'
 import { getDomainStyle, getDomainLabel } from '@/features/domains/utils'
 import DocumentDrawer from '@/features/documents/components/DocumentDrawer'
 import { ChevronDownIcon, DocumentIcon } from '@/shared/components/icons'
+import Button from '@/shared/components/Button'
 
 interface SourceBadgeProps {
   sources?: Source[]
@@ -29,24 +30,20 @@ export default function SourceBadge({ sources, notice }: SourceBadgeProps) {
   return (
     <div className="ml-1 mt-1 mb-1">
       {hasSources && (
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-subtle text-brand text-xs font-medium rounded-full border border-brand-soft hover:bg-brand-soft transition-colors"
-        >
+        <Button variant="secondary" size="sm" onClick={() => setOpen(!open)}>
           <ChevronDownIcon
             width={12}
             height={12}
             className={`transition-transform ${open ? 'rotate-180' : ''}`}
           />
           출처 {sources!.length}개 {open ? '닫기' : '보기'}
-        </button>
+        </Button>
       )}
 
       {notice && (
         <p
           role="note"
-          className={`text-[11.5px] leading-relaxed text-text-muted ${hasSources ? 'mt-1.5' : ''}`}
+          className={`text-12 leading-relaxed text-text-muted ${hasSources ? 'mt-1.5' : ''}`}
         >
           {notice.message}
         </p>

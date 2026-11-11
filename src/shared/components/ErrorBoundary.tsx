@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { isChunkLoadError, tryReloadOnce } from '../utils/chunkReload'
 import { logError } from '../utils/logError'
+import Button from './Button'
 
 interface Props {
   children: ReactNode
@@ -39,12 +40,9 @@ class ErrorBoundary extends Component<Props, State> {
             페이지를 불러오지 못했습니다.
           </p>
           <p className="text-sm text-text-muted">잠시 후 다시 시도해주세요.</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 text-sm rounded-full bg-brand text-white hover:bg-brand-hover transition-colors"
-          >
+          <Button variant="primary" onClick={() => window.location.reload()}>
             다시 시도
-          </button>
+          </Button>
         </div>
       )
     }

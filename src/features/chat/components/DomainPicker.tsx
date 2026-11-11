@@ -4,6 +4,7 @@ import { useDomainCapabilities } from '@/features/documents/hooks'
 import { type DomainSelection } from '../store/types'
 import DomainIcon from '@/features/domains/components/DomainIcon'
 import { CheckIcon, ChevronDownIcon, MenuIcon } from '@/shared/components/icons'
+import MenuItem from '@/shared/components/MenuItem'
 
 interface DomainPickerProps {
   value: DomainSelection | null
@@ -61,7 +62,7 @@ export default function DomainPicker({ value, onChange }: DomainPickerProps) {
           e.stopPropagation()
           setOpen((v) => !v)
         }}
-        className={`group inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-[13.5px] font-medium transition-colors duration-150 ${
+        className={`group inline-flex items-center gap-1.5 pl-2 pr-2.5 h-10 rounded-full text-14 font-medium transition-colors duration-150 ${
           open || value
             ? 'bg-brand-subtle text-brand'
             : 'text-text-muted hover:bg-brand-subtle hover:text-brand'
@@ -128,15 +129,7 @@ function MenuRow({
   label: string
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group w-full flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl text-[13.5px] text-left transition-colors ${
-        active
-          ? 'bg-brand-subtle text-brand font-semibold'
-          : 'text-text-secondary hover:bg-surface-subtle'
-      }`}
-    >
+    <MenuItem selected={active} onClick={onClick}>
       <span
         className={`flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
           active
@@ -148,6 +141,6 @@ function MenuRow({
       </span>
       <span className="flex-1">{label}</span>
       {active && <CheckIcon width={15} height={15} strokeWidth={2.6} />}
-    </button>
+    </MenuItem>
   )
 }

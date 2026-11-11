@@ -4,6 +4,7 @@ import { formatDateTimeLong } from '@/shared/utils/date'
 import Modal from '@/shared/components/Modal'
 import { CloseIcon } from '@/shared/components/icons'
 import { STATUS_LABEL, STATUS_STYLE } from '../utils'
+import IconButton from '@/shared/components/IconButton'
 
 export function UserDetailModal({
   userId,
@@ -87,13 +88,9 @@ export function UserDetailModal({
         <h2 className="text-base font-semibold text-text-primary">
           사용자 상세 정보
         </h2>
-        <button
-          onClick={onClose}
-          className="text-text-muted hover:text-text-primary transition-colors"
-          aria-label="닫기"
-        >
+        <IconButton onClick={onClose} label="닫기">
           <CloseIcon className="w-5 h-5" />
-        </button>
+        </IconButton>
       </div>
 
       {isLoading ? (

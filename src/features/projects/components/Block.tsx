@@ -13,7 +13,7 @@ export function Block({
     <section className="overflow-hidden rounded-[14px] border border-rose-border bg-white">
       <header className="flex items-center gap-2 border-b border-rose-divider px-4 py-3">
         {icon && <span className="shrink-0 text-brand">{icon}</span>}
-        <h2 className="flex-1 truncate text-[13.5px] font-bold tracking-[-0.01em] text-text-primary">
+        <h2 className="flex-1 truncate text-14 font-bold tracking-[-0.01em] text-text-primary">
           {title}
         </h2>
         {action}

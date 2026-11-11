@@ -14,6 +14,7 @@ import {
   FileIcon,
   StopFilledIcon,
 } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
 
 const MAX_LEN = 1000
 const MAX_LIMIT_TOAST = 5
@@ -316,27 +317,31 @@ export default function ChatInput({
           </div>
 
           {isStreaming && !isNewChat ? (
-            <button
+            <IconButton
+              size="lg"
+              tone="solid"
               onClick={(e) => {
                 e.stopPropagation()
                 abortStream()
               }}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in bg-[linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))] shadow-[0_5px_13px_rgba(228,0,43,0.28)]"
-              aria-label="중지"
+              label="중지"
+              className="animate-fade-in"
             >
               <StopFilledIcon className="w-[18px] h-[18px] text-white" />
-            </button>
+            </IconButton>
           ) : value.trim() || pendingFile ? (
-            <button
+            <IconButton
+              size="lg"
+              tone="solid"
               onClick={(e) => {
                 e.stopPropagation()
                 handleSubmit()
               }}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform shrink-0 active:scale-95 hover:brightness-105 animate-fade-in bg-[linear-gradient(135deg,var(--color-brand-vivid),var(--color-brand-vivid-light))] shadow-[0_5px_13px_rgba(228,0,43,0.28)]"
-              aria-label="전송"
+              label="전송"
+              className="animate-fade-in"
             >
               <ArrowUpIcon className="w-5 h-5 text-white" strokeWidth={2.4} />
-            </button>
+            </IconButton>
           ) : null}
         </div>
       </div>

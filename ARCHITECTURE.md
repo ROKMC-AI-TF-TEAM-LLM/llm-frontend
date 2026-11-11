@@ -61,7 +61,9 @@ features/<기능>/
 - `shared/hooks/useInfiniteScroll.ts` — 목록 끝 감시 요소가 보이면 다음 쪽 불러오기. `IntersectionObserver`를 화면에서 직접 쓰지 않는다(등장 애니메이션 제외)
 - `shared/hooks/useEscapeKey.ts`·`useClickOutside.ts` — ESC·바깥 클릭으로 닫기
 - `shared/components/icons` — UI 아이콘(닫기·삭제·편집·별·검색·화살표 등)과 공통 틀 `Icon`. 화면에 `<svg>`를 직접 쓰지 않는다(일러스트·로고·차트 제외). 한 기능에서만 쓰는 아이콘은 그 기능의 `components/icons.tsx`
-- `shared/components/Button.tsx` — 글자 버튼(`primary`·`ghost`·`link`). `IconButton.tsx` — 아이콘만 있는 버튼(`label` 필수)
+- `shared/components/Button.tsx` — 글자 버튼. 종류(`primary`·`secondary`·`outline`·`danger`·`ghost`·`link`)와 크기(`sm`·`md`·`lg`)만 고른다. `IconButton.tsx` — 아이콘만 있는 버튼(`label` 필수, 크기 `xs`~`lg`, 색조 `default`·`brand`·`danger`·`success`·`solid`). 화면에서 `<button>`에 색·크기 클래스를 직접 쓰지 않는다
+- `shared/components/Chip.tsx`(고르는 알약 버튼)·`Tab.tsx`(밑줄 탭)·`MenuItem.tsx`(펼침 메뉴의 한 줄)
+- 글자 크기는 `text-10`~`text-16` 단계만 쓴다(0.5px 단위·임의 px 금지)
 - `shared/components/Modal.tsx`·`Drawer.tsx` — 가운데 대화상자와 오른쪽 서랍. 배경, ESC·바깥 클릭 닫기, 포커스 가두기(`useFocusTrap`), 스크롤 잠금(`useBodyScrollLock`)을 맡는다. 화면에서 `fixed inset-0`을 직접 쓰지 않는다
 - `shared/store/confirmStore.ts` — `await confirm({ title, message, danger })`. 확인 창은 앱 루트의 `shared/components/ConfirmHost.tsx`가 그린다. 브라우저 기본 확인·알림 창은 쓰지 않는다(오류 알림은 `showToast`)
 - `shared/utils/postLoginRedirect.ts` — 로그인 후 돌아갈 주소 기억. `shared/utils/chatStorage.ts` — 대화 캐시 키와 지우기(`clearChatCache`·`clearStoredChatData`)

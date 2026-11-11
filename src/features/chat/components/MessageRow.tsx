@@ -7,6 +7,7 @@ import FileDownload from './FileDownload'
 import ImageAttachment from './ImageAttachment'
 import DomainIcon from '@/features/domains/components/DomainIcon'
 import { AlertIcon } from '@/shared/components/icons'
+import Button from '@/shared/components/Button'
 
 interface MessageRowProps {
   msg: Message
@@ -83,13 +84,15 @@ function MessageRowBase({
             <div className="flex items-center gap-3 ml-1 mb-3 px-4 py-2.5 rounded-xl border border-surface-border bg-surface-subtle text-sm text-text-secondary">
               <AlertIcon className="w-4 h-4 shrink-0 text-text-muted" />
               <span>응답이 중단되었습니다.</span>
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onRegenerate(msg.id)}
                 disabled={isStreaming}
-                className="ml-auto px-3 py-1 rounded-lg border border-surface-border bg-surface text-sm text-text-primary hover:bg-surface-subtle transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface"
+                className="ml-auto"
               >
                 다시 시도
-              </button>
+              </Button>
             </div>
           )}
           <FileDownload attachments={msg.attachments} />

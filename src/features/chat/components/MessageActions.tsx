@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckIcon, CopyIcon, RegenerateIcon } from '@/shared/components/icons'
+import IconButton from '@/shared/components/IconButton'
 
 interface MessageActionsProps {
   role?: 'user' | 'assistant'
@@ -47,9 +48,6 @@ export default function MessageActions({
   const time = formatTime(createdAt)
   const fullDate = formatFullDate(createdAt)
 
-  const iconBtn =
-    'flex items-center justify-center w-7 h-7 rounded-md text-text-muted hover:bg-surface-subtle hover:text-text-secondary transition-colors'
-
   return (
     <div
       className={`flex items-center gap-0.5 mt-0.5 mb-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150 ${isUser ? 'justify-end' : 'ml-1'}`}
@@ -67,15 +65,15 @@ export default function MessageActions({
 
       {onRegenerate && (
         <div className="relative group/regen">
-          <button
-            type="button"
+          <IconButton
+            size="sm"
+            tooltip={false}
             onClick={onRegenerate}
             disabled={regenerateDisabled}
-            className={`${iconBtn} disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-muted`}
-            aria-label="다시 생성"
+            label="다시 생성"
           >
             <RegenerateIcon width={14} height={14} />
-          </button>
+          </IconButton>
           {!regenerateDisabled && (
             <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-10 whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/regen:opacity-100 transition-opacity">
               재생성
@@ -85,18 +83,19 @@ export default function MessageActions({
       )}
 
       <div className="relative group/copy">
-        <button
-          type="button"
+        <IconButton
+          size="sm"
+          tooltip={false}
+          active={copied}
           onClick={handleCopy}
-          className={`${iconBtn} ${copied ? 'text-brand hover:text-brand' : ''}`}
-          aria-label="복사"
+          label="복사"
         >
           {copied ? (
             <CheckIcon width={14} height={14} strokeWidth={2.5} />
           ) : (
             <CopyIcon width={14} height={14} />
           )}
-        </button>
+        </IconButton>
         {!copied && (
           <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-10 whitespace-nowrap bg-gray-800 text-white opacity-0 group-hover/copy:opacity-100 transition-opacity">
             복사

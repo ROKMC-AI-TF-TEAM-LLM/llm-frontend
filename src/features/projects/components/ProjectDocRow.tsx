@@ -4,6 +4,7 @@ import { formatFileSize } from '@/shared/utils/fileSize'
 import { normalizeDocStatus } from '@/features/documents/utils'
 import IconButton from '@/shared/components/IconButton'
 import { CloseIcon, FileIcon } from '@/shared/components/icons'
+import Button from '@/shared/components/Button'
 
 export function ProjectDocRow({
   doc,
@@ -69,13 +70,9 @@ export function ProjectDocRow({
         </span>
       </span>
       {failedLook && onRetry && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="shrink-0 rounded-md border border-brand-soft px-2 py-1 text-11 font-semibold text-brand transition-colors hover:bg-brand-subtle"
-        >
+        <Button variant="secondary" size="sm" onClick={onRetry}>
           재시도
-        </button>
+        </Button>
       )}
       {onDelete && (
         <IconButton

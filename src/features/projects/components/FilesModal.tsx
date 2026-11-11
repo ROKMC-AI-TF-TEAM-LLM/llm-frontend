@@ -69,7 +69,7 @@ function FilesModalBody({
           <h2 className="text-16 font-bold tracking-[-0.01em] text-text-primary">
             파일
           </h2>
-          <p className="mt-1 text-[12.5px] text-text-secondary">
+          <p className="mt-1 text-13 text-text-secondary">
             이 프로젝트에 컨텍스트를 제공하기 위해 업로드된 파일
           </p>
         </div>
@@ -83,7 +83,7 @@ function FilesModalBody({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="파일 검색"
-          className="min-w-0 flex-1 rounded-[10px] border border-rose-border px-3.5 py-2.5 text-[13.5px] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
+          className="min-w-0 flex-1 rounded-[10px] border border-rose-border px-3.5 py-2.5 text-14 text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
         />
         <input
           ref={fileInputRef}
@@ -96,14 +96,10 @@ function FilesModalBody({
             e.target.value = ''
           }}
         />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-[10px] border border-rose-border px-3.5 py-2.5 text-[13.5px] font-semibold text-text-secondary transition-colors hover:border-brand-soft hover:bg-brand-subtle hover:text-brand"
-        >
+        <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
           <PlusIcon className="h-4 w-4" strokeWidth={2.2} />
           첨부
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto border-t border-rose-divider px-6 py-4">

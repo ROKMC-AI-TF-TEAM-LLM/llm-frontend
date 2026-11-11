@@ -71,7 +71,7 @@ function CreateProjectBody({
             if (e.key === 'Enter') submit()
           }}
           placeholder="프로젝트 이름"
-          className="w-full rounded-[10px] border border-rose-border px-3.5 py-2.5 text-[13.5px] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
+          className="w-full rounded-[10px] border border-rose-border px-3.5 py-2.5 text-14 text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
         />
       </div>
 
@@ -90,7 +90,7 @@ function CreateProjectBody({
           onChange={(e) => setInstructions(e.target.value.slice(0, 1000))}
           spellCheck={false}
           placeholder="MARS가 채택하기를 원하는 어조, 형식, 인용 규칙에 대한 지침을 추가하세요."
-          className="min-h-[150px] w-full resize-none rounded-[10px] border border-rose-border px-3.5 py-3 text-[13.5px] leading-[1.75] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
+          className="min-h-[150px] w-full resize-none rounded-[10px] border border-rose-border px-3.5 py-3 text-14 leading-[1.75] text-text-primary outline-none transition-colors placeholder:text-rose-placeholder focus:border-brand"
         />
       </div>
 

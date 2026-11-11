@@ -23,6 +23,7 @@ import { UserFilter } from '../components/UserFilter'
 import { UserDetailModal } from '../components/UserDetailModal'
 import { TableHeader, UserRow } from '../components/UserTable'
 import { Pagination } from '../components/Pagination'
+import Tab from '@/shared/components/Tab'
 
 const ADMIN_PAGE_SIZE = 10
 
@@ -134,23 +135,13 @@ export default function AdminPage() {
             { key: 'documents', label: '문서 관리' },
           ] as const
         ).map((tab) => (
-          <button
+          <Tab
+            selected={mainTab === tab.key}
             key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={mainTab === tab.key}
             onClick={() => setMainTab(tab.key)}
-            className={`relative px-4 py-2.5 text-sm font-semibold transition-colors ${
-              mainTab === tab.key
-                ? 'text-brand'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
           >
             {tab.label}
-            {mainTab === tab.key && (
-              <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-brand to-brand-light" />
-            )}
-          </button>
+          </Tab>
         ))}
       </div>
 

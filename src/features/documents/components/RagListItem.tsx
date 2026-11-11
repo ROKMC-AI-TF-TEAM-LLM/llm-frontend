@@ -64,7 +64,7 @@ const RagListItem = ({ doc, onClick }: RagListItemProps) => {
 
       <div className="shrink-0 flex items-center gap-4">
         {doc.applied_at && (
-          <span className="text-[12.5px] text-text-muted whitespace-nowrap">
+          <span className="text-13 text-text-muted whitespace-nowrap">
             {formatAppliedAt(doc.applied_at)}
           </span>
         )}
