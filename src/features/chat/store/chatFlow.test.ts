@@ -91,37 +91,50 @@ describe('질문', () => {
   })
 })
 
+// 백엔드는 done을 보낼 때 질문·답변을 저장한다. 끊긴 질문은 서버에 남지 않으므로
+// 끊긴 답변의 '다시 시도'는 질문을 다시 보내고, 완료된 답변의 '다시 생성'만 /regenerate를 부른다.
 describe('끊긴 답변과 다시 시도', () => {
-  it('두 번째 질문이 끊기면 중단 표시를 하고, 다시 시도하면 서버에 남은 답변을 다시 생성한다', async () => {
+  it('두 번째 질문이 끊기면 중단 표시를 하고, 다시 시도하면 질문을 다시 보낸다', async () => {
     const sessionId = await startChatWithAnswer()
 
     failNext('stream', 'drop', { after: 3 })
     await store().sendMessage('두 번째 질문')
-    const cut = lastAnswer()
-    expect(cut.status).toBe('interrupted')
+    expect(lastAnswer().status).toBe('interrupted')
+    expect(lastAnswer().content.length).toBeGreaterThan(0)
     expect(store().error).toBe('응답 중 오류가 발생했습니다.')
-    // 서버에는 보낸 조각까지 남는다 → 다시 시도는 '다시 생성' 경로를 탄다
-    expect(serverMessages(sessionId).at(-1)?.content.length).toBeGreaterThan(0)
+    expect(serverMessages(sessionId)).toHaveLength(2) // 끊긴 질문은 저장되지 않음
 
     const sent = watchRequests()
-    await store().regenerateMessage(cut.id)
+    await store().regenerateMessage(lastAnswer().id)
+    await waitIdle()
 
     expect(sent()).toEqual([
       `GET /sessions/${sessionId}/messages`,
-      `POST /sessions/${sessionId}/messages/${serverMessages(sessionId).at(-1)?.message_id}/regenerate`,
+      `POST /sessions/${sessionId}/messages/stream`,
     ])
-    expect(lastAnswer()).toMatchObject({ id: cut.id, status: 'done' })
-    expect(lastAnswer().content).toBe(serverMessages(sessionId).at(-1)?.content)
     expect(texts().filter((m) => m.content === '두 번째 질문')).toHaveLength(1)
+    expect(lastAnswer().status).toBe('done')
+    expect(serverMessages(sessionId).map((m) => m.role)).toEqual([
+      'human',
+      'ai',
+      'human',
+      'ai',
+    ])
   })
 
-  it('본문이 오기 전에 끊기면, 다시 시도는 빈 답변과 질문을 지우고 질문을 다시 보낸다', async () => {
+  it('본문 없이 done만 와서 빈 답변이 저장됐으면, 다시 시도는 빈 답변과 질문을 지우고 다시 보낸다', async () => {
     const sessionId = await startChatWithAnswer()
 
-    failNext('stream', 'drop', { after: 0 })
+    failNext('stream', 'empty')
     await store().sendMessage('두 번째 질문')
     expect(lastAnswer().status).toBe('interrupted')
-    expect(serverMessages(sessionId).at(-1)?.content).toBe('')
+    expect(store().error).toBe(
+      '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
+    )
+    expect(serverMessages(sessionId).at(-1)).toMatchObject({
+      role: 'ai',
+      content: '',
+    })
 
     const watch = watchRequests()
     await store().regenerateMessage(lastAnswer().id)
@@ -142,21 +155,38 @@ describe('끊긴 답변과 다시 시도', () => {
     ])
   })
 
-  it('다시 생성까지 실패하면 다시 중단 표시가 되고, 한 번 더 시도할 수 있다', async () => {
-    await startChatWithAnswer()
-    failNext('stream', 'drop', { after: 3 })
-    await store().sendMessage('두 번째 질문')
-    const cut = lastAnswer()
+  it('완료된 답변을 다시 생성하면 /regenerate로 같은 답변 자리를 바꾼다', async () => {
+    const sessionId = await startChatWithAnswer()
+    const answer = lastAnswer()
+    const serverAnswer = serverMessages(sessionId)[1]
+
+    const sent = watchRequests()
+    await store().regenerateMessage(answer.id)
+
+    expect(sent()).toEqual([
+      `GET /sessions/${sessionId}/messages`,
+      `POST /sessions/${sessionId}/messages/${serverAnswer.message_id}/regenerate`,
+    ])
+    expect(lastAnswer()).toMatchObject({ id: answer.id, status: 'done' })
+    expect(texts()).toHaveLength(2)
+    expect(serverMessages(sessionId)).toHaveLength(2)
+  })
+
+  it('다시 생성이 실패하면 중단 표시가 되지만 서버의 원래 답변은 남고, 한 번 더 시도할 수 있다', async () => {
+    const sessionId = await startChatWithAnswer()
+    const answer = lastAnswer()
+    const original = serverMessages(sessionId)[1].content
 
     failNext('regenerate', 'http', { status: 500 })
-    await store().regenerateMessage(cut.id)
-    expect(lastAnswer()).toMatchObject({ id: cut.id, status: 'interrupted' })
+    await store().regenerateMessage(answer.id)
+    expect(lastAnswer()).toMatchObject({ id: answer.id, status: 'interrupted' })
     expect(store().isStreaming).toBe(false)
     // 지금은 오류 문구로 'HTTP 500'이 그대로 보인다 (사용자용 문구가 아님)
     expect(store().error).toBe('HTTP 500')
+    expect(serverMessages(sessionId)[1].content).toBe(original)
 
-    await store().regenerateMessage(cut.id)
-    expect(lastAnswer()).toMatchObject({ id: cut.id, status: 'done' })
+    await store().regenerateMessage(answer.id)
+    expect(lastAnswer()).toMatchObject({ id: answer.id, status: 'done' })
   })
 
   it('서버가 error 이벤트를 보내면 중단 표시를 한다', async () => {
@@ -166,17 +196,6 @@ describe('끊긴 답변과 다시 시도', () => {
 
     expect(lastAnswer().status).toBe('interrupted')
     expect(store().error).toBe('응답 중 오류가 발생했습니다.')
-  })
-
-  it('본문 없이 끝나면 응답을 받지 못했다고 알린다', async () => {
-    await startChatWithAnswer()
-    failNext('stream', 'empty')
-    await store().sendMessage('두 번째 질문')
-
-    expect(lastAnswer().status).toBe('interrupted')
-    expect(store().error).toBe(
-      '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.',
-    )
   })
 
   it('끝 신호(done) 없이 닫히면 받은 데까지 보이되 중단 표시를 하고, 다시 시도할 수 있다', async () => {
@@ -197,15 +216,15 @@ describe('끊긴 답변과 다시 시도', () => {
     expect(lastAnswer().status).toBe('done')
   })
 
-  it('다시 생성이 done 없이 닫히면 끊겼다고 알린다', async () => {
-    await startChatWithAnswer()
-    failNext('stream', 'drop', { after: 3 })
-    await store().sendMessage('두 번째 질문')
+  it('다시 생성이 done 없이 닫히면 끊겼다고 알리고, 서버의 원래 답변은 남는다', async () => {
+    const sessionId = await startChatWithAnswer()
+    const original = serverMessages(sessionId)[1].content
 
     failNext('regenerate', 'close', { after: 2 })
     await store().regenerateMessage(lastAnswer().id)
     expect(lastAnswer().status).toBe('interrupted')
     expect(store().error).toBe('응답이 중간에 끊겼습니다.')
+    expect(serverMessages(sessionId)[1].content).toBe(original)
   })
 
   it('사용자가 멈추면 중단 표시를 하고, 다시 시도할 수 있다', async () => {

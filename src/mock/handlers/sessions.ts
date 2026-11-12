@@ -48,75 +48,87 @@ const findSession = (sessionId: string) =>
 const sessionNotFound = () =>
   fail(404, 'SESSION_NOT_FOUND', '채팅을 찾을 수 없습니다.')
 
-/**
- * 상태 → 본문 조각 → 출처 순서로 실제 서버와 같은 SSE 이벤트를 흘려보낸다.
- * 콘솔에서 장애를 걸어 두었으면(__mock.failNext) 본문 도중에 그 장애를 낸다.
- * 서버 저장소에는 화면에 보낸 조각까지만 남는다 (실제 서버에서 끊긴 것과 같은 상태).
- */
-async function* answerEvents(
-  session: SessionData,
-  answer: MessageItem,
-  signal: AbortSignal,
+interface AnswerOptions {
+  /** 만들고 있는 답변. 저장소에 들어 있지 않은 사본이다 */
+  draft: MessageItem
+  /** done을 보낼 때 한 번 부른다. 질문·답변을 저장소에 넣는다 */
+  save: () => void
+  signal: AbortSignal
   /** 이 답변 앞까지의 대화 (실제 Claude에 보낼 때 쓴다) */
-  history: MessageItem[],
-  fault: Fault | null,
+  history: MessageItem[]
+  fault: Fault | null
   /** 질문에 지정한 분야 코드. 없으면 모든 분야의 문서를 참고한다 */
-  domain: string | undefined,
-) {
+  domain: string | undefined
+}
+
+/**
+ * 상태 → 본문 조각 → 출처 → done 순서로 실제 서버와 같은 SSE 이벤트를 흘려보낸다.
+ * 콘솔에서 장애를 걸어 두었으면(__mock.failNext) 본문 도중에 그 장애를 낸다.
+ *
+ * 실제 백엔드처럼 done을 보낼 때만 저장한다. 중간에 끊기거나 error로 끝나면 저장소는 그대로다
+ * (새 질문이면 질문도 답변도 남지 않고, 다시 생성이면 원래 답변이 남는다).
+ */
+async function* answerEvents({
+  draft,
+  save,
+  signal,
+  history,
+  fault,
+  domain,
+}: AnswerOptions) {
   const cutoff = createCutoff(fault)
-  try {
-    if (fault?.kind === 'empty') {
-      yield { type: 'status', message: '답변을 작성하는 중입니다.', step: 1 }
-      yield { type: 'done' }
-      return
-    }
-    if (await isClaudeEnabled()) {
-      // 다음 단계(답변 작성)는 중계 서버가 문서를 찾은 뒤 보낸다
-      yield {
-        type: 'status',
-        message: '관련 자료를 찾는 중입니다.',
-        thought: '질문과 관련된 문서를 검색합니다.',
-        step: 1,
-      }
-      for await (const event of claudeEvents(history, signal, domain)) {
-        if (event.type === 'text') {
-          const cut = cutoff()
-          if (cut) return yield* interruptStream(cut, signal)
-          answer.content += event.content
-        }
-        if (event.type === 'sources') answer.sources = event.items
-        yield event
-      }
-      return
-    }
+  if (fault?.kind === 'empty') {
+    // 생성에 실패했는데 본문 없이 done만 오는 경우 (백엔드 개선 요청서 4-2). 빈 답변으로 저장된다
+    yield { type: 'status', message: '답변을 작성하는 중입니다.', step: 1 }
+    save()
+    yield { type: 'done' }
+    return
+  }
+  if (await isClaudeEnabled()) {
+    // 다음 단계(답변 작성)는 중계 서버가 문서를 찾은 뒤 보낸다
     yield {
       type: 'status',
       message: '관련 자료를 찾는 중입니다.',
       thought: '질문과 관련된 문서를 검색합니다.',
       step: 1,
     }
-    await sleep(600, signal)
-    yield {
-      type: 'status',
-      message: '답변을 작성하는 중입니다.',
-      thought: '검색한 문서로 답변을 구성합니다.',
-      step: 2,
+    for await (const event of claudeEvents(history, signal, domain)) {
+      if (event.type === 'text') {
+        const cut = cutoff()
+        if (cut) return yield* interruptStream(cut, signal)
+        draft.content += event.content
+      }
+      if (event.type === 'sources') draft.sources = event.items
+      if (event.type === 'done') save()
+      yield event
     }
-    await sleep(400, signal)
-    for (const chunk of ANSWER.match(/[^\n]{1,8}|\n/g) ?? []) {
-      const cut = cutoff()
-      if (cut) return yield* interruptStream(cut, signal)
-      answer.content += chunk
-      yield { type: 'text', content: chunk }
-      await sleep(CHUNK_DELAY_MS, signal)
-    }
-    answer.sources = SOURCES
-    yield { type: 'sources', items: SOURCES }
-    yield { type: 'done' }
-  } finally {
-    // 중간에 멈춰도 그때까지 받은 내용은 서버에 남은 것처럼 유지한다
-    session.updated_at = now()
+    return
   }
+  yield {
+    type: 'status',
+    message: '관련 자료를 찾는 중입니다.',
+    thought: '질문과 관련된 문서를 검색합니다.',
+    step: 1,
+  }
+  await sleep(600, signal)
+  yield {
+    type: 'status',
+    message: '답변을 작성하는 중입니다.',
+    thought: '검색한 문서로 답변을 구성합니다.',
+    step: 2,
+  }
+  await sleep(400, signal)
+  for (const chunk of ANSWER.match(/[^\n]{1,8}|\n/g) ?? []) {
+    const cut = cutoff()
+    if (cut) return yield* interruptStream(cut, signal)
+    draft.content += chunk
+    yield { type: 'text', content: chunk }
+    await sleep(CHUNK_DELAY_MS, signal)
+  }
+  draft.sources = SOURCES
+  yield { type: 'sources', items: SOURCES }
+  save()
+  yield { type: 'done' }
 }
 
 export const sessionRoutes: MockRoute[] = [
@@ -196,31 +208,31 @@ export const sessionRoutes: MockRoute[] = [
       const { question, domain } =
         (await request.json()) as StreamMessageRequest
       const list = (db.messages[params.sessionId] ??= [])
-      const answer: MessageItem = {
+      const human: MessageItem = {
+        message_id: newId(),
+        role: 'human',
+        content: question,
+        domain,
+        created_at: now(),
+      }
+      const draft: MessageItem = {
         message_id: newId(),
         role: 'ai',
         content: '',
         created_at: now(),
       }
-      list.push(
-        {
-          message_id: newId(),
-          role: 'human',
-          content: question,
-          domain,
-          created_at: now(),
-        },
-        answer,
-      )
       return sse(
-        answerEvents(
-          session,
-          answer,
-          request.signal,
-          list.slice(0, -1),
+        answerEvents({
+          draft,
+          save: () => {
+            list.push(human, draft)
+            session.updated_at = now()
+          },
+          signal: request.signal,
+          history: [...list, human],
           fault,
           domain,
-        ),
+        }),
       )
     },
   ),
@@ -246,20 +258,25 @@ export const sessionRoutes: MockRoute[] = [
           'INVALID_MESSAGE_ROLE',
           'AI 답변만 다시 생성할 수 있습니다.',
         )
-      Object.assign(answer, {
+      // 새 답변은 사본에 만들고, done을 보낼 때 원래 답변을 바꾼다
+      const draft: MessageItem = {
+        ...answer,
         content: '',
         sources: undefined,
         created_at: now(),
-      })
+      }
       return sse(
-        answerEvents(
-          session,
-          answer,
-          request.signal,
-          list.slice(0, list.indexOf(answer)),
+        answerEvents({
+          draft,
+          save: () => {
+            Object.assign(answer, draft)
+            session.updated_at = now()
+          },
+          signal: request.signal,
+          history: list.slice(0, list.indexOf(answer)),
           fault,
           domain,
-        ),
+        }),
       )
     },
   ),
