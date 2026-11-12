@@ -14,6 +14,9 @@ src/
   features/<기능>/  기능 하나의 모든 것 (아래)
   mock/             `npm run dev:mock`용 가짜 백엔드. API마다 handlers/<도메인>.ts
 mock-server/        dev:mock 개발 서버(Node)에서만 도는 코드. claudeProxy.ts: `.env.mock.local`에 ANTHROPIC_API_KEY가 있으면 mock 채팅을 실제 Claude로 응답
+                    docsServer.ts: mock-docs/<분야 코드>/의 실제 문서를 mock 자료실 목록·다운로드에 사용
+                    docsSearch.ts: 질문과 관련된 PDF 쪽을 찾아 claudeProxy가 Claude에 함께 보내고, 인용된 쪽을 출처로 표시
+mock-docs/          dev:mock 자료실에 보여 줄 공개 문서(법령·훈령 등). 폴더 이름이 분야 코드
 ```
 
 의존 방향은 한쪽으로만 흐릅니다: `app → features → shared·lib`.

@@ -1,6 +1,7 @@
 import type { AdminDocumentItem } from '@/features/admin/types'
 import type { DocumentItem } from '@/features/documents/types'
 import { db, newId, now } from '../db'
+import { realDocumentFile } from '../realDocs'
 import {
   del,
   fail,
@@ -49,7 +50,13 @@ export const documentRoutes: MockRoute[] = [
     return ok(offsetPage(docs.map(toLibraryItem), query))
   }),
 
-  get('/documents/:name/download', ({ params }) => sampleFile(params.name)),
+  // mock-docs/의 실제 문서면 원본을, 아니면 예시 파일을 내려준다
+  get(
+    '/documents/:documentId/download',
+    async ({ params }) =>
+      (await realDocumentFile(params.documentId)) ??
+      sampleFile(params.documentId),
+  ),
 
   // 채팅 답변에 붙은 첨부 파일
   get('/files/:attachmentId', ({ params }) => sampleFile(params.attachmentId)),

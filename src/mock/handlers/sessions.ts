@@ -60,6 +60,8 @@ async function* answerEvents(
   /** 이 답변 앞까지의 대화 (실제 Claude에 보낼 때 쓴다) */
   history: MessageItem[],
   fault: Fault | null,
+  /** 질문에 지정한 분야 코드. 없으면 모든 분야의 문서를 참고한다 */
+  domain: string | undefined,
 ) {
   const cutoff = createCutoff(fault)
   try {
@@ -69,13 +71,20 @@ async function* answerEvents(
       return
     }
     if (await isClaudeEnabled()) {
-      yield { type: 'status', message: '답변을 작성하는 중입니다.', step: 1 }
-      for await (const event of claudeEvents(history, signal)) {
+      // 다음 단계(답변 작성)는 중계 서버가 문서를 찾은 뒤 보낸다
+      yield {
+        type: 'status',
+        message: '관련 자료를 찾는 중입니다.',
+        thought: '질문과 관련된 문서를 검색합니다.',
+        step: 1,
+      }
+      for await (const event of claudeEvents(history, signal, domain)) {
         if (event.type === 'text') {
           const cut = cutoff()
           if (cut) return yield* interruptStream(cut, signal)
           answer.content += event.content
         }
+        if (event.type === 'sources') answer.sources = event.items
         yield event
       }
       return
@@ -204,16 +213,27 @@ export const sessionRoutes: MockRoute[] = [
         answer,
       )
       return sse(
-        answerEvents(session, answer, request.signal, list.slice(0, -1), fault),
+        answerEvents(
+          session,
+          answer,
+          request.signal,
+          list.slice(0, -1),
+          fault,
+          domain,
+        ),
       )
     },
   ),
 
   post(
     '/sessions/:sessionId/messages/:messageId/regenerate',
-    ({ request, params, fault }) => {
+    async ({ request, params, fault }) => {
       const session = findSession(params.sessionId)
       if (!session) return sessionNotFound()
+      // 화면은 원래 질문의 분야를 본문에 다시 보낸다 (분야를 고르지 않았으면 본문이 없다)
+      const { domain } = (await request.json().catch(() => ({}))) as {
+        domain?: string
+      }
       const list = db.messages[params.sessionId] ?? []
       const answer = list.find(
         (message) => message.message_id === params.messageId,
@@ -238,6 +258,7 @@ export const sessionRoutes: MockRoute[] = [
           request.signal,
           list.slice(0, list.indexOf(answer)),
           fault,
+          domain,
         ),
       )
     },

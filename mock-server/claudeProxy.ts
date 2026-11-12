@@ -3,25 +3,82 @@
 // - API 키(ANTHROPIC_API_KEY)는 이 개발 서버(Node)에서만 읽는다. 브라우저 코드와 빌드 결과물에는 들어가지 않는다.
 //   키는 `.env.mock.local`에 둔다(git에 올라가지 않는다). `.env.mock`은 저장소에 올라가므로 거기에 적지 않는다.
 // - 키가 없으면 /__mock/claude/status가 enabled: false를 돌려주고, src/mock은 기존 예시 답변을 쓴다.
-// - 응답은 앱의 실제 백엔드와 같은 SSE 형식({type:'text'|'error'|'done'})으로 바꿔 보낸다.
+// - 응답은 앱의 실제 백엔드와 같은 SSE 형식({type:'status'|'text'|'sources'|'error'|'done'})으로 바꿔 보낸다.
+// - mock-docs/에 문서가 있으면 질문과 관련된 쪽을 찾아(docsSearch.ts) 함께 보내고,
+//   Claude가 실제로 인용한 문서·쪽을 답변의 출처(sources)로 돌려준다.
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import path from 'node:path'
 import Anthropic from '@anthropic-ai/sdk'
 import { loadEnv, type Plugin } from 'vite'
+import { searchPages, type DocPage } from './docsSearch'
+import { DOCS_DIR } from './docsServer'
 
 const DEFAULT_MODEL = 'claude-opus-5-5'
 
+/** 질문 하나에 함께 보낼 문서 쪽 수 */
+const MAX_PAGES = 12
+
 const SYSTEM = `당신은 MARS(Marine Artificial Intelligence Reasoning System)입니다. 해병대 장병이 규정·절차·업무에 대해 묻는 것에 답하는 업무 지원 AI입니다.
 
-지금은 개발자가 화면을 확인하는 미리보기(mock) 환경에서 실행되고 있고, 참조할 규정 문서가 연결되어 있지 않습니다. 그래서:
-- 일반적인 지식으로 답할 수 있는 질문에는 성실하게 답합니다.
-- 특정 규정의 조항 번호, 수치, 기한처럼 원문을 확인해야 하는 내용은 지어내지 않습니다. 일반적으로 알려진 내용을 설명하되, 정확한 내용은 해당 규정 원문이나 담당 부서에서 확인해야 한다고 알려 줍니다.
+질문과 함께 검색된 규정 문서의 일부(쪽 단위)가 주어질 수 있습니다.
+- 문서가 주어지면 그 내용을 근거로 답하고, 근거가 된 부분을 인용합니다.
+- 주어진 문서에 답이 없으면 없다고 말합니다. 조항 번호, 수치, 기한을 지어내지 않습니다.
+- 문서가 주어지지 않았으면 일반적인 지식으로 답하되, 정확한 내용은 해당 규정 원문이나 담당 부서에서 확인해야 한다고 알려 줍니다.
 - 출처나 문서 이름을 만들어 내지 않습니다.
+
+지금은 개발자가 화면을 확인하는 미리보기(mock) 환경입니다. 문서 검색은 단순한 방식이라 관련 없는 쪽이 섞일 수 있습니다.
 
 한국어로, 업무 문서를 쓰듯 정중하고 간결하게 답합니다. 내용을 정리해야 이해하기 쉬울 때는 마크다운(제목, 목록, 표)을 씁니다.`
 
 interface ChatTurn {
   role: 'user' | 'assistant'
   content: string
+}
+
+/** 마지막 질문에 검색된 쪽들을 인용 가능한 문서로 붙인다 */
+const withDocuments = (
+  turns: ChatTurn[],
+  pages: DocPage[],
+): Anthropic.Beta.BetaMessageParam[] => {
+  const last = turns.length - 1
+  return turns.map((turn, i) =>
+    i === last && pages.length > 0
+      ? {
+          role: 'user',
+          content: [
+            ...pages.map((page): Anthropic.Beta.BetaContentBlockParam => ({
+              type: 'document',
+              source: {
+                type: 'text',
+                media_type: 'text/plain',
+                data: page.text,
+              },
+              title: `${page.name} ${page.page}쪽`,
+              citations: { enabled: true },
+            })),
+            { type: 'text', text: turn.content },
+          ],
+        }
+      : turn,
+  )
+}
+
+/** 답변에서 실제로 인용된 쪽을 앱의 출처 형식으로 (인용된 순서, 중복 제거) */
+const citedSources = (
+  message: Anthropic.Beta.BetaMessage,
+  pages: DocPage[],
+) => {
+  const seen = new Set<number>()
+  for (const block of message.content) {
+    if (block.type !== 'text') continue
+    for (const citation of block.citations ?? []) {
+      if ('document_index' in citation) seen.add(citation.document_index)
+    }
+  }
+  return [...seen]
+    .map((index) => pages[index])
+    .filter((page): page is DocPage => !!page)
+    .map((page) => ({ name: page.name, page: String(page.page) }))
 }
 
 const readJson = async (req: IncomingMessage): Promise<unknown> => {
@@ -63,6 +120,7 @@ export function claudeProxy(): Plugin {
       const apiKey = env.ANTHROPIC_API_KEY?.trim()
       const model = env.MOCK_CLAUDE_MODEL?.trim() || DEFAULT_MODEL
       const client = apiKey ? new Anthropic({ apiKey }) : null
+      const docsRoot = path.resolve(server.config.root, DOCS_DIR)
 
       server.config.logger.info(
         client
@@ -83,8 +141,13 @@ export function claudeProxy(): Plugin {
           })
 
         let turns: ChatTurn[]
+        let domain: string | undefined
         try {
-          const body = (await readJson(req)) as { messages?: ChatTurn[] }
+          const body = (await readJson(req)) as {
+            messages?: ChatTurn[]
+            domain?: string
+          }
+          domain = body.domain || undefined
           turns = (body.messages ?? []).filter(
             (m) =>
               (m.role === 'user' || m.role === 'assistant') &&
@@ -94,9 +157,13 @@ export function claudeProxy(): Plugin {
         } catch {
           return sendJson(res, 400, { message: '요청 본문이 JSON이 아닙니다.' })
         }
-        if (turns.length === 0 || turns[0].role !== 'user')
+        if (
+          turns.length === 0 ||
+          turns[0].role !== 'user' ||
+          turns[turns.length - 1].role !== 'user'
+        )
           return sendJson(res, 400, {
-            message: '대화는 사용자 질문으로 시작해야 합니다.',
+            message: '대화는 사용자 질문으로 시작하고 끝나야 합니다.',
           })
 
         res.statusCode = 200
@@ -104,6 +171,26 @@ export function claudeProxy(): Plugin {
         res.setHeader('Cache-Control', 'no-cache')
         const send = (event: object) =>
           res.write(`data: ${JSON.stringify(event)}\n\n`)
+
+        // 분야를 골랐으면 그 분야 문서에서만, 고르지 않았으면 모든 문서에서 찾는다
+        const pages = await searchPages(
+          docsRoot,
+          turns[turns.length - 1].content,
+          domain,
+          MAX_PAGES,
+        ).catch((error: unknown) => {
+          server.config.logger.warn(`  [mock] 문서 검색 실패: ${String(error)}`)
+          return []
+        })
+        send({
+          type: 'status',
+          message: '답변을 작성하는 중입니다.',
+          thought:
+            pages.length > 0
+              ? `문서 ${new Set(pages.map((page) => page.name)).size}개에서 ${pages.length}쪽을 찾아 참고합니다.`
+              : '관련 문서를 찾지 못해 일반 지식으로 답합니다.',
+          step: 2,
+        })
 
         const stream = client.beta.messages.stream({
           model,
@@ -113,7 +200,7 @@ export function claudeProxy(): Plugin {
           // 안전 분류기가 요청을 거절하면 서버가 알아서 다른 모델로 다시 시도한다
           betas: ['server-side-fallback-2026-07-01'],
           fallbacks: 'default',
-          messages: turns,
+          messages: withDocuments(turns, pages),
         })
         // 화면에서 '중지'를 누르면 연결이 끊긴다. Claude 요청도 함께 멈춰 요금이 더 나가지 않게 한다
         res.on('close', () => {
@@ -133,6 +220,8 @@ export function claudeProxy(): Plugin {
               type: 'text',
               content: '\n\n_(답변이 길어 중간에 끊겼습니다.)_',
             })
+          const sources = citedSources(message, pages)
+          if (sources.length > 0) send({ type: 'sources', items: sources })
           send({ type: 'done' })
         } catch (error) {
           if (error instanceof Anthropic.APIUserAbortError) return

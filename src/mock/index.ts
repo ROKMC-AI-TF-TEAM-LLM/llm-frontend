@@ -12,6 +12,7 @@ import { projectRoutes } from './handlers/projects'
 import { sessionRoutes } from './handlers/sessions'
 import { userRoutes } from './handlers/users'
 import { installControl } from './control'
+import { loadRealDocuments } from './realDocs'
 import { createServer } from './server'
 
 const handle = createServer([
@@ -30,7 +31,7 @@ const urlOf = (input: RequestInfo | URL) =>
     window.location.href,
   )
 
-export function installMock() {
+export async function installMock() {
   const realFetch = window.fetch.bind(window)
 
   window.fetch = (input, init) =>
@@ -42,6 +43,12 @@ export function installMock() {
   backendApi.defaults.adapter = 'fetch'
 
   installControl()
+
+  const realDocs = await loadRealDocuments()
+  if (realDocs > 0)
+    console.info(
+      `[mock] 자료실 문서를 mock-docs/의 실제 문서 ${realDocs}개로 보여 줍니다.`,
+    )
 
   console.info(
     '[mock] 백엔드 없이 실행 중입니다. 응답은 src/mock/handlers에서 수정할 수 있습니다.\n' +

@@ -24,19 +24,26 @@ export const toClaudeMessages = (history: MessageItem[]) =>
     }))
 
 export type ClaudeEvent =
+  | { type: 'status'; message: string; thought?: string; step?: number }
   | { type: 'text'; content: string }
+  /** mock-docs/에서 찾아 실제로 인용한 문서·쪽 */
+  | { type: 'sources'; items: { name: string; page: string }[] }
   | { type: 'error'; message: string }
   | { type: 'done' }
 
-/** 지금까지의 대화를 보내고 답변을 조각(SSE)으로 받는다. signal이 끊기면 요청도 멈춘다 */
+/**
+ * 지금까지의 대화를 보내고 답변을 조각(SSE)으로 받는다. signal이 끊기면 요청도 멈춘다.
+ * domain(분야 코드)을 주면 그 분야 문서에서만, 없으면 모든 문서에서 참고할 쪽을 찾는다.
+ */
 export async function* claudeEvents(
   history: MessageItem[],
   signal: AbortSignal,
+  domain?: string,
 ): AsyncGenerator<ClaudeEvent> {
   const res = await fetch('/__mock/claude/stream', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: toClaudeMessages(history) }),
+    body: JSON.stringify({ messages: toClaudeMessages(history), domain }),
     signal,
   })
   if (!res.ok || !res.body) {
