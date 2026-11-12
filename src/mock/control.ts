@@ -6,12 +6,21 @@
 
 import { db } from './db'
 
-const KINDS = ['drop', 'close', 'error', 'stall', 'empty', 'http'] as const
+const KINDS = [
+  'drop',
+  'close',
+  'nodone',
+  'error',
+  'stall',
+  'empty',
+  'http',
+] as const
 export type FaultKind = (typeof KINDS)[number]
 
 const KIND_LABELS: Record<FaultKind, string> = {
   drop: '연결 끊김 (스트림 오류)',
   close: 'done 없이 연결 닫힘',
+  nodone: '본문·출처를 다 보내고 done만 빼고 닫힘',
   error: 'error 이벤트 보냄',
   stall: '응답 없이 멈춤',
   empty: '본문 없이 done',
@@ -205,6 +214,7 @@ const HELP = `[mock] 콘솔 도구 사용법
   대상 별칭: stream(새 질문), regenerate(다시 생성). 그 밖에는 "METHOD /경로" 일부
   장애 종류:
     drop   연결 끊김 (스트림 오류)          close  done 없이 연결 닫힘
+    nodone 답변·출처는 다 보내고 done만 빠짐
     error  error 이벤트 보냄                stall  응답 없이 멈춤
     empty  본문 없이 done                   http   HTTP 오류 응답
   옵션: after(본문 몇 조각 뒤), status(http 상태), message(오류 문구)

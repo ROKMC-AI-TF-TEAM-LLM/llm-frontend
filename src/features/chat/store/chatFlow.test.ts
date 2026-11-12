@@ -216,6 +216,17 @@ describe('끊긴 답변과 다시 시도', () => {
     expect(lastAnswer().status).toBe('done')
   })
 
+  it('답변과 출처를 다 받았어도 done이 없으면 중단 표시를 한다 (서버에 저장되지 않았으므로)', async () => {
+    const sessionId = await startChatWithAnswer()
+    failNext('stream', 'nodone')
+    await store().sendMessage('두 번째 질문')
+
+    expect(lastAnswer().status).toBe('interrupted')
+    expect(lastAnswer().content).toContain('Mock 답변')
+    expect(lastAnswer().sources?.length).toBeGreaterThan(0)
+    expect(serverMessages(sessionId)).toHaveLength(2)
+  })
+
   it('다시 생성이 done 없이 닫히면 끊겼다고 알리고, 서버의 원래 답변은 남는다', async () => {
     const sessionId = await startChatWithAnswer()
     const original = serverMessages(sessionId)[1].content

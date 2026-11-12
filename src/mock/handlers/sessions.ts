@@ -99,7 +99,10 @@ async function* answerEvents({
         draft.content += event.content
       }
       if (event.type === 'sources') draft.sources = event.items
-      if (event.type === 'done') save()
+      if (event.type === 'done') {
+        if (fault?.kind === 'nodone') return
+        save()
+      }
       yield event
     }
     return
@@ -127,6 +130,8 @@ async function* answerEvents({
   }
   draft.sources = SOURCES
   yield { type: 'sources', items: SOURCES }
+  // 답변은 다 보냈지만 done을 보내기 전에 연결이 닫힌 경우. done이 없으니 저장되지 않는다
+  if (fault?.kind === 'nodone') return
   save()
   yield { type: 'done' }
 }
