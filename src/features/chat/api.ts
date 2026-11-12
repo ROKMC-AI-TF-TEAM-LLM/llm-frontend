@@ -152,6 +152,8 @@ const readSse = async (
   }, IDLE_MS)
 
   let buffer = ''
+  /** 서버가 끝 신호(done)를 보냈는지. 없이 닫히면 답변이 중간에 끊긴 것이다 */
+  let finished = false
 
   while (true) {
     const { done, value } = await reader.read()
@@ -172,7 +174,10 @@ const readSse = async (
       const raw = line.slice(5).startsWith(' ') ? line.slice(6) : line.slice(5)
       if (raw === '') continue
       const trimmed = raw.trim()
-      if (trimmed === '[DONE]') continue
+      if (trimmed === '[DONE]') {
+        finished = true
+        continue
+      }
 
       let parsed: unknown
       let isObject = false
@@ -227,7 +232,7 @@ const readSse = async (
         )
         throw new Error(evt.message || evt.detail || 'STREAM_ERROR')
       } else if (evt.type === 'done') {
-        // 끝 신호. 할 일은 없고, 아래 본문 처리로 떨어지지 않게 여기서 받는다
+        finished = true
       } else if (evt.type === 'notice') {
         const fromCode = noticeFromCode(evt.code)
         if (fromCode) onNotice?.(fromCode)
@@ -263,6 +268,14 @@ const readSse = async (
       'AbortError',
     )
   }
+
+  // 끝 신호 없이 연결이 닫혔다. 서버가 답변을 다 보내지 못하고 끊겼을 수 있다.
+  // 백엔드가 모든 답변 끝에 done을 보내는지 확인되지 않아, 지금은 정상 완료로 두고 기록만 남긴다.
+  // 실서버에서 이 기록이 나오지 않는 것이 확인되면 끊김(throw)으로 처리해 '다시 시도'가 나오게 한다.
+  if (!finished)
+    logError('SSE.incomplete', '끝 신호(done) 없이 스트림이 닫힘', {
+      url: response.url,
+    })
 }
 
 export const streamMessage = async (
