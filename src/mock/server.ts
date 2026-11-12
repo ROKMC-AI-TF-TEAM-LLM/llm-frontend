@@ -1,12 +1,16 @@
 // 가짜 백엔드의 뼈대: 경로 매칭, 응답 봉투(success/status_code/data/error), 지연.
 // 실제 서버와 같은 HTTP 응답(Response)을 돌려주므로 axios·fetch 쪽 코드는 mock인지 모른다.
 
+import { recordRequest, takeFault, type Fault } from './control'
+
 const LATENCY_MS = 300
 
 export interface MockContext {
   request: Request
   params: Record<string, string>
   query: URLSearchParams
+  /** 콘솔(__mock.failNext)에서 이 요청에 걸어 둔 장애. http 장애는 핸들러 전에 처리된다 */
+  fault: Fault | null
 }
 
 type Handler = (ctx: MockContext) => Response | Promise<Response>
@@ -128,30 +132,66 @@ export const offsetPage = <T>(documents: T[], query: URLSearchParams) => {
   }
 }
 
-export const createServer =
-  (routes: MockRoute[]) =>
-  async (request: Request): Promise<Response> => {
-    const url = new URL(request.url)
-    const path = url.pathname.replace(/^\/api\/v1/, '')
-    await sleep(LATENCY_MS, request.signal)
-
+export const createServer = (routes: MockRoute[]) => {
+  const dispatch = async (
+    request: Request,
+    url: URL,
+    path: string,
+  ): Promise<{ response: Response; fault: Fault | null }> => {
     for (const route of routes) {
       if (route.method !== request.method) continue
       const match = route.pattern.exec(path)
       if (!match) continue
       if (route.auth && !request.headers.get('Authorization')) {
-        return fail(401, 'UNAUTHORIZED', '로그인이 필요합니다.')
+        return {
+          response: fail(401, 'UNAUTHORIZED', '로그인이 필요합니다.'),
+          fault: null,
+        }
       }
+      const fault = takeFault(request.method, path)
+      if (fault?.kind === 'http')
+        return {
+          response: fail(fault.status, 'MOCK_FAULT', fault.message),
+          fault,
+        }
       const params = Object.fromEntries(
         route.keys.map((key, i) => [key, decodeURIComponent(match[i + 1])]),
       )
-      return route.handler({ request, params, query: url.searchParams })
+      const response = await route.handler({
+        request,
+        params,
+        query: url.searchParams,
+        fault,
+      })
+      return { response, fault }
     }
 
     console.warn(`[mock] 정의되지 않은 API: ${request.method} ${url.pathname}`)
-    return fail(
-      404,
-      'MOCK_NOT_FOUND',
-      `mock 응답이 없습니다: ${request.method} ${url.pathname}`,
-    )
+    return {
+      response: fail(
+        404,
+        'MOCK_NOT_FOUND',
+        `mock 응답이 없습니다: ${request.method} ${url.pathname}`,
+      ),
+      fault: null,
+    }
   }
+
+  return async (request: Request): Promise<Response> => {
+    const url = new URL(request.url)
+    const path = url.pathname.replace(/^\/api\/v1/, '')
+    const started = performance.now()
+    await sleep(LATENCY_MS, request.signal)
+
+    const { response, fault } = await dispatch(request, url, path)
+    recordRequest({
+      time: new Date().toLocaleTimeString(),
+      method: request.method,
+      path: path + url.search,
+      status: response.status,
+      ms: Math.round(performance.now() - started),
+      fault: fault?.kind ?? '',
+    })
+    return response
+  }
+}

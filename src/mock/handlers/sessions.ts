@@ -4,6 +4,7 @@ import type {
   SessionData,
 } from '@/features/sessions/types'
 import { claudeEvents, isClaudeEnabled } from '../claude'
+import { createCutoff, interruptStream, type Fault } from '../control'
 import { db, newId, now } from '../db'
 import {
   cursorPage,
@@ -47,19 +48,34 @@ const findSession = (sessionId: string) =>
 const sessionNotFound = () =>
   fail(404, 'SESSION_NOT_FOUND', '채팅을 찾을 수 없습니다.')
 
-/** 상태 → 본문 조각 → 출처 순서로 실제 서버와 같은 SSE 이벤트를 흘려보낸다. */
+/**
+ * 상태 → 본문 조각 → 출처 순서로 실제 서버와 같은 SSE 이벤트를 흘려보낸다.
+ * 콘솔에서 장애를 걸어 두었으면(__mock.failNext) 본문 도중에 그 장애를 낸다.
+ * 서버 저장소에는 화면에 보낸 조각까지만 남는다 (실제 서버에서 끊긴 것과 같은 상태).
+ */
 async function* answerEvents(
   session: SessionData,
   answer: MessageItem,
   signal: AbortSignal,
   /** 이 답변 앞까지의 대화 (실제 Claude에 보낼 때 쓴다) */
   history: MessageItem[],
+  fault: Fault | null,
 ) {
+  const cutoff = createCutoff(fault)
   try {
+    if (fault?.kind === 'empty') {
+      yield { type: 'status', message: '답변을 작성하는 중입니다.', step: 1 }
+      yield { type: 'done' }
+      return
+    }
     if (await isClaudeEnabled()) {
       yield { type: 'status', message: '답변을 작성하는 중입니다.', step: 1 }
       for await (const event of claudeEvents(history, signal)) {
-        if (event.type === 'text') answer.content += event.content
+        if (event.type === 'text') {
+          const cut = cutoff()
+          if (cut) return yield* interruptStream(cut, signal)
+          answer.content += event.content
+        }
         yield event
       }
       return
@@ -79,6 +95,8 @@ async function* answerEvents(
     }
     await sleep(400, signal)
     for (const chunk of ANSWER.match(/[^\n]{1,8}|\n/g) ?? []) {
+      const cut = cutoff()
+      if (cut) return yield* interruptStream(cut, signal)
       answer.content += chunk
       yield { type: 'text', content: chunk }
       await sleep(CHUNK_DELAY_MS, signal)
@@ -161,33 +179,39 @@ export const sessionRoutes: MockRoute[] = [
     return ok(null)
   }),
 
-  post('/sessions/:sessionId/messages/stream', async ({ request, params }) => {
-    const session = findSession(params.sessionId)
-    if (!session) return sessionNotFound()
-    const { question, domain } = (await request.json()) as StreamMessageRequest
-    const list = (db.messages[params.sessionId] ??= [])
-    const answer: MessageItem = {
-      message_id: newId(),
-      role: 'ai',
-      content: '',
-      created_at: now(),
-    }
-    list.push(
-      {
+  post(
+    '/sessions/:sessionId/messages/stream',
+    async ({ request, params, fault }) => {
+      const session = findSession(params.sessionId)
+      if (!session) return sessionNotFound()
+      const { question, domain } =
+        (await request.json()) as StreamMessageRequest
+      const list = (db.messages[params.sessionId] ??= [])
+      const answer: MessageItem = {
         message_id: newId(),
-        role: 'human',
-        content: question,
-        domain,
+        role: 'ai',
+        content: '',
         created_at: now(),
-      },
-      answer,
-    )
-    return sse(answerEvents(session, answer, request.signal, list.slice(0, -1)))
-  }),
+      }
+      list.push(
+        {
+          message_id: newId(),
+          role: 'human',
+          content: question,
+          domain,
+          created_at: now(),
+        },
+        answer,
+      )
+      return sse(
+        answerEvents(session, answer, request.signal, list.slice(0, -1), fault),
+      )
+    },
+  ),
 
   post(
     '/sessions/:sessionId/messages/:messageId/regenerate',
-    ({ request, params }) => {
+    ({ request, params, fault }) => {
       const session = findSession(params.sessionId)
       if (!session) return sessionNotFound()
       const list = db.messages[params.sessionId] ?? []
@@ -213,6 +237,7 @@ export const sessionRoutes: MockRoute[] = [
           answer,
           request.signal,
           list.slice(0, list.indexOf(answer)),
+          fault,
         ),
       )
     },

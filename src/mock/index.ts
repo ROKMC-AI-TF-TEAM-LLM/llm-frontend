@@ -11,6 +11,7 @@ import { miscRoutes } from './handlers/misc'
 import { projectRoutes } from './handlers/projects'
 import { sessionRoutes } from './handlers/sessions'
 import { userRoutes } from './handlers/users'
+import { installControl } from './control'
 import { createServer } from './server'
 
 const handle = createServer([
@@ -40,7 +41,10 @@ export function installMock() {
   // axios 기본 어댑터(XHR)는 fetch를 거치지 않으므로 fetch 어댑터로 바꾼다.
   backendApi.defaults.adapter = 'fetch'
 
+  installControl()
+
   console.info(
-    '[mock] 백엔드 없이 실행 중입니다. 응답은 src/mock/handlers에서 수정할 수 있습니다.',
+    '[mock] 백엔드 없이 실행 중입니다. 응답은 src/mock/handlers에서 수정할 수 있습니다.\n' +
+      '[mock] 장애 걸기·요청 기록 같은 콘솔 도구: __mock.help()',
   )
 }
