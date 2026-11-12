@@ -259,34 +259,41 @@ import { getDomainLabel } from '@/features/domains/utils'
 
 ## 7. 다음에 확인할 것
 
-### 7-1. 화면 확인 (브라우저로 아직 안 봄)
+### 7-1. 화면 확인
 
-`npm run dev:mock`으로 띄워서 확인해 주세요.
+`npm run dev:mock`으로 띄워서 확인했습니다(11/12).
 
-- [ ] **채팅:** 입력창에 글과 분야를 넣고 다른 대화로 옮겼다가 돌아오면 그대로 남아 있는가 (`ChatInput` 수정)
-- [ ] **채팅:** 새 대화에서 첫 메시지를 보낸 뒤 정상으로 연결되는가, 오류 시 재시도 버튼이 동작하는가 (`ChatPage` 수정)
-- [ ] **번역:** 입력을 모두 지우면 결과도 비워지는가 (`TranslatePage` 수정)
-- [ ] **로그인:** 로그인 창을 닫았다 다시 열면 빈 로그인 폼부터 시작하는가, 입력 전에는 버튼이 비활성인가 (`LoginPage` 수정)
-- [ ] **문서 제작:** 생성·취소·재시도·삭제, 첫 화면 입력창 위치, 삭제 확인
-- [ ] **나머지 화면:** 프로젝트, 관리자, 문서 검색, 대화 검색, 이용 안내, 팀, 튜토리얼이 열리는가
-- [ ] **사이드바:** 메뉴 강조, 즐겨찾기, 최근 대화
-- [ ] **채팅 첫 진입:** `/chat/:id`를 처음 열 때 메시지 스켈레톤이 잠깐 보이고 화면이 정상으로 뜨는가 (지연 로드로 바꿈)
-- [ ] **숨은 진단 화면:** 입장, 걷기(WASD·방향키), 문·안내판·가구 [E], ESC 닫기 (`hall/`로 나눔)
+- [x] **채팅:** 입력창에 글과 분야를 넣고 다른 대화로 옮겼다가 돌아오면 그대로 남아 있는가 (`ChatInput` 수정)
+- [x] **채팅:** 새 대화에서 첫 메시지를 보낸 뒤 정상으로 연결되는가, 오류 시 재시도 버튼이 동작하는가 (`ChatPage` 수정)
+- [x] **번역:** 입력을 모두 지우면 결과도 비워지는가 (`TranslatePage` 수정)
+- [x] **로그인:** 로그인 창을 닫았다 다시 열면 빈 로그인 폼부터 시작하는가, 입력 전에는 버튼이 비활성인가 (`LoginPage` 수정)
+- [x] **문서 제작:** 생성·취소·재시도·삭제, 첫 화면 입력창 위치, 삭제 확인
+- [x] **나머지 화면:** 프로젝트, 관리자, 문서 검색, 대화 검색, 이용 안내, 팀, 튜토리얼이 열리는가
+- [x] **사이드바:** 메뉴 강조, 즐겨찾기, 최근 대화
+- [x] **채팅 첫 진입:** `/chat/:id`를 처음 열 때 메시지 스켈레톤이 잠깐 보이고 화면이 정상으로 뜨는가 (지연 로드로 바꿈)
+- [x] **숨은 진단 화면:** 입장, 걷기(WASD·방향키), 문·안내판·가구 [E], ESC 닫기 (`hall/`로 나눔)
+
+답변이 끊겼을 때의 재시도는 mock 콘솔 도구로 따로 확인할 수 있습니다. 브라우저 콘솔에서 `__mock.help()`를 보세요.
 
 ### 7-2. 알고 있어야 할 동작 변화
 
 - **문서 제작은 일반 개발 모드(`npm run dev`)에서 동작하지 않습니다.** 3-1을 고치면서 이제 실제 서버를 부릅니다. 백엔드에 docgen API가 생기기 전까지는 `npm run dev:mock`에서만 확인할 수 있습니다.
 - 문서 제작 목 데이터는 새로고침하면 사라집니다. 다른 목과 같이 메모리에만 둡니다.
-- 관리자 자료실의 "재시도" 버튼은 이 브랜치에서는 동작하지 않습니다(TODO). `fix/admin-document-retry`에 구현이 있으므로 병합 시 가져옵니다.
+- ~~관리자 자료실의 "재시도" 버튼이 동작하지 않음~~: `35db111`에서 구현했습니다.
+- 답변 스트림이 끝 신호(`done`) 없이 닫히면 지금은 정상 완료로 처리하고 콘솔에 `[SSE.incomplete]`만 남깁니다. 백엔드가 모든 답변 끝에 `done`을 보내는지 확인되면 끊김으로 처리해 '다시 시도'가 나오게 바꿀 예정입니다 (`features/chat/api.ts`의 `readSse`).
 
 ### 7-3. 아직 남은 구조 문제
 
-- `features/chat/store.ts`가 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있습니다.
+- `features/chat/store/`가 스트리밍 상태와 함께 지난 메시지(서버 데이터)도 들고 있습니다.
+- '다시 생성'이 서버의 원래 답변을 질문 내용과 "같은 질문 중 몇 번째인지"로 찾습니다(`chat/store/index.ts`의 `regenerateMessage`). 서버 목록은 최근 20개만 받아 비교하므로, 같은 질문을 반복했거나 대화가 길면 엉뚱한 답변을 고를 수 있습니다. 화면이 새 답변의 서버 ID를 알게 하면 ID로 바로 지정할 수 있습니다.
+- ~~테스트가 없습니다~~: Vitest를 넣고(`npm test`) 답변 스트림 해석(`chat/api.test.ts`)과 질문·끊김·다시 시도 흐름(`chat/store/chatFlow.test.ts`)부터 붙였습니다. 흐름 테스트는 스토어를 mock 서버에 붙여 돈다(`src/test/mockBackend.ts`). 다른 기능은 아직 없습니다.
 - ~~프로젝트 데이터의 이중 저장(`projects/store.ts`)~~: `merge/bugfix-docgen`을 병합하면서 없앴습니다. 프로젝트 목록·상세는 React Query 캐시만 씁니다.
 - ~~`lib/axios.ts`가 `features/auth/types.ts`를 가져다 씁니다~~: 갱신 응답 타입을 `lib/axios.ts`로 옮기고, 쓰이지 않던 `auth/api.ts`의 `refresh`를 지웠습니다. `lib`에도 ESLint 경계를 걸었습니다.
-- 큰 파일: `shared/styles/global.css` 1553줄. `projects/components/parts.tsx` 953줄은 `code-cleanup`의 분할을 가져오면 해결됩니다.
-  (`SystemDiagnostics.tsx` 1708줄은 `system/components/hall/`로 나눴습니다. 다른 브랜치가 건드리지 않는 파일입니다.)
-- 코드 스타일(세미콜론·따옴표)과 하드코딩 색. Prettier는 거의 모든 파일을 바꾸므로 병합이 끝난 뒤 한 번에 적용합니다.
+- 큰 파일: `shared/styles/intro.css` 1065줄, `home/components/IntroSections.tsx` 550줄, `docgen/pages/DocGenPage.tsx` 493줄, `admin/components/AdminDocuments.tsx` 451줄, `chat/components/MessageList.tsx` 402줄.
+  - ~~`shared/styles/global.css` 1553줄~~: 541줄로 줄이고 소개 화면 스타일은 `intro.css`로 나눴습니다.
+  - ~~`projects/components/parts.tsx` 953줄~~: 컴포넌트 파일로 나눴습니다.
+  - `SystemDiagnostics.tsx` 1708줄은 `system/components/hall/`로 나눴습니다(지금 447줄).
+- ~~코드 스타일(세미콜론·따옴표)~~: Prettier를 전체에 적용했습니다(`4604372`, `.git-blame-ignore-revs`에 등록).
 - ~~빌드에 500kB 넘는 청크 경고~~: 채팅 화면 지연 로드와 라이브러리 청크 분리로 해소했습니다(첫 화면 JS 약 1,130kB → 약 620kB).
 - git 이력: 작은 서비스 파일 2개(`capability.ts` → `domains/api.ts`, `translate.ts` → `translate/api.ts`)는 이름 바꾸기로 인식되지 않아 `git log --follow`로 이전 이력이 이어지지 않습니다.
 
