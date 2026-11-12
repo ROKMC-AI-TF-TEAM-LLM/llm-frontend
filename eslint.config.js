@@ -193,6 +193,13 @@ export default defineConfig([
     },
   },
   ...featureDirectionConfigs,
+  {
+    // 테스트는 앱 코드를 mock 서버에 붙여 확인하므로 mock을 가져다 쓸 수 있다 (src/test/mockBackend.ts)
+    files: ['src/**/*.test.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [ROUTER_RULE] }],
+    },
+  },
   // 포맷은 Prettier가 맡는다. 포맷과 겹치는 ESLint 규칙은 끈다 (맨 뒤에 둬야 한다)
   eslintConfigPrettier,
 ])

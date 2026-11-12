@@ -13,6 +13,7 @@ src/
   shared/           어느 기능에도 기대지 않는 공용 코드: 토스트, 스켈레톤, 범용 훅·유틸, 전역 CSS
   features/<기능>/  기능 하나의 모든 것 (아래)
   mock/             `npm run dev:mock`용 가짜 백엔드. API마다 handlers/<도메인>.ts
+  test/             테스트 준비 코드(`npm test`). 테스트 파일은 대상 옆에 *.test.ts로 둔다. mockBackend.ts로 앱 코드를 mock 서버에 붙인다
 mock-server/        dev:mock 개발 서버(Node)에서만 도는 코드. claudeProxy.ts: `.env.mock.local`에 ANTHROPIC_API_KEY가 있으면 mock 채팅을 실제 Claude로 응답
                     docsServer.ts: mock-docs/<분야 코드>/의 실제 문서를 mock 자료실 목록·다운로드에 사용
                     docsSearch.ts: 질문과 관련된 PDF 쪽을 찾아 claudeProxy가 Claude에 함께 보내고, 인용된 쪽을 출처로 표시

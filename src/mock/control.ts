@@ -52,9 +52,10 @@ export const takeFault = (method: string, path: string): Fault | null => {
   const index = queue.findIndex((fault) => matches(fault.target, method, path))
   if (index < 0) return null
   const [fault] = queue.splice(index, 1)
-  console.info(
-    `[mock] 장애 적용: ${KIND_LABELS[fault.kind]} → ${method} ${path}`,
-  )
+  if (mockOptions.logRequests)
+    console.info(
+      `[mock] 장애 적용: ${KIND_LABELS[fault.kind]} → ${method} ${path}`,
+    )
   return fault
 }
 
@@ -95,6 +96,8 @@ export async function* interruptStream(
 }
 
 export interface RequestRecord {
+  /** 요청 일련번호 (1부터) */
+  seq: number
   time: string
   method: string
   path: string
@@ -106,9 +109,20 @@ export interface RequestRecord {
 const MAX_RECORDS = 100
 const records: RequestRecord[] = []
 
-export const recordRequest = (record: RequestRecord) => {
-  records.push(record)
+/** 테스트에서 끄는 값들. 화면에서 볼 때는 바꾸지 않는다 */
+export const mockOptions = {
+  /** mock 서버의 모든 대기 시간(응답 지연·스트림 조각 간격)에 곱한다. 0이면 기다리지 않는다 */
+  delayScale: 1,
+  /** 요청마다 콘솔에 기록을 찍는지 */
+  logRequests: true,
+}
+
+let recordSeq = 0
+
+export const recordRequest = (record: Omit<RequestRecord, 'seq'>) => {
+  records.push({ ...record, seq: ++recordSeq })
   if (records.length > MAX_RECORDS) records.shift()
+  if (!mockOptions.logRequests) return
   // 콘솔의 '상세(Verbose)' 수준에서만 보인다
   console.debug(
     `[mock] ${record.method} ${record.path} → ${record.status}` +
@@ -116,13 +130,19 @@ export const recordRequest = (record: RequestRecord) => {
   )
 }
 
+/** 최근 요청 기록 (오래된 것부터). 최근 MAX_RECORDS개만 남으므로 구간은 seq로 자른다 */
+export const requestRecords = (): readonly RequestRecord[] => [...records]
+
+/** 지금까지 기록된 요청 수. 이후 요청만 보려면 seq가 이 값보다 큰 기록을 고른다 */
+export const lastRequestSeq = () => recordSeq
+
 interface FailOptions {
   after?: number
   status?: number
   message?: string
 }
 
-const failNext = (
+export const failNext = (
   target: string,
   kind: FaultKind = 'drop',
   options: FailOptions = {},
@@ -143,6 +163,7 @@ const failNext = (
         : '답변을 만드는 중 오류가 발생했습니다.'),
   }
   queue.push(fault)
+  if (!mockOptions.logRequests) return
   const detail =
     kind === 'http'
       ? ` (상태 ${fault.status})`

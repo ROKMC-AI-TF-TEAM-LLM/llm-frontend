@@ -15,7 +15,8 @@ import { installControl } from './control'
 import { loadRealDocuments } from './realDocs'
 import { createServer } from './server'
 
-const handle = createServer([
+/** `/api/v1/*` 요청을 받아 mock 응답을 돌려준다. 테스트에서도 이 함수를 fetch 대신 쓴다 */
+export const handleMockRequest = createServer([
   ...authRoutes,
   ...userRoutes,
   ...sessionRoutes,
@@ -36,7 +37,7 @@ export async function installMock() {
 
   window.fetch = (input, init) =>
     urlOf(input).pathname.startsWith('/api/v1/')
-      ? handle(new Request(input, init))
+      ? handleMockRequest(new Request(input, init))
       : realFetch(input, init)
 
   // axios 기본 어댑터(XHR)는 fetch를 거치지 않으므로 fetch 어댑터로 바꾼다.

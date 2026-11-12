@@ -1,7 +1,7 @@
 // 가짜 백엔드의 뼈대: 경로 매칭, 응답 봉투(success/status_code/data/error), 지연.
 // 실제 서버와 같은 HTTP 응답(Response)을 돌려주므로 axios·fetch 쪽 코드는 mock인지 모른다.
 
-import { recordRequest, takeFault, type Fault } from './control'
+import { mockOptions, recordRequest, takeFault, type Fault } from './control'
 
 const LATENCY_MS = 300
 
@@ -92,7 +92,9 @@ export const sse = (events: AsyncGenerator<object>) => {
 export const sleep = (ms: number, signal?: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
     if (signal?.aborted) return reject(signal.reason)
-    const timer = setTimeout(resolve, ms)
+    // 테스트(delayScale 0)에서는 타이머 없이 바로 넘어간다. setTimeout(0)도 조각마다 1ms 넘게 걸린다
+    if (ms * mockOptions.delayScale <= 0) return resolve()
+    const timer = setTimeout(resolve, ms * mockOptions.delayScale)
     signal?.addEventListener(
       'abort',
       () => {
