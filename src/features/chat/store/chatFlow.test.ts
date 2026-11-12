@@ -179,18 +179,33 @@ describe('끊긴 답변과 다시 시도', () => {
     )
   })
 
-  it('끝 신호(done) 없이 닫히면 지금은 받은 데까지 완료로 두고 콘솔에 기록한다', async () => {
+  it('끝 신호(done) 없이 닫히면 받은 데까지 보이되 중단 표시를 하고, 다시 시도할 수 있다', async () => {
     await startChatWithAnswer()
     failNext('stream', 'close', { after: 3 })
     await store().sendMessage('두 번째 질문')
 
-    expect(lastAnswer().status).toBe('done')
+    expect(lastAnswer().status).toBe('interrupted')
     expect(lastAnswer().content.length).toBeGreaterThan(0)
+    expect(store().error).toBe('응답 중 오류가 발생했습니다.')
     expect(
       consoleError.mock.calls.some((args) =>
         String(args[0]).includes('SSE.incomplete'),
       ),
     ).toBe(true)
+
+    await store().regenerateMessage(lastAnswer().id)
+    expect(lastAnswer().status).toBe('done')
+  })
+
+  it('다시 생성이 done 없이 닫히면 끊겼다고 알린다', async () => {
+    await startChatWithAnswer()
+    failNext('stream', 'drop', { after: 3 })
+    await store().sendMessage('두 번째 질문')
+
+    failNext('regenerate', 'close', { after: 2 })
+    await store().regenerateMessage(lastAnswer().id)
+    expect(lastAnswer().status).toBe('interrupted')
+    expect(store().error).toBe('응답이 중간에 끊겼습니다.')
   })
 
   it('사용자가 멈추면 중단 표시를 하고, 다시 시도할 수 있다', async () => {

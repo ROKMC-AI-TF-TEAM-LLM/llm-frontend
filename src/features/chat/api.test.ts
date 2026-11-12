@@ -204,12 +204,21 @@ describe('readSse (streamMessage)', () => {
       expect(incompleteLogged()).toBe(false)
     })
 
-    // 지금은 정상 완료로 두고 기록만 남긴다 (docs/refactor-feature-folders.md 7-2)
-    it('끝 신호 없이 닫히면 받은 데까지 정상으로 끝내고 콘솔에 기록한다', async () => {
-      const got = await run([
-        sseResponse([event({ type: 'text', content: '잘린 답' })]),
-      ])
-      expect(got.chunks.join('')).toBe('잘린 답')
+    // 백엔드 계약: 정상이면 done, 실패면 error로 끝난다. 둘 다 없으면 중간에 끊긴 것이다
+    it('끝 신호 없이 닫히면 받은 본문은 넘긴 뒤 끊김으로 실패하고 콘솔에 기록한다', async () => {
+      const chunks: string[] = []
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () =>
+          sseResponse([event({ type: 'text', content: '잘린 답' })]),
+        ),
+      )
+      await expect(
+        streamMessage('session-1', { question: '질문' }, (chunk) =>
+          chunks.push(chunk),
+        ),
+      ).rejects.toThrow('응답이 중간에 끊겼습니다.')
+      expect(chunks.join('')).toBe('잘린 답')
       expect(incompleteLogged()).toBe(true)
     })
   })
